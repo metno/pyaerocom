@@ -48,7 +48,8 @@ import cf_units as unit
 import os
 
 
-def plotmaps(data, VerboseFlag = False, filter ="WORLD", var ="od550aer", plotdir="./"):
+def plotmaps(data, VerboseFlag = False, filter ="WORLD", var ="od550aer", 
+             plotdir="./"):
     """plot aerocom standard maps
 
     Will plot every supplied time step"""

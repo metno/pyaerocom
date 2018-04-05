@@ -6,6 +6,7 @@ def _init_supplemental():
 __version__, __dir__ = _init_supplemental()
 
 from . import config
+from . import utils
 
 from . import read 
 from . import plot

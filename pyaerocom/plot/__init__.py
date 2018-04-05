@@ -31,4 +31,8 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
 
+
+# Note that these are temporary imports, namespaces will be redefined in the
+# near future
 from .plotmaps import plotmaps, annotate_aerocom, plot_ts_map
+from .mapping import plot_iris_cube 

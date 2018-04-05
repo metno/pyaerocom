@@ -3,19 +3,16 @@
 """
 This file could contain classes, that represent observation data. Below are 
 some dummies inserted.
-
-@author: jonasg
 """
 from abc import ABCMeta, abstractmethod
-from os.path import exists
  
 class ObsData(metaclass=ABCMeta):
     """Abstract base class for observation data
     
     This class could contain everything that all observationals have in common.
     The abstract class interface can be used to ensure the implementation of 
-    certain class methods that are required to be implemented (declared with
-    @abstractmethod decorator).
+    certain class methods that are required to be implemented in subclasses 
+    (declared with @abstractmethod decorator).
     """
     def __init__(self, *args, **kwargs):
         self.data = None
@@ -49,8 +46,10 @@ class ObsData(metaclass=ABCMeta):
 class ProfileData(ObsData):
     """Data object for profile observations
     """
-
+    
+    @property
     def time_stamps(self):
+        """Returns time stamp array"""
         raise NotImplementedError
     
     def longitude(self):

@@ -207,7 +207,8 @@ class ReadAeronetSunV2:
 
 		if self.VerboseFlag:
 			print('searching for data files. This might take a while...')
-		self.files=glob.glob(os.path.join(ReadAeronetSunV2.DATASET_PATH,ReadAeronetSunV2.FILEMASK))
+		self.files=glob.glob(os.path.join(ReadAeronetSunV2.DATASET_PATH,
+                                    ReadAeronetSunV2.FILEMASK))
 
 
 
