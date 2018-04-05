@@ -43,6 +43,7 @@ import pdb
 ###################################################################################
 from pyaerocom.read.readmodeldata import ReadModelData
 from pyaerocom.plot import plotmaps
+from GLOB import OUT_DIR # import standard output directory
 
 if __name__ == '__main__':
 
@@ -59,9 +60,9 @@ if __name__ == '__main__':
     test = ReadModelData(model, '2010-01-01','2011-12-31', VerboseFlag=True)
     test.Read('od550aer')
 
-    plotmaps(test.data, VerboseFlag=True, plotdir="./")
+    plotmaps(test.data, VerboseFlag=True, plotdir=OUT_DIR)
 
-    pdb.set_trace()
+    #pdb.set_trace()
     test.data[model].coord('time').bounds
 
     print(test)

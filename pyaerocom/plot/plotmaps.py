@@ -34,7 +34,7 @@
 #MA 02110-1301, USA
 
 
-import pdb
+#import pdb
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -146,7 +146,7 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var ="od550aer",
                 plt.title(title)
                 plt.savefig(plotfilename, dpi=300)
                 plt.close()
-                pdb.set_trace()
+                #pdb.set_trace()
 
         elif PlotMonthlyFlag:
             #calculate monthly data
@@ -231,5 +231,5 @@ def plot_ts_map(data, title, plotfilename, lats_to_plot, lons_to_plot, colorbar_
     plot.axes.set_xlabel('longitude')
     plot.axes.set_ylabel('latitude')
     plt.savefig(plotfilename, dpi=300)
-    pdb.set_trace()
+    #pdb.set_trace()
     plt.close()
