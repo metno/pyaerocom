@@ -12,6 +12,7 @@ Welcome to pyaerocom's documentation!
 
    readme_link
    api
+   api_testsuite
 
 Indices and tables
 ==================
