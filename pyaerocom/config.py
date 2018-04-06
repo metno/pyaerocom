@@ -47,8 +47,8 @@ except:
 ###############################################################
 # stat config start
 #GCOS requirements
-GCOSPERCENTCRIT=np.float(0.1)
-GCOSABSCRIT=np.float(0.04)
+GCOSPERCENTCRIT =   np.float(0.1)
+GCOSABSCRIT     =   np.float(0.04)
 # stat config end
 ###############################################################
 
@@ -57,8 +57,8 @@ GCOSABSCRIT=np.float(0.04)
 #obs reading information
 
 #names of the different obs networks
-OBSNET_NONE='NONE'
-NOMODELNAME='OBSERVATIONS-ONLY'
+OBSNET_NONE = 'NONE'
+NOMODELNAME = 'OBSERVATIONS-ONLY'
 
 #default names of the different obs networks
 #might get overwritten from paths.ini
@@ -82,10 +82,10 @@ AERONET_INV_V2L15_ALL_POINTS_NAME = 'AeronetInvV2Lev1.5.AP'
 AERONET_INV_V2L2_DAILY_NAME = 'AeronetInvV2Lev2.daily'
 AERONET_INV_V2L2_ALL_POINTS_NAME = 'AeronetInvV2Lev2.AP'
 #
-EBAS_MULTICOLUMN_NAME='EBASMC'
-EEA_NAME='EEAAQeRep'
+EBAS_MULTICOLUMN_NAME = 'EBASMC'
+EEA_NAME = 'EEAAQeRep'
 
-OBSDATACACHEDIR='/lustre/storeA/users/jang/cache/'
+OBSDATACACHEDIR = '/lustre/storeA/users/jang/cache/'
 
 #read paths.ini
 #IniFileName = os.path.realpath(__file__)),'paths.ini'
@@ -93,115 +93,151 @@ _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
 if not os.path.exists(_config_ini):
     raise IOError("Configuration file paths.ini could not be found at %s"
                   %_config_ini)
-ReadConfig = ConfigParser()
+conf_reader = ConfigParser()
 if os.path.isfile(_config_ini):
-    ReadConfig.read(_config_ini)
+    conf_reader.read(_config_ini)
     #Model
     #model data paths
-    MODELBASEDIR = ReadConfig['modelfolders']['BASEDIR']
-    MODELDIRS = ReadConfig['modelfolders']['dir'].replace('${BASEDIR}',MODELBASEDIR).replace('\n','').split(',')
+    MODELBASEDIR = conf_reader['modelfolders']['BASEDIR']
+    MODELDIRS = conf_reader['modelfolders']['dir'].\
+        replace('${BASEDIR}',MODELBASEDIR).replace('\n','').split(',')
 
-    #read obs network names from ini file
-    #Aeronet V2
-    AERONET_SUN_V2L15_AOD_DAILY_NAME = ReadConfig['obsnames']['AERONET_SUN_V2L15_AOD_DAILY']
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
-    AERONET_SUN_V2L2_AOD_DAILY_NAME = ReadConfig['obsnames']['AERONET_SUN_V2L2_AOD_DAILY']
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
-    AERONET_SUN_V2L2_SDA_DAILY_NAME = ReadConfig['obsnames']['AERONET_SUN_V2L2_SDA_DAILY']
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
-    #Aeronet V3
-    AERONET_SUN_V3L15_AOD_DAILY_NAME = ReadConfig['obsnames']['AERONET_SUN_V3L15_AOD_DAILY']
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
-    AERONET_SUN_V3L2_AOD_DAILY_NAME = ReadConfig['obsnames']['AERONET_SUN_V3L2_AOD_DAILY']
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
-    AERONET_SUN_V3L2_SDA_DAILY_NAME = ReadConfig['obsnames']['AERONET_SUN_V3L2_SDA_DAILY']
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
+    # read obs network names from ini file
+    # Aeronet V2
+    AERONET_SUN_V2L15_AOD_DAILY_NAME = \
+        conf_reader['obsnames']['AERONET_SUN_V2L15_AOD_DAILY']
+    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = \
+        conf_reader['obsnames']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
+    AERONET_SUN_V2L2_AOD_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V2L2_AOD_DAILY']
+    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
+    AERONET_SUN_V2L2_SDA_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V2L2_SDA_DAILY']
+    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
+        
+    # Aeronet V3
+    AERONET_SUN_V3L15_AOD_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V3L15_AOD_DAILY']
+    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
+    AERONET_SUN_V3L2_AOD_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V3L2_AOD_DAILY']
+    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
+    AERONET_SUN_V3L2_SDA_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_SUN_V3L2_SDA_DAILY']
+    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME =\
+     conf_reader['obsnames']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
+    
     # inversions
-    AERONET_INV_V2L15_DAILY_NAME = ReadConfig['obsnames']['AERONET_INV_V2L15_DAILY']
-    AERONET_INV_V2L15_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_INV_V2L15_ALL_POINTS']
-    AERONET_INV_V2L2_DAILY_NAME = ReadConfig['obsnames']['AERONET_INV_V2L2_DAILY']
-    AERONET_INV_V2L2_ALL_POINTS_NAME = ReadConfig['obsnames']['AERONET_INV_V2L2_ALL_POINTS']
+    AERONET_INV_V2L15_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_INV_V2L15_DAILY']
+    AERONET_INV_V2L15_ALL_POINTS_NAME =\
+        conf_reader['obsnames']['AERONET_INV_V2L15_ALL_POINTS']
+    AERONET_INV_V2L2_DAILY_NAME =\
+        conf_reader['obsnames']['AERONET_INV_V2L2_DAILY']
+    AERONET_INV_V2L2_ALL_POINTS_NAME = \
+        conf_reader['obsnames']['AERONET_INV_V2L2_ALL_POINTS']
     #
-    EBAS_MULTICOLUMN_NAME = ReadConfig['obsnames']['EBAS_MULTICOLUMN']
-    EEA_NAME = ReadConfig['obsnames']['EEA']
+    EBAS_MULTICOLUMN_NAME = conf_reader['obsnames']['EBAS_MULTICOLUMN']
+    EEA_NAME = conf_reader['obsnames']['EEA']
 
 
     #observations
     #Folders
-    OBSBASEDIR = ReadConfig['obsfolders']['BASEDIR']
+    OBSBASEDIR = conf_reader['obsfolders']['BASEDIR']
     OBSCONFIG = {}
     OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V2L15_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V2L15_AOD_DAILY']
+    OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME]['PATH'] =\
+        conf_reader['obsfolders']['AERONET_SUN_V2L15_AOD_DAILY'].\
+        replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME]['START_YEAR'] =\
+        conf_reader['obsstartyears']['AERONET_SUN_V2L15_AOD_DAILY']
 
     OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V2L15_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
+    OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['PATH'] =\
+        conf_reader['obsfolders']['AERONET_SUN_V2L15_AOD_ALL_POINTS'].\
+        replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
+        conf_reader['obsstartyears']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
 
     OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V2L2_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V2L2_AOD_DAILY']
+    OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH'] =\
+        conf_reader['obsfolders']['AERONET_SUN_V2L2_AOD_DAILY'].\
+        replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME]['START_YEAR'] =\
+        conf_reader['obsstartyears']['AERONET_SUN_V2L2_AOD_DAILY']
 
     OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V2L2_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
+    OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['PATH'] =\
+        conf_reader['obsfolders']['AERONET_SUN_V2L2_AOD_ALL_POINTS'].\
+        replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
+        conf_reader['obsstartyears']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
 
     OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V2L2_SDA_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V2L2_SDA_DAILY']
+    OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME]['PATH'] =\
+        conf_reader['obsfolders']['AERONET_SUN_V2L2_SDA_DAILY'].\
+        replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME]['START_YEAR'] =\
+        conf_reader['obsstartyears']['AERONET_SUN_V2L2_SDA_DAILY']
 
     OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V2L2_SDA_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
+    OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['PATH'] =\
+        conf_reader['obsfolders']['AERONET_SUN_V2L2_SDA_ALL_POINTS'].\
+        replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
 
     OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V3L15_AOD_DAILY']
+    OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L15_AOD_DAILY']
 
     OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
+    OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
 
     OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V3L2_AOD_DAILY']
+    OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_AOD_DAILY']
 
     OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
+    OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
 
     OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V3L2_SDA_DAILY']
+    OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_SDA_DAILY']
 
     OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
+    OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
 
     OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_INV_V2L15_DAILY']
+    OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L15_DAILY']
 
     OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_INV_V2L15_ALL_POINTS']
+    OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L15_ALL_POINTS']
 
     OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME] = {}
-    OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_INV_V2L2_DAILY']
+    OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L2_DAILY']
 
     OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME] = {}
-    OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = ReadConfig['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['AERONET_INV_V2L2_ALL_POINTS']
+    OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L2_ALL_POINTS']
 
     OBSCONFIG[EBAS_MULTICOLUMN_NAME] = {}
-    OBSCONFIG[EBAS_MULTICOLUMN_NAME]['PATH'] = ReadConfig['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[EBAS_MULTICOLUMN_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['EBAS_MULTICOLUMN']
+    OBSCONFIG[EBAS_MULTICOLUMN_NAME]['PATH'] = conf_reader['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[EBAS_MULTICOLUMN_NAME]['START_YEAR'] = conf_reader['obsstartyears']['EBAS_MULTICOLUMN']
 
     OBSCONFIG[EEA_NAME] = {}
-    OBSCONFIG[EEA_NAME]['PATH'] = ReadConfig['obsfolders']['EEA'].replace('${BASEDIR}',OBSBASEDIR)
-    OBSCONFIG[EEA_NAME]['START_YEAR'] = ReadConfig['obsstartyears']['EEA']
+    OBSCONFIG[EEA_NAME]['PATH'] = conf_reader['obsfolders']['EEA'].replace('${BASEDIR}',OBSBASEDIR)
+    OBSCONFIG[EEA_NAME]['START_YEAR'] = conf_reader['obsstartyears']['EEA']
 
-ReadConfig.clear()
+conf_reader.clear()
 
-del ReadConfig, _config_ini
+del conf_reader, _config_ini

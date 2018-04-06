@@ -5,7 +5,7 @@ Tests for utils.py module of pyaerocom
 """
 
 import numpy.testing as npt
-import pyaerocom.utils as utils
+import pyaerocom.mathutils as utils
 
 def test_exponent():
     """Test method :func:`exponent` of :mod:`pyaerocom.utils`"""

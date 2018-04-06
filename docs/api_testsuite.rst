@@ -11,6 +11,6 @@ API test-suite
 Low level helpers
 =================
 
-.. automodule:: pyaerocom.test.test_utils
+.. automodule:: pyaerocom.test.test_mathutils
    :members:
    :undoc-members:

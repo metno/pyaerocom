@@ -23,6 +23,8 @@ from matplotlib import rcParams
 import suppl_funs as funs
 from GLOB import OUT_DIR
 
+RUN_ALL = False
+# the following two variables are only relevant if RUN_ALL is True
 LAST_DAY = 10#82
 COMPARE_PERFORMANCE = 0
 
@@ -268,25 +270,27 @@ if __name__=="__main__":
 
     funs.custom_mpl(rcParams)
     cubes = iris.load(PATH)
+    c1 = cubes.merge()
     
-    dirs = funs.init_save_dirs(cubes, REGIONS, OUT_DIR)
-    
-    args_multiproc = prepare_args_multiprocessing(cubes, opts.last_day, REGIONS)
-    plot_fun = partial(plot_all_days, dirs=dirs)
-    
-    dt = plot_multiproc(plot_fun, args_multiproc)
-    
-    if opts.comp:
-        t0 = time()
-        for input_args in args_multiproc:
-            plot_all_days(*input_args, dirs=dirs)
-        dt1 = time() - t0
+    if RUN_ALL:
+        dirs = funs.init_save_dirs(cubes, REGIONS, OUT_DIR)
         
-        print("Number of plotted days / species / regions: %d / %d / %d\n"
-              "Elapsed time multiprocessing: %s s\n" 
-              "Elapsed time serial processing: %s s" 
-              %(args_multiproc[0][0].shape[0], len(cubes), len(REGIONS), dt, dt1))
-    
+        args_multiproc = prepare_args_multiprocessing(cubes, opts.last_day, REGIONS)
+        plot_fun = partial(plot_all_days, dirs=dirs)
+        
+        dt = plot_multiproc(plot_fun, args_multiproc)
+        
+        if opts.comp:
+            t0 = time()
+            for input_args in args_multiproc:
+                plot_all_days(*input_args, dirs=dirs)
+            dt1 = time() - t0
+            
+            print("Number of plotted days / species / regions: %d / %d / %d\n"
+                  "Elapsed time multiprocessing: %s s\n" 
+                  "Elapsed time serial processing: %s s" 
+                  %(args_multiproc[0][0].shape[0], len(cubes), len(REGIONS), dt, dt1))
+        
     
     
     

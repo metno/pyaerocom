@@ -1,25 +1,13 @@
 #!/usr/bin/env python3
-
-################################################################
-# readoddata_testing.py
-#
-# demostrator of how to use the observational data reading class
-#
-# this file is part of the aerocom_pt package
-#
-#################################################################
-# Created 20171024 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
+###############################################################################
 # Copyright (C) 2017 met.no
-# Contact information:
+# Contact information: see Email below
 # Norwegian Meteorological Institute
 # Box 43 Blindern
 # 0313 OSLO
 # NORWAY
-# E-mail: jan.griesfeller@met.no
+# E-mail: jan.griesfeller@met.no; jonas.gliss@met.no
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -32,15 +20,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
+###############################################################################
 
-
-import pdb
-# import numpy as np
-
-#import aerocom_pt.config as const
-#import aerocom_pt
-
-###################################################################################
 from pyaerocom.read.readmodeldata import ReadModelData
 from pyaerocom.plot import plotmaps
 from GLOB import OUT_DIR # import standard output directory
@@ -48,24 +29,33 @@ from GLOB import OUT_DIR # import standard output directory
 if __name__ == '__main__':
 
     import argparse
-
+    default_model = "AATSR_SU_v4.3"
+    
     parser = argparse.ArgumentParser(description='command line interface to the readmodeldata class')
-    parser.add_argument("model", help="model to read")
+    parser.add_argument("model", help="model to read", nargs="?", 
+                        const=default_model, default=default_model, type=str)
 
     args = parser.parse_args()
     if args.model:
         model = args.model
 
+    var = "od550aer"
 
-    test = ReadModelData(model, '2010-01-01','2011-12-31', VerboseFlag=True)
-    test.Read('od550aer')
+    test = ReadModelData(model, '2010-01-01','2011-12-31', verbose=True)
+    test.read(var)
 
     plotmaps(test.data, VerboseFlag=True, plotdir=OUT_DIR)
 
     #pdb.set_trace()
-    test.data[model].coord('time').bounds
-
-    print(test)
+    cube = test.data[model]
+    times = cube.coord('time')
+    
+    
+    p=times.cell(0).point
+    import iris
+    import netcdftime
+    t = netcdftime._netcdftime.DatetimeJulian(2010, 1, 10, 0, 0, 0, 0, -1, 1)
+    c1 = cube.extract(iris.Constraint(time=t))
 
 
 # pdb.set_trace()

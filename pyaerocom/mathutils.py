@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Low level utility methods of pyaerocom
+Mathematical low level utility methods ofcd pyaerocom
 """
 
 from numpy import floor, log10

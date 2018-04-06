@@ -42,7 +42,14 @@ Reading of model data
 .. automodule:: pyaerocom.read.readmodeldata
    :members:
    :undoc-members:
+   
+Low level helpers
+-----------------
 
+.. automodule:: pyaerocom.read.suppl
+   :members:
+   :undoc-members:
+   
 Visualisation
 =============
 
@@ -52,10 +59,10 @@ The :mod:`pyaerocom.plot` package contains algorithms related to data visualisat
    :members:
    :undoc-members:
 
-Low level helpers
-=================
+Mathematical helpers
+====================
 
-.. automodule:: pyaerocom.utils
+.. automodule:: pyaerocom.mathutils
    :members:
    :undoc-members:
 
