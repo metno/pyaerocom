@@ -62,8 +62,10 @@ test_files = import_test_files(__dir__)
 from . import config
 from . import mathutils
 
-from . import read 
+from . import io
 from . import plot
 
+from .region import Region
 from .modeldata import ModelData
 from .obsdata import ObsData, ProfileData, StationData
+

@@ -30,8 +30,8 @@ class FileConventionRead:
         position of information of temporal resolution in filename after 
         splitting using delimiter :attr:`file_sep` 
     """
-    def __init__(self, name="aerocom3", file_sep=None, year_pos=None,
-                 var_pos=None, ts_pos=None):
+    def __init__(self, name="aerocom3", file_sep="", year_pos=-1,
+                 var_pos=-1, ts_pos=-1):
        self.name = name
        self.file_sep = file_sep
        self.year_pos = year_pos
@@ -42,7 +42,43 @@ class FileConventionRead:
            self.import_default(self.name) 
        except:
            pass
-       
+    
+    def string_mask(self, var, year, ts_type):
+        """Returns mask that can be used to identify files of this convention
+        
+        Parameters
+        ----------
+        var : str
+            variable string ID (e.g. "od550aer")
+        year : int
+            desired year of observation (e.g. 2012)
+        ts_type : str
+            string specifying temporal resolution (e.g. "daily")
+        
+        Example
+        -------
+            
+            import re
+            conf_aero2 = FileConventionRead(name="aerocom2")
+            conf_aero3 = FileConventionRead(name="aerocom2")
+            
+            var = od550aer
+            year = 2012
+            ts_type = "daily"
+            
+            match_str_aero2 = conf_aero2.string_mask(var, year, ts_type)
+            
+            match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
+            
+        """
+        if self.name == "aerocom2":
+            return ".".join(['.*',ts_type, var, str(year), 'nc'])
+        elif self.name == "aerocom3":
+            return "_".join(['.*',var, '.*',str(year), ts_type])+'.nc'
+        else:
+            raise NotImplementedError("File matching mask for convention %s "
+                                      "not yet defined..." %self.name)
+            
     def import_default(self, name):
         """Checks and load default information from database"""
         fpath = join(__dir__, "data", "file_conventions.ini")
@@ -87,7 +123,10 @@ class FileConventionRead:
                   year_pos = self.year_pos,
                   var_pos = self.var_pos,
                   ts_pos = self.ts_pos)
-                
+      
+    def __repr__(self):
+       return ("%s %s" %(self.name, super(FileConventionRead, self).__repr__()))
+   
     def __str__(self):
         s = "pyaeorocom FileConventionRead\n"
         for k, v in self.to_dict().items():

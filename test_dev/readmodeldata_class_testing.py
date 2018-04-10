@@ -24,7 +24,7 @@
 
 from pyaerocom.read.readmodeldata import ReadModelData
 from pyaerocom.plot import plotmaps
-from GLOB import OUT_DIR # import standard output directory
+from GLOB import OUT_DIR_MAPS # import standard output directory
 
 if __name__ == '__main__':
 
@@ -41,21 +41,12 @@ if __name__ == '__main__':
 
     var = "od550aer"
 
+    # Create data import object
     test = ReadModelData(model, '2010-01-01','2011-12-31', verbose=True)
-    test.read(var)
-
-    plotmaps(test.data, VerboseFlag=True, plotdir=OUT_DIR)
-
-    #pdb.set_trace()
-    cube = test.data[model]
-    times = cube.coord('time')
     
+    print(test.vars)
     
-    p=times.cell(0).point
-    import iris
-    import netcdftime
-    t = netcdftime._netcdftime.DatetimeJulian(2010, 1, 10, 0, 0, 0, 0, -1, 1)
-    c1 = cube.extract(iris.Constraint(time=t))
-
-
-# pdb.set_trace()
+    data = test.read_var("od550aer", "daily")
+        
+    
+    plotmaps(data, VerboseFlag=True, plotdir=OUT_DIR_MAPS)

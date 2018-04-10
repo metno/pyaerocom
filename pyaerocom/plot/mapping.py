@@ -3,12 +3,18 @@
 """
 The mapping module contains functionality to plot maps
 """
+from matplotlib.colors import BoundaryNorm
+from matplotlib.backends.backend_agg import FigureCanvasAgg #canvas
 
-def dummy_fun():
-    """Dummy function for test purposes"""
-    print("I am a dummy")
-    
-def plot_iris_cube(cube, day_idx=0, lon_range=(-180, 180), 
+from os import getcwd
+from functools import partial
+from matplotlib.pyplot import get_cmap, close
+import numpy as np
+import cartopy.crs as ccrs
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+from matplotlib import rcParams
+   
+def plot_grid_data(cube, day_idx=0, lon_range=(-180, 180), 
                    lat_range=(-90, 90), vmin=None, vmax=None, 
                    cmap_id="jet"):
     """Plot variable on map using pcolormesh

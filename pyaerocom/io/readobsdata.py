@@ -19,7 +19,7 @@
 #Box 43 Blindern
 #0313 OSLO
 #NORWAY
-#E-mail: jan.griesfeller@met.no
+#E-mail: jan.griesfeller@met.no, jonas.gliss@met.no
 #This program is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation; either version 3 of the License, or
@@ -37,8 +37,8 @@
 import os
 import glob
 
-from pyaerocom.read.read_aeronet_sdav2 import ReadAeronetSDAV2
-from pyaerocom.read.read_aeronet_sunv2 import ReadAeronetSunV2
+from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
+from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 import pyaerocom.config as const
 
 class ReadObsData(ReadAeronetSDAV2,ReadAeronetSunV2):

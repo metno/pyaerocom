@@ -93,3 +93,6 @@ ENV/
 
 # Output from test / development directory
 test_dev/out
+
+# Private folder in folder test_dev
+test_dev/private

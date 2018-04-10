@@ -47,30 +47,28 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cf_units as unit
 import os
 
+from pyaerocom.modeldata import ModelData
 
-def plotmaps(data, VerboseFlag = False, filter ="WORLD", var ="od550aer", 
+def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer", 
              plotdir="./"):
     """plot aerocom standard maps
 
     Will plot every supplied time step"""
 
+    if not isinstance(data, ModelData):
+        raise TypeError("Need pyaerocom.ModelData as input")
     #define color bar;
     #will be moved somewhere else and variable specific at some point
     colorbar_levels = [0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,
                        0.9, 1.0]
 
-    ncolors = len(colorbar_levels)
     colorbar_ticks = [0., 0.02, 0.04, 0.06, 0.08, 0.1, 0.3, 0.5, 0.7, 0.9]
-    cmap = plt.get_cmap('jet', ncolors)
-    cmap.set_under('white')
-    cmap.set_over('purple')
-
     aod_data = {
         'red': ((0., 0, 0), (0.07, 0, 0), (0.1, 0.678, 0.678,), (0.26, 1, 1), (0.85, 1, 1), (1, 0.545, 0.545)),
         'green': ((0., 0, 0), (0.07, 1, 1), (0.24, 1, 1), (0.91, 0, 0), (1, 0, 0)),
         'blue': ((0., 1, 1), (0.07, 1, 1), (0.1, 0.133, 0.133), (0.25, 0, 0), (1, 0, 0))}
 
-    colormap = LinearSegmentedColormap('oad_jet', aod_data)
+    colormap = LinearSegmentedColormap('aod_jet', aod_data)
     plt.register_cmap(cmap = colormap)
     TIME_VAR_NAME = 'time'
 
@@ -80,7 +78,7 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var ="od550aer",
     for model in data:
         #assume that we have single cube for the moment
         #iterate over the time dimension
-        cube = data[model]
+        cube = data[model].data
         #model = 'AATSR_ORAC_v4.01'
 
         cube.coord('latitude').guess_bounds()
@@ -130,7 +128,8 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var ="od550aer",
                 # plt.ylabel(_title(plot_defn.coords[0], with_units=True))
                 # plot_defn = iplt._get_plot_defn(cube, mode, ndims)
 
-                plt.colorbar(spacing='uniform', ticks=colorbar_ticks, boundaries=colorbar_levels, extend='max')
+                plt.colorbar(spacing='uniform', ticks=colorbar_ticks, 
+                             boundaries=colorbar_levels, extend='max')
 
                 ax.coastlines()
                 ax.set_xticks([-180., -120., -60., 0., 60, 120, 180], crs=ccrs.PlateCarree())

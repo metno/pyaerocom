@@ -26,8 +26,20 @@ def custom_mpl(mpl_rcparams, **kwargs):
             mpl_rcparams[k] = v
     return mpl_rcparams
     
-def init_cmap_levels(vmin, vmax, num_per_mag=10):
-    """Initiate discrete colormap levels for several orders of magnitude"""
+def get_cmap_levels_auto(vmin, vmax, num_per_mag=10):
+    """Initiate pseudo-log discrete colormap levels
+    
+    Note
+    ----
+        This is a beta version and aims to 
+        
+    Parameters
+    ----------
+    vmin : float
+        lower end of colormap (e.g. minimum value of data)
+    vmax : float
+        upper value of colormap (e.g. maximum value of data)
+    """
     high = exponent(vmax)
     low = -3 if vmin == 0 else exponent(vmin)
     lvls =[0]
@@ -40,7 +52,19 @@ def init_cmap_levels(vmin, vmax, num_per_mag=10):
     
     return lvls
 
-def get_cmap_ticks(lvls, num_per_mag=3):
+def get_cmap_ticks_auto(lvls, num_per_mag=3):
+    """Compute cmap ticks based on cmap levels 
+    
+    The cmap levels may be computed automatically using 
+    :func:`get_cmap_levels_auto`.
+    
+    Parameters
+    ----------
+    lvls : list
+        list containing colormap levels
+    num_per_mag : int
+        desired number of ticks per magnitude
+    """
     low = exponent(lvls[1]) # second entry (first is 0)
     vmax = lvls[-1]
     high = exponent(vmax)

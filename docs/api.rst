@@ -1,6 +1,5 @@
-***
 API
-***
+===
 
 .. note::
 
@@ -8,50 +7,56 @@ API
 	2. For developers: please use the `NumPy docstring standard <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html>`__. 
   
 Data types and data representation
-==================================
+----------------------------------
 
+Model data
+^^^^^^^^^^
+
+.. automodule:: pyaerocom.modeldata
+   :members:
+   :undoc-members:
+   
 Observation data 
-----------------
+^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.obsdata
    :members:
    :undoc-members:
 
-Model data
-----------
+Input / Output
+--------------
 
-.. automodule:: pyaerocom.modeldata
-   :members:
-   :undoc-members:
+The `:mod:pyaerocom.io` sub-package contains I/O routines of the module.
+Most importantly, these include reading routines for different models and
+observations.
 
-Data import
-===========
+Reading routines
+^^^^^^^^^^^^^^^^^^^^
 
-The `mod:pyaerocom.read` sub-package contains reading and data import routines and classes.
-
-Reading of observation data
----------------------------
-
-.. automodule:: pyaerocom.read.readobsdata
-   :members:
-   :undoc-members:
-   
 Reading of model data
----------------------
+"""""""""""""""""""""
 
-.. automodule:: pyaerocom.read.readmodeldata
+.. automodule:: pyaerocom.io.readmodeldata
    :members:
    :undoc-members:
    
-Low level helpers
------------------
+Reading of observation data
+"""""""""""""""""""""""""""
 
-.. automodule:: pyaerocom.read.suppl
+.. automodule:: pyaerocom.io.readobsdata
+   :members:
+   :undoc-members:
+  
+     
+I/O supplementary and helpers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.suppl
    :members:
    :undoc-members:
    
-Visualisation
-=============
+Plotting / Visualisation
+-------------------------
 
 The :mod:`pyaerocom.plot` package contains algorithms related to data visualisation and plotting
 
@@ -60,9 +65,8 @@ The :mod:`pyaerocom.plot` package contains algorithms related to data visualisat
    :undoc-members:
 
 Mathematical helpers
-====================
+--------------------
 
 .. automodule:: pyaerocom.mathutils
    :members:
    :undoc-members:
-

@@ -22,6 +22,8 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 from recommonmark.parser import CommonMarkParser
+#from jupyter_sphinx_theme import *
+#init_theme()
 
 # -- General configuration ------------------------------------------------
 
@@ -32,14 +34,14 @@ from recommonmark.parser import CommonMarkParser
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [	'sphinx.ext.autodoc',
-    		'sphinx.ext.doctest',
-		'sphinx.ext.napoleon',
-	    	'sphinx.ext.intersphinx',
-		'sphinx.ext.coverage',
-    		'sphinx.ext.mathjax',
-    		'sphinx.ext.viewcode',
-    		'sphinx.ext.githubpages']
+extensions = ['sphinx.ext.autodoc',
+    		  'sphinx.ext.doctest',
+			  'sphinx.ext.napoleon',
+	    	  'sphinx.ext.intersphinx',
+		      'sphinx.ext.coverage',
+    		  'sphinx.ext.mathjax',
+    		  'sphinx.ext.viewcode',
+    		  'sphinx.ext.githubpages']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -95,6 +97,9 @@ todo_include_todos = False
 #
 #html_theme = 'alabaster'
 html_theme = 'sphinx_rtd_theme'
+#html_theme = 'pyramid'
+#html_theme = 'nature'
+#html_theme = 'jupyter_sphinx_theme'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.

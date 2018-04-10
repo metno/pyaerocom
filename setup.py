@@ -19,7 +19,7 @@ setup(
     license     =   'GPLv3',
     package_dir =   {'pyaerocom'      :   'pyaerocom'},
     packages    =   ['pyaerocom',
-                     'pyaerocom.read',
+                     'pyaerocom.io',
                      'pyaerocom.plot'], #find_packages(exclude=['contrib', 'docs', 'tests*']),
     #include_package_data = True,            
     package_data=   {'pyaerocom'    :   ['data/*']},

@@ -3,16 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyaerocom's documentation!
-=====================================
+***************************
+The **pyaerocom** webpage
+***************************
 
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
 
-   readme_link
+   readme
    api
    api_testsuite
+   config_files
 
 Indices and tables
 ==================

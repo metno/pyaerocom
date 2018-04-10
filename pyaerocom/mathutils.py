@@ -4,19 +4,25 @@
 Mathematical low level utility methods ofcd pyaerocom
 """
 
-from numpy import floor, log10
+from numpy import floor, log10, asarray
 
 def exponent(num):
     """Get exponent of input number
         
     Parameters
     ----------
-    num : float
+    num : :obj:`float` or iterable
         input number
     
     Returns
     -------
-    int
-        exponent of input number
+    :obj:`int` or :obj:`ndarray` containing ints
+        exponent of input number(s)
+        
+    Example
+    -------
+    >>> from pyaerocom.mathutils import exponent
+    >>> exponent(2340)
+    3
     """
-    return int(floor(log10(abs(num)))) 
+    return floor(log10(abs(asarray(num)))).astype(int)
