@@ -6,14 +6,18 @@ The mapping module contains functionality to plot maps
 from matplotlib.colors import BoundaryNorm
 from matplotlib.backends.backend_agg import FigureCanvasAgg #canvas
 
-from os import getcwd
 from functools import partial
-from matplotlib.pyplot import get_cmap, close
+from matplotlib.pyplot import get_cmap
 import numpy as np
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-from matplotlib import rcParams
-   
+
+
+import multiprocessing
+
+class MultiPlot(multiprocessing.pool.Pool):
+    pass
+
 def plot_grid_data(cube, day_idx=0, lon_range=(-180, 180), 
                    lat_range=(-90, 90), vmin=None, vmax=None, 
                    cmap_id="jet"):

@@ -51,11 +51,11 @@ Reading of observation data
 I/O supplementary and helpers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.io.suppl
+.. automodule:: pyaerocom.io.utils
    :members:
    :undoc-members:
 
-Regions
+Regions / Domains
 -------------------------
 
 .. automodule:: pyaerocom.region

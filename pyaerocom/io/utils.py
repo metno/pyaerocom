@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Low level classes and methods for reading
+Low level classes and methods for io
 """
 from collections import OrderedDict as od
-from os.path import join, exists
+from os.path import join, exists, basename
+from warnings import warn
 try:
     from ConfigParser import ConfigParser
 except: 
     from configparser import ConfigParser
-from pyaerocom import __dir__
 
 class FileConventionRead:
     """Class that represents a file naming convention for reading Aerocom files
@@ -42,6 +42,95 @@ class FileConventionRead:
            self.import_default(self.name) 
        except:
            pass
+      
+    def from_file(self, file):
+        """Identify convention from a file
+        
+        Currently only two conventions (aerocom2 and aerocom3) exist that are
+        identified by the delimiter used.
+        
+        Parameters
+        ----------
+        file : str
+            file path or file name
+        
+        Returns
+        -------
+        FileConventionRead
+            this object (with updated convention)
+            
+        Raises
+        ------
+        NameError
+            if convention cannot be identified
+            
+        Example
+        -------
+        >>> from pyaerocom.io import FileConventionRead
+        >>> filename = 'aerocom_NCAR_CAM5.3_all_2000_rsntcsnoa_TOA_monthly.nc'
+        >>> print(FileConventionRead().from_file(filename))
+        pyaeorocom FileConventionRead
+        name: aerocom3
+        file_sep: _
+        year_pos: -2
+        var_pos: -4
+        ts_pos: -1
+        """
+        
+        if basename(file).count("_") >= 4:
+            self.import_default("aerocom3")
+        elif basename(file).count(".") >= 4:
+            self.import_default("aerocom2")
+        else:
+            raise NameError("Could not identify convention from input file %s"
+                            %basename(file))
+        return self
+
+    def get_info_from_file(self, file):
+        """Identify convention from a file
+        
+        Currently only two conventions (aerocom2 and aerocom3) exist that are
+        identified by the delimiter used.
+        
+        Parameters
+        ----------
+        file : str
+            file path or file name
+        
+        Returns
+        -------
+        OrderedDict
+            dictionary containing keys `year, var_name, ts_type` and 
+            corresponding variables, extracted from the filename 
+            
+        Raises
+        ------
+        NameError
+            if convention cannot be identified
+            
+        Example
+        -------
+        >>> from pyaerocom.io import FileConventionRead
+        >>> filename = 'aerocom_NCAR_CAM5.3_all_2000_rsntcsnoa_TOA_monthly.nc'
+        >>> conv = FileConventionRead().from_file(filename)
+        >>> info = conv.get_info_from_file(filename)
+        >>> print(info)
+        """
+        info = od(year=None, var_name=None, ts_type=None)
+        spl = basename(file).split(self.file_sep)
+        try:
+            info["year"] = int(spl[self.year_pos])
+        except:
+            warn("Failed to extract year information")
+        try:
+            info["var_name"] = str(spl[self.var_pos])
+        except:
+            warn("Failed to extract variable information")
+        try:
+            info["ts_type"] = str(spl[self.ts_type])
+        except:
+            warn("Failed to extract ts_type")
+        return info
     
     def string_mask(self, var, year, ts_type):
         """Returns mask that can be used to identify files of this convention
@@ -81,6 +170,7 @@ class FileConventionRead:
             
     def import_default(self, name):
         """Checks and load default information from database"""
+        from pyaerocom import __dir__
         fpath = join(__dir__, "data", "file_conventions.ini")
         if not exists(fpath):
             raise IOError("File conventions ini file could not be found: %s"
@@ -128,9 +218,9 @@ class FileConventionRead:
        return ("%s %s" %(self.name, super(FileConventionRead, self).__repr__()))
    
     def __str__(self):
-        s = "pyaeorocom FileConventionRead\n"
+        s = "pyaeorocom FileConventionRead"
         for k, v in self.to_dict().items():
-            s += "%s: %s\n" %(k, v)
+            s += "\n%s: %s" %(k, v)
         return s
     
 if __name__=="__main__":
@@ -153,3 +243,8 @@ if __name__=="__main__":
     
     conf = FileConventionRead(name="aerocom2")
     print(conf)
+    
+    import doctest
+    doctest.testmod(verbose=True)
+    
+    

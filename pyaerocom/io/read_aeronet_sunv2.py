@@ -31,6 +31,12 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
 
+"""
+Note
+----
+    This module has not yet been translated / shipped to the pyaerocom 
+    library
+"""
 import os
 import glob
 

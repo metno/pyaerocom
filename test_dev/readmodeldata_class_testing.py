@@ -22,7 +22,7 @@
 # MA 02110-1301, USA
 ###############################################################################
 
-from pyaerocom.read.readmodeldata import ReadModelData
+from pyaerocom.io.readmodeldata import ReadModelData
 from pyaerocom.plot import plotmaps
 from GLOB import OUT_DIR_MAPS # import standard output directory
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     
     print(test.vars)
     
-    data = test.read_var("od550aer", "daily")
+    data = test.read_var("od550aer", ts_type="daily")
         
     
-    plotmaps(data, VerboseFlag=True, plotdir=OUT_DIR_MAPS)
+    #plotmaps(data, VerboseFlag=True, plotdir=OUT_DIR_MAPS)

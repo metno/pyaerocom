@@ -11,7 +11,7 @@ from iris.cube import Cube
 from pandas import Timestamp
 #from abc import ABCMeta, abstractmethod
 
-from pyaerocom._glob import SUPPORTED_DATA_TYPES_MODEL
+from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL
 
 class ModelData:
     """Base class representing model data
@@ -122,6 +122,7 @@ class ModelData:
             data = self.grid.intersection(latitude=lat_range)
         else:
             data = self.grid
+            
         if time_range is None:
             return ModelData(data, **self.suppl_info)
         else:
@@ -131,7 +132,8 @@ class ModelData:
             if all(isinstance(x, Timestamp) for x in time_range):
                 if self.verbose:
                     print("Cropping along time axis based on Timestamps")
-                data = data.extract(self.get_time_constraint(*time_range))
+                time_constraint = self.get_time_constraint(*time_range)
+                data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
                 if self.verbose:
                     print("Cropping along time axis based on indices")

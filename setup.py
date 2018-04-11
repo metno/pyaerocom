@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-with open('README.md') as file:
+with open('README.rst') as file:
     readme = file.read()
 
 with open('VERSION.md') as f:

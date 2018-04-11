@@ -47,9 +47,9 @@ from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 
 import pyaerocom.config as const
-from pyaerocom._glob import FIRST_DATE, LAST_DATE, TS_TYPES, DEL_TIME_BOUNDS
+from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, DEL_TIME_BOUNDS
 from pyaerocom.custom_exceptions import IllegalArgumentError
-from pyaerocom.io.suppl import FileConventionRead
+from pyaerocom.io.utils import FileConventionRead
 from pyaerocom.modeldata import ModelData
 
 class ReadModelData:
@@ -705,7 +705,9 @@ class ReadMultiModelData:
         if not model_id in self.results:
             raise ValueError("No data found for model_id %s" %model_id)
         return self.results[model_id]
-                    
+
+            
 
 
+    
 

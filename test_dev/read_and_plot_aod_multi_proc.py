@@ -268,30 +268,36 @@ if __name__=="__main__":
     opts = PARSER.parse_args()
     print(opts)
 
-    funs.custom_mpl(rcParams)
+    #funs.custom_mpl(rcParams)
     cubes = iris.load(PATH)
-    c1 = cubes.merge()
     
-    if RUN_ALL:
-        dirs = funs.init_save_dirs(cubes, REGIONS, OUT_DIR)
-        
-        args_multiproc = prepare_args_multiprocessing(cubes, opts.last_day, REGIONS)
-        plot_fun = partial(plot_all_days, dirs=dirs)
-        
-        dt = plot_multiproc(plot_fun, args_multiproc)
-        
-        if opts.comp:
-            t0 = time()
-            for input_args in args_multiproc:
-                plot_all_days(*input_args, dirs=dirs)
-            dt1 = time() - t0
-            
-            print("Number of plotted days / species / regions: %d / %d / %d\n"
-                  "Elapsed time multiprocessing: %s s\n" 
-                  "Elapsed time serial processing: %s s" 
-                  %(args_multiproc[0][0].shape[0], len(cubes), len(REGIONS), dt, dt1))
-        
     
+    #c1 = cubes.merge()
+    
+    
+# =============================================================================
+#     
+#     if RUN_ALL:
+#         dirs = funs.init_save_dirs(cubes, REGIONS, OUT_DIR)
+#         
+#         args_multiproc = prepare_args_multiprocessing(cubes, opts.last_day, REGIONS)
+#         plot_fun = partial(plot_all_days, dirs=dirs)
+#         
+#         dt = plot_multiproc(plot_fun, args_multiproc)
+#         
+#         if opts.comp:
+#             t0 = time()
+#             for input_args in args_multiproc:
+#                 plot_all_days(*input_args, dirs=dirs)
+#             dt1 = time() - t0
+#             
+#             print("Number of plotted days / species / regions: %d / %d / %d\n"
+#                   "Elapsed time multiprocessing: %s s\n" 
+#                   "Elapsed time serial processing: %s s" 
+#                   %(args_multiproc[0][0].shape[0], len(cubes), len(REGIONS), dt, dt1))
+#         
+#     
+# =============================================================================
     
     
     
