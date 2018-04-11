@@ -54,7 +54,15 @@ I/O supplementary and helpers
 .. automodule:: pyaerocom.io.suppl
    :members:
    :undoc-members:
-   
+
+Regions
+-------------------------
+
+.. automodule:: pyaerocom.region
+   :members:
+   :undoc-members:
+
+  
 Plotting / Visualisation
 -------------------------
 
