@@ -1,7 +1,3 @@
-.. note::
-
-	This repo is derived from the original `aerocom_pt <https://github.com/metno/aerocom_pt>`__ module and is currently under developmenta and hardly usable.
-
 Introduction
 ============
 
@@ -12,6 +8,10 @@ The AEROCOM-project (http://aerocom.met.no/) is an open international initiative
 This repository contains the aerocom python tools which are / will be used to produce the standard aerocom analyses shown at the aerocom phase 2 interface (http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl)
 
 At this point the tools are work in progress and will develop into a replacement for the IDL based aerocom-tools that cannot be made public because they use 3rd party libraries with a non GPL compatible license.
+
+Documentation
+=============
+Documentation can be found here: http://aerocom.met.no/pyaerocom
 
 Requirements
 ============
