@@ -18,7 +18,7 @@ class ModelData:
     
     Attributes
     ----------
-    data 
+    grid
         underlying data type (hopefully :class:`iris.cube.Cube` in most cases)
     suppl_info : dict
         dictionary containing supplementary information about this data
@@ -31,9 +31,7 @@ class ModelData:
         representation (e.g. `var_name, coords...`)
     """
     _grid = None
-    def __init__(self, grid, verbose=True, **suppl_info):
-        #super(ModelData, self).__init__(*args, **kwargs)
-        self.grid = grid
+    def __init__(self, input, verbose=True, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
                              model_id = "")
@@ -41,7 +39,8 @@ class ModelData:
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
-                
+        
+        
     @property
     def grid(self):
         """Underlying grid data object"""
