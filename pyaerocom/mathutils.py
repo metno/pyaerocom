@@ -26,3 +26,12 @@ def exponent(num):
     3
     """
     return floor(log10(abs(asarray(num)))).astype(int)
+
+if __name__ == "__main__":
+    import doctest
+    exp = exponent(23)
+    
+    #run tests in all docstrings
+    doctest.testmod()
+    
+    

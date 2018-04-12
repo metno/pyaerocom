@@ -6,14 +6,14 @@ This file could contain classes representing ModelData
 
 from os.path import exists
 from collections import OrderedDict as od
-from iris.time import PartialDateTime
 from iris import Constraint
 from iris.cube import Cube
 from iris import load_cube
 from pandas import Timestamp
+from warnings import warn
 #from abc import ABCMeta, abstractmethod
 
-from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL
+from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE
 from pyaerocom.helpers import get_time_constraint
      
 class ModelData:
@@ -50,21 +50,20 @@ class ModelData:
        
     Parameters
     ----------
-    input 
-        data input, so far, 
+    input : :obj:`str:` or :obj:`Cube`
+        data input. Can be a single .nc file or a preloaded iris Cube.
+    var_name : :obj:`str`, optional
+        variable name that is extracted if `input` is a file path . Irrelevant
+        if `input` is preloaded Cube
     
-    .. todo::
-        
-        Ship relevant methods and attributes from underlying Cube 
-        representation (e.g. `var_name, coords...`)
     """
     _grid = None
-    def __init__(self, input, constraint=None, verbose=True, **suppl_info):
+    def __init__(self, input, var_name=None, verbose=VERBOSE, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
                              model_id = "")
         
-        
+        self.load_input(input, var_name)
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
@@ -97,20 +96,58 @@ class ModelData:
         """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
         return True if isinstance(self.grid, Cube) else False
     
-    def load_input(self, input, constraint=None):
+    def load_input(self, input, var_name=None):
         """Interprete and load input
         
         Parameters
         ----------
-        input : :obj:`str` or :obj:`Cube` 
-            input to load
-        constraint : iris.Constraint
-            constraint for data import (e.g. specification of variable, time
-            range or lon / lat range)
+        input : :obj:`str:` or :obj:`Cube`
+            data input. Can be a single .nc file or a preloaded iris Cube.
+        var_name : :obj:`str`, optional
+            variable name that is extracted if `input` is a file path . Irrelevant
+            if `input` is preloaded Cube
         """
         if isinstance(input, str) and exists(input):
-            self.grid = load_cube()
-            
+            if not isinstance(var_name, str):
+                raise ValueError("Loading data from input file %s requires "
+                                 "specification of a variable name using "
+                                 "input parameter var_name")
+            func = lambda c: c.var_name == var_name
+            constraint = Constraint(cube_func=func)
+            self.grid = load_cube(input, constraint) #instance of CubeList
+        elif isinstance(input, Cube):
+            self.grid = input #instance of Cube
+        self.check_and_regrid_lons()
+                     
+    def check_and_regrid_lons(self):
+        """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
+        
+        Note
+        ----
+        This method checks if the maximum of the current longitudes array
+        exceeds 180. Thus, it is not recommended to use this function after
+        subsetting a cube, rather, it should be checked directly when the 
+        file is loaded (cf. :func:`load_input`)
+        
+        Returns
+        -------
+        bool
+            True, if longitudes were on 0 -> 360 and have been rolled, else
+            False
+        """
+        try:
+            lons = self.grid.coord("longitude").points
+            low, high = lons.min(), lons.max()
+            if high > 180:
+                if self.verbose:
+                    print("Rolling longitudes to -180 -> 180 definition")
+                low -= 180
+                high -= 180
+                self.grid = self.grid.intersection(longitude=(low, high))
+        except:
+            raise
+        
+        
     def crop(self, lon_range=None, lat_range=None, 
              time_range=None):
         """High level function that applies cropping along multiple axes
@@ -196,17 +233,9 @@ class ModelData:
             iris Constraint instance that can, e.g., be used as input for
             :func:`extract`
         """
-        t_lower = PartialDateTime(year=start_time.year,
-                                  month=start_time.month,
-                                  day=start_time.day)
-        t_upper = PartialDateTime(year=stop_time.year,
-                                  month=stop_time.month,
-                                  day=stop_time.day)
-        
-        return Constraint(time=lambda cell: t_lower <= cell <= t_upper)
+        return get_time_constraint(start_time, stop_time)
     
-    #redifined methods from iris.Cube class
-    
+    #redefined methods from iris.Cube class
     def extract(self, constraint):
         """Extract subset
         
@@ -266,4 +295,10 @@ class ModelData:
     
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__repr__()    
+        return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__repr__() 
+    
+if __name__=='__main__':
+    from pyaerocom.test_files import get
+    #test_file = get()['models']['aatsr_su_v4.3']
+    test_file = get()['models']['ecmwf_osuite']
+    data = ModelData(test_file, var_name='od550aer')

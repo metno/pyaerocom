@@ -28,5 +28,16 @@ if __name__=="__main__":
     
     multi_cube = load(TEST_FILE, constraint_multivar)
     
+    cc = (constraint 
+          & Constraint(latitude=lambda x: 20 < x< 30) 
+          & Constraint(longitude=lambda x: 10 < x< 60))
+    
+    cubes = load(TEST_FILE)
+    
+    cube=cubes.extract(cc)[0]
+    print(cube)
+    
+    
+    
     
     

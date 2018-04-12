@@ -89,6 +89,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
@@ -192,8 +193,38 @@
 <p>This file could contain classes representing ModelData</p>
 <dl class="class">
 <dt id="pyaerocom.modeldata.ModelData">
-<em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input</em>, <em>var_name=None</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class representing model data</p>
+<p>This class is largely based on the <code class="xref py py-class docutils literal"><span class="pre">iris.Cube</span></code> object. However, this
+object comes with an expanded functionality for convenience. Some examples
+are:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><dl class="first docutils">
+<dt>Class instantiation:</dt>
+<dd><p class="first"><code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> instances are typically created using
+helper methods such as:</p>
+<blockquote class="last">
+<div><p>1. <code class="xref py py-func docutils literal"><span class="pre">iris.load()</span></code> (returns <code class="xref py py-class docutils literal"><span class="pre">iris.cube.CubeList</span></code>, i.e.
+a list-like iterable object that contains instance of
+<code class="xref py py-class docutils literal"><span class="pre">Cube</span></code> objects, one for each variable) or
+2. <code class="xref py py-func docutils literal"><span class="pre">iris.load_cube()</span></code> (which directly returns a
+<code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> instance, and may be called with a
+spec)</p>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Subsetting and extraction</dt>
+<dd><p class="first last">The iris interface is based on <code class="xref py py-class docutils literal"><span class="pre">Constraint</span></code> objects that
+may be defined for variable, time and longitude / latitude range
+and that can be combined simply using the <cite>&amp;</cite></p>
+</dd>
+</dl>
+</li>
+</ol>
+</div></blockquote>
 <dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.grid">
 <code class="descname">grid</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.grid" title="Permalink to this definition">¶</a></dt>
@@ -208,11 +239,41 @@ object (these may be attributes that are not already stored within
 the metadata representation of the underlying data object)</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt>
-<code class="descname">.. todo::</code></dt>
-<dd><p>Ship relevant methods and attributes from underlying Cube
-representation (e.g. <cite>var_name, coords…</cite>)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+if <cite>input</cite> is preloaded Cube</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pyaerocom.modeldata.ModelData.check_and_regrid_lons">
+<code class="descname">check_and_regrid_lons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.check_and_regrid_lons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.check_and_regrid_lons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks and corrects for if longitudes of <a class="reference internal" href="#pyaerocom.modeldata.ModelData.grid" title="pyaerocom.modeldata.ModelData.grid"><code class="xref py py-attr docutils literal"><span class="pre">grid</span></code></a> are 0 -&gt; 360</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method checks if the maximum of the current longitudes array
+exceeds 180. Thus, it is not recommended to use this function after
+subsetting a cube, rather, it should be checked directly when the
+file is loaded (cf. <a class="reference internal" href="#pyaerocom.modeldata.ModelData.load_input" title="pyaerocom.modeldata.ModelData.load_input"><code class="xref py py-func docutils literal"><span class="pre">load_input()</span></code></a>)</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True, if longitudes were on 0 -&gt; 360 and have been rolled, else
+False</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -349,6 +410,25 @@ related to method and input parameters.</p>
 <dt id="pyaerocom.modeldata.ModelData.is_cube">
 <code class="descname">is_cube</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.is_cube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if underlying data type is of type <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.modeldata.ModelData.load_input">
+<code class="descname">load_input</code><span class="sig-paren">(</span><em>input</em>, <em>var_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.load_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.load_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interprete and load input</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>input</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+if <cite>input</cite> is preloaded Cube</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -668,7 +748,7 @@ attributes such as <cite>data, model_dir, files</cite></td>
 
 <dl class="class">
 <dt id="pyaerocom.io.readmodeldata.ReadMultiModelData">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readmodeldata.</code><code class="descname">ReadMultiModelData</code><span class="sig-paren">(</span><em>model_ids</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readmodeldata.html#ReadMultiModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadMultiModelData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readmodeldata.</code><code class="descname">ReadMultiModelData</code><span class="sig-paren">(</span><em>model_ids</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readmodeldata.html#ReadMultiModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadMultiModelData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class that can be used to import model data from multiple models</p>
 <p>This class provides an interface to import model results from an arbitrary
 number of models and specific for a certain time interval (that can be

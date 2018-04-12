@@ -47,7 +47,8 @@ from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 
 import pyaerocom.config as const
-from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, DEL_TIME_BOUNDS
+from pyaerocom.glob import (FIRST_DATE, LAST_DATE, TS_TYPES, DEL_TIME_BOUNDS,
+                            VERBOSE)
 from pyaerocom.custom_exceptions import IllegalArgumentError
 from pyaerocom.io.utils import FileConventionRead
 from pyaerocom.modeldata import ModelData
@@ -105,7 +106,7 @@ class ReadModelData:
     _model_dir = ""
     _USE_SUBDIR_RENAMED = True
     def __init__(self, model_id="", start_time=None, stop_time=None, 
-                 file_convention="aerocom3", init=True, verbose=True):
+                 file_convention="aerocom3", init=True, verbose=VERBOSE):
         # model ID
         if not isinstance(model_id, str):
             if isinstance(model_id, list):
@@ -430,7 +431,7 @@ class ReadModelData:
             
         
         #create instance of pyaerocom.ModelData
-        data = ModelData(grid=cube_concat, from_files=loaded_files,
+        data = ModelData(input=cube_concat, from_files=loaded_files,
                          model_id=self.model_id)
         # crop cube in time (if applicable)
         if not self.start_time == FIRST_DATE or not self.stop_time == LAST_DATE:
@@ -497,7 +498,8 @@ class ReadMultiModelData:
     # controlled using getter and setter methods (@property operator)
     _start_time = FIRST_DATE
     _stop_time = LAST_DATE
-    def __init__(self, model_ids, start_time=None, stop_time=None, verbose=False):
+    def __init__(self, model_ids, start_time=None, stop_time=None, 
+                 verbose=VERBOSE):
         
         if isinstance(model_ids, str):
             model_ids = [model_ids]

@@ -25,6 +25,7 @@
 from pandas import Timestamp
 from iris.cube import Cube
 
+VERBOSE = True
 FIRST_DATE = Timestamp(1900,1,1)
 LAST_DATE = Timestamp(2200,1,1)
 
@@ -36,4 +37,6 @@ DEL_TIME_BOUNDS = True
 
 TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
 
+#relative tolerance for test session
+TEST_RTOL = 1e-7
 

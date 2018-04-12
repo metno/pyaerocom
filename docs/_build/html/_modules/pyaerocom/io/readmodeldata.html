@@ -88,6 +88,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
@@ -206,7 +207,8 @@
 <span class="kn">from</span> <span class="nn">iris.util</span> <span class="k">import</span> <span class="n">unify_time_units</span>
 
 <span class="kn">import</span> <span class="nn">pyaerocom.config</span> <span class="k">as</span> <span class="nn">const</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">DEL_TIME_BOUNDS</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="p">(</span><span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">DEL_TIME_BOUNDS</span><span class="p">,</span>
+                            <span class="n">VERBOSE</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.custom_exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.utils</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
@@ -264,7 +266,7 @@
     <span class="n">_model_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">_USE_SUBDIR_RENAMED</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">file_convention</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                 <span class="n">file_convention</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">):</span>
         <span class="c1"># model ID</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -589,7 +591,7 @@
             
         
         <span class="c1">#create instance of pyaerocom.ModelData</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">cube_concat</span><span class="p">,</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cube_concat</span><span class="p">,</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>
                          <span class="n">model_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">)</span>
         <span class="c1"># crop cube in time (if applicable)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">==</span> <span class="n">FIRST_DATE</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">==</span> <span class="n">LAST_DATE</span><span class="p">:</span>
@@ -656,7 +658,8 @@
     <span class="c1"># controlled using getter and setter methods (@property operator)</span>
     <span class="n">_start_time</span> <span class="o">=</span> <span class="n">FIRST_DATE</span>
     <span class="n">_stop_time</span> <span class="o">=</span> <span class="n">LAST_DATE</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">):</span>
         
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">model_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_ids</span><span class="p">]</span>
