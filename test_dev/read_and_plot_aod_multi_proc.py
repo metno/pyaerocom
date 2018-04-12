@@ -11,28 +11,24 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg #canvas
 from time import time
 import iris
 from os.path import exists, join
-from os import getcwd
 import multiprocessing
-from functools import partial
 from matplotlib.pyplot import get_cmap, close
 import numpy as np
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-from matplotlib import rcParams
+from functools import partial
 
 import suppl_funs as funs
 from GLOB import OUT_DIR
+from GLOB import TEST_FILE as PATH
 
-RUN_ALL = False
+RUN_ALL = 1
 # the following two variables are only relevant if RUN_ALL is True
 LAST_DAY = 10#82
 COMPARE_PERFORMANCE = 0
 
 CMAP = "jet"
 COASTLINE_COLOR = "#e6e6e6"
-
-PATH = ('/lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/'
-        'renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc')
 
 PARSER = ArgumentParser()
 PARSER.add_argument("--last_day", nargs='?', type=int, default=LAST_DAY)
@@ -272,32 +268,26 @@ if __name__=="__main__":
     cubes = iris.load(PATH)
     
     
-    #c1 = cubes.merge()
+    if RUN_ALL:
+        dirs = funs.init_save_dirs(cubes, REGIONS, OUT_DIR)
+        
+        args_multiproc = prepare_args_multiprocessing(cubes, opts.last_day, REGIONS)
+        plot_fun = partial(plot_all_days, dirs=dirs)
+        
+        dt = plot_multiproc(plot_fun, args_multiproc)
+        
+        if opts.comp:
+            t0 = time()
+            for input_args in args_multiproc:
+                plot_all_days(*input_args, dirs=dirs)
+            dt1 = time() - t0
+            
+            print("Number of plotted days / species / regions: %d / %d / %d\n"
+                  "Elapsed time multiprocessing: %s s\n" 
+                  "Elapsed time serial processing: %s s" 
+                  %(args_multiproc[0][0].shape[0], len(cubes), len(REGIONS), dt, dt1))
+        
     
-    
-# =============================================================================
-#     
-#     if RUN_ALL:
-#         dirs = funs.init_save_dirs(cubes, REGIONS, OUT_DIR)
-#         
-#         args_multiproc = prepare_args_multiprocessing(cubes, opts.last_day, REGIONS)
-#         plot_fun = partial(plot_all_days, dirs=dirs)
-#         
-#         dt = plot_multiproc(plot_fun, args_multiproc)
-#         
-#         if opts.comp:
-#             t0 = time()
-#             for input_args in args_multiproc:
-#                 plot_all_days(*input_args, dirs=dirs)
-#             dt1 = time() - t0
-#             
-#             print("Number of plotted days / species / regions: %d / %d / %d\n"
-#                   "Elapsed time multiprocessing: %s s\n" 
-#                   "Elapsed time serial processing: %s s" 
-#                   %(args_multiproc[0][0].shape[0], len(cubes), len(REGIONS), dt, dt1))
-#         
-#     
-# =============================================================================
     
     
     

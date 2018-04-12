@@ -4,17 +4,40 @@
 This file could contain classes representing ModelData
 """
 
+from os.path import exists
 from collections import OrderedDict as od
 from iris.time import PartialDateTime
 from iris import Constraint
 from iris.cube import Cube
+from iris import load_cube
 from pandas import Timestamp
 #from abc import ABCMeta, abstractmethod
 
 from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL
-
+from pyaerocom.helpers import get_time_constraint
+     
 class ModelData:
     """Base class representing model data
+    
+    This class is largely based on the :class:`iris.Cube` object. However, this
+    object comes with an expanded functionality for convenience. Some examples
+    are:
+        
+        1. Class instantiation:
+            :class:`iris.cube.Cube` instances are typically created using
+            helper methods such as:
+                
+                1. :func:`iris.load` (returns :class:`iris.cube.CubeList`, i.e. 
+                a list-like iterable object that contains instance of 
+                :class:`Cube` objects, one for each variable) or 
+                2. :func:`iris.load_cube` (which directly returns a 
+                :class:`iris.cube.Cube` instance, and may be called with a 
+                spec)
+                
+        2. Subsetting and extraction
+            The iris interface is based on :class:`Constraint` objects that 
+            may be defined for variable, time and longitude / latitude range
+            and that can be combined simply using the `&`
     
     Attributes
     ----------
@@ -24,23 +47,27 @@ class ModelData:
         dictionary containing supplementary information about this data
         object (these may be attributes that are not already stored within
         the metadata representation of the underlying data object)
-        
+       
+    Parameters
+    ----------
+    input 
+        data input, so far, 
+    
     .. todo::
         
         Ship relevant methods and attributes from underlying Cube 
         representation (e.g. `var_name, coords...`)
     """
     _grid = None
-    def __init__(self, input, verbose=True, **suppl_info):
+    def __init__(self, input, constraint=None, verbose=True, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
                              model_id = "")
         
+        
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
-        
-        
     @property
     def grid(self):
         """Underlying grid data object"""
@@ -70,6 +97,20 @@ class ModelData:
         """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
         return True if isinstance(self.grid, Cube) else False
     
+    def load_input(self, input, constraint=None):
+        """Interprete and load input
+        
+        Parameters
+        ----------
+        input : :obj:`str` or :obj:`Cube` 
+            input to load
+        constraint : iris.Constraint
+            constraint for data import (e.g. specification of variable, time
+            range or lon / lat range)
+        """
+        if isinstance(input, str) and exists(input):
+            self.grid = load_cube()
+            
     def crop(self, lon_range=None, lat_range=None, 
              time_range=None):
         """High level function that applies cropping along multiple axes
