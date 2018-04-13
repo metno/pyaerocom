@@ -12,12 +12,6 @@ import numpy as np
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
-
-import multiprocessing
-
-class MultiPlot(multiprocessing.pool.Pool):
-    pass
-
 def plot_grid_data(cube, day_idx=0, lon_range=(-180, 180), 
                    lat_range=(-90, 90), vmin=None, vmax=None, 
                    cmap_id="jet"):

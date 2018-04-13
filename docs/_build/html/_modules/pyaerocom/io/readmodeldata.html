@@ -209,7 +209,7 @@
 <span class="kn">import</span> <span class="nn">pyaerocom.config</span> <span class="k">as</span> <span class="nn">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="p">(</span><span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">DEL_TIME_BOUNDS</span><span class="p">,</span>
                             <span class="n">VERBOSE</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.custom_exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.utils</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
 
@@ -649,13 +649,28 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pyaerocom, pandas</span>
 <span class="sd">    &gt;&gt;&gt; start, stop = pandas.Timestamp(&quot;2012-1-1&quot;), pandas.Timestamp(&quot;2012-5-1&quot;)</span>
-<span class="sd">    # two example models</span>
 <span class="sd">    &gt;&gt;&gt; models = [&quot;AATSR_SU_v4.3&quot;, &quot;CAM5.3-Oslo_CTRL2016&quot;]</span>
-<span class="sd">    &gt;&gt;&gt; data = ReadModelData(models, start, stop)</span>
-<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; read = pyaerocom.io.ReadMultiModelData(models, start, stop, verbose=False)</span>
+<span class="sd">    &gt;&gt;&gt; print(read.model_ids)</span>
+<span class="sd">    [&#39;AATSR_SU_v4.3&#39;, &#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; read_cam = read[&#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; assert type(read_cam) == pyaerocom.io.ReadModelData</span>
+<span class="sd">    &gt;&gt;&gt; for var in read_cam.vars: print(var)</span>
+<span class="sd">    abs550aer</span>
+<span class="sd">    deltaz3d</span>
+<span class="sd">    humidity3d</span>
+<span class="sd">    od440aer</span>
+<span class="sd">    od550aer</span>
+<span class="sd">    od550aer3d</span>
+<span class="sd">    od550aerh2o</span>
+<span class="sd">    od550dryaer</span>
+<span class="sd">    od550dust</span>
+<span class="sd">    od550lt1aer</span>
+<span class="sd">    od870aer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># &quot;private attributes (defined with one underscore). These may be </span>
-    <span class="c1"># controlled using getter and setter methods (@property operator)</span>
+    <span class="c1"># controlled using getter and setter methods (@property operator, see </span>
+    <span class="c1"># e.g. definition of def start_time below)</span>
     <span class="n">_start_time</span> <span class="o">=</span> <span class="n">FIRST_DATE</span>
     <span class="n">_stop_time</span> <span class="o">=</span> <span class="n">LAST_DATE</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -868,7 +883,9 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data found for model_id </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">model_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span></div>
 
-            
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
 
 
     

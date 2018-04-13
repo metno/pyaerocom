@@ -66,14 +66,35 @@ Regions / Domains
 Plotting / Visualisation
 -------------------------
 
-The :mod:`pyaerocom.plot` package contains algorithms related to data visualisation and plotting
+The :mod:`pyaerocom.plot` package contains algorithms related to data visualisation and plotting.
+
+Plotting maps
+^^^^^^^^^^^^^
+
+This module is under development
 
 .. automodule:: pyaerocom.plot.mapping
    :members:
    :undoc-members:
 
+Colors etc.
+^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.config
+   :members:
+   :undoc-members:
+
+Helpers
+-------
+General helper methods
+^^^^^^^^^^^^^^^^^^^^^^ 
+
+.. automodule:: pyaerocom.helpers
+   :members:
+   :undoc-members:
+   
 Mathematical helpers
---------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.mathutils
    :members:

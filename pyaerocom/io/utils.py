@@ -11,7 +11,7 @@ try:
 except: 
     from configparser import ConfigParser
 
-class FileConventionRead:
+class FileConventionRead(object):
     """Class that represents a file naming convention for reading Aerocom files
     
     Attributes
@@ -111,10 +111,13 @@ class FileConventionRead:
         Example
         -------
         >>> from pyaerocom.io import FileConventionRead
-        >>> filename = 'aerocom_NCAR_CAM5.3_all_2000_rsntcsnoa_TOA_monthly.nc'
-        >>> conv = FileConventionRead().from_file(filename)
+        >>> filename = ('aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc')
+        >>> conv = FileConventionRead("aerocom3")
         >>> info = conv.get_info_from_file(filename)
-        >>> print(info)
+        >>> for item in info.items(): print(item)
+        ('year', 2010)
+        ('var_name', 'od550aer')
+        ('ts_type', 'monthly.nc')
         """
         info = od(year=None, var_name=None, ts_type=None)
         spl = basename(file).split(self.file_sep)
@@ -123,11 +126,11 @@ class FileConventionRead:
         except:
             warn("Failed to extract year information")
         try:
-            info["var_name"] = str(spl[self.var_pos])
+            info["var_name"] = spl[self.var_pos]
         except:
             warn("Failed to extract variable information")
         try:
-            info["ts_type"] = str(spl[self.ts_type])
+            info["ts_type"] = spl[self.ts_pos]
         except:
             warn("Failed to extract ts_type")
         return info
@@ -147,17 +150,17 @@ class FileConventionRead:
         Example
         -------
             
-            import re
-            conf_aero2 = FileConventionRead(name="aerocom2")
-            conf_aero3 = FileConventionRead(name="aerocom2")
-            
-            var = od550aer
-            year = 2012
-            ts_type = "daily"
-            
-            match_str_aero2 = conf_aero2.string_mask(var, year, ts_type)
-            
-            match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
+        import re
+        conf_aero2 = FileConventionRead(name="aerocom2")
+        conf_aero3 = FileConventionRead(name="aerocom2")
+        
+        var = od550aer
+        year = 2012
+        ts_type = "daily"
+        
+        match_str_aero2 = conf_aero2.string_mask(var, year, ts_type)
+        
+        match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
             
         """
         if self.name == "aerocom2":
@@ -245,6 +248,6 @@ if __name__=="__main__":
     print(conf)
     
     import doctest
-    doctest.testmod(verbose=True)
+    doctest.testmod()
     
     

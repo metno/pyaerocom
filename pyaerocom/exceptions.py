@@ -23,3 +23,6 @@ Module containing pyaerocom custom exceptions
 
 class IllegalArgumentError(ValueError):
     pass
+
+class LongitudeConstraintError(ValueError):
+    pass

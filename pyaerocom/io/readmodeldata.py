@@ -49,7 +49,7 @@ from iris.util import unify_time_units
 import pyaerocom.config as const
 from pyaerocom.glob import (FIRST_DATE, LAST_DATE, TS_TYPES, DEL_TIME_BOUNDS,
                             VERBOSE)
-from pyaerocom.custom_exceptions import IllegalArgumentError
+from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.utils import FileConventionRead
 from pyaerocom.modeldata import ModelData
 
@@ -489,13 +489,28 @@ class ReadMultiModelData:
     --------
     >>> import pyaerocom, pandas
     >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
-    # two example models
     >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
-    >>> data = ReadModelData(models, start, stop)
-    
+    >>> read = pyaerocom.io.ReadMultiModelData(models, start, stop, verbose=False)
+    >>> print(read.model_ids)
+    ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
+    >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
+    >>> assert type(read_cam) == pyaerocom.io.ReadModelData
+    >>> for var in read_cam.vars: print(var)
+    abs550aer
+    deltaz3d
+    humidity3d
+    od440aer
+    od550aer
+    od550aer3d
+    od550aerh2o
+    od550dryaer
+    od550dust
+    od550lt1aer
+    od870aer
     """
     # "private attributes (defined with one underscore). These may be 
-    # controlled using getter and setter methods (@property operator)
+    # controlled using getter and setter methods (@property operator, see 
+    # e.g. definition of def start_time below)
     _start_time = FIRST_DATE
     _stop_time = LAST_DATE
     def __init__(self, model_ids, start_time=None, stop_time=None, 
@@ -708,7 +723,9 @@ class ReadMultiModelData:
             raise ValueError("No data found for model_id %s" %model_id)
         return self.results[model_id]
 
-            
+if __name__=="__main__":
+    import doctest
+    doctest.testmod()
 
 
     

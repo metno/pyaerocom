@@ -108,8 +108,16 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.region">Regions / Domains</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#plotting-visualisation">Plotting / Visualisation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.mathutils">Mathematical helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-visualisation">Plotting / Visualisation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#plotting-maps">Plotting maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.plot.config">Colors etc.</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#helpers">Helpers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.helpers">General helper methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.mathutils">Mathematical helpers</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">API test-suite</a></li>
@@ -769,9 +777,24 @@ model_id</p>
 <p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span><span class="o">,</span> <span class="nn">pandas</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2012-1-1&quot;</span><span class="p">),</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2012-5-1&quot;</span><span class="p">)</span>
-<span class="go"># two example models</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">,</span> <span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ReadModelData</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadMultiModelData</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">model_ids</span><span class="p">)</span>
+<span class="go">[&#39;AATSR_SU_v4.3&#39;, &#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read_cam</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">read_cam</span><span class="p">)</span> <span class="o">==</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadModelData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">read_cam</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+<span class="go">abs550aer</span>
+<span class="go">deltaz3d</span>
+<span class="go">humidity3d</span>
+<span class="go">od440aer</span>
+<span class="go">od550aer</span>
+<span class="go">od550aer3d</span>
+<span class="go">od550aerh2o</span>
+<span class="go">od550dryaer</span>
+<span class="go">od550dust</span>
+<span class="go">od550lt1aer</span>
+<span class="go">od870aer</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -1027,10 +1050,13 @@ corresponding variables, extracted from the filename</td>
 </table>
 <p class="rubric">Example</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;aerocom_NCAR_CAM5.3_all_2000_rsntcsnoa_TOA_monthly.nc&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">()</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">(</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">info</span> <span class="o">=</span> <span class="n">conv</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="go">(&#39;year&#39;, 2010)</span>
+<span class="go">(&#39;var_name&#39;, &#39;od550aer&#39;)</span>
+<span class="go">(&#39;ts_type&#39;, &#39;monthly.nc&#39;)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1222,13 +1248,11 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 </div>
 <div class="section" id="plotting-visualisation">
 <h2>Plotting / Visualisation<a class="headerlink" href="#plotting-visualisation" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="xref py py-mod docutils literal"><span class="pre">pyaerocom.plot</span></code> package contains algorithms related to data visualisation and plotting</p>
+<p>The <code class="xref py py-mod docutils literal"><span class="pre">pyaerocom.plot</span></code> package contains algorithms related to data visualisation and plotting.</p>
+<div class="section" id="plotting-maps">
+<h3>Plotting maps<a class="headerlink" href="#plotting-maps" title="Permalink to this headline">¶</a></h3>
+<p>This module is under development</p>
 <span class="target" id="module-pyaerocom.plot.mapping"></span><p>The mapping module contains functionality to plot maps</p>
-<dl class="class">
-<dt id="pyaerocom.plot.mapping.MultiPlot">
-<em class="property">class </em><code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">MultiPlot</code><span class="sig-paren">(</span><em>processes=None</em>, <em>initializer=None</em>, <em>initargs=()</em>, <em>maxtasksperchild=None</em>, <em>context=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#MultiPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.MultiPlot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="function">
 <dt id="pyaerocom.plot.mapping.plot_grid_data">
 <code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_grid_data</code><span class="sig-paren">(</span><em>cube</em>, <em>day_idx=0</em>, <em>lon_range=(-180</em>, <em>180)</em>, <em>lat_range=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>cmap_id='jet'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_grid_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_grid_data" title="Permalink to this definition">¶</a></dt>
@@ -1254,8 +1278,299 @@ containing data from one time stamp (i.e. ndim=2).</li>
 </dd></dl>
 
 </div>
+<div class="section" id="module-pyaerocom.plot.config">
+<span id="colors-etc"></span><h3>Colors etc.<a class="headerlink" href="#module-pyaerocom.plot.config" title="Permalink to this headline">¶</a></h3>
+<p>Global configurations for plotting</p>
+<dl class="class">
+<dt id="pyaerocom.plot.config.ColorTheme">
+<em class="property">class </em><code class="descclassname">pyaerocom.plot.config.</code><code class="descname">ColorTheme</code><span class="sig-paren">(</span><em>name='dark'</em>, <em>cmap_map=None</em>, <em>color_coastline=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#ColorTheme"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pyaerocom class specifiying plotting color theme</p>
+<dl class="attribute">
+<dt id="pyaerocom.plot.config.ColorTheme.name">
+<code class="descname">name</code><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – name of color theme (e.g. “light” or “dark”)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.plot.config.ColorTheme.cmap_map">
+<code class="descname">cmap_map</code><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme.cmap_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of colormap or colormap for map plotting</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.plot.config.ColorTheme.color_coastline">
+<code class="descname">color_coastline</code><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme.color_coastline" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> – coastline color for map plotting</p>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<p>Load default color theme
+&gt;&gt;&gt; theme = ColorTheme(name=”dark”)
+&gt;&gt;&gt; print(theme)
+pyaerocom ColorTheme
+name : dark
+cmap_map : viridisss
+color_coastline : #e6e6e6</p>
+<dl class="method">
+<dt id="pyaerocom.plot.config.ColorTheme.from_dict">
+<code class="descname">from_dict</code><span class="sig-paren">(</span><em>info_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#ColorTheme.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import theme information from dictionary</p>
+<dl class="docutils">
+<dt>info_dict <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>dictionary containing theme settings</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.plot.config.ColorTheme.load_default">
+<code class="descname">load_default</code><span class="sig-paren">(</span><em>theme_name='dark'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#ColorTheme.load_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme.load_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load default color theme</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theme_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of default theme</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> – if <code class="docutils literal"><span class="pre">theme_name</span></code> is not a valid default theme</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.plot.config.ColorTheme.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#ColorTheme.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert this object into dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary representation of this object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.plot.config.get_color_theme">
+<code class="descclassname">pyaerocom.plot.config.</code><code class="descname">get_color_theme</code><span class="sig-paren">(</span><em>theme_name='dark'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#get_color_theme"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.get_color_theme" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="helpers">
+<h2>Helpers<a class="headerlink" href="#helpers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pyaerocom.helpers">
+<span id="general-helper-methods"></span><h3>General helper methods<a class="headerlink" href="#module-pyaerocom.helpers" title="Permalink to this headline">¶</a></h3>
+<p>Helper methods for the pyaerocom library</p>
+<dl class="function">
+<dt id="pyaerocom.helpers.get_constraint">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_constraint</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>meridian_centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that creates an <code class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></code> based on input</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please be aware of your definition of the longitudes when cropping along
+the longitude dimension. The longitudes in your data may be defined either
+from <strong>-180 &lt;= lon &lt;= 180</strong> (pyaerocom standard) or from
+<strong>0 &lt;= lon &lt;= 360</strong>. In the former case (-180 _&gt; 180) you can leave the
+additional input parameter <code class="docutils literal"><span class="pre">meridian_centre=True</span></code> (default). In this
+case, if you want to crop over the border of the array (e.g. from Australia
+to North America),</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a>, optional) – variable name or list of variable names. Note that if multiple
+variables are provided in a list</li>
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping
+Example input to crop around meridian: <cite>lon_range=(-30, 30)</cite></li>
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping.</li>
+<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
+types for specifying the times are</p>
+<blockquote>
+<div><ol class="arabic">
+<li>a combination of 2 <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> instances or</li>
+<li>a combination of two strings that can be directly converted            into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> instances (e.g.            <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
+<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">int</span></code></a>).</li>
+</ol>
+</div></blockquote>
+</li>
+<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array. If True,
+then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the combined constraint from all valid input parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Constraint</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>The following example shows how to crop over the meridian</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">get_constraint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.utils</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">load</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convention</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">()</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">meta_info</span> <span class="o">=</span> <span class="n">convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">meta_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="go">year 2008</span>
+<span class="go">var_name od550aer</span>
+<span class="go">ts_type daily</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cubes</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lons</span> <span class="o">=</span> <span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">meridian_centre</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">lons</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span> <span class="k">else</span> <span class="kc">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">year</span> <span class="o">=</span> <span class="n">meta_info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="n">meta_info</span><span class="p">[</span><span class="s2">&quot;var_name&quot;</span><span class="p">],</span>
+<span class="gp">... </span>                   <span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>
+<span class="gp">... </span>                   <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
+<span class="gp">... </span>                   <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-02-05&quot;</span> <span class="o">%</span><span class="n">year</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-02-25&quot;</span> <span class="o">%</span><span class="n">year</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube_crop</span> <span class="o">=</span> <span class="n">cubes</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">c</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cube_crop</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(21, 40, 100)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.get_lat_constraint">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_lat_constraint</code><span class="sig-paren">(</span><em>lat_range</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_lat_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_lat_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create latitude constraint based on input range</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying latitude range</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the corresponding iris.Constraint instance</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Constraint</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.get_lon_constraint">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_lon_constraint</code><span class="sig-paren">(</span><em>lon_range</em>, <em>meridian_centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_lon_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_lon_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create longitude constraint based on input range</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple containing from left -&gt; right end of range</li>
+<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array of the
+data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the corresponding iris.Constraint instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">Constraint</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> – if first coordinate in lon_range equals or exceeds second</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">LongitudeConstraintError</span></code> – if the input implies cropping over border of longitude array
+(e.g. 160 -&gt; - 160 if -180 &lt;= lon &lt;= 180).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">get_lon_constraint</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">170</span><span class="p">,</span> <span class="o">-</span><span class="mi">160</span><span class="p">),</span> <span class="n">meridian_centre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+ <span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">Left coordinate must exceed right coordinate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">get_lon_constraint</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="n">meridian_centre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">data_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">366</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.get_lon_constraint_buggy">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_lon_constraint_buggy</code><span class="sig-paren">(</span><em>lon_range</em>, <em>meridian_centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_lon_constraint_buggy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_lon_constraint_buggy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create longitude constraint based on input range</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In this definition, the constraint is combined in case the border of the
+longitude array is crossed. Apparently, that does not work properly and
+it is therefore recommended to use <code class="xref py py-func docutils literal"><span class="pre">iris.cube.Cube.intersection()</span></code>
+instead (which is also reimplemented in <code class="xref py py-class docutils literal"><span class="pre">pyaerocom.ModelData</span></code>).
+If you use <a class="reference internal" href="#pyaerocom.helpers.get_lon_constraint" title="pyaerocom.helpers.get_lon_constraint"><code class="xref py py-func docutils literal"><span class="pre">get_lon_constraint()</span></code></a> it will detect if there is a border
+crossing, and if so, it will raise an error (that suggests to use the
+intersection method instead).</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple containing from left -&gt; right end of range</li>
+<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array. If True,
+then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the corresponding iris.Constraint instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Constraint</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.get_time_constraint">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_time_constraint</code><span class="sig-paren">(</span><em>start_time</em>, <em>stop_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_time_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_time_constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create iris.Constraint for data extraction along time axis</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
+into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
+into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">iris Constraint instance that can, e.g., be used as input for
+<a class="reference internal" href="#pyaerocom.modeldata.ModelData.extract" title="pyaerocom.modeldata.ModelData.extract"><code class="xref py py-func docutils literal"><span class="pre">pyaerocom.modeldata.ModelData.extract()</span></code></a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Constraint</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="module-pyaerocom.mathutils">
-<span id="mathematical-helpers"></span><h2>Mathematical helpers<a class="headerlink" href="#module-pyaerocom.mathutils" title="Permalink to this headline">¶</a></h2>
+<span id="mathematical-helpers"></span><h3>Mathematical helpers<a class="headerlink" href="#module-pyaerocom.mathutils" title="Permalink to this headline">¶</a></h3>
 <p>Mathematical low level utility methods ofcd pyaerocom</p>
 <dl class="function">
 <dt id="pyaerocom.mathutils.exponent">
@@ -1281,6 +1596,7 @@ containing data from one time stamp (i.e. ndim=2).</li>
 </div>
 </dd></dl>
 
+</div>
 </div>
 </div>
 
