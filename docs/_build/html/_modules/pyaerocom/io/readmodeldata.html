@@ -207,8 +207,7 @@
 <span class="kn">from</span> <span class="nn">iris.util</span> <span class="k">import</span> <span class="n">unify_time_units</span>
 
 <span class="kn">import</span> <span class="nn">pyaerocom.config</span> <span class="k">as</span> <span class="nn">const</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="p">(</span><span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">DEL_TIME_BOUNDS</span><span class="p">,</span>
-                            <span class="n">VERBOSE</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">VERBOSE</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.utils</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
@@ -252,16 +251,22 @@
 <span class="sd">        :class:`pandas.Timestamp` without further checking)</span>
 <span class="sd">    file_convention : str</span>
 <span class="sd">        string ID specifying the file convention of this model (cf. </span>
-<span class="sd">        installation file `file_conventions.ini &lt;https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini&gt;`__)</span>
+<span class="sd">        installation file `file_conventions.ini &lt;https://github.com/metno/</span>
+<span class="sd">        pyaerocom/blob/master/pyaerocom/data/file_conventions.ini&gt;`__)</span>
 <span class="sd">    init : bool</span>
 <span class="sd">        if True, the model directory is searched (:func:`search_model_dir`) on</span>
 <span class="sd">        instantiation and if it is found, all valid files for this model are </span>
-<span class="sd">        searched using :func:</span>
+<span class="sd">        searched using :func:`search_all_files`.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        if True, output is printed</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_MODELDIRS</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span>
     <span class="n">_start_time</span> <span class="o">=</span> <span class="n">FIRST_DATE</span>
     <span class="n">_stop_time</span> <span class="o">=</span> <span class="n">LAST_DATE</span>
-    <span class="n">_DEL_TIME_BOUNDS</span> <span class="o">=</span> <span class="n">DEL_TIME_BOUNDS</span>
     <span class="c1"># Directory containing model data for this species</span>
     <span class="n">_model_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">_USE_SUBDIR_RENAMED</span> <span class="o">=</span> <span class="kc">True</span>
@@ -585,10 +590,6 @@
 
         <span class="c1">#now concatenate the cube list to one cube</span>
         <span class="n">cube_concat</span> <span class="o">=</span> <span class="n">cubes</span><span class="o">.</span><span class="n">concatenate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-        
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEL_TIME_BOUNDS</span><span class="p">:</span>
-            <span class="n">cube_concat</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
-            
         
         <span class="c1">#create instance of pyaerocom.ModelData</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cube_concat</span><span class="p">,</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>

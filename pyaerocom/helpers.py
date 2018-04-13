@@ -258,9 +258,9 @@ if __name__=="__main__":
     c = get_constraint(var_names="od550aer", 
                        lon_range=(50, 150), 
                        lat_range=(20, 60), 
-                       time_range=("2010-02-01", "2012-02-01"))
+                       time_range=("2008-02-01", "2008-02-05"))
     cube_crop = cubes.extract(c)[0]
-    cube_crop.shape
+
                            
 
 

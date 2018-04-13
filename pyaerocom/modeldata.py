@@ -10,12 +10,11 @@ from iris import Constraint
 from iris.cube import Cube
 from iris import load_cube
 from pandas import Timestamp
-from warnings import warn
-#from abc import ABCMeta, abstractmethod
 
-from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE
+from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE, ON_LOAD
 from pyaerocom.helpers import get_time_constraint
-     
+
+
 class ModelData:
     """Base class representing model data
     
@@ -55,9 +54,31 @@ class ModelData:
     var_name : :obj:`str`, optional
         variable name that is extracted if `input` is a file path . Irrelevant
         if `input` is preloaded Cube
-    
+
+    Example
+    -------
+    >>> from pyaerocom.test_files import get
+    >>> files = get()
+    >>> data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    >>> print(data.var_name)
+    od550aer
+    >>> print(type(data.longitude))
+    <class 'iris.coords.DimCoord'>
+    >>> print(data.longitude.points.min(), data.longitude.points.max())
+    -179.5 179.5
+    >>> print(data.latitude.points.min(), data.latitude.points.max())
+    -89.5 89.5
+    >>> print(data.time.points.min(), data.time.points.max())
+    0.0 365.0
+    >>> tstamps = data.time_stamps()
+    >>> print(tstamps[0], tstamps[-1])
+    2008-01-01 00:00:00 2008-12-31 00:00:00
+    >>> data.longitude.circular = True
+    >>> cropped = data.crop(lon_range=(170, 210))
+    >>> print(cropped.shape)
     """
     _grid = None
+    _ON_LOAD = ON_LOAD
     def __init__(self, input, var_name=None, verbose=VERBOSE, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
@@ -67,6 +88,40 @@ class ModelData:
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
+           
+    @property
+    def longitude(self):
+        """Longitudes of data"""
+        if self.is_cube:
+            return self.grid.coord("longitude")
+        
+    @longitude.setter
+    def longitude(self, value):
+        raise AttributeError("Longitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+    
+    @property
+    def latitude(self):
+        """Latitudes of data"""
+        if self.is_cube:
+            return self.grid.coord("latitude")
+        
+    @latitude.setter
+    def latitude(self, value):
+        raise AttributeError("Latitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+        
+    @property
+    def time(self):
+        """Time dimension of data"""
+        if self.is_cube:
+            return self.grid.coord("time")
+        
+    @time.setter
+    def time(self, value):
+        raise AttributeError("Time array cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+            
     @property
     def grid(self):
         """Underlying grid data object"""
@@ -90,11 +145,28 @@ class ModelData:
     def model_id(self):
         """ID of model to which data belongs"""
         return self.suppl_info["model_id"]
+       
+    @property
+    def has_data(self):
+        """True if grid data is available (:attr:`grid` =! None)
         
+        Note
+        ----
+        Since so far, the only supported type is :class:`iris.cube.Cube`, this
+        method simply returns :attr:`is_cube`.
+        """
+        return self.is_cube
+    
     @property
     def is_cube(self):
         """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
         return True if isinstance(self.grid, Cube) else False
+    
+    @property
+    def shape(self):
+        if not self.is_cube:
+            raise NotImplementedError("Attribute shape is not available...")
+        return self.grid.shape 
     
     def load_input(self, input, var_name=None):
         """Interprete and load input
@@ -117,8 +189,21 @@ class ModelData:
             self.grid = load_cube(input, constraint) #instance of CubeList
         elif isinstance(input, Cube):
             self.grid = input #instance of Cube
-        self.check_and_regrid_lons()
-                     
+        if self._ON_LOAD["DEL_TIME_BOUNDS"]:
+            self.grid.coord("time").bounds = None
+        if self._ON_LOAD["SHIFT_LONS"]:
+            self.check_and_regrid_lons()
+    
+    def time_stamps(self):
+        """Convert time stamps into list of datetime objects
+        
+        Returns
+        -------
+        list 
+            list containing all time stamps as datetime-like objects 
+        """
+        return [cell.point for cell in self.time.cells()]                 
+    
     def check_and_regrid_lons(self):
         """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
         
@@ -135,17 +220,15 @@ class ModelData:
             True, if longitudes were on 0 -> 360 and have been rolled, else
             False
         """
-        try:
-            lons = self.grid.coord("longitude").points
-            low, high = lons.min(), lons.max()
-            if high > 180:
-                if self.verbose:
-                    print("Rolling longitudes to -180 -> 180 definition")
-                low -= 180
-                high -= 180
-                self.grid = self.grid.intersection(longitude=(low, high))
-        except:
-            raise
+        lons = self.grid.coord("longitude").points
+        low, high = lons.min(), lons.max()
+        if high > 180:
+            if self.verbose:
+                print("Rolling longitudes to -180 -> 180 definition")
+            low = (low+180)%360-180
+            high = (low+180)%360-180
+            self.grid = self.grid.intersection(longitude=(low, high))
+        
         
         
     def crop(self, lon_range=None, lat_range=None, 
@@ -289,6 +372,31 @@ class ModelData:
         
         return ModelData(data_crop, **self.suppl_info)
     
+    def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90)):
+        """Make a quick plot onto a map
+        
+        Parameters
+        ----------
+        time_idx : int
+            index in time to be plotted
+        xlim : tuple
+            2-element tuple specifying plotted longitude range
+        ylim : tuple
+            2-element tuple specifying plotted latitude range
+        color_theme : str
+            pyaerocom color theme
+        
+        Returns
+        -------
+        fig
+            matplotlib figure instance containing plot
+        """
+        from pyaerocom.plot.quickplot import plot_map
+        ax = plot_map(self.grid[time_idx], xlim, ylim)
+    
+        ax.set_title("%s (time idx=%d)" %(self.var_name, time_idx))
+        return ax
+    
     def __str__(self):
         """For now, use string representation of underlying data"""
         return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__str__()
@@ -299,6 +407,21 @@ class ModelData:
     
 if __name__=='__main__':
     from pyaerocom.test_files import get
-    #test_file = get()['models']['aatsr_su_v4.3']
-    test_file = get()['models']['ecmwf_osuite']
-    data = ModelData(test_file, var_name='od550aer')
+    files = get()
+    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    print(data.var_name)
+    print(type(data.longitude))
+    print(data.longitude.points.min(), data.longitude.points.max())
+    print(data.latitude.points.min(), data.latitude.points.max())
+    print(data.time.points.min(), data.time.points.max())
+    tstamps = data.time_stamps()
+    print(tstamps[0], tstamps[-1])
+    
+    data.longitude.circular = True
+    cropped = data.crop(lon_range=(170, 210))
+    print(cropped.shape)
+    cropped.quickplot_map()
+# =============================================================================
+#     import doctest
+#     doctest.testmod()
+# =============================================================================

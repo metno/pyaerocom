@@ -33,7 +33,8 @@ LAST_DATE = Timestamp(2200,1,1)
 SUPPORTED_DATA_TYPES_MODEL = [Cube]
 # If True, pre-existing time bounds in data files are removed on 
 # import
-DEL_TIME_BOUNDS = True 
+ON_LOAD = dict(DEL_TIME_BOUNDS = True,
+               SHIFT_LONS = True)
 
 TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
 

@@ -3,9 +3,16 @@
 """
 Helper methods for plotting sub-package
 """
-from ..utils import exponent
+from pyaerocom.mathutils import exponent
 import numpy as np
 
+def calc_figsize(lons, lats, figh=8, add_cbar=False):
+    wfac = lons.shape[0] / lats.shape[0]
+    if add_cbar:
+        wfac += 2
+    figw = figh * wfac
+    return (figw, figh)
+    
 def custom_mpl(mpl_rcparams, **kwargs):
     small = 10
     medium = 12

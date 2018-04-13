@@ -260,6 +260,25 @@ if <cite>input</cite> is preloaded Cube</li>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+<span class="go">od550aer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
+<span class="go">&lt;class &#39;iris.coords.DimCoord&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="go">-179.5 179.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="go">-89.5 89.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="go">0.0 365.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tstamps</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">2008-01-01 00:00:00 2008-12-31 00:00:00</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.check_and_regrid_lons">
 <code class="descname">check_and_regrid_lons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.check_and_regrid_lons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.check_and_regrid_lons" title="Permalink to this definition">¶</a></dt>
@@ -384,6 +403,17 @@ types for specifying the times are</p>
 <dd><p>Underlying grid data object</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.has_data">
+<code class="descname">has_data</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.has_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if grid data is available (<a class="reference internal" href="#pyaerocom.modeldata.ModelData.grid" title="pyaerocom.modeldata.ModelData.grid"><code class="xref py py-attr docutils literal"><span class="pre">grid</span></code></a> =! None)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Since so far, the only supported type is <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code>, this
+method simply returns <a class="reference internal" href="#pyaerocom.modeldata.ModelData.is_cube" title="pyaerocom.modeldata.ModelData.is_cube"><code class="xref py py-attr docutils literal"><span class="pre">is_cube</span></code></a>.</p>
+</div>
+</dd></dl>
+
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.intersection">
 <code class="descname">intersection</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.intersection" title="Permalink to this definition">¶</a></dt>
@@ -420,6 +450,12 @@ related to method and input parameters.</p>
 <dd><p>Checks if underlying data type is of type <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code></p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.latitude">
+<code class="descname">latitude</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.latitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Latitudes of data</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.load_input">
 <code class="descname">load_input</code><span class="sig-paren">(</span><em>input</em>, <em>var_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.load_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.load_input" title="Permalink to this definition">¶</a></dt>
@@ -440,9 +476,37 @@ if <cite>input</cite> is preloaded Cube</li>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.longitude">
+<code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.longitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Longitudes of data</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.model_id">
 <code class="descname">model_id</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.model_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>ID of model to which data belongs</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.time">
+<code class="descname">time</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time dimension of data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.modeldata.ModelData.time_stamps">
+<code class="descname">time_stamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.time_stamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.time_stamps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert time stamps into list of datetime objects</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list containing all time stamps as datetime-like objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -611,12 +675,14 @@ var_name or time interval).</p>
 installation file <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini">file_conventions.ini</a>)</li>
 <li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_model_dir" title="pyaerocom.io.readmodeldata.ReadModelData.search_model_dir"><code class="xref py py-func docutils literal"><span class="pre">search_model_dir()</span></code></a>) on
 instantiation and if it is found, all valid files for this model are
-searched using :func:</li>
+searched using <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_all_files" title="pyaerocom.io.readmodeldata.ReadModelData.search_all_files"><code class="xref py py-func docutils literal"><span class="pre">search_all_files()</span></code></a>.</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, output is printed</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Examples</p>
 <dl class="attribute">
 <dt>
 <code class="descname">model_dir</code></dt>
@@ -1366,16 +1432,16 @@ color_coastline : #e6e6e6</p>
 <h2>Helpers<a class="headerlink" href="#helpers" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-pyaerocom.helpers">
 <span id="general-helper-methods"></span><h3>General helper methods<a class="headerlink" href="#module-pyaerocom.helpers" title="Permalink to this headline">¶</a></h3>
-<p>Helper methods for the pyaerocom library</p>
+<p>General helper methods for the pyaerocom library.</p>
 <dl class="function">
 <dt id="pyaerocom.helpers.get_constraint">
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_constraint</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>meridian_centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that creates an <code class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></code> based on input</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Please be aware of your definition of the longitudes when cropping along
-the longitude dimension. The longitudes in your data may be defined either
-from <strong>-180 &lt;= lon &lt;= 180</strong> (pyaerocom standard) or from
+<p class="last">Please be aware of the definition of the longitudes in your data when
+cropping within the longitude dimension. The longitudes in your data may be
+defined either from <strong>-180 &lt;= lon &lt;= 180</strong> (pyaerocom standard) or from
 <strong>0 &lt;= lon &lt;= 360</strong>. In the former case (-180 _&gt; 180) you can leave the
 additional input parameter <code class="docutils literal"><span class="pre">meridian_centre=True</span></code> (default). In this
 case, if you want to crop over the border of the array (e.g. from Australia

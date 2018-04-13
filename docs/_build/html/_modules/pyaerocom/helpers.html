@@ -161,13 +161,11 @@
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Helper methods for the pyaerocom library</span>
+<span class="sd">General helper methods for the pyaerocom library.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">VERBOSE</span>
 <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span>
 <span class="kn">from</span> <span class="nn">iris.time</span> <span class="k">import</span> <span class="n">PartialDateTime</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
-<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">LongitudeConstraintError</span>
 
 <div class="viewcode-block" id="get_constraint"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.get_constraint">[docs]</a><span class="k">def</span> <span class="nf">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lon_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -176,9 +174,9 @@
 <span class="sd">    </span>
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
-<span class="sd">    Please be aware of your definition of the longitudes when cropping along</span>
-<span class="sd">    the longitude dimension. The longitudes in your data may be defined either</span>
-<span class="sd">    from **-180 &lt;= lon &lt;= 180** (pyaerocom standard) or from </span>
+<span class="sd">    Please be aware of the definition of the longitudes in your data when </span>
+<span class="sd">    cropping within the longitude dimension. The longitudes in your data may be </span>
+<span class="sd">    defined either from **-180 &lt;= lon &lt;= 180** (pyaerocom standard) or from </span>
 <span class="sd">    **0 &lt;= lon &lt;= 360**. In the former case (-180 _&gt; 180) you can leave the </span>
 <span class="sd">    additional input parameter ``meridian_centre=True`` (default). In this</span>
 <span class="sd">    case, if you want to crop over the border of the array (e.g. from Australia </span>
@@ -420,9 +418,9 @@
     <span class="n">c</span> <span class="o">=</span> <span class="n">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> 
                        <span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span> 
                        <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> 
-                       <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2010-02-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2012-02-01&quot;</span><span class="p">))</span>
+                       <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2008-02-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2008-02-05&quot;</span><span class="p">))</span>
     <span class="n">cube_crop</span> <span class="o">=</span> <span class="n">cubes</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">c</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">cube_crop</span><span class="o">.</span><span class="n">shape</span>
+
                            
 
 

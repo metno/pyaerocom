@@ -47,8 +47,7 @@ from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 
 import pyaerocom.config as const
-from pyaerocom.glob import (FIRST_DATE, LAST_DATE, TS_TYPES, DEL_TIME_BOUNDS,
-                            VERBOSE)
+from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, VERBOSE
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.utils import FileConventionRead
 from pyaerocom.modeldata import ModelData
@@ -92,16 +91,22 @@ class ReadModelData:
         :class:`pandas.Timestamp` without further checking)
     file_convention : str
         string ID specifying the file convention of this model (cf. 
-        installation file `file_conventions.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini>`__)
+        installation file `file_conventions.ini <https://github.com/metno/
+        pyaerocom/blob/master/pyaerocom/data/file_conventions.ini>`__)
     init : bool
         if True, the model directory is searched (:func:`search_model_dir`) on
         instantiation and if it is found, all valid files for this model are 
-        searched using :func:
+        searched using :func:`search_all_files`.
+    verbose : bool
+        if True, output is printed
+        
+    Examples
+    --------
+    
     """
     _MODELDIRS = const.MODELDIRS
     _start_time = FIRST_DATE
     _stop_time = LAST_DATE
-    _DEL_TIME_BOUNDS = DEL_TIME_BOUNDS
     # Directory containing model data for this species
     _model_dir = ""
     _USE_SUBDIR_RENAMED = True
@@ -425,10 +430,6 @@ class ReadModelData:
 
         #now concatenate the cube list to one cube
         cube_concat = cubes.concatenate()[0]
-        
-        if self._DEL_TIME_BOUNDS:
-            cube_concat.coord("time").bounds = None
-            
         
         #create instance of pyaerocom.ModelData
         data = ModelData(input=cube_concat, from_files=loaded_files,
