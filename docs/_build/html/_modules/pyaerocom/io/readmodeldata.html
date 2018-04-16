@@ -209,7 +209,7 @@
 <span class="kn">import</span> <span class="nn">pyaerocom.config</span> <span class="k">as</span> <span class="nn">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">VERBOSE</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.io.utils</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
 
 <div class="viewcode-block" id="ReadModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadModelData</span><span class="p">:</span>
@@ -470,7 +470,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
                 <span class="c1"># also include 3d vars that provide station based data</span>
                 <span class="c1"># and contain the string vmr</span>
-                <span class="c1"># in this case the variable name has to slightly changed to the aerocom phase 2 naming</span>
+                <span class="c1"># in this case the variable name has to slightly changed to the </span>
+                <span class="c1"># aerocom phase 2 naming</span>
                 <span class="k">elif</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;modellevelatstations&#39;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="s1">&#39;vmr&#39;</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]:</span>
                         <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;vmr&#39;</span><span class="p">,</span> <span class="s1">&#39;vmr3d&#39;</span><span class="p">))</span>

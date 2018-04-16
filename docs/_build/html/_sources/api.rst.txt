@@ -48,10 +48,17 @@ Reading of observation data
    :undoc-members:
   
      
-I/O supplementary and helpers
+File naming conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.io.utils
+.. automodule:: pyaerocom.io.fileconventions
+   :members:
+   :undoc-members:
+   
+I / O helper methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.helpers
    :members:
    :undoc-members:
 

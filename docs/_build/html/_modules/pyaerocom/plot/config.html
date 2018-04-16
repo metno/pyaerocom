@@ -163,9 +163,8 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Global configurations for plotting </span>
-
-
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">get_cmap</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">cmocean.cm</span> <span class="k">import</span> <span class="n">dense</span>
     <span class="n">_cmap_lighttheme</span> <span class="o">=</span> <span class="n">dense</span>
@@ -199,7 +198,7 @@
 <span class="sd">    &gt;&gt;&gt; print(theme)</span>
 <span class="sd">    pyaerocom ColorTheme</span>
 <span class="sd">    name : dark</span>
-<span class="sd">    cmap_map : viridisss</span>
+<span class="sd">    cmap_map : viridis</span>
 <span class="sd">    color_coastline : #e6e6e6</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dark&quot;</span><span class="p">,</span> <span class="n">cmap_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">color_coastline</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -227,8 +226,14 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">theme_name</span> <span class="ow">in</span> <span class="n">_COLOR_THEMES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Default theme with name </span><span class="si">%s</span><span class="s2"> is not available. &quot;</span>
                              <span class="s2">&quot;Choose from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">_COLOR_THEMES</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">_COLOR_THEMES</span><span class="p">[</span><span class="n">theme_name</span><span class="p">])</span></div>
-    
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">_COLOR_THEMES</span><span class="p">[</span><span class="n">theme_name</span><span class="p">])</span>
+        <span class="c1"># make sure the colormap is loaded since the current cmap might be a </span>
+        <span class="c1"># string</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmap_map</span> <span class="o">=</span> <span class="n">get_cmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmap_map</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+            
 <div class="viewcode-block" id="ColorTheme.from_dict"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.ColorTheme.from_dict">[docs]</a>    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info_dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Import theme information from dictionary</span>
 <span class="sd">        </span>

@@ -310,7 +310,8 @@ class ReadModelData:
                     self.files.append(_file)
                 # also include 3d vars that provide station based data
                 # and contain the string vmr
-                # in this case the variable name has to slightly changed to the aerocom phase 2 naming
+                # in this case the variable name has to slightly changed to the 
+                # aerocom phase 2 naming
                 elif spl[-3].lower() == 'modellevelatstations':
                     if 'vmr' in spl[-4]:
                         _vars_temp.append(spl[-4].replace('vmr', 'vmr3d'))

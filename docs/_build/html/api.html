@@ -104,7 +104,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-pyaerocom.io.readobsdata">Reading of observation data</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.utils">I/O supplementary and helpers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.fileconventions">File naming conventions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.helpers">I / O helper methods</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.region">Regions / Domains</a></li>
@@ -277,6 +278,9 @@ if <cite>input</cite> is preloaded Cube</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tstamps</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="go">2008-01-01 00:00:00 2008-12-31 00:00:00</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">circular</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">170</span><span class="p">,</span> <span class="mi">210</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -486,6 +490,37 @@ if <cite>input</cite> is preloaded Cube</li>
 <code class="descname">model_id</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.model_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>ID of model to which data belongs</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.modeldata.ModelData.quickplot_map">
+<code class="descname">quickplot_map</code><span class="sig-paren">(</span><em>time_idx=0</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.quickplot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.quickplot_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a quick plot onto a map</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>time_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index in time to be plotted</li>
+<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
+<li><strong>color_theme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – pyaerocom color theme</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib figure instance containing plot</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">fig</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.shape">
+<code class="descname">shape</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.shape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.time">
@@ -1001,49 +1036,49 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 
 </div>
 </div>
-<div class="section" id="module-pyaerocom.io.utils">
-<span id="i-o-supplementary-and-helpers"></span><h3>I/O supplementary and helpers<a class="headerlink" href="#module-pyaerocom.io.utils" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="module-pyaerocom.io.fileconventions">
+<span id="file-naming-conventions"></span><h3>File naming conventions<a class="headerlink" href="#module-pyaerocom.io.fileconventions" title="Permalink to this headline">¶</a></h3>
 <p>Low level classes and methods for io</p>
 <dl class="class">
-<dt id="pyaerocom.io.utils.FileConventionRead">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.utils.</code><code class="descname">FileConventionRead</code><span class="sig-paren">(</span><em>name='aerocom3'</em>, <em>file_sep=''</em>, <em>year_pos=-1</em>, <em>var_pos=-1</em>, <em>ts_pos=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead">
+<em class="property">class </em><code class="descclassname">pyaerocom.io.fileconventions.</code><code class="descname">FileConventionRead</code><span class="sig-paren">(</span><em>name='aerocom3'</em>, <em>file_sep=''</em>, <em>year_pos=-1</em>, <em>var_pos=-1</em>, <em>ts_pos=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class that represents a file naming convention for reading Aerocom files</p>
 <dl class="attribute">
-<dt id="pyaerocom.io.utils.FileConventionRead.name">
-<code class="descname">name</code><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.name" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.name">
+<code class="descname">name</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.name" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em> – name of this convention (e.g. “aerocom3”)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.utils.FileConventionRead.file_sep">
-<code class="descname">file_sep</code><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.file_sep" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.file_sep">
+<code class="descname">file_sep</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em> – filename delimiter for accessing different variables</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.utils.FileConventionRead.year_pos">
-<code class="descname">year_pos</code><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.year_pos" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.year_pos">
+<code class="descname">year_pos</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.year_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>int</em> – position of year information in filename after splitting using
-delimiter <a class="reference internal" href="#pyaerocom.io.utils.FileConventionRead.file_sep" title="pyaerocom.io.utils.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
+delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.utils.FileConventionRead.var_pos">
-<code class="descname">var_pos</code><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.var_pos" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.var_pos">
+<code class="descname">var_pos</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.var_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>int</em> – position of variable information in filename after splitting using
-delimiter <a class="reference internal" href="#pyaerocom.io.utils.FileConventionRead.file_sep" title="pyaerocom.io.utils.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
+delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.utils.FileConventionRead.ts_pos">
-<code class="descname">ts_pos</code><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.ts_pos" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.ts_pos">
+<code class="descname">ts_pos</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.ts_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>int</em> – position of information of temporal resolution in filename after
-splitting using delimiter <a class="reference internal" href="#pyaerocom.io.utils.FileConventionRead.file_sep" title="pyaerocom.io.utils.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
+splitting using delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.utils.FileConventionRead.from_dict">
-<code class="descname">from_dict</code><span class="sig-paren">(</span><em>new_vals</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.from_dict" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.from_dict">
+<code class="descname">from_dict</code><span class="sig-paren">(</span><em>new_vals</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.from_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load info from dictionary</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1060,8 +1095,8 @@ splitting using delimiter <a class="reference internal" href="#pyaerocom.io.util
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.utils.FileConventionRead.from_file">
-<code class="descname">from_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.from_file" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.from_file">
+<code class="descname">from_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify convention from a file</p>
 <p>Currently only two conventions (aerocom2 and aerocom3) exist that are
 identified by the delimiter used.</p>
@@ -1073,7 +1108,7 @@ identified by the delimiter used.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">this object (with updated convention)</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyaerocom.io.utils.FileConventionRead" title="pyaerocom.io.utils.FileConventionRead">FileConventionRead</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead" title="pyaerocom.io.fileconventions.FileConventionRead">FileConventionRead</a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
 </tr>
@@ -1094,8 +1129,8 @@ identified by the delimiter used.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.utils.FileConventionRead.get_info_from_file">
-<code class="descname">get_info_from_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead.get_info_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.get_info_from_file" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.get_info_from_file">
+<code class="descname">get_info_from_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead.get_info_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.get_info_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify convention from a file</p>
 <p>Currently only two conventions (aerocom2 and aerocom3) exist that are
 identified by the delimiter used.</p>
@@ -1128,14 +1163,14 @@ corresponding variables, extracted from the filename</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.utils.FileConventionRead.import_default">
-<code class="descname">import_default</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead.import_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.import_default" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.import_default">
+<code class="descname">import_default</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead.import_default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.import_default" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks and load default information from database</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.utils.FileConventionRead.string_mask">
-<code class="descname">string_mask</code><span class="sig-paren">(</span><em>var</em>, <em>year</em>, <em>ts_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead.string_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.string_mask" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.string_mask">
+<code class="descname">string_mask</code><span class="sig-paren">(</span><em>var</em>, <em>year</em>, <em>ts_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead.string_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.string_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns mask that can be used to identify files of this convention</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1162,11 +1197,41 @@ ts_type = “daily”</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.utils.FileConventionRead.to_dict">
-<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/utils.html#FileConventionRead.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.utils.FileConventionRead.to_dict" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.fileconventions.FileConventionRead.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert this object to ordered dictionary</p>
 </dd></dl>
 
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyaerocom.io.helpers">
+<span id="i-o-helper-methods"></span><h3>I / O helper methods<a class="headerlink" href="#module-pyaerocom.io.helpers" title="Permalink to this headline">¶</a></h3>
+<p>I/O helper methods of the pyaerocom package</p>
+<dl class="function">
+<dt id="pyaerocom.io.helpers.get_all_model_ids">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_all_model_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_all_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_all_model_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to import all model IDs from file model_ids.txt in data directory</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.helpers.search_model_ids">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_model_ids</code><span class="sig-paren">(</span><em>update_inifile=True</em>, <em>check_nc_file=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_model_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search model IDs in database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>update_inifile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the file <em>model_ids.txt</em> will be updated. The file is located
+in the installation <em>data</em> directory.</li>
+<li><strong>check_nc_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, only model IDs are included, for which at least one nc file
+can be detected in the corresponding renamed sub directory</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -1375,7 +1440,7 @@ containing data from one time stamp (i.e. ndim=2).</li>
 &gt;&gt;&gt; print(theme)
 pyaerocom ColorTheme
 name : dark
-cmap_map : viridisss
+cmap_map : viridis
 color_coastline : #e6e6e6</p>
 <dl class="method">
 <dt id="pyaerocom.plot.config.ColorTheme.from_dict">
@@ -1658,6 +1723,39 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">exponent</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">exponent</span><span class="p">(</span><span class="mi">2340</span><span class="p">)</span>
 <span class="go">3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.mathutils.range_magnitude">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">range_magnitude</code><span class="sig-paren">(</span><em>low</em>, <em>high</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#range_magnitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.range_magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns magnitude of value range</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>low</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – lower end of range</li>
+<li><strong>high</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – upper end of range</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnitudes spanned by input numbers</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_magnitude</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">range_magnitude</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="go">-3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">range_magnitude</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">)</span>
+<span class="go">9</span>
 </pre></div>
 </div>
 </dd></dl>
