@@ -27,6 +27,34 @@ def exponent(num):
     """
     return floor(log10(abs(asarray(num)))).astype(int)
 
+def range_magnitude(low, high):
+    """Returns magnitude of value range
+    
+    Parameters
+    ----------
+    low : float
+        lower end of range
+    high : float
+        upper end of range
+    
+    Returns
+    -------
+    int
+        magnitudes spanned by input numbers
+    
+    Example
+    -------
+    
+    >>> range_magnitude(0.1, 100)
+    3
+    >>> range_magnitude(100, 0.1)
+    -3
+    >>> range_magnitude(1e-3, 1e6)
+    9
+    
+    """
+    return exponent(high) - exponent(low)
+
 if __name__ == "__main__":
     import doctest
     exp = exponent(23)

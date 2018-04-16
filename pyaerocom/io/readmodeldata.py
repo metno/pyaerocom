@@ -49,7 +49,7 @@ from iris.util import unify_time_units
 import pyaerocom.config as const
 from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, VERBOSE
 from pyaerocom.exceptions import IllegalArgumentError
-from pyaerocom.io.utils import FileConventionRead
+from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.modeldata import ModelData
 
 class ReadModelData:

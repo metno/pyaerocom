@@ -82,7 +82,7 @@ class ModelData:
     def __init__(self, input, var_name=None, verbose=VERBOSE, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
-                             model_id = "")
+                             model_id = "Unknown")
         
         self.load_input(input, var_name)
         for k, v in suppl_info.items():
@@ -187,6 +187,7 @@ class ModelData:
             func = lambda c: c.var_name == var_name
             constraint = Constraint(cube_func=func)
             self.grid = load_cube(input, constraint) #instance of CubeList
+            self.suppl_info["from_files"].append(input)
         elif isinstance(input, Cube):
             self.grid = input #instance of Cube
         if self._ON_LOAD["DEL_TIME_BOUNDS"]:
@@ -393,8 +394,9 @@ class ModelData:
         """
         from pyaerocom.plot.quickplot import plot_map
         ax = plot_map(self.grid[time_idx], xlim, ylim)
-    
-        ax.set_title("%s (time idx=%d)" %(self.var_name, time_idx))
+        ax.set_title("Model: %s, var=%s (%s)" 
+                     %(self.model_id, self.var_name, 
+                       self.time.cell(time_idx)))
         return ax
     
     def __str__(self):
@@ -407,8 +409,12 @@ class ModelData:
     
 if __name__=='__main__':
     from pyaerocom.test_files import get
+    from matplotlib.pyplot import close
+    
+    close("all")
     files = get()
-    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+                     model_id='aatsr_su_v4.3')
     print(data.var_name)
     print(type(data.longitude))
     print(data.longitude.points.min(), data.longitude.points.max())
@@ -418,7 +424,7 @@ if __name__=='__main__':
     print(tstamps[0], tstamps[-1])
     
     data.longitude.circular = True
-    cropped = data.crop(lon_range=(170, 210))
+    cropped = data.crop(lon_range=(150, 170))
     print(cropped.shape)
     cropped.quickplot_map()
 # =============================================================================

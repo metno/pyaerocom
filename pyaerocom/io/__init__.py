@@ -37,4 +37,4 @@ from .read_aeronet_sunv2 import ReadAeronetSunV2
 # =============================================================================
 from .readobsdata import ReadObsData
 from .readmodeldata import ReadModelData, ReadMultiModelData
-from .utils import FileConventionRead
+from .fileconventions import FileConventionRead

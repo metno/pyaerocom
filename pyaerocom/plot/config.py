@@ -3,9 +3,8 @@
 
 """
 Global configurations for plotting 
-
-
 """
+from matplotlib.pyplot import get_cmap
 try:
     from cmocean.cm import dense
     _cmap_lighttheme = dense
@@ -39,7 +38,7 @@ class ColorTheme(object):
     >>> print(theme)
     pyaerocom ColorTheme
     name : dark
-    cmap_map : viridisss
+    cmap_map : viridis
     color_coastline : #e6e6e6
     """
     def __init__(self, name="dark", cmap_map=None, color_coastline=None):
@@ -68,7 +67,13 @@ class ColorTheme(object):
             raise ValueError("Default theme with name %s is not available. "
                              "Choose from %s" %_COLOR_THEMES)
         self.from_dict(_COLOR_THEMES[theme_name])
-    
+        # make sure the colormap is loaded since the current cmap might be a 
+        # string
+        try:
+            self.cmap_map = get_cmap(self.cmap_map)
+        except:
+            pass
+            
     def from_dict(self, info_dict):
         """Import theme information from dictionary
         
