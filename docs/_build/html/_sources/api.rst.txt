@@ -78,8 +78,6 @@ The :mod:`pyaerocom.plot` package contains algorithms related to data visualisat
 Plotting maps
 ^^^^^^^^^^^^^
 
-This module is under development
-
 .. automodule:: pyaerocom.plot.mapping
    :members:
    :undoc-members:

@@ -12,6 +12,7 @@ The **pyaerocom** webpage
    :caption: Contents:
 
    readme
+   notebooks
    api
    api_testsuite
    config_files

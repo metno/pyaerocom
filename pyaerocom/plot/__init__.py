@@ -35,4 +35,4 @@
 # Note that these are temporary imports, namespaces will be redefined in the
 # near future
 from .plotmaps import plotmaps, annotate_aerocom, plot_ts_map
-from .mapping import plot_grid_data
+from .mapping import plot_map

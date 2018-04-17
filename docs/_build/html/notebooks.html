@@ -1,0 +1,393 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Notebooks &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="index.html"/>
+        <link rel="next" title="API" href="api.html"/>
+        <link rel="prev" title="Introduction" href="readme.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Notebooks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introducing-the-modeldata-class">Introducing the <code class="docutils literal"><span class="pre">ModelData</span></code> class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#note">Note</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#to-be-continued">To be continued ..</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Notebooks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/notebooks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="notebooks">
+<h1>Notebooks<a class="headerlink" href="#notebooks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introducing-the-modeldata-class">
+<h2>Introducing the <code class="docutils literal"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#introducing-the-modeldata-class" title="Permalink to this headline">¶</a></h2>
+<p>This notebook introduces basic features of the
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.modeldata.ModelData">ModelData</a>
+class of pyaerocom. The <code class="docutils literal"><span class="pre">ModelData</span></code> class is the fundamental base
+class for the analysis of model data. The underlying data type is
+<a class="reference external" href="http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube">iris.cube.Cube</a>
+which was extended, for instance by allowing direct imports of netCDF
+files when creating an instance of <code class="docutils literal"><span class="pre">ModelData</span></code>. This notebook
+introduces some of the many features of the <code class="docutils literal"><span class="pre">ModelData</span></code> class.
+Starting with some imports…</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
+</pre></div>
+</div>
+<p>Let’s get a test file to load</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+
+<span class="n">test_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed/aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;ecmwf_osuite&#39;</span><span class="p">,</span> <span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc&#39;</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>The dictionary, returned by the <code class="docutils literal"><span class="pre">get()</span></code> function is categorised into
+two subirectories for model based test files (<code class="docutils literal"><span class="pre">key=&quot;models&quot;</span></code>) and for
+observation based test files (<code class="docutils literal"><span class="pre">key=observations</span></code>). So far, there is
+not much in there (i.e. only two files).</p>
+<p>Let’s pick out the ECMWF OSUITE test file and load the data directly
+into an instance of the <code class="docutils literal"><span class="pre">ModelData</span></code> class. The <code class="docutils literal"><span class="pre">ModelData</span></code> class
+takes either preloaded instances of the <code class="docutils literal"><span class="pre">iris.cube.Cube</span></code> class as
+input, or a valid netCDF file path. The latter requires specification of
+the variable name which is then filtered from the data stored in the
+netCDF file (which may contain multiple variables. The following example
+imports the data for the aerosol optical density at 550 nm. The string
+representation of the <code class="docutils literal"><span class="pre">ModelData</span></code> class (see print at end of following
+code cell) was slitghtly adapted from the underlying <code class="docutils literal"><span class="pre">Cube</span></code> object.</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fpath</span> <span class="o">=</span> <span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">]</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
+     <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
+          <span class="n">time</span>                                       <span class="n">x</span>              <span class="o">-</span>               <span class="o">-</span>
+          <span class="n">latitude</span>                                   <span class="o">-</span>              <span class="n">x</span>               <span class="o">-</span>
+          <span class="n">longitude</span>                                  <span class="o">-</span>              <span class="o">-</span>               <span class="n">x</span>
+     <span class="n">Attributes</span><span class="p">:</span>
+          <span class="n">Conventions</span><span class="p">:</span> <span class="n">CF</span><span class="o">-</span><span class="mf">1.0</span>
+          <span class="n">NCO</span><span class="p">:</span> <span class="mf">4.7</span><span class="o">.</span><span class="mi">2</span>
+          <span class="n">history</span><span class="p">:</span> <span class="n">Tue</span> <span class="n">Mar</span> <span class="mi">20</span> <span class="mi">13</span><span class="p">:</span><span class="mi">08</span><span class="p">:</span><span class="mi">49</span> <span class="mi">2018</span><span class="p">:</span> <span class="n">ncks</span> <span class="o">-</span><span class="mi">7</span> <span class="o">-</span><span class="n">O</span> <span class="o">-</span><span class="n">o</span> <span class="n">test</span><span class="o">.</span><span class="n">nc</span> <span class="o">-</span><span class="n">x</span> <span class="o">-</span><span class="n">v</span> <span class="n">time_bnds</span> <span class="n">od550aer</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">orig</span><span class="o">.</span><span class="n">nc</span>
+<span class="n">Tue</span><span class="o">...</span>
+          <span class="n">history_of_appended_files</span><span class="p">:</span> <span class="n">Tue</span> <span class="n">Mar</span> <span class="mi">20</span> <span class="mi">02</span><span class="p">:</span><span class="mi">09</span><span class="p">:</span><span class="mi">15</span> <span class="mi">2018</span><span class="p">:</span> <span class="n">Appended</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">ECMWF_OSUITE_NRT</span><span class="o">/</span><span class="n">renamed</span><span class="o">//</span><span class="n">aerocom</span><span class="o">.</span><span class="n">ECMWF_OSUITE_NRT</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550bc</span><span class="o">.</span><span class="mf">2018.</span><span class="n">nc</span><span class="o">...</span>
+          <span class="n">invalid_units</span><span class="p">:</span> <span class="o">~</span>
+          <span class="n">nco_openmp_thread_number</span><span class="p">:</span> <span class="mi">1</span>
+     <span class="n">Cell</span> <span class="n">methods</span><span class="p">:</span>
+          <span class="n">mean</span><span class="p">:</span> <span class="n">time</span>
+</pre></div>
+</div>
+<div class="section" id="note">
+<h3>Note<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h3>
+<div class="alert alert-block alert-info"><p>The longitudes in the ECMWF OSUITE data files are defined</p>
+<div class="math">
+\[0 \leq\,\text{lon}\,\leq360\]</div>
+<p>and are converted automatically to</p>
+<div class="math">
+\[-180\leq\,\text{lon}\,\leq180\]</div>
+<p>when an instance of the <code class="docutils literal"><span class="pre">ModelData</span></code> class is created (see print
+statment above <em>Rolling longitudes to -180 -&gt; 180 definition</em>)</p>
+</div><p>In the following cell, some of the most important attributes are
+introduced. These are mostly reimplementations of the underlying
+<code class="docutils literal"><span class="pre">Cube</span></code> data which is stored in the <code class="docutils literal"><span class="pre">ModelData.grid</span></code> attribute. For
+instance the attribute <code class="docutils literal"><span class="pre">ModelData.longitude</span></code> get’s you
+<code class="docutils literal"><span class="pre">ModelData.grid.coord(&quot;longitude&quot;)</span></code>, <code class="docutils literal"><span class="pre">ModelData.latitude</span></code> get’s you
+<code class="docutils literal"><span class="pre">ModelData.grid.coord(&quot;latitude&quot;)</span></code> and <code class="docutils literal"><span class="pre">ModelData.time</span></code> get’s you
+<code class="docutils literal"><span class="pre">ModelData.grid.coord(&quot;time&quot;)</span></code>.</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Longitude attr is pointer to DimCoord instance of underlying Cube: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span> <span class="ow">is</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">tstamps</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>od550aer
+&lt;class &#39;iris.coords.DimCoord&#39;&gt;
+Longitude attr is pointer to DimCoord instance of underlying Cube: True
+-180.0 179.60000610351562
+-90.0 90.0
+0.0 364.0
+2018-01-01T00:00:00.000000 2018-12-31T00:00:00.000000
+</pre></div>
+</div>
+<p>If you do not specify the variable type, an Exception is raised, that
+will get you some information about what variables are available in the
+file (if the file is readable using the <code class="docutils literal"><span class="pre">iris.load</span></code> method).</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550bc&#39;, &#39;od550so4&#39;, &#39;od550oa&#39;, &#39;od550aer&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>You can have a quick look at the data using the class-own quickplot
+method</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                         <span class="n">fix_aspect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                         <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                         <span class="n">vmax</span><span class="o">=</span><span class="mf">5.8</span><span class="p">,</span>
+                         <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/output_12_0.png" src="_images/output_12_0.png" />
+<p>The input parameter time_idxWhy not load some of the other variables…</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<span class="n">data_so4</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+</pre></div>
+</div>
+<p>… and plot them as well</p>
+<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">data_bc</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+<span class="n">fig2</span> <span class="o">=</span> <span class="n">data_so4</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+                     <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                                                       <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                                                       <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">70</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="_images/output_16_0.png" src="_images/output_16_0.png" />
+<img alt="_images/output_16_1.png" src="_images/output_16_1.png" />
+<div class="section" id="to-be-continued">
+<h4>To be continued ..<a class="headerlink" href="#to-be-continued" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="readme.html" class="btn btn-neutral" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

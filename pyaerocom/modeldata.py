@@ -3,16 +3,18 @@
 """
 This file could contain classes representing ModelData
 """
-
+from cf_units import num2date
 from os.path import exists
 from collections import OrderedDict as od
-from iris import Constraint
-from iris.cube import Cube
-from iris import load_cube
+from iris import Constraint, load, load_cube
+from iris.cube import Cube, CubeList
 from pandas import Timestamp
+from numpy import datetime64
+from warnings import warn
 
 from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE, ON_LOAD
 from pyaerocom.helpers import get_time_constraint
+from pyaerocom.region import Region
 
 
 class ModelData:
@@ -59,7 +61,8 @@ class ModelData:
     -------
     >>> from pyaerocom.test_files import get
     >>> files = get()
-    >>> data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    >>> data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+    ...                  verbose=False)
     >>> print(data.var_name)
     od550aer
     >>> print(type(data.longitude))
@@ -73,9 +76,10 @@ class ModelData:
     >>> tstamps = data.time_stamps()
     >>> print(tstamps[0], tstamps[-1])
     2008-01-01 00:00:00 2008-12-31 00:00:00
-    >>> data.longitude.circular = True
-    >>> cropped = data.crop(lon_range=(170, 210))
-    >>> print(cropped.shape)
+    >>> data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),
+    ...                          time_range=("2008-02-01", "2008-02-15"))
+    >>> print(data_cropped.shape)
+    (15, 120, 20)
     """
     _grid = None
     _ON_LOAD = ON_LOAD
@@ -181,9 +185,19 @@ class ModelData:
         """
         if isinstance(input, str) and exists(input):
             if not isinstance(var_name, str):
+                _var_names = []
+                try:
+                    ctemp = load(input)
+                    if isinstance(ctemp, CubeList):
+                        _var_names = [x.var_name for x in ctemp]
+                        _addstr = ("The following variable names exist in "
+                                   "input file: %s" %_var_names)
+                except:
+                    _addstr = ""
+                            
                 raise ValueError("Loading data from input file %s requires "
                                  "specification of a variable name using "
-                                 "input parameter var_name")
+                                 "input parameter var_name. %s" %(input, _addstr))
             func = lambda c: c.var_name == var_name
             constraint = Constraint(cube_func=func)
             self.grid = load_cube(input, constraint) #instance of CubeList
@@ -196,14 +210,23 @@ class ModelData:
             self.check_and_regrid_lons()
     
     def time_stamps(self):
-        """Convert time stamps into list of datetime objects
+        """Convert time stamps into list of numpy datetime64 objects
         
         Returns
         -------
         list 
-            list containing all time stamps as datetime-like objects 
+            list containing all time stamps as datetime64 objects 
         """
-        return [cell.point for cell in self.time.cells()]                 
+        try:
+            import cf_units
+            ts = self.time
+            return [datetime64(t) for t in cf_units.num2date(ts.points, 
+                                                             ts.units.name, 
+                                                             ts.units.calendar)]
+        except Exception as e:
+            warn("Failed to convert time stamps using cf_units.date2num "
+                 "Trying slower method via cells() method of time dimension")
+            return [datetime64(t.point) for t in ts.cells()]       
     
     def check_and_regrid_lons(self):
         """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
@@ -221,19 +244,15 @@ class ModelData:
             True, if longitudes were on 0 -> 360 and have been rolled, else
             False
         """
-        lons = self.grid.coord("longitude").points
-        low, high = lons.min(), lons.max()
-        if high > 180:
+        if self.grid.coord("longitude").points.max() > 180:
             if self.verbose:
                 print("Rolling longitudes to -180 -> 180 definition")
-            low = (low+180)%360-180
-            high = (low+180)%360-180
-            self.grid = self.grid.intersection(longitude=(low, high))
+            self.grid = self.grid.intersection(longitude=(-180, 180))
         
         
         
     def crop(self, lon_range=None, lat_range=None, 
-             time_range=None):
+             time_range=None, region_id=None):
         """High level function that applies cropping along multiple axes
         
         Note
@@ -265,6 +284,10 @@ class ModelData:
                 3. directly a combination of indices (:obj:`int`). 
             
             If None, the time axis remains unchanged.
+        region_id : :obj:`str`, optional
+            string ID of pyaerocom default region. May be used instead of 
+            ``lon_range`` and ``lat_range``, if these are unspecified.
+            
         
         Returns
         -------
@@ -274,6 +297,14 @@ class ModelData:
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
+        if region_id is not None:
+            try:
+                r = Region(region_id)
+                lon_range, lat_range = r.lon_range, r.lat_range
+            except Exception as e:
+                warn("Failed to access longitude / latitude range using "
+                     "region ID %s. Error msg: %s" %(region_id, repr(e)))
+                
         if lon_range is not None and lat_range is not None:
             data = self.grid.intersection(longitude=lon_range, 
                                           latitude=lat_range)
@@ -283,7 +314,8 @@ class ModelData:
             data = self.grid.intersection(latitude=lat_range)
         else:
             data = self.grid
-            
+        if data is None:
+            raise Exception
         if time_range is None:
             return ModelData(data, **self.suppl_info)
         else:
@@ -373,7 +405,8 @@ class ModelData:
         
         return ModelData(data_crop, **self.suppl_info)
     
-    def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90)):
+    def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90),
+                      **kwargs):
         """Make a quick plot onto a map
         
         Parameters
@@ -384,24 +417,26 @@ class ModelData:
             2-element tuple specifying plotted longitude range
         ylim : tuple
             2-element tuple specifying plotted latitude range
-        color_theme : str
-            pyaerocom color theme
+        **kwargs
+            additional keyword arguments passed to 
+            :func:`pyaerocom.quickplot.plot_map`
         
         Returns
         -------
         fig
             matplotlib figure instance containing plot
         """
-        from pyaerocom.plot.quickplot import plot_map
-        ax = plot_map(self.grid[time_idx], xlim, ylim)
-        ax.set_title("Model: %s, var=%s (%s)" 
+        from pyaerocom.plot.mapping import plot_map
+        fig = plot_map(self.grid[time_idx], xlim, ylim, **kwargs)
+        fig.axes[0].set_title("Model: %s, var=%s (%s)" 
                      %(self.model_id, self.var_name, 
                        self.time.cell(time_idx)))
-        return ax
+        return fig
     
     def __str__(self):
         """For now, use string representation of underlying data"""
-        return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__str__()
+        return ("pyaerocom.ModelData: %s\nGrid data: %s" 
+                %(self.model_id, self.grid.__str__()))
     
     def __repr__(self):
         """For now, use representation of underlying data"""
@@ -424,10 +459,24 @@ if __name__=='__main__':
     print(tstamps[0], tstamps[-1])
     
     data.longitude.circular = True
-    cropped = data.crop(lon_range=(150, 170))
+    cropped = data.crop(lon_range=(100, 170), lat_range=(-60, 60))
     print(cropped.shape)
     cropped.quickplot_map()
-# =============================================================================
-#     import doctest
-#     doctest.testmod()
-# =============================================================================
+    
+    other = ModelData(files["models"]["ecmwf_osuite"], 
+                      var_name="od550aer", model_id="ECMWF_OSUITE")
+    other.quickplot_map()
+    ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))
+    ocropped.quickplot_map()
+    
+    ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
+    ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
+    
+    try:
+        ModelData(files["models"]["ecmwf_osuite"])
+    except ValueError as e:
+        warn(repr(e))
+        
+
+    import doctest
+    doctest.testmod()

@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="pyaerocom  documentation" href="index.html"/>
         <link rel="next" title="API test-suite" href="api_testsuite.html"/>
-        <link rel="prev" title="Introduction" href="readme.html"/> 
+        <link rel="prev" title="Notebooks" href="notebooks.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -92,6 +92,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#data-types-and-data-representation">Data types and data representation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.modeldata">Model data</a></li>
@@ -110,7 +111,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.region">Regions / Domains</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting-visualisation">Plotting / Visualisation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#plotting-maps">Plotting maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.plot.mapping">Plotting maps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.plot.config">Colors etc.</a></li>
 </ul>
 </li>
@@ -264,7 +265,8 @@ if <cite>input</cite> is preloaded Cube</li>
 <p class="rubric">Example</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
 <span class="go">od550aer</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
@@ -278,9 +280,10 @@ if <cite>input</cite> is preloaded Cube</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tstamps</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="go">2008-01-01 00:00:00 2008-12-31 00:00:00</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">circular</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">170</span><span class="p">,</span> <span class="mi">210</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span>
+<span class="gp">... </span>                         <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2008-02-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2008-02-15&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data_cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(15, 120, 20)</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -309,7 +312,7 @@ False</td>
 
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.crop">
-<code class="descname">crop</code><span class="sig-paren">(</span><em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.crop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.crop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">crop</code><span class="sig-paren">(</span><em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>region_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.crop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.crop" title="Permalink to this definition">¶</a></dt>
 <dd><p>High level function that applies cropping along multiple axes</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -341,6 +344,8 @@ types for specifying the times are</p>
 </div></blockquote>
 <p>If None, the time axis remains unchanged.</p>
 </li>
+<li><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – string ID of pyaerocom default region. May be used instead of
+<code class="docutils literal"><span class="pre">lon_range</span></code> and <code class="docutils literal"><span class="pre">lat_range</span></code>, if these are unspecified.</li>
 </ul>
 </td>
 </tr>
@@ -493,7 +498,7 @@ if <cite>input</cite> is preloaded Cube</li>
 
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.quickplot_map">
-<code class="descname">quickplot_map</code><span class="sig-paren">(</span><em>time_idx=0</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.quickplot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.quickplot_map" title="Permalink to this definition">¶</a></dt>
+<code class="descname">quickplot_map</code><span class="sig-paren">(</span><em>time_idx=0</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.quickplot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.quickplot_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a quick plot onto a map</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -503,7 +508,8 @@ if <cite>input</cite> is preloaded Cube</li>
 <li><strong>time_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index in time to be plotted</li>
 <li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
-<li><strong>color_theme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – pyaerocom color theme</li>
+<li><strong>**kwargs</strong> – additional keyword arguments passed to
+<code class="xref py py-func docutils literal"><span class="pre">pyaerocom.quickplot.plot_map()</span></code></li>
 </ul>
 </td>
 </tr>
@@ -531,12 +537,12 @@ if <cite>input</cite> is preloaded Cube</li>
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.time_stamps">
 <code class="descname">time_stamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.time_stamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.time_stamps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert time stamps into list of datetime objects</p>
+<dd><p>Convert time stamps into list of numpy datetime64 objects</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list containing all time stamps as datetime-like objects</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list containing all time stamps as datetime64 objects</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
 </tr>
@@ -1380,29 +1386,62 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 <div class="section" id="plotting-visualisation">
 <h2>Plotting / Visualisation<a class="headerlink" href="#plotting-visualisation" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="xref py py-mod docutils literal"><span class="pre">pyaerocom.plot</span></code> package contains algorithms related to data visualisation and plotting.</p>
-<div class="section" id="plotting-maps">
-<h3>Plotting maps<a class="headerlink" href="#plotting-maps" title="Permalink to this headline">¶</a></h3>
-<p>This module is under development</p>
-<span class="target" id="module-pyaerocom.plot.mapping"></span><p>The mapping module contains functionality to plot maps</p>
+<div class="section" id="module-pyaerocom.plot.mapping">
+<span id="plotting-maps"></span><h3>Plotting maps<a class="headerlink" href="#module-pyaerocom.plot.mapping" title="Permalink to this headline">¶</a></h3>
+<p>This module contains plot routines for Aerocom data. So far, this includes a
+low level, very flexible plot method</p>
 <dl class="function">
-<dt id="pyaerocom.plot.mapping.plot_grid_data">
-<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_grid_data</code><span class="sig-paren">(</span><em>cube</em>, <em>day_idx=0</em>, <em>lon_range=(-180</em>, <em>180)</em>, <em>lat_range=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>cmap_id='jet'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_grid_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_grid_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot variable on map using pcolormesh</p>
+<dt id="pyaerocom.plot.mapping.plot_map">
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>figh=8</em>, <em>fix_aspect=None</em>, <em>fig=None</em>, <em>verbose=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a plot of grid data onto a map</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cube</strong> (<em>iris.cube.Cube</em>) – cube containing data. Note that the input cube must correspond 2D cube
-containing data from one time stamp (i.e. ndim=2).</li>
-<li><strong>day_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index of timestamp that is to be plotted</li>
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – tuple specifying plotted longitude range</li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – tuple specifying plotted latitude range</li>
-<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – lower limit for AOD display</li>
-<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – upper limit for AOD display</li>
-<li><strong>cmap_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID of matplotlib colormap supposed to be used</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<code class="xref py py-obj docutils literal"><span class="pre">ModelData</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">iris.cube.Cube</span></code>) – input data from one timestamp. May also be of type
+<code class="xref py py-class docutils literal"><span class="pre">pyaerocom.ModelData</span></code>. Uses first time stamp if data is has
+more than one time stamp</li>
+<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
+<li><strong>color_theme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – pyaerocom color theme</li>
+<li><strong>color_norm</strong> – data mapping norm for color display</li>
+<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
+<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
+<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal"><span class="pre">vmin</span></code></li>
+<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal"><span class="pre">vmax</span></code></li>
+<li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
+(see <code class="xref py py-func docutils literal"><span class="pre">get_cmap_levels_auto()</span></code> for implementation)</li>
+<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True,</li>
+<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – height of figure in inches</li>
+<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – if not None, then the figure width is computed by multiplication of
+the input float with input parameter <code class="docutils literal"><span class="pre">figh</span></code></li>
+<li><strong>fig</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
+input args (<code class="docutils literal"><span class="pre">figh</span></code> and <code class="docutils literal"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
+Figure is wiped clean before plotting, so any plotted content will be
+lost</li>
 </ul>
 </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib figure instance containing plot</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">fig</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.plot.mapping.plot_map_aerocom">
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map_aerocom</code><span class="sig-paren">(</span><em>data</em>, <em>species</em>, <em>region</em>, <em>fig</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map_aerocom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map_aerocom" title="Permalink to this definition">¶</a></dt>
+<dd><p>High level plotting function to produce map of species</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<code class="xref py py-obj docutils literal"><span class="pre">ModelData</span></code>) – input data from one timestamp.</td>
 </tr>
 </tbody>
 </table>
@@ -1777,7 +1816,7 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
         <a href="api_testsuite.html" class="btn btn-neutral float-right" title="API test-suite" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="readme.html" class="btn btn-neutral" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="notebooks.html" class="btn btn-neutral" title="Notebooks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

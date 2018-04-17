@@ -152,7 +152,7 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer",
 
             iris.coord_categorisation.add_month(cube, TIME_VAR_NAME, name='month_number')
             iris.coord_categorisation.add_year(cube, TIME_VAR_NAME, name='month_year')
-            cube_monthly = cube.aggregated_by(['month_number', 'month_year'],iris.analysis.MEAN)
+            cube_monthly = cube.aggregated_by(['month_number', 'month_year'], iris.analysis.MEAN)
 
             for time_sub_cube in cube_monthly.slices_over(TIME_VAR_NAME):
                 pre_grid_areas = iris.analysis.cartography.area_weights(time_sub_cube)
@@ -198,7 +198,7 @@ def annotate_aerocom(ax):
 
 def plot_ts_map(data, title, plotfilename, lats_to_plot, lons_to_plot, colorbar_ticks, colorbar_levels,
                 colormap, model_name,xticks, yticks,
-                VerboseFlag = False, ):
+                VerboseFlag = False):
 
     """function to plot one time step of a cube for aerocom"""
 
