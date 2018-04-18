@@ -36,6 +36,7 @@
 
 import os
 import glob
+import pdb
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
@@ -49,8 +50,8 @@ class ReadObsData(ReadAeronetSDAV2,ReadAeronetSunV2):
 	SDA_TEST_FILE='/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed/920801_160312_Zvenigorod.ONEILL_20'
 	SUN_TEST_FILE='/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_170401_Zambezi.lev20'
 	#
-	DATASET_IDX_AERONETSDA2_0 = 0
-	DATASET_IDX_AERONETSUN2_0 = 1
+	DATASET_IDX_AERONETSDA2_0 = 1
+	DATASET_IDX_AERONETSUN2_0 = 0
 
 	def __init__(self, DataSetsToRead, VerboseFlag=False):
 		if isinstance( DataSetsToRead, list):
@@ -72,12 +73,12 @@ class ReadObsData(ReadAeronetSDAV2,ReadAeronetSunV2):
 
 		for DataSetToRead in self.DataSetsToRead:
 			#skip unknown data sets
-			#pdb.set_trace()
-			if DataSetToRead == ReadObsData.SUPPORTED_DATASETS[ReadObsData.DATASET_IDX_AERONETSDA2_0]:
+			pdb.set_trace()
+			if DataSetToRead == self.SUPPORTED_DATASETS[ReadObsData.DATASET_IDX_AERONETSDA2_0]:
 				#AeronetSDAV2
 				Dummy = ReadAeronetSDAV2(VerboseFlag = VerboseFlag)	
 
-			elif DataSetToRead == ReadObsData.SUPPORTED_DATASETS[ReadObsData.DATASET_IDX_AERONETSUN2_0]:
+			elif DataSetToRead == self.SUPPORTED_DATASETS[ReadObsData.DATASET_IDX_AERONETSUN2_0]:
 				#Aeronet direct sun V2
 				Dummy = ReadAeronetSunV2(VerboseFlag = VerboseFlag)
 
