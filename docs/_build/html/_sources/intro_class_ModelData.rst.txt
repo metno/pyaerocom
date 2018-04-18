@@ -8,8 +8,9 @@ class of pyaerocom. The ``ModelData`` class is the fundamental base
 class for the analysis of model data. The underlying data type is
 `iris.cube.Cube <http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube>`__
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of ``ModelData``. This notebook
-introduces some of the many features of the ``ModelData`` class.
+files when creating an instance of ``ModelData`` (i.e. by passing the
+filename and specifying the variable name on initialisation). This
+notebook introduces some of the features of the ``ModelData`` class.
 Starting with some imports...
 
 .. code:: ipython3
@@ -25,12 +26,17 @@ Let's get a test file to load
     from pyaerocom.test_files import get
     
     test_files = get()
-    print(test_files["models"])
+    for model_id, filepath in test_files["models"].items(): print("%s\n%s\n" %(model_id, filepath))
 
 
 .. parsed-literal::
 
-    OrderedDict([('aatsr_su_v4.3', '/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed/aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc'), ('ecmwf_osuite', '/lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc')])
+    aatsr_su_v4.3
+    /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed/aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc
+    
+    ecmwf_osuite
+    /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc
+    
 
 
 The dictionary, returned by the ``get()`` function is categorised into
@@ -143,7 +149,23 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550bc', 'od550so4', 'od550oa', 'od550aer', 'od550dust']",)
+    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550so4', 'od550aer', 'od550bc', 'od550oa', 'od550dust']",)
+    6.357274804629144 0.0009405642475446783
+
+
+Also, if you parse an invalid variable name, you will get some hint.
+
+.. code:: ipython3
+
+    try:
+        data = ModelData(input=fpath, var_name="Blaaa")
+    except Exception as e:
+        print("This also did not work...error message: %s" %repr(e))
+
+
+.. parsed-literal::
+
+    This also did not work...error message: ConstraintMismatchError('no cubes found',)
 
 
 You can have a quick look at the data using the class-own quickplot
@@ -151,18 +173,18 @@ method
 
 .. code:: ipython3
 
-    fig = data.quickplot_map(time_idx=0, 
+    fig = data.quickplot_map(time_idx=0,
                              fix_aspect=2, 
                              vmin=0, 
-                             vmax=5.8, 
+                             vmax=1, 
                              c_over="r")
 
 
 
-.. image:: output_12_0.png
+.. image:: output_14_0.png
 
 
-The input parameter time\_idxWhy not load some of the other variables...
+Why not load some of the other variables...
 
 .. code:: ipython3
 
@@ -188,11 +210,11 @@ The input parameter time\_idxWhy not load some of the other variables...
 
 
 
-.. image:: output_16_0.png
+.. image:: output_18_0.png
 
 
 
-.. image:: output_16_1.png
+.. image:: output_18_1.png
 
 
 To be continued ..

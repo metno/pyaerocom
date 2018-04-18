@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This file could contain classes representing ModelData
+This module contains the following classes
 """
 from cf_units import num2date
 from os.path import exists
@@ -21,24 +21,22 @@ class ModelData:
     """Base class representing model data
     
     This class is largely based on the :class:`iris.Cube` object. However, this
-    object comes with an expanded functionality for convenience. Some examples
-    are:
-        
-        1. Class instantiation:
-            :class:`iris.cube.Cube` instances are typically created using
-            helper methods such as:
-                
-                1. :func:`iris.load` (returns :class:`iris.cube.CubeList`, i.e. 
-                a list-like iterable object that contains instance of 
-                :class:`Cube` objects, one for each variable) or 
-                2. :func:`iris.load_cube` (which directly returns a 
-                :class:`iris.cube.Cube` instance, and may be called with a 
-                spec)
-                
-        2. Subsetting and extraction
-            The iris interface is based on :class:`Constraint` objects that 
-            may be defined for variable, time and longitude / latitude range
-            and that can be combined simply using the `&`
+    object comes with an expanded functionality for convenience, for instance, 
+    netCDF files can directly be loaded in the :class:`ModelData` object, 
+    whereas :class:`iris.cube.Cube` instances are typically created using
+    helper methods such as
+    
+    1. :func:`iris.load` (returns 
+    :class:`iris.cube.CubeList`, i.e. a list-like iterable object that contains 
+    instances of :class:`Cube` objects, one for each variable) or 
+    
+    2. :func:`iris.load_cube` which directly returns a :class:`iris.cube.Cube` 
+    instance and typically requires specification of a variable constraint.
+    
+    The :class:`ModelData` object represents one variable in space and time, as
+    well as corresponding meta information. Since it is based on the 
+    :class:`iris.cube.Cube` it is optimised for netCDF files that follow the
+    CF conventions and may not work for files that do not follow this standard.
     
     Attributes
     ----------
@@ -476,7 +474,6 @@ if __name__=='__main__':
         ModelData(files["models"]["ecmwf_osuite"])
     except ValueError as e:
         warn(repr(e))
-        
-
+    
     import doctest
     doctest.testmod()

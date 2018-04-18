@@ -57,7 +57,7 @@ def custom_mpl(mpl_rcparams=None, **kwargs):
             mpl_rcparams[k] = v
     return mpl_rcparams
 
-def calc_pseudolog_cmaplevels(vmin, vmax, num_per_mag=10, add_zero=False):
+def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     """Initiate pseudo-log discrete colormap levels
     
     Note
@@ -70,7 +70,9 @@ def calc_pseudolog_cmaplevels(vmin, vmax, num_per_mag=10, add_zero=False):
         lower end of colormap (e.g. minimum value of data)
     vmax : float
         upper value of colormap (e.g. maximum value of data)
-    
+    add_zero : bool
+        if True, the lower bound is set to 0
+        
     Returns
     -------
     list
@@ -106,10 +108,14 @@ def calc_pseudolog_cmaplevels(vmin, vmax, num_per_mag=10, add_zero=False):
             add_zero = True
     elif not vmax > vmin:
         raise ValueError("Error: vmax must exceed vmin")
-    bounds = [0] if add_zero else []
+    bounds = [0, vmin] if add_zero else [vmin]
     high = float(exponent(vmax))
     low =  float(exponent(vmin))
-    bounds.extend(np.logspace(low, high, (high-low)*10+1, endpoint=True))
+    bounds.extend(np.arange(np.ceil(vmin*10**(-low)), 10, 1)*10.0**(low))
+    for mag in range(int(low+1), int(high)):
+        bounds.extend(np.linspace(1,9,9)*10**(mag))
+    bounds.extend(np.arange(1, np.ceil(vmax*10**(-high)), 1)*10.0**(high))
+    bounds.append(vmax)
     return bounds
 
 def get_cmap_levels_auto(vmin, vmax, num_per_mag=10):
