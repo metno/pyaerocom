@@ -3,10 +3,12 @@
 """
 This module contains the following classes
 """
+from datetime import datetime
 from cf_units import num2date
 from os.path import exists
 from collections import OrderedDict as od
 from iris import Constraint, load, load_cube
+from iris import FUTURE as IRIS_FUTURE
 from iris.cube import Cube, CubeList
 from pandas import Timestamp
 from numpy import datetime64
@@ -16,6 +18,7 @@ from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE, ON_LOAD
 from pyaerocom.helpers import get_time_constraint
 from pyaerocom.region import Region
 
+IRIS_FUTURE.cell_datetime_objects = True
 
 class ModelData:
     """Base class representing model data
@@ -81,12 +84,12 @@ class ModelData:
     """
     _grid = None
     _ON_LOAD = ON_LOAD
-    def __init__(self, input, var_name=None, verbose=VERBOSE, **suppl_info):
+    def __init__(self, input=None, var_name=None, verbose=VERBOSE, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
                              model_id = "Unknown")
-        
-        self.load_input(input, var_name)
+        if input:
+            self.load_input(input, var_name)
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
@@ -215,17 +218,19 @@ class ModelData:
         list 
             list containing all time stamps as datetime64 objects 
         """
-        try:
-            import cf_units
-            ts = self.time
-            return [datetime64(t) for t in cf_units.num2date(ts.points, 
-                                                             ts.units.name, 
-                                                             ts.units.calendar)]
-        except Exception as e:
-            warn("Failed to convert time stamps using cf_units.date2num "
-                 "Trying slower method via cells() method of time dimension")
-            return [datetime64(t.point) for t in ts.cells()]       
-    
+        if self.is_cube:    
+            try:
+                import cf_units
+                ts = self.time
+                return [datetime64(t) for t in cf_units.num2date(ts.points, 
+                                                                 ts.units.name, 
+                                                                 ts.units.calendar)]
+            except Exception as e:
+                #Iterating over the cells using cells() is very slow
+                warn("Failed to convert time stamps using cf_units.date2num "
+                     "Trying slower method via cells() method of time dimension")
+                return [datetime64(t.point) for t in ts.cells()]       
+        
     def check_and_regrid_lons(self):
         """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
         
@@ -441,7 +446,7 @@ class ModelData:
         return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__repr__() 
     
 if __name__=='__main__':
-    from pyaerocom.test_files import get
+    from pyaerocom.io.testfiles import get
     from matplotlib.pyplot import close
     
     close("all")
@@ -474,6 +479,3 @@ if __name__=='__main__':
         ModelData(files["models"]["ecmwf_osuite"])
     except ValueError as e:
         warn(repr(e))
-    
-    import doctest
-    doctest.testmod()

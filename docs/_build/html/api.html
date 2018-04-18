@@ -107,6 +107,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.fileconventions">File naming conventions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.helpers">I / O helper methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.testfiles">Test file access</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.region">Regions / Domains</a></li>
@@ -189,6 +190,7 @@
             
   <div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>Documentation of the pyaerocom programming interface.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <ol class="last arabic simple">
@@ -203,7 +205,7 @@
 <p>This module contains the following classes</p>
 <dl class="class">
 <dt id="pyaerocom.modeldata.ModelData">
-<em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input</em>, <em>var_name=None</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input=None</em>, <em>var_name=None</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class representing model data</p>
 <p>This class is largely based on the <code class="xref py py-class docutils literal"><span class="pre">iris.Cube</span></code> object. However, this
 object comes with an expanded functionality for convenience, for instance,
@@ -1222,6 +1224,44 @@ can be detected in the corresponding renamed sub directory</li>
 <dt id="pyaerocom.io.helpers.get_all_model_ids">
 <code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_all_model_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_all_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_all_model_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try to import all model IDs from file model_ids.txt in data directory</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyaerocom.io.testfiles">
+<span id="test-file-access"></span><h3>Test file access<a class="headerlink" href="#module-pyaerocom.io.testfiles" title="Permalink to this headline">¶</a></h3>
+<p>pyaerocom test files</p>
+<dl class="function">
+<dt id="pyaerocom.io.testfiles.get">
+<code class="descclassname">pyaerocom.io.testfiles.</code><code class="descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/testfiles.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.testfiles.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load test files of models and observations stored in test_files.ini file</p>
+<p>The file should be available at the relative location:</p>
+<blockquote>
+<div>./pyaerocom/data/test_files.ini</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proj_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – project base directory (i.e. pyaerocom.__dir__)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary containing two keys (<cite>models</cite>, <cite>observations</cite>), with
+values being 2 dictionaries that contain pairs of <cite>name</cite> and
+test paths.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code></a> – if the test_files.ini file cannot be found in the specified loaction</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">basename</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">example_file</span> <span class="o">=</span> <span class="n">all_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;aatsr_su_v4.3&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">example_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="o">==</span><span class="s2">&quot;aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

@@ -1,0 +1,12 @@
+/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_GBST/renamed/ECMWF_GBST.daily.od550aer.2003.nc
+Error: ConstraintMismatchError('no cubes found',)
+Variable names in file: aod550 
+/lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/MODIS5.1terra/renamed/aerocom.MODIS5.1terra.monthly.od550aer.2011.nc
+Error: ConstraintMismatchError('no cubes found',)
+Variable names in file: od550_aer 
+/lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/MODIS5.1aqua/renamed/aerocom.MODIS5.1aqua.monthly.od550aer.2007.nc
+Error: ConstraintMismatchError('no cubes found',)
+Variable names in file: od550_aer 
+/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_GBST/renamed/ECMWF_GBST.daily.od550aer.2003.nc
+Error: ConstraintMismatchError('no cubes found',)
+Variable names in file: aod550 

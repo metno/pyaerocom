@@ -8,7 +8,7 @@ __version__, __dir__ = _init_supplemental()
 from . import glob
 from . import config
 from . import mathutils
-from . import test_files
+from . import multiproc
 
 from . import io
 from . import plot

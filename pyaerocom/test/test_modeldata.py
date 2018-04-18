@@ -18,7 +18,7 @@ def example_data_cci(scope='module'):
     The fixture property makes sure that this "variable" is only created once
     for the entire scope of this test session within this module
     '''
-    from pyaerocom.test_files import get
+    from pyaerocom.io.testfiles import get
     test_file = get()['models']['aatsr_su_v4.3']
     return ModelData(test_file, var_name="od550aer")
 
@@ -29,7 +29,7 @@ def example_data_osuite(scope='module'):
     The fixture property makes sure that this "variable" is only created once
     for the entire scope of this test session within this module
     '''
-    from pyaerocom.test_files import get
+    from pyaerocom.io.testfiles import get
     test_file = get()['models']['ecmwf_osuite']
     return ModelData(test_file, var_name="od550aer")
 
