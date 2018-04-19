@@ -40,15 +40,6 @@ class ModelData:
     well as corresponding meta information. Since it is based on the 
     :class:`iris.cube.Cube` it is optimised for netCDF files that follow the
     CF conventions and may not work for files that do not follow this standard.
-    
-    Attributes
-    ----------
-    grid
-        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)
-    suppl_info : dict
-        dictionary containing supplementary information about this data
-        object (these may be attributes that are not already stored within
-        the metadata representation of the underlying data object)
        
     Parameters
     ----------
@@ -81,6 +72,16 @@ class ModelData:
     ...                          time_range=("2008-02-01", "2008-02-15"))
     >>> print(data_cropped.shape)
     (15, 120, 20)
+    
+    Attributes
+    ----------
+    grid
+        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)
+    suppl_info : dict
+        dictionary containing supplementary information about this data
+        object (these may be attributes that are not already stored within
+        the metadata representation of the underlying data object)
+        
     """
     _grid = None
     _ON_LOAD = ON_LOAD
@@ -251,8 +252,6 @@ class ModelData:
             if self.verbose:
                 print("Rolling longitudes to -180 -> 180 definition")
             self.grid = self.grid.intersection(longitude=(-180, 180))
-        
-        
         
     def crop(self, lon_range=None, lat_range=None, 
              time_range=None, region_id=None):

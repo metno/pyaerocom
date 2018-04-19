@@ -8,11 +8,12 @@ Created on Thu Apr 12 14:45:43 2018
 
 import pytest
 import numpy.testing as npt
+from datetime import datetime
 from pyaerocom.glob import TEST_RTOL
 from pyaerocom import ModelData
 
-@pytest.fixture
-def example_data_cci(scope='module'):
+@pytest.fixture(scope='module')
+def data_cci():
     '''import example data from Aerosol CCI
     
     The fixture property makes sure that this "variable" is only created once
@@ -22,8 +23,8 @@ def example_data_cci(scope='module'):
     test_file = get()['models']['aatsr_su_v4.3']
     return ModelData(test_file, var_name="od550aer")
 
-@pytest.fixture
-def example_data_osuite(scope='module'):
+@pytest.fixture(scope='module')
+def data_osuite():
     '''import example data from ECMWF_OSUITE
     
     The fixture property makes sure that this "variable" is only created once
@@ -33,16 +34,45 @@ def example_data_osuite(scope='module'):
     test_file = get()['models']['ecmwf_osuite']
     return ModelData(test_file, var_name="od550aer")
 
-def test_longitudes():
+
+def test_longitude(data_cci, data_osuite):
     """Test if longitudes are defined right"""
-    data_cci = example_data_cci()
-    data_osuite = example_data_osuite()
-    lons_cci = data_cci.grid.coord("longitude").points
-    lons_osuite = data_osuite.grid.coord("longitude").points
+    lons_cci = data_cci.longitude.points
+    lons_osuite = data_osuite.longitude.points
     nominal = [-179.5, 179.5, -180.0, 179.6]
     vals = [lons_cci.min(), lons_cci.max(),
             lons_osuite.min(), lons_osuite.max()]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
     
+def test_latitude(data_cci):
+    """test latitude array"""
+    nominal_eq = ['arc_degree', 0]
+    vals_eq = [data_cci.latitude.units.name,
+               int(sum(data_cci.latitude.points))]
+    npt.assert_array_equal(nominal_eq, vals_eq)
+    
+def test_time(data_cci, data_osuite):
+    """Test time dimension access and values"""
+    time_cci = data_cci.time
+    time_osuite = data_osuite.time
+    nominal_eq = ["gregorian", 
+                  "julian",
+                  'day since 2018-01-01 00:00:00.00000000 UTC',
+                  'day since 2008-01-01 00:00:00.00000000 UTC', 
+                  True, 
+                  False]
+    vals_eq = [time_osuite.units.calendar, 
+               time_cci.units.calendar,
+               time_osuite.units.name, 
+               time_cci.units.name,
+               isinstance(time_osuite.cell(0).point, datetime),
+               isinstance(time_cci.cell(0).point, datetime)]
+    npt.assert_array_equal(nominal_eq, vals_eq)
+
+
 if __name__=="__main__":
-    test_longitudes()
+    import warnings
+    warnings.filterwarnings('ignore')
+    pytest.main()
+    
+    
