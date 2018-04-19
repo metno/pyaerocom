@@ -22,6 +22,12 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 from recommonmark.parser import CommonMarkParser
+
+# This was inserted based on this blog: https://github.com/spinus/sphinxcontrib-images/issues/41, after the following build error occured: Could not import extension sphinxcontrib.images (exception: cannot import name make_admonition), apparently due to a compatibility error between an updated version of sphinx (1.6) and the extension sphinxcontrib.images
+from docutils.parsers.rst.directives.admonitions import BaseAdmonition
+from sphinx.util import compat
+compat.make_admonition = BaseAdmonition
+
 #from jupyter_sphinx_theme import *
 #init_theme()
 
@@ -41,7 +47,8 @@ extensions = ['sphinx.ext.autodoc',
 		      'sphinx.ext.coverage',
     		  'sphinx.ext.mathjax',
     		  'sphinx.ext.viewcode',
-    		  'sphinx.ext.githubpages']
+    		  'sphinx.ext.githubpages',
+    		  'sphinxcontrib.images']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

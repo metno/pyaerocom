@@ -30,6 +30,8 @@
   
 
   
+    <link rel="stylesheet" href="../../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
@@ -162,24 +164,18 @@
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This module contains the following classes</span>
+<span class="sd">Pyaerocom ModelData class</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">num2date</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">exists</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span><span class="p">,</span> <span class="n">load</span><span class="p">,</span> <span class="n">load_cube</span>
-<span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">FUTURE</span> <span class="k">as</span> <span class="n">IRIS_FUTURE</span>
 <span class="kn">from</span> <span class="nn">iris.cube</span> <span class="k">import</span> <span class="n">Cube</span><span class="p">,</span> <span class="n">CubeList</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">datetime64</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">SUPPORTED_DATA_TYPES_MODEL</span><span class="p">,</span> <span class="n">VERBOSE</span><span class="p">,</span> <span class="n">ON_LOAD</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">get_time_constraint</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">get_time_constraint</span><span class="p">,</span> <span class="n">cftime_to_datetime64</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
-
-<span class="n">IRIS_FUTURE</span><span class="o">.</span><span class="n">cell_datetime_objects</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="ModelData"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData">[docs]</a><span class="k">class</span> <span class="nc">ModelData</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Base class representing model data</span>
@@ -201,15 +197,6 @@
 <span class="sd">    well as corresponding meta information. Since it is based on the </span>
 <span class="sd">    :class:`iris.cube.Cube` it is optimised for netCDF files that follow the</span>
 <span class="sd">    CF conventions and may not work for files that do not follow this standard.</span>
-<span class="sd">    </span>
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    grid</span>
-<span class="sd">        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)</span>
-<span class="sd">    suppl_info : dict</span>
-<span class="sd">        dictionary containing supplementary information about this data</span>
-<span class="sd">        object (these may be attributes that are not already stored within</span>
-<span class="sd">        the metadata representation of the underlying data object)</span>
 <span class="sd">       </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -242,6 +229,16 @@
 <span class="sd">    ...                          time_range=(&quot;2008-02-01&quot;, &quot;2008-02-15&quot;))</span>
 <span class="sd">    &gt;&gt;&gt; print(data_cropped.shape)</span>
 <span class="sd">    (15, 120, 20)</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid</span>
+<span class="sd">        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)</span>
+<span class="sd">    suppl_info : dict</span>
+<span class="sd">        dictionary containing supplementary information about this data</span>
+<span class="sd">        object (these may be attributes that are not already stored within</span>
+<span class="sd">        the metadata representation of the underlying data object)</span>
+<span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_grid</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_ON_LOAD</span> <span class="o">=</span> <span class="n">ON_LOAD</span>
@@ -374,23 +371,15 @@
 <div class="viewcode-block" id="ModelData.time_stamps"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.time_stamps">[docs]</a>    <span class="k">def</span> <span class="nf">time_stamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert time stamps into list of numpy datetime64 objects</span>
 <span class="sd">        </span>
+<span class="sd">        The conversion is done using method :func:`cfunit_to_datetime64`</span>
+<span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        list </span>
 <span class="sd">            list containing all time stamps as datetime64 objects </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>    
-            <span class="k">try</span><span class="p">:</span>
-                <span class="kn">import</span> <span class="nn">cf_units</span>
-                <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
-                <span class="k">return</span> <span class="p">[</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cf_units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> 
-                                                                 <span class="n">ts</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
-                                                                 <span class="n">ts</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">calendar</span><span class="p">)]</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1">#Iterating over the cells using cells() is very slow</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to convert time stamps using cf_units.date2num &quot;</span>
-                     <span class="s2">&quot;Trying slower method via cells() method of time dimension&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="p">[</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">point</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>       </div>
+            <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
         
 <div class="viewcode-block" id="ModelData.check_and_regrid_lons"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.check_and_regrid_lons">[docs]</a>    <span class="k">def</span> <span class="nf">check_and_regrid_lons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks and corrects for if longitudes of :attr:`grid` are 0 -&gt; 360</span>
@@ -412,8 +401,6 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Rolling longitudes to -180 -&gt; 180 definition&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">))</span></div>
-        
-        
         
 <div class="viewcode-block" id="ModelData.crop"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.crop">[docs]</a>    <span class="k">def</span> <span class="nf">crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
              <span class="n">time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">region_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -607,7 +594,7 @@
         <span class="k">return</span> <span class="s2">&quot;pyaerocom.ModelData</span><span class="se">\n</span><span class="s2">Grid data: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span> </div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+    <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
     <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">close</span>
     
     <span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
@@ -636,14 +623,11 @@
     <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=.</span><span class="mi">4</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
     <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
     
+    
     <span class="k">try</span><span class="p">:</span>
         <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">])</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-    
-    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">IRIS_FUTURE</span><span class="o">.</span><span class="n">cell_datetime_objects</span><span class="p">)</span>
 </pre></div>
 
            </div>
@@ -691,6 +675,9 @@
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+      <script type="text/javascript" src="../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+      <script type="text/javascript" src="../../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

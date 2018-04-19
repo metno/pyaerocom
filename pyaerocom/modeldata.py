@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This module contains the following classes
+Pyaerocom ModelData class
 """
-from datetime import datetime
-from cf_units import num2date
 from os.path import exists
 from collections import OrderedDict as od
 from iris import Constraint, load, load_cube
-from iris import FUTURE as IRIS_FUTURE
 from iris.cube import Cube, CubeList
 from pandas import Timestamp
-from numpy import datetime64
 from warnings import warn
 
 from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE, ON_LOAD
-from pyaerocom.helpers import get_time_constraint
+from pyaerocom.helpers import get_time_constraint, cftime_to_datetime64
 from pyaerocom.region import Region
-
-IRIS_FUTURE.cell_datetime_objects = True
 
 class ModelData:
     """Base class representing model data
@@ -214,23 +208,15 @@ class ModelData:
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
         
+        The conversion is done using method :func:`cfunit_to_datetime64`
+        
         Returns
         -------
         list 
             list containing all time stamps as datetime64 objects 
         """
         if self.is_cube:    
-            try:
-                import cf_units
-                ts = self.time
-                return [datetime64(t) for t in cf_units.num2date(ts.points, 
-                                                                 ts.units.name, 
-                                                                 ts.units.calendar)]
-            except Exception as e:
-                #Iterating over the cells using cells() is very slow
-                warn("Failed to convert time stamps using cf_units.date2num "
-                     "Trying slower method via cells() method of time dimension")
-                return [datetime64(t.point) for t in ts.cells()]       
+            return cftime_to_datetime64(self.time)
         
     def check_and_regrid_lons(self):
         """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
@@ -473,6 +459,7 @@ if __name__=='__main__':
     
     ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
     ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
+    
     
     try:
         ModelData(files["models"]["ecmwf_osuite"])
