@@ -1,7 +1,7 @@
 Metadata-Version: 1.1
 Name: pyaerocom
 Version: 0.0.1.dev1
-Summary: Python software for Aerocom related analyses and  comparisons of global aerosol model data (e.g. ECMWF) and observations (e.g. Aeronet, Satellite observations)
+Summary: Python tools for the Aerocom project
 Home-page: https://github.com/jgliss/pyaerocom.git
 Author: Jonas Gliss
 Author-email: jonas.gliss@met.no

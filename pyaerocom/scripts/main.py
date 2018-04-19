@@ -32,23 +32,23 @@ import getpass
 import socket
 import pdb
 
-
-if __name__ == '__main__':
-
-    user = None
+def cli():
+    """Pyaerocom command line interface (CLI)
+    
+    Pyaerocom is a Python package for the Aerocom project 
+    """
     user = getpass.getuser()
     from pyaerocom import config as const
-    import pyaerocom.io as io
+    from ..io.readobsdata import ReadObsData
     SupportedObsNetworks = ''
-    from pyaerocom import ModelData
-
 
     # command line interface using argparse
     Options = {}
     parser = argparse.ArgumentParser(
         description='pyaerocom.py\n\n\n')
     parser.add_argument("model",
-                        help="model names to use; can be a comma separated list; use " + const.NOMODELNAME +
+                        help="model names to use; can be a comma separated "
+                              "list; use " + const.NOMODELNAME +
                              " for observations only",nargs="+")
     parser.add_argument("--variable", help="list of variables; comma seperated.")
     parser.add_argument("--modelyear",
@@ -139,6 +139,10 @@ if __name__ == '__main__':
 
         # start Obs reading
         pdb.set_trace()
-        ObsData = io.ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME, VerboseFlag = Options['VERBOSE'])
+        ObsData = ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME, 
+                              VerboseFlag=Options['VERBOSE'])
         ObsData.ReadDaily()
+if __name__ == '__main__':
+    cli()
+    
 

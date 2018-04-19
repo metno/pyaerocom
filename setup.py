@@ -45,8 +45,7 @@ setup(
 
     install_requires    =   [],
     dependency_links    =   [],
-    description = ('Python software for Aerocom related analyses and '
-                   ' comparisons of global aerosol model data (e.g. ECMWF) and '
-                   'observations (e.g. Aeronet, Satellite observations)'),
+    description = ('Python tools for the Aerocom project'),
     long_description = readme,
+    entry_points = {'console_scripts' : ['pyaerocom=pyaerocom.scripts.main:cli']}
 )
