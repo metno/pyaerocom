@@ -421,6 +421,11 @@ class ModelData:
                        self.time.cell(time_idx)))
         return fig
     
+    def _init_testdata_default(self):
+        """Helper method that loads ECMWF_OSUITE test data"""
+        from pyaerocom.io.testfiles import get
+        self.load_input(get()["models"]["ecmwf_osuite"], var_name="od550aer")
+        
     def __str__(self):
         """For now, use string representation of underlying data"""
         return ("pyaerocom.ModelData: %s\nGrid data: %s" 

@@ -168,6 +168,9 @@
 <span class="sd">Global configurations for plotting </span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">get_cmap</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.variable</span> <span class="k">import</span> <span class="n">Variable</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">cmocean.cm</span> <span class="k">import</span> <span class="n">dense</span>
     <span class="n">_cmap_lighttheme</span> <span class="o">=</span> <span class="n">dense</span>
@@ -182,6 +185,25 @@
                                  <span class="n">cmap_map</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> 
                                  <span class="n">color_coastline</span> <span class="o">=</span><span class="s2">&quot;#e6e6e6&quot;</span><span class="p">))</span>
 
+<div class="viewcode-block" id="MapPlotSettings"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.MapPlotSettings">[docs]</a><span class="k">class</span> <span class="nc">MapPlotSettings</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class specifying predefined plot settings for a species and region</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variable : :obj:`str` or :obj</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vmin</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lon_range</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat_range</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar_bounds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lon_ticks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat_ticks</span> <span class="o">=</span> <span class="kc">None</span>
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+        
+    
 <div class="viewcode-block" id="ColorTheme"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.ColorTheme">[docs]</a><span class="k">class</span> <span class="nc">ColorTheme</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Pyaerocom class specifiying plotting color theme</span>
 <span class="sd">    </span>
@@ -208,7 +230,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cmap_map</span> <span class="o">=</span> <span class="n">cmap_map</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">color_coastline</span> <span class="o">=</span> <span class="n">color_coastline</span>
-        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_COLOR_THEMES</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Invalid name for color theme, using default theme dark&quot;</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;dark&quot;</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_COLOR_THEMES</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_default</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     

@@ -1,0 +1,310 @@
+Results of doctest builder run on 2018-04-20 16:19:51
+=====================================================
+
+Document: api
+-------------
+**********************************************************************
+File "api.rst", line 50, in default
+Failed example:
+    from pyaerocom.test_files import get
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[0]>", line 1, in <module>
+        from pyaerocom.test_files import get
+    ModuleNotFoundError: No module named 'pyaerocom.test_files'
+**********************************************************************
+File "api.rst", line 51, in default
+Failed example:
+    files = get()
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[1]>", line 1, in <module>
+        files = get()
+    NameError: name 'get' is not defined
+**********************************************************************
+File "api.rst", line 52, in default
+Failed example:
+    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+                     verbose=False)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[2]>", line 1, in <module>
+        data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+    NameError: name 'ModelData' is not defined
+**********************************************************************
+File "api.rst", line 54, in default
+Failed example:
+    print(data.var_name)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[3]>", line 1, in <module>
+        print(data.var_name)
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 56, in default
+Failed example:
+    print(type(data.longitude))
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[4]>", line 1, in <module>
+        print(type(data.longitude))
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 58, in default
+Failed example:
+    print(data.longitude.points.min(), data.longitude.points.max())
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[5]>", line 1, in <module>
+        print(data.longitude.points.min(), data.longitude.points.max())
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 60, in default
+Failed example:
+    print(data.latitude.points.min(), data.latitude.points.max())
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[6]>", line 1, in <module>
+        print(data.latitude.points.min(), data.latitude.points.max())
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 62, in default
+Failed example:
+    print(data.time.points.min(), data.time.points.max())
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[7]>", line 1, in <module>
+        print(data.time.points.min(), data.time.points.max())
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 64, in default
+Failed example:
+    tstamps = data.time_stamps()
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[8]>", line 1, in <module>
+        tstamps = data.time_stamps()
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 65, in default
+Failed example:
+    print(tstamps[0], tstamps[-1])
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[9]>", line 1, in <module>
+        print(tstamps[0], tstamps[-1])
+    NameError: name 'tstamps' is not defined
+**********************************************************************
+File "api.rst", line 67, in default
+Failed example:
+    data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),
+                             time_range=("2008-02-01", "2008-02-15"))
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[10]>", line 1, in <module>
+        data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),
+    NameError: name 'data' is not defined
+**********************************************************************
+File "api.rst", line 69, in default
+Failed example:
+    print(data_cropped.shape)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[11]>", line 1, in <module>
+        print(data_cropped.shape)
+    NameError: name 'data_cropped' is not defined
+**********************************************************************
+File "api.rst", line 26, in default
+Failed example:
+    all_files = get()
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[1]>", line 1, in <module>
+        all_files = get()
+    NameError: name 'get' is not defined
+**********************************************************************
+File "api.rst", line 27, in default
+Failed example:
+    example_file = all_files["models"]["aatsr_su_v4.3"]
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[2]>", line 1, in <module>
+        example_file = all_files["models"]["aatsr_su_v4.3"]
+    NameError: name 'all_files' is not defined
+**********************************************************************
+File "api.rst", line 28, in default
+Failed example:
+    filename = basename(example_file)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[3]>", line 1, in <module>
+        filename = basename(example_file)
+    NameError: name 'example_file' is not defined
+**********************************************************************
+File "api.rst", line 29, in default
+Failed example:
+    print(filename=="aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc")
+Expected:
+    True
+Got:
+    False
+**********************************************************************
+File "api.rst", line ?, in default
+Failed example:
+    print(europe)
+Expected:
+    pyaeorocom Region
+    Name: EUROPE
+    Longitude range: [-20.0, 70.0]
+    Latitude range: [30.0, 80.0]
+    Longitude range (plots): [-20.0, 70.0]
+    Latitude range (plots): [30.0, 80.0]
+Got:
+    pyaeorocom Region
+    Name: EUROPE
+    Longitude range: [-20, 70]
+    Latitude range: [30, 80]
+    Longitude range (plots): [-20, 70]
+    Latitude range (plots): [30, 80]
+**********************************************************************
+File "api.rst", line ?, in default
+Failed example:
+    print(india)
+Expected:
+    pyaeorocom Region
+    Name: INDIA
+    Longitude range: [65.0, 90.0]
+    Latitude range: [5.0, 35.0]
+    Longitude range (plots): [50.0, 100.0]
+    Latitude range (plots): [0.0, 40.0]
+Got:
+    pyaeorocom Region
+    Name: INDIA
+    Longitude range: [65, 90]
+    Latitude range: [5, 35]
+    Longitude range (plots): [50, 100]
+    Latitude range (plots): [0, 40]
+**********************************************************************
+File "api.rst", line 33, in default
+Failed example:
+    cftime_to_datetime64(10, cfunit_str, "gregorian")
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[1]>", line 1, in <module>
+        cftime_to_datetime64(10, cfunit_str, "gregorian")
+    NameError: name 'cftime_to_datetime64' is not defined
+**********************************************************************
+File "api.rst", line 33, in default
+Failed example:
+    c = get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
+Expected:
+    Traceback (most recent call last):
+     ...
+    ValueError: Left coordinate must exceed right coordinate
+Got:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[4]>", line 1, in <module>
+        c = get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
+    NameError: name 'get_lon_constraint' is not defined
+**********************************************************************
+File "api.rst", line 37, in default
+Failed example:
+    c = get_lon_constraint(lon_range=(-30, 30), meridian_centre=True)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[5]>", line 1, in <module>
+        c = get_lon_constraint(lon_range=(-30, 30), meridian_centre=True)
+    NameError: name 'get_lon_constraint' is not defined
+**********************************************************************
+File "api.rst", line 39, in default
+Failed example:
+    assert data_crop.grid.shape == (366, 180, 60)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[7]>", line 1, in <module>
+        assert data_crop.grid.shape == (366, 180, 60)
+    AssertionError
+**********************************************************************
+File "api.rst", line 19, in default
+Failed example:
+    range_magnitude(0.1, 100)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[0]>", line 1, in <module>
+        range_magnitude(0.1, 100)
+    NameError: name 'range_magnitude' is not defined
+**********************************************************************
+File "api.rst", line 21, in default
+Failed example:
+    range_magnitude(100, 0.1)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[1]>", line 1, in <module>
+        range_magnitude(100, 0.1)
+    NameError: name 'range_magnitude' is not defined
+**********************************************************************
+File "api.rst", line 23, in default
+Failed example:
+    range_magnitude(1e-3, 1e6)
+Exception raised:
+    Traceback (most recent call last):
+      File "/home/jonasg/anaconda3/lib/python3.6/doctest.py", line 1330, in __run
+        compileflags, 1), test.globs)
+      File "<doctest default[2]>", line 1, in <module>
+        range_magnitude(1e-3, 1e6)
+    NameError: name 'range_magnitude' is not defined
+**********************************************************************
+1 items had failures:
+  25 of  69 in default
+69 tests in 1 items.
+44 passed and 25 failed.
+***Test Failed*** 25 failures.
+
+Doctest summary
+===============
+   69 tests
+   25 failures in tests
+    0 failures in setup code
+    0 failures in cleanup code

@@ -167,16 +167,13 @@
 <span class="sd">This module contains functionality related to regions in pyaerocom</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">ast</span> <span class="k">import</span> <span class="n">literal_eval</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">from</span> <span class="nn">configparser</span> <span class="k">import</span> <span class="n">ConfigParser</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="fm">__dir__</span>
 
-<div class="viewcode-block" id="Region"><a class="viewcode-back" href="../../api.html#pyaerocom.region.Region">[docs]</a><span class="k">class</span> <span class="nc">Region</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Interface that specifies a region</span>
-<span class="sd">    </span>
-<span class="sd">    See `regions.ini &lt;https://github.com/metno/pyaerocom/blob/master/</span>
-<span class="sd">    pyaerocom/data/regions.ini&gt;`__ file for an overview of currently available </span>
-<span class="sd">    default regions.</span>
+<div class="viewcode-block" id="Region"><a class="viewcode-back" href="../../api.html#pyaerocom.region.Region">[docs]</a><span class="k">class</span> <span class="nc">Region</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interface that specifies an AEROCOM region</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -278,7 +275,8 @@
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">conf_reader</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
-                    <span class="n">val</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+                    <span class="c1">#list of values</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">val</span><span class="p">))</span><span class="c1">#[float(x) for x in val.split(&quot;,&quot;)]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>

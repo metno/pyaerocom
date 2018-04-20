@@ -1275,9 +1275,7 @@ test paths.</td>
 <dl class="class">
 <dt id="pyaerocom.region.Region">
 <em class="property">class </em><code class="descclassname">pyaerocom.region.</code><code class="descname">Region</code><span class="sig-paren">(</span><em>name='WORLD'</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/region.html#Region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.region.Region" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interface that specifies a region</p>
-<p>See <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini">regions.ini</a> file for an overview of currently available
-default regions.</p>
+<dd><p>Interface that specifies an AEROCOM region</p>
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.name">
 <code class="descname">name</code><a class="headerlink" href="#pyaerocom.region.Region.name" title="Permalink to this definition">¶</a></dt>
@@ -1419,7 +1417,7 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 low level, very flexible plot method</p>
 <dl class="function">
 <dt id="pyaerocom.plot.mapping.plot_map">
-<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>figh=8</em>, <em>fix_aspect=None</em>, <em>fig=None</em>, <em>verbose=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>add_zero=False</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>figh=8</em>, <em>fix_aspect=None</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>fig=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of grid data onto a map</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1431,10 +1429,11 @@ low level, very flexible plot method</p>
 more than one time stamp</li>
 <li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
-<li><strong>color_theme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – pyaerocom color theme</li>
 <li><strong>color_norm</strong> – data mapping norm for color display</li>
 <li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
 <li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
+<li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
+This may be used, e.g. for logarithmic scales that should include 0.</li>
 <li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal"><span class="pre">vmin</span></code></li>
 <li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal"><span class="pre">vmax</span></code></li>
 <li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
@@ -1443,14 +1442,18 @@ more than one time stamp</li>
 <li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – height of figure in inches</li>
 <li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – if not None, then the figure width is computed by multiplication of
 the input float with input parameter <code class="docutils literal"><span class="pre">figh</span></code></li>
+<li><strong>color_theme</strong> (<a class="reference internal" href="#pyaerocom.plot.config.ColorTheme" title="pyaerocom.plot.config.ColorTheme"><em>ColorTheme</em></a>) – pyaerocom color theme</li>
 <li><strong>fig</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
 input args (<code class="docutils literal"><span class="pre">figh</span></code> and <code class="docutils literal"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
 Figure is wiped clean before plotting, so any plotted content will be
 lost</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, print output</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib figure instance containing plot</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib figure instance containing plot result. Use
+<code class="docutils literal"><span class="pre">fig.axes[0]</span></code> to access the map axes instance (e.g. to modify the
+title or lon / lat range, etc.)</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">fig</p>
@@ -1478,6 +1481,20 @@ lost</li>
 <div class="section" id="module-pyaerocom.plot.config">
 <span id="colors-etc"></span><h3>Colors etc.<a class="headerlink" href="#module-pyaerocom.plot.config" title="Permalink to this headline">¶</a></h3>
 <p>Global configurations for plotting</p>
+<dl class="class">
+<dt id="pyaerocom.plot.config.MapPlotSettings">
+<em class="property">class </em><code class="descclassname">pyaerocom.plot.config.</code><code class="descname">MapPlotSettings</code><span class="sig-paren">(</span><em>variable</em>, <em>region</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#MapPlotSettings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.MapPlotSettings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class specifying predefined plot settings for a species and region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or :obj) – </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="class">
 <dt id="pyaerocom.plot.config.ColorTheme">
 <em class="property">class </em><code class="descclassname">pyaerocom.plot.config.</code><code class="descname">ColorTheme</code><span class="sig-paren">(</span><em>name='dark'</em>, <em>cmap_map=None</em>, <em>color_coastline=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/config.html#ColorTheme"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.config.ColorTheme" title="Permalink to this definition">¶</a></dt>

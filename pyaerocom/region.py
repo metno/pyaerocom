@@ -4,16 +4,13 @@
 This module contains functionality related to regions in pyaerocom
 """
 from os.path import join, exists
+from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
 from pyaerocom import __dir__
 
-class Region:
-    """Interface that specifies a region
-    
-    See `regions.ini <https://github.com/metno/pyaerocom/blob/master/
-    pyaerocom/data/regions.ini>`__ file for an overview of currently available 
-    default regions.
+class Region(object):
+    """Interface that specifies an AEROCOM region
     
     Attributes
     ----------
@@ -115,7 +112,8 @@ class Region:
         for key, val in conf_reader[name].items():
             if key in self.__dict__:
                 if "," in val:
-                    val = [float(x) for x in val.split(",")]
+                    #list of values
+                    val = list(literal_eval(val))#[float(x) for x in val.split(",")]
                 else:
                     try:
                         val = int(val)

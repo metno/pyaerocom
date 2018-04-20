@@ -11,7 +11,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from numpy import meshgrid, linspace, ceil
 from pyaerocom.glob import VERBOSE
-from pyaerocom.plot.config import COLOR_THEME
+from pyaerocom.plot.config import COLOR_THEME, ColorTheme
 from pyaerocom.plot.helpers import (calc_figsize, custom_mpl, 
                                     calc_pseudolog_cmaplevels)
 from pyaerocom.mathutils import exponent
@@ -19,10 +19,10 @@ from pyaerocom.modeldata import ModelData
 
 custom_mpl()
 
-def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), color_theme=COLOR_THEME, 
-             vmin=None, vmax=None, c_under=None, c_over=None, 
-             log_scale=True, discrete_norm=True, figh=8, fix_aspect=None,
-             fig = None, verbose=VERBOSE, **kwargs):
+def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None, 
+             add_zero=False, c_under=None, c_over=None, log_scale=True, 
+             discrete_norm=True, figh=8, fix_aspect=None, 
+             color_theme=COLOR_THEME, fig=None, verbose=VERBOSE):
     """Make a plot of grid data onto a map
     
     Parameters
@@ -35,14 +35,15 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), color_theme=COLOR_THEME,
         2-element tuple specifying plotted longitude range
     ylim : tuple
         2-element tuple specifying plotted latitude range
-    color_theme : str
-        pyaerocom color theme
     color_norm 
         data mapping norm for color display
     vmin : :obj:`float`, optional
         lower value of colorbar range
     vmax : :obj:`float`, optional 
         upper value of colorbar range
+    add_zero : bool
+        if True and vmin is not 0, then, the colorbar is extended down to 0. 
+        This may be used, e.g. for logarithmic scales that should include 0.
     c_under : :obj:`float`, optional 
         colour of data values smaller than ``vmin``
     c_over : :obj:`float`, optional 
@@ -57,16 +58,22 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), color_theme=COLOR_THEME,
     fix_aspect : :obj:`float`, optional
         if not None, then the figure width is computed by multiplication of
         the input float with input parameter ``figh``
+    color_theme : ColorTheme
+        pyaerocom color theme
     fig : :obj:`Figure`, optional
         instance of matplotlib Figure class. If specified, the former to 
         input args (``figh`` and ``fix_aspect``) are ignored. Note that the 
         Figure is wiped clean before plotting, so any plotted content will be 
         lost
+    verbose : bool
+        if True, print output
     
     Returns
     -------
     fig
-        matplotlib figure instance containing plot
+        matplotlib figure instance containing plot result. Use 
+        ``fig.axes[0]`` to access the map axes instance (e.g. to modify the 
+        title or lon / lat range, etc.)
     """
     if isinstance(data, ModelData):
         data = data.grid
@@ -75,6 +82,11 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), color_theme=COLOR_THEME,
             print("Input data contains more than one time stamp, using first "
                   "time stamp")
         data = data[0]
+    if not isinstance(color_theme, ColorTheme):
+        if isinstance(color_theme, str):
+            color_theme = ColorTheme(color_theme)  
+        else:
+            color_theme = COLOR_THEME
     tstr = str(data.coord("time").cell(0))
 
     lons, lats = data.coord("longitude").points, data.coord("latitude").points
@@ -89,7 +101,7 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), color_theme=COLOR_THEME,
     ax = fig.add_axes([0.1, .1, .8, .8], projection=ccrs.PlateCarree())
     ax_cbar = fig.add_axes([0.905, .1, .02, .8])
     X, Y = meshgrid(lons, lats)
-    cmap = copy(COLOR_THEME.cmap_map)
+    cmap = copy(color_theme.cmap_map)
     if vmin is None:
         vmin = data.data.min()
     if vmax is None:
@@ -100,8 +112,9 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), color_theme=COLOR_THEME,
         #to compute upper range of colour range, round up vmax
         exp = float(exponent(vmax) - 1)
         vmax_colors = ceil(vmax / 10**exp)*10**exp
-        bounds = calc_pseudolog_cmaplevels(vmin=vmin, vmax=vmax_colors, **kwargs)
-        norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)#, clip=True)
+        bounds = calc_pseudolog_cmaplevels(vmin=vmin, vmax=vmax_colors,
+                                           add_zero=add_zero)
+        norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     elif log_scale:
         norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
     else: 

@@ -71,7 +71,7 @@ def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     vmax : float
         upper value of colormap (e.g. maximum value of data)
     add_zero : bool
-        if True, the lower bound is set to 0
+        if True, the lower bound is set to 0 (irrelevant if vmin is 0).
         
     Returns
     -------

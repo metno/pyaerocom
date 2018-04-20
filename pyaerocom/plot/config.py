@@ -5,6 +5,9 @@
 Global configurations for plotting 
 """
 from matplotlib.pyplot import get_cmap
+from warnings import warn
+from pyaerocom.region import Region
+from pyaerocom.variable import Variable
 try:
     from cmocean.cm import dense
     _cmap_lighttheme = dense
@@ -19,6 +22,25 @@ _COLOR_THEMES = dict(light = dict(name="light",
                                  cmap_map="viridis", 
                                  color_coastline ="#e6e6e6"))
 
+class MapPlotSettings(object):
+    """Class specifying predefined plot settings for a species and region
+    
+    Parameters
+    ----------
+    variable : :obj:`str` or :obj
+    """
+    def __init__(self, variable, region, **kwargs):
+        self.vmin = None
+        self.vmax = None
+        self.lon_range = None
+        self.lat_range = None
+        self.cbar_bounds = None
+        self.lon_ticks = None
+        self.lat_ticks = None
+    
+        self.load_input(variable, region, kwargs)
+        
+    
 class ColorTheme(object):
     """Pyaerocom class specifiying plotting color theme
     
@@ -45,7 +67,9 @@ class ColorTheme(object):
         self.name = name
         self.cmap_map = cmap_map
         self.color_coastline = color_coastline
-        
+        if not name in _COLOR_THEMES:
+            warn("Invalid name for color theme, using default theme dark")
+            name = "dark"
         if name in _COLOR_THEMES:
             self.load_default(name)
     
