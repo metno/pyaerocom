@@ -4,9 +4,17 @@
    contain the root `toctree` directive.
 
 ***************************
-The **pyaerocom** webpage
+The Pyaerocom website
 ***************************
 
+Official website of Pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AEROCOM project <http://aerocom.met.no/protocol.html>`__.
+
+.. thumbnail:: output_18_0.png
+  :width: 600px
+  :align: center
+  :title:
+
+  Example map-plot of the Aerosol optical depth at 550nm for the first day of 2018 from the model ECMWF_OSUITE
 .. toctree::
    :maxdepth: 3
    :caption: Contents:

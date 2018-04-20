@@ -5,8 +5,103 @@ General helper methods for the pyaerocom library.
 """
 from iris import Constraint
 from iris.time import PartialDateTime
+from iris.coords import DimCoord
 from pandas import Timestamp
+from numpy import datetime64, asarray
 from pyaerocom.exceptions import LongitudeConstraintError
+from cf_units import Unit
+from datetime import MINYEAR, datetime
+
+from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
+                    hr_units, day_units)
+from netCDF4._netCDF4 import _dateparse
+ 
+# Start of the gregorian calendar
+# adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
+GREGORIAN_BASE = datetime(1582, 10, 15)
+
+def cftime_to_datetime64(times, cfunit=None, calendar=None):
+    """Convert numerical timestamps with epoch to numpy datetime64
+    
+    This method was designed to enhance the performance of datetime conversions
+    and is based on the corresponding information provided in the cftime 
+    package (`see here <https://github.com/Unidata/cftime/blob/master/cftime/
+    _cftime.pyx>`__). Particularly, this object does, what the :func:`num2date` 
+    therein does, but faster, in case the time stamps are not defined on a non
+    standard calendar.
+    
+    Parameters
+    ----------
+    times : :obj:`list` or :obj:`ndarray` or :obj:`iris.coords.DimCoord`
+        array containing numerical time stamps (relative to basedate of 
+        ``cfunit``). Can also be a single number.
+    cfunit : :obj:`str` or :obj:`Unit`, optional
+        CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
+        unit. Required if `times` is not an instance of 
+        :class:`iris.coord.DimCoord`
+    calendar : :obj:`str`, optional
+        string specifying calendar (only required if ``cfunit`` is of type
+        ``str``).
+        
+    Returns
+    -------
+    ndarray
+        numpy array containing timestamps as datetime64 objects
+        
+    Raises
+    ------
+    ValueError
+        if cfunit is ``str`` and calendar is not provided or invalid, or if 
+        the cfunit string is invalid
+        
+    Example
+    -------
+    
+    >>> cfunit_str = 'day since 2018-01-01 00:00:00.00000000 UTC'
+    >>> cftime_to_datetime64(10, cfunit_str, "gregorian")
+    array(['2018-01-11T00:00:00.000000'], dtype='datetime64[us]')
+    """
+    if isinstance(times, DimCoord): #special case
+        times, cfunit = times.points, times.units
+    try:
+        len(times)
+    except:
+        times = [times]
+    if isinstance(cfunit, str):
+        if calendar is None:
+            raise ValueError("Require specification of calendar for "
+                             "conversion into datetime64 objects")
+        cfunit = Unit(cfunit, calendar) #raises Error if calendar is invalid
+    if not isinstance(cfunit, Unit):
+        raise ValueError("Please provide cfunit either as instance of class "
+                         "cf_units.Unit or as a string")
+    cfu_str, calendar = cfunit.name, cfunit.calendar
+    basedate = _dateparse(cfu_str)
+    cfu_str = cfunit.name
+    basedate = _dateparse(cfu_str)  
+    if ((calendar == 'proleptic_gregorian' and basedate.year >= MINYEAR) or 
+        (calendar in ['gregorian','standard'] and basedate > GREGORIAN_BASE)):
+        cfu_str = cfunit.name
+        res = cfu_str.split()[0].lower()
+        if res in microsec_units:
+            tstr = "us"
+        elif res in millisec_units:
+            tstr = "ms"
+        elif res in sec_units:
+            tstr = "s"
+        elif res in min_units:
+            tstr = "m"
+        elif res in hr_units:
+            tstr = "h"
+        elif res in day_units:
+            tstr = "D"
+        else:
+            raise ValueError('unsupported time units')
+        
+        basedate = datetime64(basedate)
+        return basedate + asarray(times, dtype="timedelta64[%s]" %tstr)
+    else:
+        return asarray([datetime64(t) for t in cfunit.num2date(times)])
 
 def get_constraint(var_names=None, lon_range=None, lat_range=None, 
                    time_range=None, meridian_centre=True):
@@ -55,9 +150,10 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
     The following example shows how to crop over the meridian
     
     >>> from pyaerocom.helpers import get_constraint
-    >>> from pyaerocom.io.utils import FileConventionRead
+    >>> from pyaerocom.io.fileconventions import FileConventionRead
     >>> from iris import load
-    >>> from pyaerocom.test_files import get
+    >>> from pyaerocom.io.testfiles import get
+    >>> files = get()
     >>> fname = files['models']['aatsr_su_v4.3']
     >>> convention = FileConventionRead().from_file(fname)
     >>> meta_info = convention.get_info_from_file(fname)
@@ -179,7 +275,7 @@ def get_lon_constraint(lon_range, meridian_centre=True):
 
     Example
     -------
-    >>> from pyaerocom.test_files import get
+    >>> from pyaerocom.io.testfiles import get
     >>> from pyaerocom import ModelData
     >>> files = get()
     >>> data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
@@ -239,8 +335,10 @@ def get_time_constraint(start_time, stop_time):
 
 if __name__=="__main__":
     import doctest
+    import warnings
+    warnings.simplefilter("ignore")
     doctest.testmod()
-    from pyaerocom.test_files import get
+    from pyaerocom.io.testfiles import get
     from pyaerocom import ModelData
     files = get()
     data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
@@ -251,7 +349,6 @@ if __name__=="__main__":
         print("Expected beahviour")
     
     from iris import load
-    from pyaerocom.test_files import get
     cubes = load(files['models']['aatsr_su_v4.3'])
     lons = cubes[0].coord("longitude").points
     meridian_centre = True if lons.max() > 180 else False

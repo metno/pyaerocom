@@ -1,6 +1,8 @@
 API
 ===
 
+Documentation of the pyaerocom programming interface.
+
 .. note::
 
 	1. The code documentation is far from complete 
@@ -62,6 +64,13 @@ I / O helper methods
    :members:
    :undoc-members:
 
+Test file access
+^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.testfiles
+   :members:
+   :undoc-members:
+   
 Regions / Domains
 -------------------------
 
@@ -91,6 +100,7 @@ Colors etc.
 
 Helpers
 -------
+
 General helper methods
 ^^^^^^^^^^^^^^^^^^^^^^ 
 

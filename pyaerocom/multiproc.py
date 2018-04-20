@@ -7,10 +7,10 @@ Created on Fri Apr 13 11:34:57 2018
 """
 
 from collections import OrderedDict as od
-import multiprocessing
+from multiprocessing.pool import Pool
 from functools import partial
 
-class PlotMultiCore(multiprocessing.pool.Pool):
+class PlotMultiCore(Pool):
     """Class that may be used for running multi
     
     Attributes

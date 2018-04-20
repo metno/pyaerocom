@@ -30,6 +30,8 @@
   
 
   
+    <link rel="stylesheet" href="../../../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
@@ -197,6 +199,7 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sdav2</span> <span class="k">import</span> <span class="n">ReadAeronetSDAV2</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sunv2</span> <span class="k">import</span> <span class="n">ReadAeronetSunV2</span>
@@ -210,8 +213,8 @@
 	<span class="n">SDA_TEST_FILE</span><span class="o">=</span><span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed/920801_160312_Zvenigorod.ONEILL_20&#39;</span>
 	<span class="n">SUN_TEST_FILE</span><span class="o">=</span><span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_170401_Zambezi.lev20&#39;</span>
 	<span class="c1">#</span>
-	<span class="n">DATASET_IDX_AERONETSDA2_0</span> <span class="o">=</span> <span class="mi">0</span>
-	<span class="n">DATASET_IDX_AERONETSUN2_0</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="n">DATASET_IDX_AERONETSDA2_0</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="n">DATASET_IDX_AERONETSUN2_0</span> <span class="o">=</span> <span class="mi">0</span>
 
 	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">DataSetsToRead</span><span class="p">,</span> <span class="n">VerboseFlag</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">DataSetsToRead</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -233,12 +236,12 @@
 
 		<span class="k">for</span> <span class="n">DataSetToRead</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DataSetsToRead</span><span class="p">:</span>
 			<span class="c1">#skip unknown data sets</span>
-			<span class="c1">#pdb.set_trace()</span>
-			<span class="k">if</span> <span class="n">DataSetToRead</span> <span class="o">==</span> <span class="n">ReadObsData</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">[</span><span class="n">ReadObsData</span><span class="o">.</span><span class="n">DATASET_IDX_AERONETSDA2_0</span><span class="p">]:</span>
+			<span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+			<span class="k">if</span> <span class="n">DataSetToRead</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">[</span><span class="n">ReadObsData</span><span class="o">.</span><span class="n">DATASET_IDX_AERONETSDA2_0</span><span class="p">]:</span>
 				<span class="c1">#AeronetSDAV2</span>
 				<span class="n">Dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSDAV2</span><span class="p">(</span><span class="n">VerboseFlag</span> <span class="o">=</span> <span class="n">VerboseFlag</span><span class="p">)</span>	
 
-			<span class="k">elif</span> <span class="n">DataSetToRead</span> <span class="o">==</span> <span class="n">ReadObsData</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">[</span><span class="n">ReadObsData</span><span class="o">.</span><span class="n">DATASET_IDX_AERONETSUN2_0</span><span class="p">]:</span>
+			<span class="k">elif</span> <span class="n">DataSetToRead</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">[</span><span class="n">ReadObsData</span><span class="o">.</span><span class="n">DATASET_IDX_AERONETSUN2_0</span><span class="p">]:</span>
 				<span class="c1">#Aeronet direct sun V2</span>
 				<span class="n">Dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">(</span><span class="n">VerboseFlag</span> <span class="o">=</span> <span class="n">VerboseFlag</span><span class="p">)</span>
 
@@ -444,6 +447,9 @@
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+      <script type="text/javascript" src="../../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+      <script type="text/javascript" src="../../../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

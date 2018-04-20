@@ -30,6 +30,8 @@
   
 
   
+    <link rel="stylesheet" href="../../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
@@ -166,8 +168,103 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span>
 <span class="kn">from</span> <span class="nn">iris.time</span> <span class="k">import</span> <span class="n">PartialDateTime</span>
+<span class="kn">from</span> <span class="nn">iris.coords</span> <span class="k">import</span> <span class="n">DimCoord</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">datetime64</span><span class="p">,</span> <span class="n">asarray</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">LongitudeConstraintError</span>
+<span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">Unit</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">MINYEAR</span><span class="p">,</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="p">(</span><span class="n">microsec_units</span><span class="p">,</span> <span class="n">millisec_units</span><span class="p">,</span> <span class="n">sec_units</span><span class="p">,</span> <span class="n">min_units</span><span class="p">,</span>
+                    <span class="n">hr_units</span><span class="p">,</span> <span class="n">day_units</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">netCDF4._netCDF4</span> <span class="k">import</span> <span class="n">_dateparse</span>
+ 
+<span class="c1"># Start of the gregorian calendar</span>
+<span class="c1"># adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   </span>
+<span class="n">GREGORIAN_BASE</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1582</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+
+<div class="viewcode-block" id="cftime_to_datetime64"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.cftime_to_datetime64">[docs]</a><span class="k">def</span> <span class="nf">cftime_to_datetime64</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert numerical timestamps with epoch to numpy datetime64</span>
+<span class="sd">    </span>
+<span class="sd">    This method was designed to enhance the performance of datetime conversions</span>
+<span class="sd">    and is based on the corresponding information provided in the cftime </span>
+<span class="sd">    package (`see here &lt;https://github.com/Unidata/cftime/blob/master/cftime/</span>
+<span class="sd">    _cftime.pyx&gt;`__). Particularly, this object does, what the :func:`num2date` </span>
+<span class="sd">    therein does, but faster, in case the time stamps are not defined on a non</span>
+<span class="sd">    standard calendar.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    times : :obj:`list` or :obj:`ndarray` or :obj:`iris.coords.DimCoord`</span>
+<span class="sd">        array containing numerical time stamps (relative to basedate of </span>
+<span class="sd">        ``cfunit``). Can also be a single number.</span>
+<span class="sd">    cfunit : :obj:`str` or :obj:`Unit`, optional</span>
+<span class="sd">        CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or</span>
+<span class="sd">        unit. Required if `times` is not an instance of </span>
+<span class="sd">        :class:`iris.coord.DimCoord`</span>
+<span class="sd">    calendar : :obj:`str`, optional</span>
+<span class="sd">        string specifying calendar (only required if ``cfunit`` is of type</span>
+<span class="sd">        ``str``).</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        numpy array containing timestamps as datetime64 objects</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if cfunit is ``str`` and calendar is not provided or invalid, or if </span>
+<span class="sd">        the cfunit string is invalid</span>
+<span class="sd">        </span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; cfunit_str = &#39;day since 2018-01-01 00:00:00.00000000 UTC&#39;</span>
+<span class="sd">    &gt;&gt;&gt; cftime_to_datetime64(10, cfunit_str, &quot;gregorian&quot;)</span>
+<span class="sd">    array([&#39;2018-01-11T00:00:00.000000&#39;], dtype=&#39;datetime64[us]&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">DimCoord</span><span class="p">):</span> <span class="c1">#special case</span>
+        <span class="n">times</span><span class="p">,</span> <span class="n">cfunit</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">times</span><span class="o">.</span><span class="n">units</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">times</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">calendar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Require specification of calendar for &quot;</span>
+                             <span class="s2">&quot;conversion into datetime64 objects&quot;</span><span class="p">)</span>
+        <span class="n">cfunit</span> <span class="o">=</span> <span class="n">Unit</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="n">calendar</span><span class="p">)</span> <span class="c1">#raises Error if calendar is invalid</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="n">Unit</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide cfunit either as instance of class &quot;</span>
+                         <span class="s2">&quot;cf_units.Unit or as a string&quot;</span><span class="p">)</span>
+    <span class="n">cfu_str</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">calendar</span>
+    <span class="n">basedate</span> <span class="o">=</span> <span class="n">_dateparse</span><span class="p">(</span><span class="n">cfu_str</span><span class="p">)</span>
+    <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">basedate</span> <span class="o">=</span> <span class="n">_dateparse</span><span class="p">(</span><span class="n">cfu_str</span><span class="p">)</span>  
+    <span class="k">if</span> <span class="p">((</span><span class="n">calendar</span> <span class="o">==</span> <span class="s1">&#39;proleptic_gregorian&#39;</span> <span class="ow">and</span> <span class="n">basedate</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="n">MINYEAR</span><span class="p">)</span> <span class="ow">or</span> 
+        <span class="p">(</span><span class="n">calendar</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gregorian&#39;</span><span class="p">,</span><span class="s1">&#39;standard&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">basedate</span> <span class="o">&gt;</span> <span class="n">GREGORIAN_BASE</span><span class="p">)):</span>
+        <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">cfu_str</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">microsec_units</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span>
+        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">millisec_units</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span>
+        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">sec_units</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span>
+        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">min_units</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">hr_units</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;h&quot;</span>
+        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">day_units</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;D&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;unsupported time units&#39;</span><span class="p">)</span>
+        
+        <span class="n">basedate</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="n">basedate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;timedelta64[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span><span class="n">tstr</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">asarray</span><span class="p">([</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">times</span><span class="p">)])</span></div>
 
 <div class="viewcode-block" id="get_constraint"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.get_constraint">[docs]</a><span class="k">def</span> <span class="nf">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lon_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                    <span class="n">time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">meridian_centre</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -216,9 +313,10 @@
 <span class="sd">    The following example shows how to crop over the meridian</span>
 <span class="sd">    </span>
 <span class="sd">    &gt;&gt;&gt; from pyaerocom.helpers import get_constraint</span>
-<span class="sd">    &gt;&gt;&gt; from pyaerocom.io.utils import FileConventionRead</span>
+<span class="sd">    &gt;&gt;&gt; from pyaerocom.io.fileconventions import FileConventionRead</span>
 <span class="sd">    &gt;&gt;&gt; from iris import load</span>
-<span class="sd">    &gt;&gt;&gt; from pyaerocom.test_files import get</span>
+<span class="sd">    &gt;&gt;&gt; from pyaerocom.io.testfiles import get</span>
+<span class="sd">    &gt;&gt;&gt; files = get()</span>
 <span class="sd">    &gt;&gt;&gt; fname = files[&#39;models&#39;][&#39;aatsr_su_v4.3&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; convention = FileConventionRead().from_file(fname)</span>
 <span class="sd">    &gt;&gt;&gt; meta_info = convention.get_info_from_file(fname)</span>
@@ -340,7 +438,7 @@
 
 <span class="sd">    Example</span>
 <span class="sd">    -------</span>
-<span class="sd">    &gt;&gt;&gt; from pyaerocom.test_files import get</span>
+<span class="sd">    &gt;&gt;&gt; from pyaerocom.io.testfiles import get</span>
 <span class="sd">    &gt;&gt;&gt; from pyaerocom import ModelData</span>
 <span class="sd">    &gt;&gt;&gt; files = get()</span>
 <span class="sd">    &gt;&gt;&gt; data = ModelData(files[&#39;models&#39;][&#39;aatsr_su_v4.3&#39;], var_name=&quot;od550aer&quot;)</span>
@@ -400,8 +498,10 @@
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
     <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
-    <span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+    <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
     <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
     <span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
@@ -412,7 +512,6 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Expected beahviour&quot;</span><span class="p">)</span>
     
     <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">load</span>
-    <span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
     <span class="n">cubes</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">])</span>
     <span class="n">lons</span> <span class="o">=</span> <span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span>
     <span class="n">meridian_centre</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">lons</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span> <span class="k">else</span> <span class="kc">False</span>
@@ -472,6 +571,9 @@
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+      <script type="text/javascript" src="../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+      <script type="text/javascript" src="../../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

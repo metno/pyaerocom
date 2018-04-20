@@ -30,6 +30,8 @@
   
 
   
+    <link rel="stylesheet" href="_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
+  
 
   
         <link rel="index" title="Index"
@@ -107,6 +109,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.fileconventions">File naming conventions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.helpers">I / O helper methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.testfiles">Test file access</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.region">Regions / Domains</a></li>
@@ -189,6 +192,7 @@
             
   <div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>Documentation of the pyaerocom programming interface.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <ol class="last arabic simple">
@@ -200,10 +204,10 @@
 <h2>Data types and data representation<a class="headerlink" href="#data-types-and-data-representation" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-pyaerocom.modeldata">
 <span id="model-data"></span><h3>Model data<a class="headerlink" href="#module-pyaerocom.modeldata" title="Permalink to this headline">¶</a></h3>
-<p>This module contains the following classes</p>
+<p>Pyaerocom ModelData class</p>
 <dl class="class">
 <dt id="pyaerocom.modeldata.ModelData">
-<em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input</em>, <em>var_name=None</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input=None</em>, <em>var_name=None</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class representing model data</p>
 <p>This class is largely based on the <code class="xref py py-class docutils literal"><span class="pre">iris.Cube</span></code> object. However, this
 object comes with an expanded functionality for convenience, for instance,
@@ -219,20 +223,6 @@ instance and typically requires specification of a variable constraint.</p>
 well as corresponding meta information. Since it is based on the
 <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> it is optimised for netCDF files that follow the
 CF conventions and may not work for files that do not follow this standard.</p>
-<dl class="attribute">
-<dt id="pyaerocom.modeldata.ModelData.grid">
-<code class="descname">grid</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>underlying data type (hopefully <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> in most cases)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.modeldata.ModelData.suppl_info">
-<code class="descname">suppl_info</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.suppl_info" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> – dictionary containing supplementary information about this data
-object (these may be attributes that are not already stored within
-the metadata representation of the underlying data object)</p>
-</dd></dl>
-
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -270,6 +260,20 @@ if <cite>input</cite> is preloaded Cube</li>
 <span class="go">(15, 120, 20)</span>
 </pre></div>
 </div>
+<dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.grid">
+<code class="descname">grid</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>underlying data type (hopefully <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> in most cases)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.modeldata.ModelData.suppl_info">
+<code class="descname">suppl_info</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.suppl_info" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – dictionary containing supplementary information about this data
+object (these may be attributes that are not already stored within
+the metadata representation of the underlying data object)</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.longitude">
 <code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.longitude" title="Permalink to this definition">¶</a></dt>
@@ -351,6 +355,7 @@ if <cite>input</cite> is preloaded Cube</li>
 <dt id="pyaerocom.modeldata.ModelData.time_stamps">
 <code class="descname">time_stamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.time_stamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.time_stamps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert time stamps into list of numpy datetime64 objects</p>
+<p>The conversion is done using method <code class="xref py py-func docutils literal"><span class="pre">cfunit_to_datetime64()</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -996,12 +1001,12 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readmodelda
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSDA2_0">
-<code class="descname">DATASET_IDX_AERONETSDA2_0</code><em class="property"> = 0</em><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSDA2_0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DATASET_IDX_AERONETSDA2_0</code><em class="property"> = 1</em><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSDA2_0" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSUN2_0">
-<code class="descname">DATASET_IDX_AERONETSUN2_0</code><em class="property"> = 1</em><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSUN2_0" title="Permalink to this definition">¶</a></dt>
+<code class="descname">DATASET_IDX_AERONETSUN2_0</code><em class="property"> = 0</em><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSUN2_0" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1222,6 +1227,44 @@ can be detected in the corresponding renamed sub directory</li>
 <dt id="pyaerocom.io.helpers.get_all_model_ids">
 <code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_all_model_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_all_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_all_model_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try to import all model IDs from file model_ids.txt in data directory</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyaerocom.io.testfiles">
+<span id="test-file-access"></span><h3>Test file access<a class="headerlink" href="#module-pyaerocom.io.testfiles" title="Permalink to this headline">¶</a></h3>
+<p>pyaerocom test files</p>
+<dl class="function">
+<dt id="pyaerocom.io.testfiles.get">
+<code class="descclassname">pyaerocom.io.testfiles.</code><code class="descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/testfiles.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.testfiles.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load test files of models and observations stored in test_files.ini file</p>
+<p>The file should be available at the relative location:</p>
+<blockquote>
+<div>./pyaerocom/data/test_files.ini</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proj_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – project base directory (i.e. pyaerocom.__dir__)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary containing two keys (<cite>models</cite>, <cite>observations</cite>), with
+values being 2 dictionaries that contain pairs of <cite>name</cite> and
+test paths.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code></a> – if the test_files.ini file cannot be found in the specified loaction</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">basename</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">example_file</span> <span class="o">=</span> <span class="n">all_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;aatsr_su_v4.3&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">example_file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="o">==</span><span class="s2">&quot;aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -1522,6 +1565,50 @@ color_coastline : #e6e6e6</p>
 <span id="general-helper-methods"></span><h3>General helper methods<a class="headerlink" href="#module-pyaerocom.helpers" title="Permalink to this headline">¶</a></h3>
 <p>General helper methods for the pyaerocom library.</p>
 <dl class="function">
+<dt id="pyaerocom.helpers.cftime_to_datetime64">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">cftime_to_datetime64</code><span class="sig-paren">(</span><em>times</em>, <em>cfunit=None</em>, <em>calendar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#cftime_to_datetime64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.cftime_to_datetime64" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert numerical timestamps with epoch to numpy datetime64</p>
+<p>This method was designed to enhance the performance of datetime conversions
+and is based on the corresponding information provided in the cftime
+package (<a class="reference external" href="https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx">see here</a>). Particularly, this object does, what the <code class="xref py py-func docutils literal"><span class="pre">num2date()</span></code>
+therein does, but faster, in case the time stamps are not defined on a non
+standard calendar.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">iris.coords.DimCoord</span></code>) – array containing numerical time stamps (relative to basedate of
+<code class="docutils literal"><span class="pre">cfunit</span></code>). Can also be a single number.</li>
+<li><strong>cfunit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal"><span class="pre">Unit</span></code>, optional) – CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
+unit. Required if <cite>times</cite> is not an instance of
+<code class="xref py py-class docutils literal"><span class="pre">iris.coord.DimCoord</span></code></li>
+<li><strong>calendar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – string specifying calendar (only required if <code class="docutils literal"><span class="pre">cfunit</span></code> is of type
+<code class="docutils literal"><span class="pre">str</span></code>).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">numpy array containing timestamps as datetime64 objects</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> – if cfunit is <code class="docutils literal"><span class="pre">str</span></code> and calendar is not provided or invalid, or if
+the cfunit string is invalid</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cfunit_str</span> <span class="o">=</span> <span class="s1">&#39;day since 2018-01-01 00:00:00.00000000 UTC&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">cfunit_str</span><span class="p">,</span> <span class="s2">&quot;gregorian&quot;</span><span class="p">)</span>
+<span class="go">array([&#39;2018-01-11T00:00:00.000000&#39;], dtype=&#39;datetime64[us]&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.helpers.get_constraint">
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_constraint</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>meridian_centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that creates an <code class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></code> based on input</p>
@@ -1571,9 +1658,10 @@ then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 <p class="rubric">Examples</p>
 <p>The following example shows how to crop over the meridian</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">get_constraint</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.utils</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">load</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fname</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">convention</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">()</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">meta_info</span> <span class="o">=</span> <span class="n">convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
@@ -1680,7 +1768,7 @@ data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</l
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
@@ -1842,6 +1930,9 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
+      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
+      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 
