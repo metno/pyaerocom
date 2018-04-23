@@ -1245,6 +1245,64 @@ ts_type = “daily”</p>
 <span id="i-o-helper-methods"></span><h3>I / O helper methods<a class="headerlink" href="#module-pyaerocom.io.helpers" title="Permalink to this headline">¶</a></h3>
 <p>I/O helper methods of the pyaerocom package</p>
 <dl class="function">
+<dt id="pyaerocom.io.helpers.check_time_coord">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">check_time_coord</code><span class="sig-paren">(</span><em>cube</em>, <em>ts_type</em>, <em>year</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#check_time_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.check_time_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that checks the time coordinate of an iris Cube</p>
+<p>This method checks if the time dimension of a cube is accessible and
+according to the standard (i.e. fully usable). It only checks, and does not
+correct. For the latter, please see <a class="reference internal" href="#pyaerocom.io.helpers.correct_time_coord" title="pyaerocom.io.helpers.correct_time_coord"><code class="xref py py-func docutils literal"><span class="pre">correct_time_coord()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cube</strong> (<em>Cube</em>) – cube containing data</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
+is e.g. encrypted in the filename of a NetCDF file and may be
+accessed using <code class="xref py py-class docutils literal"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
+<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True, if time dimension is ok, False if not</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.helpers.correct_time_coord">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">correct_time_coord</code><span class="sig-paren">(</span><em>cube</em>, <em>ts_type</em>, <em>year</em>, <em>tindex_cube=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#correct_time_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.correct_time_coord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that corrects the time coordinate of an iris Cube</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cube</strong> (<em>Cube</em>) – cube containing data</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
+is e.g. encrypted in the filename of a NetCDF file and may be
+accessed using <code class="xref py py-class docutils literal"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
+<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
+<li><strong>tindex_cube</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index of time dimension in Cube</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the same instance of the input cube with corrected time dimension axis</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Cube</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.io.helpers.search_model_ids">
 <code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_model_ids</code><span class="sig-paren">(</span><em>update_inifile=True</em>, <em>check_nc_file=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_model_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search model IDs in database</p>

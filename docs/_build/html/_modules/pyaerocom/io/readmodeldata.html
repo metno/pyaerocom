@@ -213,6 +213,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">VERBOSE</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">check_time_coord</span><span class="p">,</span> <span class="n">correct_time_coord</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
 
 <div class="viewcode-block" id="ReadModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadModelData</span><span class="p">:</span>
@@ -547,8 +548,8 @@
             <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
                 <span class="c1">#new file naming convention (aerocom3)</span>
                 <span class="n">match_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">string_mask</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span>
-                                                                <span class="n">year</span><span class="p">,</span> 
-                                                                <span class="n">ts_type</span><span class="p">)</span>
+                                                              <span class="n">year</span><span class="p">,</span> 
+                                                              <span class="n">ts_type</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">match</span><span class="p">(</span><span class="n">match_mask</span><span class="p">,</span> <span class="n">_file</span><span class="p">):</span>
                     <span class="n">match_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
@@ -575,10 +576,20 @@
         <span class="n">loaded_files</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">match_files</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">cubes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">load_cube</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">var_constraint</span><span class="p">))</span>
+                <span class="n">finfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                <span class="n">cube</span> <span class="o">=</span> <span class="n">load_cube</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">var_constraint</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span> 
+                                        <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid time axis in file </span><span class="si">%s</span><span class="s2">. Attempting to &quot;</span>
+                              <span class="s2">&quot;correct.&quot;</span> <span class="o">%</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">))</span>
+                    <span class="n">cube</span> <span class="o">=</span> <span class="n">correct_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
+                                              <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+                <span class="n">cubes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
                 <span class="n">loaded_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">%s</span><span class="s2"> as Iris cube&quot;</span> <span class="o">%</span><span class="n">_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">%s</span><span class="s2"> as Iris cube.</span><span class="se">\n</span><span class="s2">Error: </span><span class="si">%s</span><span class="s2">&quot;</span> 
+                     <span class="o">%</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the found files for variable </span><span class="si">%s</span><span class="s2">, and </span><span class="si">%s</span><span class="s2"> &quot;</span>
@@ -586,6 +597,7 @@
                           <span class="s2">&quot;could be loaded&quot;</span>
                           <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+            
         <span class="c1">#now put the CubeList together and form one cube</span>
         <span class="c1">#1st equalise the cubes (remove non common attributes)</span>
         <span class="n">equalise_attributes</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span>

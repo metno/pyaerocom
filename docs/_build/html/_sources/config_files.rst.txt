@@ -6,6 +6,18 @@ Variables
 
 .. literalinclude:: ../pyaerocom/data/variables.ini
 
+.. code-block:: python
+
+	>>> import pyaerocom
+	>>> var = pyaerocom.Variable("od550aer")
+	>>> print(var)
+	pyaeorocom Variable
+	Name: od550aer
+	Unit: ''
+	Value range: 0 - 1.0
+	Levels colorbar: [0.0, 0.01, ..., 0.9, 1.0]
+	Colorbar ticks: [0.0, 0.02, ..., 0.7, 0.9]
+	
 Default regions
 ^^^^^^^^^^^^^^^^
 

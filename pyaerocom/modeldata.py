@@ -215,8 +215,12 @@ class ModelData:
             self.suppl_info["from_files"].append(input)
         elif isinstance(input, Cube):
             self.grid = input #instance of Cube
-        if self._ON_LOAD["DEL_TIME_BOUNDS"]:
-            self.grid.coord("time").bounds = None
+        try:
+            if self._ON_LOAD["DEL_TIME_BOUNDS"]:
+                self.grid.coord("time").bounds = None
+        except:
+            if self.verbose:
+                print("Failed to access time coordinate")
         if self._ON_LOAD["SHIFT_LONS"]:
             self.check_and_regrid_lons()
             

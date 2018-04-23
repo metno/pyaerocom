@@ -120,7 +120,10 @@ class FileConventionRead(object):
         ('ts_type', 'monthly.nc')
         """
         info = od(year=None, var_name=None, ts_type=None)
-        spl = basename(file).split(self.file_sep)
+        if self.file_sep is ".":
+            spl = basename(file).split(self.file_sep)
+        else:
+            spl = basename(file).split(".")[0].split(self.file_sep)
         try:
             info["year"] = int(spl[self.year_pos])
         except:

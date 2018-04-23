@@ -50,6 +50,7 @@ import pyaerocom.config as const
 from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, VERBOSE
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead
+from pyaerocom.io.helpers import check_time_coord, correct_time_coord
 from pyaerocom.modeldata import ModelData
 
 class ReadModelData:
@@ -384,8 +385,8 @@ class ReadModelData:
             for _file in self.files:
                 #new file naming convention (aerocom3)
                 match_mask = self.file_convention.string_mask(var_name,
-                                                                year, 
-                                                                ts_type)
+                                                              year, 
+                                                              ts_type)
                 if match(match_mask, _file):
                     match_files.append(_file)
                     if self.verbose:
@@ -412,10 +413,20 @@ class ReadModelData:
         loaded_files = []
         for _file in match_files:
             try:
-                cubes.append(load_cube(_file, var_constraint))
+                finfo = self.file_convention.get_info_from_file(_file)
+                cube = load_cube(_file, var_constraint)
+                if not check_time_coord(cube, ts_type=finfo["ts_type"], 
+                                        year=finfo["year"]):
+                    if self.verbose:
+                        print("Invalid time axis in file %s. Attempting to "
+                              "correct." %basename(_file))
+                    cube = correct_time_coord(cube, ts_type=finfo["ts_type"],
+                                              year=finfo["year"])
+                cubes.append(cube)
                 loaded_files.append(_file)
-            except:
-                warn("Failed to load %s as Iris cube" %_file)
+            except Exception as e:
+                warn("Failed to load %s as Iris cube.\nError: %s" 
+                     %(_file, repr(e)))
         
         if len(loaded_files) == 0:
             raise IOError("None of the found files for variable %s, and %s "
@@ -423,6 +434,7 @@ class ReadModelData:
                           "could be loaded"
                           %(self.model_id, ts_type, self.start_time,
                             self.stop_time))
+            
         #now put the CubeList together and form one cube
         #1st equalise the cubes (remove non common attributes)
         equalise_attributes(cubes)
