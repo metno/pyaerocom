@@ -185,6 +185,8 @@
                                  <span class="n">cmap_map</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> 
                                  <span class="n">color_coastline</span> <span class="o">=</span><span class="s2">&quot;#e6e6e6&quot;</span><span class="p">))</span>
 
+<span class="n">MAP_AXES_ASPECT</span> <span class="o">=</span> <span class="mf">2.0</span>
+
 <div class="viewcode-block" id="MapPlotSettings"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.MapPlotSettings">[docs]</a><span class="k">class</span> <span class="nc">MapPlotSettings</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class specifying predefined plot settings for a species and region</span>
 <span class="sd">    </span>
@@ -201,7 +203,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lon_ticks</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lat_ticks</span> <span class="o">=</span> <span class="kc">None</span>
     
-        <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="MapPlotSettings.load_input"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.MapPlotSettings.load_input">[docs]</a>    <span class="k">def</span> <span class="nf">load_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
         
     
 <div class="viewcode-block" id="ColorTheme"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.ColorTheme">[docs]</a><span class="k">class</span> <span class="nc">ColorTheme</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

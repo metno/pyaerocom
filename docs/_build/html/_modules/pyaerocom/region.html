@@ -240,10 +240,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lon_ticks</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lat_ticks</span> <span class="o">=</span> <span class="kc">None</span>
         
-        <span class="k">try</span><span class="p">:</span>
-           <span class="bp">self</span><span class="o">.</span><span class="n">import_default</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> 
-        <span class="k">except</span><span class="p">:</span>
-           <span class="k">pass</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+           <span class="bp">self</span><span class="o">.</span><span class="n">import_default</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> 
+        
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
     
 <div class="viewcode-block" id="Region.import_default"><a class="viewcode-back" href="../../api.html#pyaerocom.region.Region.import_default">[docs]</a>    <span class="k">def</span> <span class="nf">import_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Import information about default region</span>

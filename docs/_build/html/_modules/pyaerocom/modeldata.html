@@ -170,6 +170,8 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span><span class="p">,</span> <span class="n">load</span><span class="p">,</span> <span class="n">load_cube</span>
 <span class="kn">from</span> <span class="nn">iris.cube</span> <span class="k">import</span> <span class="n">Cube</span><span class="p">,</span> <span class="n">CubeList</span>
+<span class="kn">from</span> <span class="nn">iris.analysis.cartography</span> <span class="k">import</span> <span class="n">area_weights</span>
+<span class="kn">from</span> <span class="nn">iris.analysis</span> <span class="k">import</span> <span class="n">MEAN</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 
@@ -246,6 +248,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">from_files</span> <span class="o">=</span> <span class="p">[],</span>
                              <span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
+        <span class="c1">#attribute used to store area weights (if applicable, see method</span>
+        <span class="c1">#area_weights)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">input</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">suppl_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -331,6 +336,16 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Attribute shape is not available...&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span> 
     
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc_area_weights</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span>
+    
+    <span class="nd">@area_weights</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Area weights cannot be set manually yet...&quot;</span><span class="p">)</span>
+        
 <div class="viewcode-block" id="ModelData.load_input"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.load_input">[docs]</a>    <span class="k">def</span> <span class="nf">load_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Interprete and load input</span>
 <span class="sd">        </span>
@@ -367,7 +382,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ON_LOAD</span><span class="p">[</span><span class="s2">&quot;SHIFT_LONS&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_and_regrid_lons</span><span class="p">()</span></div>
-    
+            
 <div class="viewcode-block" id="ModelData.time_stamps"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.time_stamps">[docs]</a>    <span class="k">def</span> <span class="nf">time_stamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert time stamps into list of numpy datetime64 objects</span>
 <span class="sd">        </span>
@@ -380,6 +395,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>    
             <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="ModelData.calc_area_weights"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.calc_area_weights">[docs]</a>    <span class="k">def</span> <span class="nf">calc_area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate area weights for grid&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="o">=</span> <span class="n">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_weights</span></div>
         
 <div class="viewcode-block" id="ModelData.check_and_regrid_lons"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.check_and_regrid_lons">[docs]</a>    <span class="k">def</span> <span class="nf">check_and_regrid_lons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks and corrects for if longitudes of :attr:`grid` are 0 -&gt; 360</span>
@@ -484,6 +505,13 @@
                 <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
         <span class="k">return</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
         
+<div class="viewcode-block" id="ModelData.area_weighted_mean"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.area_weighted_mean">[docs]</a>    <span class="k">def</span> <span class="nf">area_weighted_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get area weighted mean&quot;&quot;&quot;</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_weights</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">],</span> 
+                              <span class="n">aggregator</span><span class="o">=</span><span class="n">MEAN</span><span class="p">,</span> 
+                              <span class="n">weights</span><span class="o">=</span><span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span></div>
+        
 <div class="viewcode-block" id="ModelData.get_time_constraint"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.get_time_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">get_time_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create iris.Constraint for data extraction along time axis</span>
 <span class="sd">        </span>
@@ -503,12 +531,34 @@
         <span class="k">return</span> <span class="n">get_time_constraint</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span></div>
     
     <span class="c1">#redefined methods from iris.Cube class</span>
+<div class="viewcode-block" id="ModelData.collapsed"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.collapsed">[docs]</a>    <span class="k">def</span> <span class="nf">collapsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collapse cube</span>
+<span class="sd">        </span>
+<span class="sd">        Reimplementation of method :func:`iris.cube.Cube.collapsed`, for </span>
+<span class="sd">        details `see here &lt;http://scitools.org.uk/iris/docs/latest/iris/iris/</span>
+<span class="sd">        cube.html#iris.cube.Cube.collapsed&gt;`__</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coords : str or list</span>
+<span class="sd">            string IDs of coordinate(s) that are to be collapsed (e.g. </span>
+<span class="sd">            ``[&quot;longitude&quot;, &quot;latitude&quot;]``)</span>
+<span class="sd">        aggregator : :obj:`iris.analysis.Aggregator` or :obj:`iris.analysis.\</span>
+<span class="sd">                                                            WeightedAggretor`</span>
+<span class="sd">        **kwargs </span>
+<span class="sd">            additional keyword args (e.g. ``weights``)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ModelData</span>
+<span class="sd">            collapsed data object</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">collapsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">collapsed</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="ModelData.extract"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.extract">[docs]</a>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Extract subset</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        Only works if underlying grid data type is :class:`iris.cube.Cube`</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -584,6 +634,13 @@
                        <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">time_idx</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">fig</span></div>
     
+    <span class="k">def</span> <span class="nf">_check_lonlat_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if longitude and latitude bounds are set and if not, guess&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+            
     <span class="k">def</span> <span class="nf">_init_testdata_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Helper method that loads ECMWF_OSUITE test data&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
@@ -601,6 +658,7 @@
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
     <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">close</span>
+    <span class="kn">import</span> <span class="nn">iris</span>
     
     <span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
     <span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
@@ -628,6 +686,10 @@
     <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=.</span><span class="mi">4</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
     <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
     
+    <span class="n">cropped_india</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region_id</span><span class="o">=</span><span class="s2">&quot;INDIA&quot;</span><span class="p">)</span>
+    <span class="n">cropped_india</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+    
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
     
     <span class="k">try</span><span class="p">:</span>
         <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">])</span>
