@@ -1,6 +1,11 @@
 Configuration files
 -------------------
 
+Variables
+^^^^^^^^^
+
+.. literalinclude:: ../pyaerocom/data/variables.ini
+
 Default regions
 ^^^^^^^^^^^^^^^^
 

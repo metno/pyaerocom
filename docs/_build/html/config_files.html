@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">API test-suite</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#variables">Variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#default-regions">Default regions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#file-conventions">File conventions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-paths">Test paths</a></li>
@@ -168,6 +169,22 @@
             
   <div class="section" id="configuration-files">
 <h1>Configuration files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="variables">
+<h2>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># variables.ini</span>
+<span class="c1"># ini file that contains supplementary information about variables in </span>
+<span class="c1"># pyaerocom</span>
+<span class="c1"># So far, these mostly comprise default plot settings and units</span>
+
+<span class="p">[</span><span class="n">od550aer</span><span class="p">]</span>
+<span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">map_vmin</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">map_vmax</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">map_cbar_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="n">map_cbar_ticks</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="default-regions">
 <h2>Default regions<a class="headerlink" href="#default-regions" title="Permalink to this headline">¶</a></h2>
 <p>The following file contains all pyaerocom default regions.</p>
