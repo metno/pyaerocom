@@ -13,6 +13,7 @@ from . import multiproc
 from . import io
 from . import plot
 
+from .variable import Variable
 from .region import Region
 from .modeldata import ModelData
 from .obsdata import ObsData, ProfileData, StationData

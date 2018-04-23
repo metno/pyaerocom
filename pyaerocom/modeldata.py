@@ -7,6 +7,8 @@ from os.path import exists
 from collections import OrderedDict as od
 from iris import Constraint, load, load_cube
 from iris.cube import Cube, CubeList
+from iris.analysis.cartography import area_weights
+from iris.analysis import MEAN
 from pandas import Timestamp
 from warnings import warn
 
@@ -83,6 +85,9 @@ class ModelData:
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
                              model_id = "Unknown")
+        #attribute used to store area weights (if applicable, see method
+        #area_weights)
+        self._area_weights = None
         if input:
             self.load_input(input, var_name)
         for k, v in suppl_info.items():
@@ -168,6 +173,16 @@ class ModelData:
             raise NotImplementedError("Attribute shape is not available...")
         return self.grid.shape 
     
+    @property
+    def area_weights(self):
+        if self._area_weights is None:
+            self.calc_area_weights()
+        return self._area_weights
+    
+    @area_weights.setter
+    def area_weights(self, val):
+        raise AttributeError("Area weights cannot be set manually yet...")
+        
     def load_input(self, input, var_name=None):
         """Interprete and load input
         
@@ -204,7 +219,7 @@ class ModelData:
             self.grid.coord("time").bounds = None
         if self._ON_LOAD["SHIFT_LONS"]:
             self.check_and_regrid_lons()
-    
+            
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
         
@@ -217,6 +232,12 @@ class ModelData:
         """
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
+        
+    def calc_area_weights(self):
+        """Calculate area weights for grid"""
+        self._check_lonlat_bounds()
+        self._area_weights = area_weights(self.grid)
+        return self.area_weights
         
     def check_and_regrid_lons(self):
         """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
@@ -321,6 +342,13 @@ class ModelData:
                 data = data[time_range[0]:time_range[1]]
         return ModelData(data, **self.suppl_info)
         
+    def area_weighted_mean(self):
+        """Get area weighted mean"""
+        ws = self.area_weights
+        return self.collapsed(coords=["longitude", "latitude"], 
+                              aggregator=MEAN, 
+                              weights=ws).grid.data
+        
     def get_time_constraint(self, start_time, stop_time):
         """Create iris.Constraint for data extraction along time axis
         
@@ -340,12 +368,34 @@ class ModelData:
         return get_time_constraint(start_time, stop_time)
     
     #redefined methods from iris.Cube class
+    def collapsed(self, coords, aggregator, **kwargs):
+        """Collapse cube
+        
+        Reimplementation of method :func:`iris.cube.Cube.collapsed`, for 
+        details `see here <http://scitools.org.uk/iris/docs/latest/iris/iris/
+        cube.html#iris.cube.Cube.collapsed>`__
+        
+        Parameters
+        ----------
+        coords : str or list
+            string IDs of coordinate(s) that are to be collapsed (e.g. 
+            ``["longitude", "latitude"]``)
+        aggregator : :obj:`iris.analysis.Aggregator` or :obj:`iris.analysis.\
+                                                            WeightedAggretor`
+        **kwargs 
+            additional keyword args (e.g. ``weights``)
+        
+        Returns
+        -------
+        ModelData
+            collapsed data object
+        
+        """
+        collapsed = self.grid.collapsed(coords, aggregator, **kwargs)
+        return ModelData(collapsed, **self.suppl_info)
+    
     def extract(self, constraint):
         """Extract subset
-        
-        Note
-        ----
-        Only works if underlying grid data type is :class:`iris.cube.Cube`
         
         Parameters
         ----------
@@ -421,6 +471,13 @@ class ModelData:
                        self.time.cell(time_idx)))
         return fig
     
+    def _check_lonlat_bounds(self):
+        """Check if longitude and latitude bounds are set and if not, guess"""
+        if self.longitude.bounds is None:
+            self.longitude.guess_bounds()
+        if self.latitude.bounds is None:
+            self.latitude.guess_bounds()
+            
     def _init_testdata_default(self):
         """Helper method that loads ECMWF_OSUITE test data"""
         from pyaerocom.io.testfiles import get
@@ -438,6 +495,7 @@ class ModelData:
 if __name__=='__main__':
     from pyaerocom.io.testfiles import get
     from matplotlib.pyplot import close
+    import iris
     
     close("all")
     files = get()
@@ -465,6 +523,10 @@ if __name__=='__main__':
     ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
     ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
     
+    cropped_india = other.crop(region_id="INDIA")
+    cropped_india.quickplot_map()
+    
+    mean = cropped.area_weighted_mean()
     
     try:
         ModelData(files["models"]["ecmwf_osuite"])

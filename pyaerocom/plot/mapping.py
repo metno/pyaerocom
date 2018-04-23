@@ -16,6 +16,8 @@ from pyaerocom.plot.helpers import (calc_figsize, custom_mpl,
                                     calc_pseudolog_cmaplevels)
 from pyaerocom.mathutils import exponent
 from pyaerocom.modeldata import ModelData
+from pyaerocom.variable import Variable
+from pyaerocom.region import Region
 
 custom_mpl()
 
@@ -178,7 +180,7 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         ax.set_aspect(aspect=fix_aspect)
     return fig
 
-def plot_map_aerocom(data, species, region, fig, **kwargs):
+def plot_map_aerocom(data, variable, region, fig=None, **kwargs):
     """High level plotting function to produce map of species
     
     Parameters
@@ -187,8 +189,20 @@ def plot_map_aerocom(data, species, region, fig, **kwargs):
         input data from one timestamp.
         
     """
-    raise NotImplementedError
-
+    if not isinstance(data, ModelData):
+        raise TypeError("This plotting method needs an instance of pyaerocom "
+                         "ModelData on input, got: %s" %type(data))
+    if isinstance(variable, str):
+        variable = Variable(variable)
+    if not isinstance(variable, Variable):
+        raise TypeError("Need input of type str or Variable for input param "
+                        "variable, got: %s" %type(variable))
+    if isinstance(region, str):
+        region = Region(region)
+    if not isinstance(region, Region):
+        raise TypeError("Need input of type str or Region for input param "
+                        "region, got: %s" %type(variable))    
+    
 if __name__ == "__main__":
     
     pass

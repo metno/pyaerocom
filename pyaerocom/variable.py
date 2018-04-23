@@ -17,20 +17,22 @@ class Variable(object):
     pyaerocom/data/regions.ini>`__ file for an overview of currently available 
     default regions.
     
+    Parameters
+    ----------
+    var_name : str
+        string ID of variable (see file variables.ini for valid IDs)
+    **kwargs
+        any valid class attribute (e.g. map_vmin, map_vmax, ...)
+        
     Attributes
     ----------
     var_name : str
         AEROCOM variable name (see e.g. `AEROCOM protocol 
         <http://aerocom.met.no/protocol_table.html>`__ for a list of current
         variables)
-    NOT COMPLETE YET
+    map_vmin
     
-    Parameters
-    ----------
-    var_name : str
-        string ID of variable (see file variables.ini for valid IDs)
-    **kwargs
-        additional keyword 
+    
         
     Example
     -------
@@ -42,6 +44,7 @@ class Variable(object):
     Unit: ''
     Value range: 0 - 1.0
     Levels colorbar: [0.0, 0.01, ..., 0.9, 1.0]
+    Colorbar ticks: [0.0, 0.02, ..., 0.7, 0.9]
     >>> v = Variable(var_name="MyOwn", map_vmin=0.2, map_vmax=0.6, unit="lightyears")
     >>> print(v)
     pyaeorocom Variable
@@ -49,6 +52,7 @@ class Variable(object):
     Unit: lightyears
     Value range: 0.2 - 0.6
     Levels colorbar: None
+    Colorbar ticks: None
     
     """
     def __init__(self, var_name="od550aer", **kwargs):
@@ -58,6 +62,7 @@ class Variable(object):
         self.map_vmin = None
         self.map_vmax = None
         self.map_cbar_levels = None
+        self.map_cbar_ticks = None
         
         if isinstance(var_name, str):
            self.import_default(self.var_name) 
@@ -81,6 +86,7 @@ class Variable(object):
         -------
         bool
             True, if default could be loaded, False if not
+        
         Raises
         ------
         IOError
@@ -114,22 +120,26 @@ class Variable(object):
        return ("Variable %s %s" %(self.var_name, super(Variable, self).__repr__()))
    
     def __str__(self):
+        cbl_str, tick_str = "None", "None"
         l = self.map_cbar_levels
+        t = self.map_cbar_ticks
         if l and len(l) > 4:
             cbl_str = "[%s, %s, ..., %s, %s]" %(l[0], l[1], l[-2], l[-1])
-        else:
-            cbl_str = "None"
+        if t and len(t) > 4:
+            tick_str = "[%s, %s, ..., %s, %s]" %(t[0], t[1], t[-2], t[-1])
+        
         s = ("pyaeorocom Variable\nName: %s\n"
              "Unit: %s\n"
              "Value range: %s - %s\n"
-             "Levels colorbar: %s"
+             "Levels colorbar: %s\n"
+             "Colorbar ticks: %s"
              %(self.var_name, self.unit, self.map_vmin, self.map_vmax,
-               cbl_str))
+               cbl_str, tick_str))
         return s
    
 if __name__=="__main__":
 
     r = Variable("od550aer")
-    
+    print(r)
     import doctest
     doctest.testmod()

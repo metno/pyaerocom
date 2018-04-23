@@ -22,6 +22,8 @@ _COLOR_THEMES = dict(light = dict(name="light",
                                  cmap_map="viridis", 
                                  color_coastline ="#e6e6e6"))
 
+MAP_AXES_ASPECT = 2.0
+
 class MapPlotSettings(object):
     """Class specifying predefined plot settings for a species and region
     
@@ -39,6 +41,9 @@ class MapPlotSettings(object):
         self.lat_ticks = None
     
         self.load_input(variable, region, kwargs)
+    
+    def load_input(self, variable, region, **kwargs):
+        raise NotImplementedError
         
     
 class ColorTheme(object):

@@ -77,10 +77,12 @@ class Region(object):
         self.lon_ticks = None
         self.lat_ticks = None
         
-        try:
-           self.import_default(self.name) 
-        except:
-           pass
+        if isinstance(name, str):
+           self.import_default(name) 
+        
+        for k, v in kwargs.items():
+            if k in self.__dict__:
+                self.__dict__[k] = v
     
     def import_default(self, name):
         """Import information about default region
