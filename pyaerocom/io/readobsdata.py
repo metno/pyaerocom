@@ -40,7 +40,7 @@ import pdb
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
-import pyaerocom.config as const
+from pyaerocom import config as const
 
 class ReadObsData(ReadAeronetSDAV2,ReadAeronetSunV2):
 	"""aerocom_pt observation data reading class

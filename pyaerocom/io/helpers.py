@@ -3,7 +3,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
-import pyaerocom.config as paths
+from pyaerocom import config as paths
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom import __dir__
 from os.path import join, isdir
@@ -50,7 +50,7 @@ def check_time_coord(cube, ts_type, year):
     """
     
     ok = True
-    
+    print(ts_type, year)
     try:
         try:
             t = cube.coord("time")

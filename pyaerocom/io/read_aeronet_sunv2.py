@@ -45,7 +45,7 @@ import numpy as np
 
 import pandas as pd
 import re
-import pyaerocom.config as const
+from pyaerocom import config as const
 
 
 class ReadAeronetSunV2:

@@ -46,7 +46,7 @@ from iris.cube import CubeList
 from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 
-import pyaerocom.config as const
+from pyaerocom import config as const
 from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, VERBOSE
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead

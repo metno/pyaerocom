@@ -421,7 +421,8 @@ class ModelData:
     def intersection(self, *args, **kwargs):
         """Ectract subset using :func:`iris.cube.Cube.intersection` 
         
-        See `here for details <http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube.intersection>`__
+        See `here for details <http://scitools.org.uk/iris/docs/v1.9.0/html/
+        iris/iris/cube.html#iris.cube.Cube.intersection>`__
         related to method and input parameters.
         
         Note
@@ -486,6 +487,11 @@ class ModelData:
         """Helper method that loads ECMWF_OSUITE test data"""
         from pyaerocom.io.testfiles import get
         self.load_input(get()["models"]["ecmwf_osuite"], var_name="od550aer")
+    
+    def __getitem__(self, indices):
+        """x.__getitem__(y) <==> x[y]"""
+        sub = self.grid.__getitem__(indices)
+        return ModelData(sub, **self.suppl_info)
         
     def __str__(self):
         """For now, use string representation of underlying data"""
@@ -498,9 +504,8 @@ class ModelData:
     
 if __name__=='__main__':
     from pyaerocom.io.testfiles import get
-    from matplotlib.pyplot import close
-    import iris
-    
+    from matplotlib.pyplot import close, figure
+    import numpy as np
     close("all")
     files = get()
     data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
@@ -521,17 +526,29 @@ if __name__=='__main__':
     other = ModelData(files["models"]["ecmwf_osuite"], 
                       var_name="od550aer", model_id="ECMWF_OSUITE")
     other.quickplot_map()
+    #crop randomly
     ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))
     ocropped.quickplot_map()
-    
+    # some plot options
     ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
     ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
     
-    cropped_india = other.crop(region_id="INDIA")
-    cropped_india.quickplot_map()
+    # crop india
+    cropped_india = other.crop(region_id="INDIA")[:60]
+    cropped_india.quickplot_map(time_idx=0)
     
-    mean = cropped.area_weighted_mean()
+    if np.any(np.isnan(cropped_india.grid.data)):
+        raise Exception
     
+    mean = cropped_india.area_weighted_mean()
+    
+    from pandas import Series
+    
+    s = Series(data=mean, index=cropped_india.time_stamps())
+    
+    fig = figure()
+    s.plot()
+    fig.tight_layout()
     try:
         ModelData(files["models"]["ecmwf_osuite"])
     except ValueError as e:

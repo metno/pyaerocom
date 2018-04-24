@@ -46,7 +46,7 @@ import numpy as np
 from datetime import datetime
 import pandas as pd
 import re
-import pyaerocom.config as const
+from pyaerocom import config as const
 
 class ReadAeronetSDAV2:
 	"""Read Aeronet SDA data class

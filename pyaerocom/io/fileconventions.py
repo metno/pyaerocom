@@ -4,7 +4,7 @@
 Low level classes and methods for io
 """
 from collections import OrderedDict as od
-from os.path import join, exists, basename
+from os.path import join, exists, basename, splitext
 from warnings import warn
 try:
     from ConfigParser import ConfigParser
@@ -123,7 +123,7 @@ class FileConventionRead(object):
         if self.file_sep is ".":
             spl = basename(file).split(self.file_sep)
         else:
-            spl = basename(file).split(".")[0].split(self.file_sep)
+            spl = splitext(basename(file))[0].split(self.file_sep)
         try:
             info["year"] = int(spl[self.year_pos])
         except:

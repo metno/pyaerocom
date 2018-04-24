@@ -5,8 +5,10 @@ def _init_supplemental():
 
 __version__, __dir__ = _init_supplemental()
 
+from .ioconfig import IOConfig
+config = IOConfig()
+
 from . import glob
-from . import config
 from . import mathutils
 from . import multiproc
 
@@ -18,3 +20,4 @@ from .region import Region
 from .modeldata import ModelData
 from .obsdata import ObsData, ProfileData, StationData
 
+ 
