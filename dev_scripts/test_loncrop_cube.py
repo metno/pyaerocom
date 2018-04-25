@@ -10,7 +10,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from iris import load_cube, Constraint
 from pyaerocom.helpers import get_lon_constraint_buggy
-from pyaerocom.test_files import get
+from pyaerocom.io.testfiles import get
 import iris.quickplot as qplt
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs

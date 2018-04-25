@@ -6,6 +6,7 @@ General helper methods for the pyaerocom library.
 from iris import Constraint
 from iris.time import PartialDateTime
 from iris.coords import DimCoord
+from iris import analysis as iris_analysis
 from pandas import Timestamp
 from numpy import datetime64, asarray
 from pyaerocom.exceptions import LongitudeConstraintError
@@ -19,7 +20,39 @@ from netCDF4._netCDF4 import _dateparse
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
 GREGORIAN_BASE = datetime(1582, 10, 15)
+_STR_TO_IRIS = dict(count       = iris_analysis.COUNT,
+                    gmean       = iris_analysis.GMEAN, 
+                    hmean       = iris_analysis.HMEAN,
+                    max         = iris_analysis.MAX, 
+                    mean        = iris_analysis.MEAN,
+                    median      = iris_analysis.MEDIAN,
+                    
+                    nearest     = iris_analysis.Nearest)
 
+def str_to_iris(key):
+    """Mapping function that converts strings into iris analysis objects
+    
+    Please see dictionary ``_STR_TO_IRIS`` in this module for valid definitions
+    
+    Parameters
+    ----------
+    key : str
+        key of :attr:`_STR_TO_IRIS` dictionary
+        
+    Returns
+    -------
+    obj
+        corresponding iris analysis object (e.g. Aggregator, method)
+    """
+    key = key.lower()
+    if not key in _STR_TO_IRIS:
+        raise KeyError("No iris.analysis object available for key %s, please "
+                       "choose from %s" %(key, _STR_TO_IRIS.keys()))
+    val = _STR_TO_IRIS[key]
+    if callable(val):
+        return val()
+    return val
+    
 def cftime_to_datetime64(times, cfunit=None, calendar=None):
     """Convert numerical timestamps with epoch to numpy datetime64
     
@@ -346,7 +379,7 @@ if __name__=="__main__":
     try:
         get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
     except ValueError:
-        print("Expected beahviour")
+        print("Expected behaviour")
     
     from iris import load
     cubes = load(files['models']['aatsr_su_v4.3'])
@@ -356,6 +389,7 @@ if __name__=="__main__":
                        lon_range=(50, 150), 
                        lat_range=(20, 60), 
                        time_range=("2008-02-01", "2008-02-05"))
+    
     cube_crop = cubes.extract(c)[0]
 
                            

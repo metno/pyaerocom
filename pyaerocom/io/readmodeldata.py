@@ -53,7 +53,7 @@ from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import check_time_coord, correct_time_coord
 from pyaerocom.modeldata import ModelData
 
-class ReadModelData:
+class ReadModelData(object):
     """Class that stores read import results for model data
     
     Attributes
@@ -484,7 +484,7 @@ class ReadModelData:
                 warn("Failed to read variable %s" %var)
         self.vars = _vars_read
         
-class ReadMultiModelData:
+class ReadMultiModelData(object):
     """Class that can be used to import model data from multiple models
     
     This class provides an interface to import model results from an arbitrary

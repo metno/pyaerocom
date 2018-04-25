@@ -30,8 +30,6 @@
   
 
   
-    <link rel="stylesheet" href="_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
-  
 
   
         <link rel="index" title="Index"
@@ -94,7 +92,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API test-suite</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.test.test_mathutils">Low level helpers</a></li>
@@ -164,7 +162,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="api-test-suite">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="api-test-suite">
 <h1>API test-suite<a class="headerlink" href="#api-test-suite" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -179,7 +196,7 @@
 <dl class="function">
 <dt id="pyaerocom.test.test_mathutils.test_exponent">
 <code class="descclassname">pyaerocom.test.test_mathutils.</code><code class="descname">test_exponent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/test/test_mathutils.html#test_exponent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.test.test_mathutils.test_exponent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test method <code class="xref py py-func docutils literal"><span class="pre">exponent()</span></code> of <code class="xref py py-mod docutils literal"><span class="pre">pyaerocom.utils</span></code></p>
+<dd><p>Test method <code class="xref py py-func docutils literal notranslate"><span class="pre">exponent()</span></code> of <code class="xref py py-mod docutils literal notranslate"><span class="pre">pyaerocom.utils</span></code></p>
 </dd></dl>
 
 </div>
@@ -240,9 +257,6 @@
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

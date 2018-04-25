@@ -17,10 +17,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import os
+import sys
+#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath(os.path.join('..', 'notebooks')))
+ 
 from recommonmark.parser import CommonMarkParser
 
 # This was inserted based on this blog: https://github.com/spinus/sphinxcontrib-images/issues/41, after the following build error occured: Could not import extension sphinxcontrib.images (exception: cannot import name make_admonition), apparently due to a compatibility error between an updated version of sphinx (1.6) and the extension sphinxcontrib.images
@@ -41,14 +42,14 @@ compat.make_admonition = BaseAdmonition
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    		  'sphinx.ext.doctest',
+              'sphinx.ext.doctest',
 			  'sphinx.ext.napoleon',
-	    	  'sphinx.ext.intersphinx',
+        	  'sphinx.ext.intersphinx',
 		      'sphinx.ext.coverage',
-    		  'sphinx.ext.mathjax',
+        	  'sphinx.ext.mathjax',
     		  'sphinx.ext.viewcode',
     		  'sphinx.ext.githubpages',
-    		  'sphinxcontrib.images']
+    		  'nbsphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

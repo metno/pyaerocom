@@ -30,8 +30,6 @@
   
 
   
-    <link rel="stylesheet" href="_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
-  
 
   
         <link rel="index" title="Index"
@@ -39,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="pyaerocom  documentation" href="index.html"/>
         <link rel="next" title="API test-suite" href="api_testsuite.html"/>
-        <link rel="prev" title="Notebooks" href="notebooks.html"/> 
+        <link rel="prev" title="Tutorials (Jupyter Notebooks)" href="notebooks.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -94,7 +92,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#data-types-and-data-representation">Data types and data representation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.modeldata">Model data</a></li>
@@ -190,7 +188,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="api">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
 <p>Documentation of the pyaerocom programming interface.</p>
 <div class="admonition note">
@@ -209,27 +226,27 @@
 <dt id="pyaerocom.modeldata.ModelData">
 <em class="property">class </em><code class="descclassname">pyaerocom.modeldata.</code><code class="descname">ModelData</code><span class="sig-paren">(</span><em>input=None</em>, <em>var_name=None</em>, <em>verbose=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class representing model data</p>
-<p>This class is largely based on the <code class="xref py py-class docutils literal"><span class="pre">iris.Cube</span></code> object. However, this
+<p>This class is largely based on the <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.Cube</span></code> object. However, this
 object comes with an expanded functionality for convenience, for instance,
-netCDF files can directly be loaded in the <a class="reference internal" href="#pyaerocom.modeldata.ModelData" title="pyaerocom.modeldata.ModelData"><code class="xref py py-class docutils literal"><span class="pre">ModelData</span></code></a> object,
-whereas <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> instances are typically created using
+netCDF files can directly be loaded in the <a class="reference internal" href="#pyaerocom.modeldata.ModelData" title="pyaerocom.modeldata.ModelData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelData</span></code></a> object,
+whereas <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> instances are typically created using
 helper methods such as</p>
-<p>1. <code class="xref py py-func docutils literal"><span class="pre">iris.load()</span></code> (returns
-<code class="xref py py-class docutils literal"><span class="pre">iris.cube.CubeList</span></code>, i.e. a list-like iterable object that contains
-instances of <code class="xref py py-class docutils literal"><span class="pre">Cube</span></code> objects, one for each variable) or</p>
-<p>2. <code class="xref py py-func docutils literal"><span class="pre">iris.load_cube()</span></code> which directly returns a <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code>
+<p>1. <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.load()</span></code> (returns
+<code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.CubeList</span></code>, i.e. a list-like iterable object that contains
+instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">Cube</span></code> objects, one for each variable) or</p>
+<p>2. <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.load_cube()</span></code> which directly returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>
 instance and typically requires specification of a variable constraint.</p>
-<p>The <a class="reference internal" href="#pyaerocom.modeldata.ModelData" title="pyaerocom.modeldata.ModelData"><code class="xref py py-class docutils literal"><span class="pre">ModelData</span></code></a> object represents one variable in space and time, as
+<p>The <a class="reference internal" href="#pyaerocom.modeldata.ModelData" title="pyaerocom.modeldata.ModelData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelData</span></code></a> object represents one variable in space and time, as
 well as corresponding meta information. Since it is based on the
-<code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> it is optimised for netCDF files that follow the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> it is optimised for netCDF files that follow the
 CF conventions and may not work for files that do not follow this standard.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+<li><strong>input</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
 if <cite>input</cite> is preloaded Cube</li>
 </ul>
 </td>
@@ -237,7 +254,7 @@ if <cite>input</cite> is preloaded Cube</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span>
 <span class="gp">... </span>                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -253,7 +270,7 @@ if <cite>input</cite> is preloaded Cube</li>
 <span class="go">0.0 365.0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tstamps</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="go">2008-01-01 00:00:00 2008-12-31 00:00:00</span>
+<span class="go">2008-01-01T00:00:00.000000 2008-12-31T00:00:00.000000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data_cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">160</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span>
 <span class="gp">... </span>                         <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2008-02-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2008-02-15&quot;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data_cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -263,7 +280,7 @@ if <cite>input</cite> is preloaded Cube</li>
 <dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.grid">
 <code class="descname">grid</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>underlying data type (hopefully <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code> in most cases)</p>
+<dd><p>underlying data type (hopefully <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> in most cases)</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -313,18 +330,18 @@ the metadata representation of the underlying data object)</p>
 <dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.has_data">
 <code class="descname">has_data</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.has_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if grid data is available (<a class="reference internal" href="#pyaerocom.modeldata.ModelData.grid" title="pyaerocom.modeldata.ModelData.grid"><code class="xref py py-attr docutils literal"><span class="pre">grid</span></code></a> =! None)</p>
+<dd><p>True if grid data is available (<a class="reference internal" href="#pyaerocom.modeldata.ModelData.grid" title="pyaerocom.modeldata.ModelData.grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">grid</span></code></a> =! None)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Since so far, the only supported type is <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code>, this
-method simply returns <a class="reference internal" href="#pyaerocom.modeldata.ModelData.is_cube" title="pyaerocom.modeldata.ModelData.is_cube"><code class="xref py py-attr docutils literal"><span class="pre">is_cube</span></code></a>.</p>
+<p class="last">Since so far, the only supported type is <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>, this
+method simply returns <a class="reference internal" href="#pyaerocom.modeldata.ModelData.is_cube" title="pyaerocom.modeldata.ModelData.is_cube"><code class="xref py py-attr docutils literal notranslate"><span class="pre">is_cube</span></code></a>.</p>
 </div>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.modeldata.ModelData.is_cube">
 <code class="descname">is_cube</code><a class="headerlink" href="#pyaerocom.modeldata.ModelData.is_cube" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if underlying data type is of type <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code></p>
+<dd><p>Checks if underlying data type is of type <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -346,8 +363,8 @@ method simply returns <a class="reference internal" href="#pyaerocom.modeldata.M
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>input</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+<li><strong>input</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
 if <cite>input</cite> is preloaded Cube</li>
 </ul>
 </td>
@@ -360,7 +377,7 @@ if <cite>input</cite> is preloaded Cube</li>
 <dt id="pyaerocom.modeldata.ModelData.time_stamps">
 <code class="descname">time_stamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.time_stamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.time_stamps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert time stamps into list of numpy datetime64 objects</p>
-<p>The conversion is done using method <code class="xref py py-func docutils literal"><span class="pre">cfunit_to_datetime64()</span></code></p>
+<p>The conversion is done using method <code class="xref py py-func docutils literal notranslate"><span class="pre">cfunit_to_datetime64()</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -382,13 +399,13 @@ if <cite>input</cite> is preloaded Cube</li>
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.check_and_regrid_lons">
 <code class="descname">check_and_regrid_lons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.check_and_regrid_lons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.check_and_regrid_lons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks and corrects for if longitudes of <a class="reference internal" href="#pyaerocom.modeldata.ModelData.grid" title="pyaerocom.modeldata.ModelData.grid"><code class="xref py py-attr docutils literal"><span class="pre">grid</span></code></a> are 0 -&gt; 360</p>
+<dd><p>Checks and corrects for if longitudes of <a class="reference internal" href="#pyaerocom.modeldata.ModelData.grid" title="pyaerocom.modeldata.ModelData.grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">grid</span></code></a> are 0 -&gt; 360</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This method checks if the maximum of the current longitudes array
 exceeds 180. Thus, it is not recommended to use this function after
 subsetting a cube, rather, it should be checked directly when the
-file is loaded (cf. <a class="reference internal" href="#pyaerocom.modeldata.ModelData.load_input" title="pyaerocom.modeldata.ModelData.load_input"><code class="xref py py-func docutils literal"><span class="pre">load_input()</span></code></a>)</p>
+file is loaded (cf. <a class="reference internal" href="#pyaerocom.modeldata.ModelData.load_input" title="pyaerocom.modeldata.ModelData.load_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_input()</span></code></a>)</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -405,40 +422,41 @@ False</td>
 
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.crop">
-<code class="descname">crop</code><span class="sig-paren">(</span><em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>region_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.crop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.crop" title="Permalink to this definition">¶</a></dt>
+<code class="descname">crop</code><span class="sig-paren">(</span><em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>region=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.crop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.crop" title="Permalink to this definition">¶</a></dt>
 <dd><p>High level function that applies cropping along multiple axes</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">1. For cropping of longitudes and latitudes, the method
-<code class="xref py py-func docutils literal"><span class="pre">iris.cube.Cube.intersection()</span></code> is used since it automatically
+<code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.intersection()</span></code> is used since it automatically
 accepts and understands longitude input based on definition
 0 &lt;= lon &lt;= 360 as well as for -180 &lt;= lon &lt;= 180
 2. Time extraction may be provided directly as index or in form of
-<code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> objects.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> objects.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping. If None,
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping. If None,
 the longitude axis remains unchanged.
 Example input to crop around meridian: <cite>lon_range=(-30, 30)</cite></li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping. If None,
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping. If None,
 the latitude axis remains unchanged</li>
-<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
+<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
 types for specifying the times are</p>
 <blockquote>
 <div><ol class="arabic">
-<li>a combination of 2 <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> instances or</li>
-<li>a combination of two strings that can be directly converted                into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> instances (e.g.                <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
-<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">int</span></code></a>).</li>
+<li>a combination of 2 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances or</li>
+<li>a combination of two strings that can be directly converted                into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances (e.g.                <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
+<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>).</li>
 </ol>
 </div></blockquote>
 <p>If None, the time axis remains unchanged.</p>
 </li>
-<li><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – string ID of pyaerocom default region. May be used instead of
-<code class="docutils literal"><span class="pre">lon_range</span></code> and <code class="docutils literal"><span class="pre">lat_range</span></code>, if these are unspecified.</li>
+<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Region</span></code>, optional) – string ID of pyaerocom default region or directly an instance of
+the <code class="xref py py-class docutils literal notranslate"><span class="pre">Region</span></code> object. May be used instead of
+<code class="docutils literal notranslate"><span class="pre">lon_range</span></code> and <code class="docutils literal notranslate"><span class="pre">lat_range</span></code>, if these are unspecified.</li>
 </ul>
 </td>
 </tr>
@@ -473,7 +491,7 @@ types for specifying the times are</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">iris Constraint instance that can, e.g., be used as input for
-<a class="reference internal" href="#pyaerocom.modeldata.ModelData.extract" title="pyaerocom.modeldata.ModelData.extract"><code class="xref py py-func docutils literal"><span class="pre">extract()</span></code></a></p>
+<a class="reference internal" href="#pyaerocom.modeldata.ModelData.extract" title="pyaerocom.modeldata.ModelData.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">extract()</span></code></a></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Constraint</p>
@@ -484,10 +502,49 @@ types for specifying the times are</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyaerocom.modeldata.ModelData.interpolate">
+<code class="descname">interpolate</code><span class="sig-paren">(</span><em>sample_points</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate cube at certain discrete points</p>
+<p>Reimplementation of method <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.interpolate()</span></code>, for
+details <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.10.0/iris/iris/cube.html#iris.cube.Cube.interpolate">see here</a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – sequence of coordinate pairs over which to interpolate</li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme, pyaerocom default is Nearest. If input is
+string, it is converted into the corresponding iris Interpolator
+object, see <code class="xref py py-func docutils literal notranslate"><span class="pre">str_to_iris()</span></code> for valid strings</li>
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether to collapse the dimension of scalar sample points in the
+resulting cube. Default is True.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">collapsed data object</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyaerocom.modeldata.ModelData" title="pyaerocom.modeldata.ModelData">ModelData</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">itp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)),</span>
+<span class="gp">... </span>                        <span class="p">(</span><span class="s2">&quot;latitude&quot;</span> <span class="p">,</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">itp</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.collapsed">
 <code class="descname">collapsed</code><span class="sig-paren">(</span><em>coords</em>, <em>aggregator</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.collapsed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.collapsed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collapse cube</p>
-<p>Reimplementation of method <code class="xref py py-func docutils literal"><span class="pre">iris.cube.Cube.collapsed()</span></code>, for
+<p>Reimplementation of method <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.collapsed()</span></code>, for
 details <a class="reference external" href="http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube.collapsed">see here</a></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -495,9 +552,11 @@ details <a class="reference external" href="http://scitools.org.uk/iris/docs/lat
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>coords</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – string IDs of coordinate(s) that are to be collapsed (e.g.
-<code class="docutils literal"><span class="pre">[&quot;longitude&quot;,</span> <span class="pre">&quot;latitude&quot;]</span></code>)</li>
-<li><strong>aggregator</strong> (<code class="xref py py-obj docutils literal"><span class="pre">iris.analysis.Aggregator</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">iris.analysis.</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">WeightedAggretor</span></code>) – </li>
-<li><strong>**kwargs</strong> – additional keyword args (e.g. <code class="docutils literal"><span class="pre">weights</span></code>)</li>
+<code class="docutils literal notranslate"><span class="pre">[&quot;longitude&quot;,</span> <span class="pre">&quot;latitude&quot;]</span></code>)</li>
+<li><strong>aggregator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>Aggregator</em><em> or </em><em>WeightedAggretor</em>) – the aggregator used. If input is string, it is converted into the
+corresponding iris Aggregator object, see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">str_to_iris()</span></code> for valid strings</li>
+<li><strong>**kwargs</strong> – additional keyword args (e.g. <code class="docutils literal notranslate"><span class="pre">weights</span></code>)</li>
 </ul>
 </td>
 </tr>
@@ -532,12 +591,12 @@ details <a class="reference external" href="http://scitools.org.uk/iris/docs/lat
 <dl class="method">
 <dt id="pyaerocom.modeldata.ModelData.intersection">
 <code class="descname">intersection</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/modeldata.html#ModelData.intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.modeldata.ModelData.intersection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ectract subset using <code class="xref py py-func docutils literal"><span class="pre">iris.cube.Cube.intersection()</span></code></p>
+<dd><p>Ectract subset using <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.intersection()</span></code></p>
 <p>See <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube.intersection">here for details</a>
 related to method and input parameters.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Only works if underlying grid data type is <code class="xref py py-class docutils literal"><span class="pre">iris.cube.Cube</span></code></p>
+<p class="last">Only works if underlying grid data type is <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code></p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -572,7 +631,7 @@ related to method and input parameters.</p>
 <li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
 <li><strong>**kwargs</strong> – additional keyword arguments passed to
-<code class="xref py py-func docutils literal"><span class="pre">pyaerocom.quickplot.plot_map()</span></code></li>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.quickplot.plot_map()</span></code></li>
 </ul>
 </td>
 </tr>
@@ -641,17 +700,21 @@ certain class methods that are required to be implemented in subclasses
 <dl class="method">
 <dt id="pyaerocom.obsdata.ProfileData.longitude">
 <code class="descname">longitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData.longitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.longitude" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get longitude(s) of data</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyaerocom.obsdata.ProfileData.latitude">
 <code class="descname">latitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData.latitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.latitude" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get latitude(s) of data</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyaerocom.obsdata.ProfileData.import_data">
 <code class="descname">import_data</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData.import_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.import_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Declaration of abstract data import method</p>
+<p>If declared here, it is required to be implemented in subclasses</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -715,7 +778,7 @@ observations.</p>
 <dt id="pyaerocom.io.readmodeldata.ReadModelData.files">
 <code class="descname">files</code><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadModelData.files" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>list</em> – list containing all filenames that were found.
-Filled, e.g. in <code class="xref py py-func docutils literal"><span class="pre">ReadModelData.get_model_files()</span></code></p>
+Filled, e.g. in <code class="xref py py-func docutils literal notranslate"><span class="pre">ReadModelData.get_model_files()</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -738,15 +801,15 @@ var_name or time interval).</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>model_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID of model (e.g. “AATSR_SU_v4.3”,”CAM5.3-Oslo_CTRL2016”)</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
-<code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
-<code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
 <li><strong>file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID specifying the file convention of this model (cf.
 installation file <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini">file_conventions.ini</a>)</li>
-<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_model_dir" title="pyaerocom.io.readmodeldata.ReadModelData.search_model_dir"><code class="xref py py-func docutils literal"><span class="pre">search_model_dir()</span></code></a>) on
+<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_model_dir" title="pyaerocom.io.readmodeldata.ReadModelData.search_model_dir"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_model_dir()</span></code></a>) on
 instantiation and if it is found, all valid files for this model are
-searched using <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_all_files" title="pyaerocom.io.readmodeldata.ReadModelData.search_all_files"><code class="xref py py-func docutils literal"><span class="pre">search_all_files()</span></code></a>.</li>
+searched using <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_all_files" title="pyaerocom.io.readmodeldata.ReadModelData.search_all_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_all_files()</span></code></a>.</li>
 <li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, output is printed</li>
 </ul>
 </td>
@@ -766,8 +829,8 @@ searched using <a class="reference internal" href="#pyaerocom.io.readmodeldata.R
 <dd><p>Start time of the dataset</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If input is not <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
-into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
+<p class="last">If input is not <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
+into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
 </div>
 </dd></dl>
 
@@ -777,8 +840,8 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 <dd><p>Stop time of the dataset</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If input is not <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
-into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
+<p class="last">If input is not <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
+into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
 </div>
 </dd></dl>
 
@@ -824,7 +887,7 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update_file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the first file in <cite>model_dir</cite> is used to identify the
-file naming convention (cf. <code class="xref py py-class docutils literal"><span class="pre">FileConventionRead</span></code>)</td>
+file naming convention (cf. <code class="xref py py-class docutils literal notranslate"><span class="pre">FileConventionRead</span></code>)</td>
 </tr>
 </tbody>
 </table>
@@ -860,11 +923,11 @@ attributes such as <cite>data, model_dir, files</cite></td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – variable name that is supposed to be plotted (e.g. )
-Must be in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.vars" title="pyaerocom.io.readmodeldata.ReadModelData.vars"><code class="xref py py-attr docutils literal"><span class="pre">vars</span></code></a></li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.start_time" title="pyaerocom.io.readmodeldata.ReadModelData.start_time"><code class="xref py py-attr docutils literal"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.start_time" title="pyaerocom.io.readmodeldata.ReadModelData.start_time"><code class="xref py py-attr docutils literal"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+Must be in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.vars" title="pyaerocom.io.readmodeldata.ReadModelData.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a></li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.start_time" title="pyaerocom.io.readmodeldata.ReadModelData.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.start_time" title="pyaerocom.io.readmodeldata.ReadModelData.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”)</li>
 </ul>
@@ -878,12 +941,12 @@ Must be in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadM
 <dt id="pyaerocom.io.readmodeldata.ReadModelData.read_all_vars">
 <code class="descname">read_all_vars</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readmodeldata.html#ReadModelData.read_all_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadModelData.read_all_vars" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all variables that could be found</p>
-<p>Reads all variables that are available (i.e. in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.vars" title="pyaerocom.io.readmodeldata.ReadModelData.vars"><code class="xref py py-attr docutils literal"><span class="pre">vars</span></code></a>)</p>
+<p>Reads all variables that are available (i.e. in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.vars" title="pyaerocom.io.readmodeldata.ReadModelData.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a>)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – see <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.read_var" title="pyaerocom.io.readmodeldata.ReadModelData.read_var"><code class="xref py py-func docutils literal"><span class="pre">read_var()</span></code></a> for valid input arguments.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – see <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.read_var" title="pyaerocom.io.readmodeldata.ReadModelData.read_var"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_var()</span></code></a> for valid input arguments.</td>
 </tr>
 </tbody>
 </table>
@@ -907,12 +970,12 @@ defined, but must not be defined). The actual</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.readmodeldata.ReadMultiModelData.results">
 <code class="descname">results</code><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.results" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> – dictionary containing <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData" title="pyaerocom.io.readmodeldata.ReadModelData"><code class="xref py py-class docutils literal"><span class="pre">ReadModelData</span></code></a> instances for each
+<dd><p><em>dict</em> – dictionary containing <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData" title="pyaerocom.io.readmodeldata.ReadModelData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReadModelData</span></code></a> instances for each
 model_id</p>
 </dd></dl>
 
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span><span class="o">,</span> <span class="nn">pandas</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span><span class="o">,</span> <span class="nn">pandas</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2012-1-1&quot;</span><span class="p">),</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2012-5-1&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">,</span> <span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadMultiModelData</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -940,8 +1003,8 @@ model_id</p>
 <dd><p>Start time for the data import</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If input is not <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
-into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
+<p class="last">If input is not <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
+into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
 </div>
 </dd></dl>
 
@@ -951,8 +1014,8 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 <dd><p>Stop time for the data import</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If input is not <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
-into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
+<p class="last">If input is not <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
+into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
 </div>
 </dd></dl>
 
@@ -960,9 +1023,9 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 <dt id="pyaerocom.io.readmodeldata.ReadMultiModelData.init_results">
 <code class="descname">init_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readmodeldata.html#ReadMultiModelData.init_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.init_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiate the import result attributes</p>
-<p>Creates and initiates <code class="xref py py-class docutils literal"><span class="pre">ModelImportResult</span></code> object for each
-model specified in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.model_ids" title="pyaerocom.io.readmodeldata.ReadMultiModelData.model_ids"><code class="xref py py-attr docutils literal"><span class="pre">model_ids</span></code></a> and stores it in the dictionary
-<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.results" title="pyaerocom.io.readmodeldata.ReadMultiModelData.results"><code class="xref py py-attr docutils literal"><span class="pre">results</span></code></a> using the <cite>model_id</cite>.</p>
+<p>Creates and initiates <code class="xref py py-class docutils literal notranslate"><span class="pre">ModelImportResult</span></code> object for each
+model specified in <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.model_ids" title="pyaerocom.io.readmodeldata.ReadMultiModelData.model_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model_ids</span></code></a> and stores it in the dictionary
+<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.results" title="pyaerocom.io.readmodeldata.ReadMultiModelData.results"><code class="xref py py-attr docutils literal notranslate"><span class="pre">results</span></code></a> using the <cite>model_id</cite>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -985,7 +1048,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readmodelda
 <dt id="pyaerocom.io.readmodeldata.ReadMultiModelData.search_all_files">
 <code class="descname">search_all_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readmodeldata.html#ReadMultiModelData.search_all_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.search_all_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search all valid model files for each model</p>
-<p>See also <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_all_files" title="pyaerocom.io.readmodeldata.ReadModelData.search_all_files"><code class="xref py py-func docutils literal"><span class="pre">ReadModelData.search_all_files()</span></code></a></p>
+<p>See also <a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadModelData.search_all_files" title="pyaerocom.io.readmodeldata.ReadModelData.search_all_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">ReadModelData.search_all_files()</span></code></a></p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This function does not seperate by variable or time.</p>
@@ -1001,12 +1064,12 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readmodelda
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>var_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a>) – string IDs of all variables that are supposed to be imported</li>
-<li><strong>model_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a>, optional) – string IDs of all models that are supposed to be imported</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.start_time" title="pyaerocom.io.readmodeldata.ReadMultiModelData.start_time"><code class="xref py py-attr docutils literal"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.start_time" title="pyaerocom.io.readmodeldata.ReadMultiModelData.start_time"><code class="xref py py-attr docutils literal"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>var_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – string IDs of all variables that are supposed to be imported</li>
+<li><strong>model_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – string IDs of all models that are supposed to be imported</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.start_time" title="pyaerocom.io.readmodeldata.ReadMultiModelData.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readmodeldata.ReadMultiModelData.start_time" title="pyaerocom.io.readmodeldata.ReadMultiModelData.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”)</li>
 </ul>
@@ -1095,21 +1158,21 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readmodelda
 <dt id="pyaerocom.io.fileconventions.FileConventionRead.year_pos">
 <code class="descname">year_pos</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.year_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>int</em> – position of year information in filename after splitting using
-delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
+delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file_sep</span></code></a></p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.fileconventions.FileConventionRead.var_pos">
 <code class="descname">var_pos</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.var_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>int</em> – position of variable information in filename after splitting using
-delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
+delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file_sep</span></code></a></p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.fileconventions.FileConventionRead.ts_pos">
 <code class="descname">ts_pos</code><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead.ts_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>int</em> – position of information of temporal resolution in filename after
-splitting using delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal"><span class="pre">file_sep</span></code></a></p>
+splitting using delimiter <a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead.file_sep" title="pyaerocom.io.fileconventions.FileConventionRead.file_sep"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file_sep</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1128,12 +1191,12 @@ identified by the delimiter used.</p>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead" title="pyaerocom.io.fileconventions.FileConventionRead">FileConventionRead</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;aerocom_NCAR_CAM5.3_all_2000_rsntcsnoa_TOA_monthly.nc&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">FileConventionRead</span><span class="p">()</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
 <span class="go">pyaeorocom FileConventionRead</span>
@@ -1163,12 +1226,12 @@ corresponding variables, extracted from the filename</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">OrderedDict</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">(</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">info</span> <span class="o">=</span> <span class="n">conv</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -1250,7 +1313,7 @@ ts_type = “daily”</p>
 <dd><p>Method that checks the time coordinate of an iris Cube</p>
 <p>This method checks if the time dimension of a cube is accessible and
 according to the standard (i.e. fully usable). It only checks, and does not
-correct. For the latter, please see <a class="reference internal" href="#pyaerocom.io.helpers.correct_time_coord" title="pyaerocom.io.helpers.correct_time_coord"><code class="xref py py-func docutils literal"><span class="pre">correct_time_coord()</span></code></a>.</p>
+correct. For the latter, please see <a class="reference internal" href="#pyaerocom.io.helpers.correct_time_coord" title="pyaerocom.io.helpers.correct_time_coord"><code class="xref py py-func docutils literal notranslate"><span class="pre">correct_time_coord()</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1259,7 +1322,7 @@ correct. For the latter, please see <a class="reference internal" href="#pyaeroc
 <li><strong>cube</strong> (<em>Cube</em>) – cube containing data</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
 is e.g. encrypted in the filename of a NetCDF file and may be
-accessed using <code class="xref py py-class docutils literal"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
+accessed using <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
 <li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
 </ul>
 </td>
@@ -1286,7 +1349,7 @@ accessed using <code class="xref py py-class docutils literal"><span class="pre"
 <li><strong>cube</strong> (<em>Cube</em>) – cube containing data</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
 is e.g. encrypted in the filename of a NetCDF file and may be
-accessed using <code class="xref py py-class docutils literal"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
+accessed using <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
 <li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
 <li><strong>tindex_cube</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index of time dimension in Cube</li>
 </ul>
@@ -1351,12 +1414,12 @@ test paths.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code></a> – if the test_files.ini file cannot be found in the specified loaction</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if the test_files.ini file cannot be found in the specified loaction</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">basename</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">basename</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">all_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">example_file</span> <span class="o">=</span> <span class="n">all_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;aatsr_su_v4.3&quot;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filename</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">example_file</span><span class="p">)</span>
@@ -1384,28 +1447,28 @@ test paths.</td>
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lon_range">
 <code class="descname">lon_range</code><a class="headerlink" href="#pyaerocom.region.Region.lon_range" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> – longitude range (min, max) covered by region</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – longitude range (min, max) covered by region</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lat_range">
 <code class="descname">lat_range</code><a class="headerlink" href="#pyaerocom.region.Region.lat_range" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> – latitude range (min, max) covered by region</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – latitude range (min, max) covered by region</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lon_range_plot">
 <code class="descname">lon_range_plot</code><a class="headerlink" href="#pyaerocom.region.Region.lon_range_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> – longitude range (min, max) used for plotting region. Defaults to
-values of <a class="reference internal" href="#pyaerocom.region.Region.lon_range" title="pyaerocom.region.Region.lon_range"><code class="xref py py-attr docutils literal"><span class="pre">lon_range</span></code></a> but may be extended, see e.g.
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – longitude range (min, max) used for plotting region. Defaults to
+values of <a class="reference internal" href="#pyaerocom.region.Region.lon_range" title="pyaerocom.region.Region.lon_range"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lon_range</span></code></a> but may be extended, see e.g.
 <a class="reference external" href="http://aerocom.met.no/DATA/SURFOBS/ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png">the example of india</a></p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lat_range_plot">
 <code class="descname">lat_range_plot</code><a class="headerlink" href="#pyaerocom.region.Region.lat_range_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a> – latitude range (min, max) used for plotting region. Defaults to
-values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range" title="pyaerocom.region.Region.lat_range"><code class="xref py py-attr docutils literal"><span class="pre">lat_range</span></code></a> but may be extended, see e.g.
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – latitude range (min, max) used for plotting region. Defaults to
+values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range" title="pyaerocom.region.Region.lat_range"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lat_range</span></code></a> but may be extended, see e.g.
 <a class="reference external" href="http://aerocom.met.no/DATA/SURFOBS/ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png">the example of india</a></p>
 </dd></dl>
 
@@ -1415,8 +1478,8 @@ values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – ID of region (e.g. “EUROPE”)</li>
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>) – longitude range (min, max) covered by region</li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>) – latitude range (min, max) covered by region</li>
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>) – longitude range (min, max) covered by region</li>
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>) – latitude range (min, max) covered by region</li>
 </ul>
 </td>
 </tr>
@@ -1424,7 +1487,7 @@ values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range
 </table>
 <p class="rubric">Example</p>
 <p>Just initiate with a valid region ID</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">Region</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">Region</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">europe</span> <span class="o">=</span> <span class="n">Region</span><span class="p">(</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">india</span> <span class="o">=</span> <span class="n">Region</span><span class="p">(</span><span class="s2">&quot;INDIA&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">europe</span><span class="p">)</span>
@@ -1456,8 +1519,8 @@ file)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code></a> – if regions.ini file does not exist</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">NameError</span></code></a> – if default region with ID specified by input parameter <code class="docutils literal"><span class="pre">name</span></code>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if regions.ini file does not exist</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if default region with ID specified by input parameter <code class="docutils literal notranslate"><span class="pre">name</span></code>
 cannot be found in regions.ini file</li>
 </ul>
 </td>
@@ -1490,8 +1553,8 @@ cannot be found in regions.ini file</li>
 <dd><p>Get dictionary containing all default regions from region.ini file</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The values are already <a class="reference internal" href="#pyaerocom.region.Region" title="pyaerocom.region.Region"><code class="xref py py-class docutils literal"><span class="pre">Region</span></code></a> instances, use
-<a class="reference internal" href="#pyaerocom.region.get_all_default_region_ids" title="pyaerocom.region.get_all_default_region_ids"><code class="xref py py-func docutils literal"><span class="pre">get_all_default_region_ids()</span></code></a></p>
+<p class="last">The values are already <a class="reference internal" href="#pyaerocom.region.Region" title="pyaerocom.region.Region"><code class="xref py py-class docutils literal notranslate"><span class="pre">Region</span></code></a> instances, use
+<a class="reference internal" href="#pyaerocom.region.get_all_default_region_ids" title="pyaerocom.region.get_all_default_region_ids"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_all_default_region_ids()</span></code></a></p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1509,7 +1572,7 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 </div>
 <div class="section" id="plotting-visualisation">
 <h2>Plotting / Visualisation<a class="headerlink" href="#plotting-visualisation" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="xref py py-mod docutils literal"><span class="pre">pyaerocom.plot</span></code> package contains algorithms related to data visualisation and plotting.</p>
+<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">pyaerocom.plot</span></code> package contains algorithms related to data visualisation and plotting.</p>
 <div class="section" id="module-pyaerocom.plot.mapping">
 <span id="plotting-maps"></span><h3>Plotting maps<a class="headerlink" href="#module-pyaerocom.plot.mapping" title="Permalink to this headline">¶</a></h3>
 <p>This module contains plot routines for Aerocom data. So far, this includes a
@@ -1523,27 +1586,27 @@ low level, very flexible plot method</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<code class="xref py py-obj docutils literal"><span class="pre">ModelData</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">iris.cube.Cube</span></code>) – input data from one timestamp. May also be of type
-<code class="xref py py-class docutils literal"><span class="pre">pyaerocom.ModelData</span></code>. Uses first time stamp if data is has
+<li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelData</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>) – input data from one timestamp. May also be of type
+<code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.ModelData</span></code>. Uses first time stamp if data is has
 more than one time stamp</li>
 <li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
 <li><strong>color_norm</strong> – data mapping norm for color display</li>
-<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
-<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
+<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
+<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
 <li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
 This may be used, e.g. for logarithmic scales that should include 0.</li>
-<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal"><span class="pre">vmin</span></code></li>
-<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal"><span class="pre">vmax</span></code></li>
+<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal notranslate"><span class="pre">vmin</span></code></li>
+<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal notranslate"><span class="pre">vmax</span></code></li>
 <li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
-(see <code class="xref py py-func docutils literal"><span class="pre">get_cmap_levels_auto()</span></code> for implementation)</li>
+(see <code class="xref py py-func docutils literal notranslate"><span class="pre">get_cmap_levels_auto()</span></code> for implementation)</li>
 <li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True,</li>
 <li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – height of figure in inches</li>
-<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a>, optional) – if not None, then the figure width is computed by multiplication of
-the input float with input parameter <code class="docutils literal"><span class="pre">figh</span></code></li>
+<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if not None, then the figure width is computed by multiplication of
+the input float with input parameter <code class="docutils literal notranslate"><span class="pre">figh</span></code></li>
 <li><strong>color_theme</strong> (<a class="reference internal" href="#pyaerocom.plot.config.ColorTheme" title="pyaerocom.plot.config.ColorTheme"><em>ColorTheme</em></a>) – pyaerocom color theme</li>
-<li><strong>fig</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
-input args (<code class="docutils literal"><span class="pre">figh</span></code> and <code class="docutils literal"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
+<li><strong>fig</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
+input args (<code class="docutils literal notranslate"><span class="pre">figh</span></code> and <code class="docutils literal notranslate"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
 Figure is wiped clean before plotting, so any plotted content will be
 lost</li>
 <li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, print output</li>
@@ -1551,7 +1614,7 @@ lost</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib figure instance containing plot result. Use
-<code class="docutils literal"><span class="pre">fig.axes[0]</span></code> to access the map axes instance (e.g. to modify the
+<code class="docutils literal notranslate"><span class="pre">fig.axes[0]</span></code> to access the map axes instance (e.g. to modify the
 title or lon / lat range, etc.)</p>
 </td>
 </tr>
@@ -1570,7 +1633,7 @@ title or lon / lat range, etc.)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<code class="xref py py-obj docutils literal"><span class="pre">ModelData</span></code>) – input data from one timestamp.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelData</span></code>) – input data from one timestamp.</td>
 </tr>
 </tbody>
 </table>
@@ -1588,7 +1651,7 @@ title or lon / lat range, etc.)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or :obj) – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or :obj) – </td>
 </tr>
 </tbody>
 </table>
@@ -1639,7 +1702,7 @@ color_coastline : #e6e6e6</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theme_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of default theme</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> – if <code class="docutils literal"><span class="pre">theme_name</span></code> is not a valid default theme</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if <code class="docutils literal notranslate"><span class="pre">theme_name</span></code> is not a valid default theme</td>
 </tr>
 </tbody>
 </table>
@@ -1686,12 +1749,31 @@ color_coastline : #e6e6e6</p>
 <span id="general-helper-methods"></span><h3>General helper methods<a class="headerlink" href="#module-pyaerocom.helpers" title="Permalink to this headline">¶</a></h3>
 <p>General helper methods for the pyaerocom library.</p>
 <dl class="function">
+<dt id="pyaerocom.helpers.str_to_iris">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">str_to_iris</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#str_to_iris"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.str_to_iris" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mapping function that converts strings into iris analysis objects</p>
+<p>Please see dictionary <code class="docutils literal notranslate"><span class="pre">_STR_TO_IRIS</span></code> in this module for valid definitions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – key of <code class="xref py py-attr docutils literal notranslate"><span class="pre">_STR_TO_IRIS</span></code> dictionary</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">corresponding iris analysis object (e.g. Aggregator, method)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">obj</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.helpers.cftime_to_datetime64">
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">cftime_to_datetime64</code><span class="sig-paren">(</span><em>times</em>, <em>cfunit=None</em>, <em>calendar=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#cftime_to_datetime64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.cftime_to_datetime64" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert numerical timestamps with epoch to numpy datetime64</p>
 <p>This method was designed to enhance the performance of datetime conversions
 and is based on the corresponding information provided in the cftime
-package (<a class="reference external" href="https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx">see here</a>). Particularly, this object does, what the <code class="xref py py-func docutils literal"><span class="pre">num2date()</span></code>
+package (<a class="reference external" href="https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx">see here</a>). Particularly, this object does, what the <code class="xref py py-func docutils literal notranslate"><span class="pre">num2date()</span></code>
 therein does, but faster, in case the time stamps are not defined on a non
 standard calendar.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1699,13 +1781,13 @@ standard calendar.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a> or <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">iris.coords.DimCoord</span></code>) – array containing numerical time stamps (relative to basedate of
-<code class="docutils literal"><span class="pre">cfunit</span></code>). Can also be a single number.</li>
-<li><strong>cfunit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal"><span class="pre">Unit</span></code>, optional) – CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
+<li><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.coords.DimCoord</span></code>) – array containing numerical time stamps (relative to basedate of
+<code class="docutils literal notranslate"><span class="pre">cfunit</span></code>). Can also be a single number.</li>
+<li><strong>cfunit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Unit</span></code>, optional) – CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
 unit. Required if <cite>times</cite> is not an instance of
-<code class="xref py py-class docutils literal"><span class="pre">iris.coord.DimCoord</span></code></li>
-<li><strong>calendar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a>, optional) – string specifying calendar (only required if <code class="docutils literal"><span class="pre">cfunit</span></code> is of type
-<code class="docutils literal"><span class="pre">str</span></code>).</li>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">iris.coord.DimCoord</span></code></li>
+<li><strong>calendar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – string specifying calendar (only required if <code class="docutils literal notranslate"><span class="pre">cfunit</span></code> is of type
+<code class="docutils literal notranslate"><span class="pre">str</span></code>).</li>
 </ul>
 </td>
 </tr>
@@ -1715,14 +1797,14 @@ unit. Required if <cite>times</cite> is not an instance of
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> – if cfunit is <code class="docutils literal"><span class="pre">str</span></code> and calendar is not provided or invalid, or if
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if cfunit is <code class="docutils literal notranslate"><span class="pre">str</span></code> and calendar is not provided or invalid, or if
 the cfunit string is invalid</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cfunit_str</span> <span class="o">=</span> <span class="s1">&#39;day since 2018-01-01 00:00:00.00000000 UTC&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cfunit_str</span> <span class="o">=</span> <span class="s1">&#39;day since 2018-01-01 00:00:00.00000000 UTC&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">cfunit_str</span><span class="p">,</span> <span class="s2">&quot;gregorian&quot;</span><span class="p">)</span>
 <span class="go">array([&#39;2018-01-11T00:00:00.000000&#39;], dtype=&#39;datetime64[us]&#39;)</span>
 </pre></div>
@@ -1732,14 +1814,14 @@ the cfunit string is invalid</p>
 <dl class="function">
 <dt id="pyaerocom.helpers.get_constraint">
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_constraint</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>time_range=None</em>, <em>meridian_centre=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_constraint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function that creates an <code class="xref py py-class docutils literal"><span class="pre">iris.Constraint</span></code> based on input</p>
+<dd><p>Function that creates an <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.Constraint</span></code> based on input</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Please be aware of the definition of the longitudes in your data when
 cropping within the longitude dimension. The longitudes in your data may be
 defined either from <strong>-180 &lt;= lon &lt;= 180</strong> (pyaerocom standard) or from
 <strong>0 &lt;= lon &lt;= 360</strong>. In the former case (-180 _&gt; 180) you can leave the
-additional input parameter <code class="docutils literal"><span class="pre">meridian_centre=True</span></code> (default). In this
+additional input parameter <code class="docutils literal notranslate"><span class="pre">meridian_centre=True</span></code> (default). In this
 case, if you want to crop over the border of the array (e.g. from Australia
 to North America),</p>
 </div>
@@ -1748,18 +1830,18 @@ to North America),</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">list</span></code></a>, optional) – variable name or list of variable names. Note that if multiple
+<li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – variable name or list of variable names. Note that if multiple
 variables are provided in a list</li>
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping
 Example input to crop around meridian: <cite>lon_range=(-30, 30)</cite></li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping.</li>
-<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping.</li>
+<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
 types for specifying the times are</p>
 <blockquote>
 <div><ol class="arabic">
-<li>a combination of 2 <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> instances or</li>
-<li>a combination of two strings that can be directly converted            into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> instances (e.g.            <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
-<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">int</span></code></a>).</li>
+<li>a combination of 2 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances or</li>
+<li>a combination of two strings that can be directly converted            into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances (e.g.            <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
+<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>).</li>
 </ol>
 </div></blockquote>
 </li>
@@ -1778,7 +1860,7 @@ then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 </table>
 <p class="rubric">Examples</p>
 <p>The following example shows how to crop over the meridian</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">get_constraint</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">get_constraint</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">load</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
@@ -1831,9 +1913,9 @@ then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 <p class="first admonition-title">Note</p>
 <p class="last">In this definition, the constraint is combined in case the border of the
 longitude array is crossed. Apparently, that does not work properly and
-it is therefore recommended to use <code class="xref py py-func docutils literal"><span class="pre">iris.cube.Cube.intersection()</span></code>
-instead (which is also reimplemented in <code class="xref py py-class docutils literal"><span class="pre">pyaerocom.ModelData</span></code>).
-If you use <a class="reference internal" href="#pyaerocom.helpers.get_lon_constraint" title="pyaerocom.helpers.get_lon_constraint"><code class="xref py py-func docutils literal"><span class="pre">get_lon_constraint()</span></code></a> it will detect if there is a border
+it is therefore recommended to use <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.intersection()</span></code>
+instead (which is also reimplemented in <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.ModelData</span></code>).
+If you use <a class="reference internal" href="#pyaerocom.helpers.get_lon_constraint" title="pyaerocom.helpers.get_lon_constraint"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_lon_constraint()</span></code></a> it will detect if there is a border
 crossing, and if so, it will raise an error (that suggests to use the
 intersection method instead).</p>
 </div>
@@ -1880,8 +1962,8 @@ data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</l
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code></a> – if first coordinate in lon_range equals or exceeds second</li>
-<li><code class="xref py py-exc docutils literal"><span class="pre">LongitudeConstraintError</span></code> – if the input implies cropping over border of longitude array
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if first coordinate in lon_range equals or exceeds second</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">LongitudeConstraintError</span></code> – if the input implies cropping over border of longitude array
 (e.g. 160 -&gt; - 160 if -180 &lt;= lon &lt;= 180).</li>
 </ul>
 </td>
@@ -1889,7 +1971,7 @@ data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</l
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
@@ -1913,15 +1995,15 @@ data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</l
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
-into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
-into <code class="xref py py-class docutils literal"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
+into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
+into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">iris Constraint instance that can, e.g., be used as input for
-<a class="reference internal" href="#pyaerocom.modeldata.ModelData.extract" title="pyaerocom.modeldata.ModelData.extract"><code class="xref py py-func docutils literal"><span class="pre">pyaerocom.modeldata.ModelData.extract()</span></code></a></p>
+<a class="reference internal" href="#pyaerocom.modeldata.ModelData.extract" title="pyaerocom.modeldata.ModelData.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.modeldata.ModelData.extract()</span></code></a></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Constraint</p>
@@ -1943,16 +2025,16 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">float</span></code></a> or iterable) – input number</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or iterable) – input number</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">exponent of input number(s)</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal"><span class="pre">int</span></code></a> or <code class="xref py py-obj docutils literal"><span class="pre">ndarray</span></code> containing ints</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> containing ints</td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">exponent</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">exponent</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">exponent</span><span class="p">(</span><span class="mi">2340</span><span class="p">)</span>
 <span class="go">3</span>
 </pre></div>
@@ -1982,7 +2064,7 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_magnitude</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">range_magnitude</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
 <span class="go">3</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">range_magnitude</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 <span class="go">-3</span>
@@ -2009,7 +2091,7 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
         <a href="api_testsuite.html" class="btn btn-neutral float-right" title="API test-suite" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="notebooks.html" class="btn btn-neutral" title="Notebooks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="notebooks.html" class="btn btn-neutral" title="Tutorials (Jupyter Notebooks)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -2051,9 +2133,6 @@ into <code class="xref py py-class docutils literal"><span class="pre">pandas.Ti
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

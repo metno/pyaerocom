@@ -8,7 +8,7 @@ Created on Tue Apr 17 11:34:03 2018
 from matplotlib.pyplot import close
 import numpy as np
 import iris
-from pyaerocom.test_files import get
+from pyaerocom.io.testfiles import get
 from pyaerocom import ModelData
 from pyaerocom.plot.mapping import plot_map
 

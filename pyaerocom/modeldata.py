@@ -13,7 +13,10 @@ from pandas import Timestamp
 from warnings import warn
 
 from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE, ON_LOAD
-from pyaerocom.helpers import get_time_constraint, cftime_to_datetime64
+from pyaerocom.helpers import (get_time_constraint, 
+                               cftime_to_datetime64,
+                               str_to_iris)
+
 from pyaerocom.region import Region
 
 class ModelData:
@@ -47,7 +50,7 @@ class ModelData:
 
     Example
     -------
-    >>> from pyaerocom.test_files import get
+    >>> from pyaerocom.io.testfiles import get
     >>> files = get()
     >>> data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
     ...                  verbose=False)
@@ -63,7 +66,7 @@ class ModelData:
     0.0 365.0
     >>> tstamps = data.time_stamps()
     >>> print(tstamps[0], tstamps[-1])
-    2008-01-01 00:00:00 2008-12-31 00:00:00
+    2008-01-01T00:00:00.000000 2008-12-31T00:00:00.000000
     >>> data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),
     ...                          time_range=("2008-02-01", "2008-02-15"))
     >>> print(data_cropped.shape)
@@ -265,7 +268,7 @@ class ModelData:
             self.grid = self.grid.intersection(longitude=(-180, 180))
         
     def crop(self, lon_range=None, lat_range=None, 
-             time_range=None, region_id=None):
+             time_range=None, region=None):
         """High level function that applies cropping along multiple axes
         
         Note
@@ -297,11 +300,11 @@ class ModelData:
                 3. directly a combination of indices (:obj:`int`). 
             
             If None, the time axis remains unchanged.
-        region_id : :obj:`str`, optional
-            string ID of pyaerocom default region. May be used instead of 
+        region : :obj:`str` or :obj:`Region`, optional
+            string ID of pyaerocom default region or directly an instance of 
+            the :class:`Region` object. May be used instead of 
             ``lon_range`` and ``lat_range``, if these are unspecified.
             
-        
         Returns
         -------
         ModelData
@@ -310,14 +313,16 @@ class ModelData:
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
-        if region_id is not None:
-            try:
-                r = Region(region_id)
-                lon_range, lat_range = r.lon_range, r.lat_range
-            except Exception as e:
-                warn("Failed to access longitude / latitude range using "
-                     "region ID %s. Error msg: %s" %(region_id, repr(e)))
-                
+        if region is not None:
+            if isinstance(region, str):
+                try:
+                    region = Region(region)
+                except Exception as e:
+                    warn("Failed to access longitude / latitude range using "
+                         "region ID %s. Error msg: %s" %(region, repr(e)))
+            if not isinstance(region, Region):
+                raise ValueError("Invalid input for region")
+            lon_range, lat_range = region.lon_range, region.lat_range
         if lon_range is not None and lat_range is not None:
             data = self.grid.intersection(longitude=lon_range, 
                                           latitude=lat_range)
@@ -371,7 +376,53 @@ class ModelData:
         """
         return get_time_constraint(start_time, stop_time)
     
-    #redefined methods from iris.Cube class
+    # redefined methods from iris.Cube class. This includes all Cube 
+    # processing methods that exist in the Cube class and that work on the 
+    # Cube and return a Cube instance. These may be expanded (e.g. for 
+    # instance what they accept as input
+    
+    def interpolate(self, sample_points, scheme="nearest", 
+                    collapse_scalar=True):
+        """Interpolate cube at certain discrete points
+        
+        Reimplementation of method :func:`iris.cube.Cube.interpolate`, for 
+        details `see here <http://scitools.org.uk/iris/docs/v1.10.0/iris/iris/
+        cube.html#iris.cube.Cube.interpolate>`__
+        
+        Parameters
+        ----------
+        sample_points : list
+            sequence of coordinate pairs over which to interpolate
+        scheme : str or iris interpolator object
+            interpolation scheme, pyaerocom default is Nearest. If input is 
+            string, it is converted into the corresponding iris Interpolator 
+            object, see :func:`str_to_iris` for valid strings
+        collapse_scalar : bool
+            Whether to collapse the dimension of scalar sample points in the
+            resulting cube. Default is True.
+        
+        Returns
+        -------
+        ModelData
+            collapsed data object
+            
+        Examples
+        --------
+        
+            >>> from pyaerocom import ModelData
+            >>> data = ModelData()
+            >>> data._init_testdata_default()
+            >>> itp = data.interpolate([("longitude", (10, 20)),
+            ...                         ("latitude" , (35, 40))])
+            >>> print(itp)
+            
+        """
+        if isinstance(scheme, str):
+            scheme = str_to_iris(scheme)
+        itp_cube = self.grid.interpolate(sample_points, scheme, 
+                                         collapse_scalar)
+        return ModelData(itp_cube, **self.suppl_info)
+    
     def collapsed(self, coords, aggregator, **kwargs):
         """Collapse cube
         
@@ -384,8 +435,10 @@ class ModelData:
         coords : str or list
             string IDs of coordinate(s) that are to be collapsed (e.g. 
             ``["longitude", "latitude"]``)
-        aggregator : :obj:`iris.analysis.Aggregator` or :obj:`iris.analysis.\
-                                                            WeightedAggretor`
+        aggregator : str or Aggregator or WeightedAggretor
+            the aggregator used. If input is string, it is converted into the
+            corresponding iris Aggregator object, see 
+            :func:`str_to_iris` for valid strings
         **kwargs 
             additional keyword args (e.g. ``weights``)
         
@@ -393,8 +446,9 @@ class ModelData:
         -------
         ModelData
             collapsed data object
-        
         """
+        if isinstance(aggregator, str):
+            aggregator = str_to_iris(aggregator)
         collapsed = self.grid.collapsed(coords, aggregator, **kwargs)
         return ModelData(collapsed, **self.suppl_info)
     
@@ -503,53 +557,64 @@ class ModelData:
         return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__repr__() 
     
 if __name__=='__main__':
-    from pyaerocom.io.testfiles import get
-    from matplotlib.pyplot import close, figure
-    import numpy as np
-    close("all")
-    files = get()
-    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
-                     model_id='aatsr_su_v4.3')
-    print(data.var_name)
-    print(type(data.longitude))
-    print(data.longitude.points.min(), data.longitude.points.max())
-    print(data.latitude.points.min(), data.latitude.points.max())
-    print(data.time.points.min(), data.time.points.max())
-    tstamps = data.time_stamps()
-    print(tstamps[0], tstamps[-1])
+    RUN_OLD_STUFF = False
     
-    data.longitude.circular = True
-    cropped = data.crop(lon_range=(100, 170), lat_range=(-60, 60))
-    print(cropped.shape)
-    cropped.quickplot_map()
+    data = ModelData()
+    data._init_testdata_default()
+    itp = data.interpolate([("longitude", (10, 20)),
+                            ("latitude" , (35, 40))])
     
-    other = ModelData(files["models"]["ecmwf_osuite"], 
-                      var_name="od550aer", model_id="ECMWF_OSUITE")
-    other.quickplot_map()
-    #crop randomly
-    ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))
-    ocropped.quickplot_map()
-    # some plot options
-    ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
-    ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
-    
-    # crop india
-    cropped_india = other.crop(region_id="INDIA")[:60]
-    cropped_india.quickplot_map(time_idx=0)
-    
-    if np.any(np.isnan(cropped_india.grid.data)):
-        raise Exception
-    
-    mean = cropped_india.area_weighted_mean()
-    
-    from pandas import Series
-    
-    s = Series(data=mean, index=cropped_india.time_stamps())
-    
-    fig = figure()
-    s.plot()
-    fig.tight_layout()
-    try:
-        ModelData(files["models"]["ecmwf_osuite"])
-    except ValueError as e:
-        warn(repr(e))
+    if RUN_OLD_STUFF:
+        from pyaerocom.io.testfiles import get
+        from matplotlib.pyplot import close, figure
+        import numpy as np
+        close("all")
+        files = get()
+        data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+                         model_id='aatsr_su_v4.3')
+        print(data.var_name)
+        print(type(data.longitude))
+        print(data.longitude.points.min(), data.longitude.points.max())
+        print(data.latitude.points.min(), data.latitude.points.max())
+        print(data.time.points.min(), data.time.points.max())
+        tstamps = data.time_stamps()
+        print(tstamps[0], tstamps[-1])
+        
+        data.longitude.circular = True
+        cropped = data.crop(lon_range=(100, 170), lat_range=(-60, 60))
+        print(cropped.shape)
+        cropped.quickplot_map()
+        
+        other = ModelData(files["models"]["ecmwf_osuite"], 
+                          var_name="od550aer", model_id="ECMWF_OSUITE")
+        other.quickplot_map()
+        #crop randomly
+        ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))
+        ocropped.quickplot_map()
+        # some plot options
+        ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
+        ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
+        
+        # crop india
+        cropped_india = other.crop(region="INDIA")[:60]
+        cropped_india.quickplot_map(time_idx=0)
+        
+        if np.any(np.isnan(cropped_india.grid.data)):
+            raise Exception
+        
+        mean = cropped_india.area_weighted_mean()
+        
+        from pandas import Series
+        
+        s = Series(data=mean, index=cropped_india.time_stamps())
+        
+        fig = figure()
+        s.plot()
+        fig.tight_layout()
+        try:
+            ModelData(files["models"]["ecmwf_osuite"])
+        except ValueError as e:
+            warn(repr(e))
+        
+    import doctest
+    doctest.testmod()

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Notebooks &mdash; pyaerocom  documentation</title>
+  <title>Tutorials (Jupyter Notebooks) &mdash; pyaerocom  documentation</title>
   
 
   
@@ -29,8 +29,6 @@
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   
 
-  
-    <link rel="stylesheet" href="_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
   
 
   
@@ -94,21 +92,32 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Notebooks</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#introducing-the-modeldata-class">Introducing the <code class="docutils literal"><span class="pre">ModelData</span></code> class</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#note">Note</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#to-be-continued">To be continued ..</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials (Jupyter Notebooks)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started-with-pyaerocom">Getting started with Pyaerocom</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-global-environment-variables">Setting global environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#test-import-and-plot-some-model-data">Test import and plot some model data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#aerocom-default-regions">AEROCOM default regions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#load-example-data-and-apply-region-specific-crop">Load example data and apply region specific crop</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#introducing-the-modeldata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#handling-of-cf-time-in-pyaerocom">Handling of CF time in <em>Pyaerocom</em></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#load-and-plot-some-example-data">Load and plot some example data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#digging-into-the-time-representation-of-iris-cubes">Digging into the time representation of iris Cubes</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#peculiarities-of-time-handling-when-using-the-cube-interface">Peculiarities of time handling when using the <code class="docutils literal"><span class="pre">Cube</span></code> interface</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#other-options-to-convert-timestamps">Other options to convert timestamps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#note">Note</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#to-be-continued">To be continued ..</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#handling-of-cf-time-in-pyaerocom">Handling of CF time in <em>Pyaerocom</em></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#load-and-plot-some-example-data">Load and plot some example data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#digging-into-the-time-representation-of-iris-cubes">Digging into the time representation of iris Cubes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#peculiarities-of-time-handling-when-using-the-cube-interface">Peculiarities of time handling when using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-options-to-convert-timestamps">Other options to convert timestamps</a></li>
 </ul>
 </li>
 </ul>
@@ -160,7 +169,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Notebooks</li>
+      <li>Tutorials (Jupyter Notebooks)</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -179,58 +188,490 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="notebooks">
-<h1>Notebooks<a class="headerlink" href="#notebooks" title="Permalink to this headline">¶</a></h1>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="tutorials-jupyter-notebooks">
+<h1>Tutorials (Jupyter Notebooks)<a class="headerlink" href="#tutorials-jupyter-notebooks" title="Permalink to this headline">¶</a></h1>
+<p>In this section you can find example tutorial notebooks for Pyaerocom.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Under development</p>
+</div>
+<div class="section" id="getting-started-with-pyaerocom">
+<h2>Getting started with Pyaerocom<a class="headerlink" href="#getting-started-with-pyaerocom" title="Permalink to this headline">¶</a></h2>
+<p>This notebook gives an introduction on how to install Pyaerocom and run
+it on your local machine.</p>
+<div class="section" id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>Before installation please make sure you have all required dependencies
+installed (<a class="reference external" href="http://aerocom.met.no/pyaerocom/readme.html#requirements">see here for a list of
+dependencies</a>).</p>
+</div>
+<div class="section" id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<p>Please download and unzip the <a class="reference external" href="https://github.com/metno/pyaerocom">Pyaerocom GitHub
+repository</a> or clone it using</p>
+<p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/metno/pyaerocom.git</span></code></p>
+<p>into a local directory of your choice. Then, navigate into the Pyaerocom
+root directory where the setup.py file is located. Use</p>
+<p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code></p>
+<p>to install the package normally or use</p>
+<p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">develop</span></code></p>
+<p>to install the package in development mode. The latter leaves the code
+editable and while <code class="docutils literal notranslate"><span class="pre">install</span></code> installs and freezes the current version
+of the code in your Python environment (<a class="reference external" href="https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode">see
+here</a>
+or
+<a class="reference external" href="https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-install">here</a>
+for more info).</p>
+<p>If everything worked out as expected, you should be able to import
+pyaerocom from within a Python3 console.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Installation base directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.__dir__)
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.__version__)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Installation</span> <span class="n">base</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span>
+<span class="n">Version</span><span class="p">:</span> <span class="mf">0.0</span><span class="o">.</span><span class="mf">1.</span><span class="n">dev1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="setting-global-environment-variables">
+<h3>Setting global environment variables<a class="headerlink" href="#setting-global-environment-variables" title="Permalink to this headline">¶</a></h3>
+<p>The import of data from the AEROCOM database in Pyaerocom is controlled
+via an instance of the <code class="docutils literal notranslate"><span class="pre">IOConfig</span></code> class.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
+<span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
+<span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
+<span class="n">NOMODELNAME</span><span class="p">:</span> <span class="n">OBSERVATIONS</span><span class="o">-</span><span class="n">ONLY</span>
+<span class="n">AERONET_SUN_V2L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSun_2</span><span class="o">.</span><span class="mi">0</span><span class="n">_NRT</span>
+<span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L2_SDA_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV3Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_INV_V2L15_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">AP</span>
+<span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
+<span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+   <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
+    <span class="o">...</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">-</span><span class="n">IND3</span><span class="o">/</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">-</span><span class="n">IND2</span><span class="o">/</span><span class="p">]</span>
+
+<span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
+<span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+<p>You can check if the relevant base directories <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and
+<code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> are valid.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.READY)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? True
+</pre></div>
+</div>
+<p>If you work on your local machine and use the external AEROCOM user
+server, you might need to change the path settings. Now you have several
+options to do this:</p>
+<ol class="arabic simple">
+<li>Change all relevant paths directly in the
+<a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaeroco%20/data/paths.ini">paths.ini</a>
+file of your installation.</li>
+<li>Create a new config file &lt;myconfig.ini&gt; and iniate your configuration
+in your Python console by calling
+<code class="docutils literal notranslate"><span class="pre">pyaerocom.config</span> <span class="pre">=</span> <span class="pre">pyaerocom.IOConfig(config_file=&lt;myconfig.ini&gt;)</span></code></li>
+<li>Change the settings directly within the instance of the <code class="docutils literal notranslate"><span class="pre">IOConfig</span></code>
+class, as follows:</li>
+</ol>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODELBASEDIR</span><span class="o">=</span><span class="s2">&quot;path/that/does/not/exist&quot;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">OBSBASEDIR</span><span class="o">=</span><span class="s2">&quot;path/that/does/not/exist&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">cfg</span>.READY)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? False
+</pre></div>
+</div>
+<p>See what’s currently in there.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
+<span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
+<span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
+<span class="n">NOMODELNAME</span><span class="p">:</span> <span class="n">OBSERVATIONS</span><span class="o">-</span><span class="n">ONLY</span>
+<span class="n">AERONET_SUN_V2L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSun_2</span><span class="o">.</span><span class="mi">0</span><span class="n">_NRT</span>
+<span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L2_SDA_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV3Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_INV_V2L15_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">AP</span>
+<span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
+<span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+   <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
+    <span class="o">...</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">-</span><span class="n">IND3</span><span class="o">/</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">-</span><span class="n">IND2</span><span class="o">/</span><span class="p">]</span>
+
+<span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
+<span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+<p>As you can see, <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> contain the invalid
+paths, but e.g. the list containing model directories (<code class="docutils literal notranslate"><span class="pre">MODELDIRS</span></code>)
+still has the original settings. This is because, these are written in
+the method <code class="docutils literal notranslate"><span class="pre">load_config(config_file)</span></code> or the wrapper method
+<code class="docutils literal notranslate"><span class="pre">reload()</span></code> which does the same. Now reload of the config_file and
+print.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
+<span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
+<span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
+<span class="n">NOMODELNAME</span><span class="p">:</span> <span class="n">OBSERVATIONS</span><span class="o">-</span><span class="n">ONLY</span>
+<span class="n">AERONET_SUN_V2L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSun_2</span><span class="o">.</span><span class="mi">0</span><span class="n">_NRT</span>
+<span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_SUN_V3L2_SDA_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSDAV3Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
+<span class="n">AERONET_INV_V2L15_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">AP</span>
+<span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">daily</span>
+<span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
+<span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
+<span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+   <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
+    <span class="o">...</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">-</span><span class="n">IND3</span><span class="o">/</span>
+    <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">-</span><span class="n">IND2</span><span class="o">/</span><span class="p">]</span>
+
+<span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
+<span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">reload</span></code> (and <code class="docutils literal notranslate"><span class="pre">load_config</span></code>) method actually checks if the
+currently defined base directories exist, and if not, it uses the ones
+that are defined in the paths.ini file. This is the why the above
+configuration is the intial one. If you choose valid paths, this should
+work.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">MODELBASEDIR</span><span class="o">=</span><span class="s2">&quot;.&quot;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">OBSBASEDIR</span><span class="o">=</span><span class="s2">&quot;.&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">cfg</span>.READY)
+<span class="n">cfg</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? True
+Current config: Pyaerocom IOConfig
+GCOSPERCENTCRIT: 0.1
+GCOSABSCRIT: 0.04
+OBSNET_NONE: NONE
+NOMODELNAME: OBSERVATIONS-ONLY
+AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
+AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
+AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
+AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
+AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
+AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
+AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
+AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
+AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
+AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
+AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
+AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
+AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
+AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
+AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
+EBAS_MULTICOLUMN_NAME: EBASMC
+EEA_NAME: EEAAQeRep
+OBSCONFIG (dict)
+MODELDIRS (list)
+   [.aerocom-users-database/ECMWF/
+    .aerocom1/
+    ...
+    .aerocom-users-database/AEROCOM-PHASE-II-IND3/
+    .aerocom-users-database/AEROCOM-PHASE-II-IND2/]
+
+MODELBASEDIR: .
+OBSBASEDIR: .
+OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+_config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+</pre></div>
+</div>
+</div>
+<div class="section" id="test-import-and-plot-some-model-data">
+<h3>Test import and plot some model data<a class="headerlink" href="#test-import-and-plot-some-model-data" title="Permalink to this headline">¶</a></h3>
+<p>Now that we have everything set up, we can start working on the data. In
+the following cells, we use the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class to find and
+import data files containing the aerosol optical depth at 550 nm
+(<code class="docutils literal notranslate"><span class="pre">od550aer</span></code>) from the ECMWF CAMS reanalysis model
+(<code class="docutils literal notranslate"><span class="pre">ECMWF_CAMS_REAN</span></code>)for the years 2003-2007 in daily resolution. The
+files will be temporally merged and put into an instance of the
+<code class="docutils literal notranslate"><span class="pre">ModelData</span></code> instance. Starting with creating a reading object, that
+will take care of finding the model directory of us (based on the model
+ID) and all valid NetCDF files.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadModelData</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31.12.2007&quot;</span><span class="p">,</span>
+                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span>
+</pre></div>
+</div>
+<p>At this point, nothing is actually imported but only the paths are set
+that contain data for this model. In order to read one variable, call
+the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable name. You can check
+available variables using the <code class="docutils literal notranslate"><span class="pre">vars</span></code> attribute.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected variables for model </span><span class="si">%s</span><span class="s2">:</span><span class="se">\n</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">read</span><span class="o">.</span><span class="n">vars</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Detected</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">model</span> <span class="n">ECMWF_CAMS_REAN</span><span class="p">:</span>
+ <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2003.nc
+FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2004.nc
+FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2005.nc
+FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2006.nc
+FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2007.nc
+daily 2003
+Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
+Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2003.nc. Attempting to correct.
+daily 2004
+Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
+Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2004.nc. Attempting to correct.
+daily 2005
+Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
+Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2005.nc. Attempting to correct.
+daily 2006
+Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
+Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2006.nc. Attempting to correct.
+daily 2007
+Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
+Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2007.nc. Attempting to correct.
+Rolling longitudes to -180 -&gt; 180 definition
+Applying temporal cropping of result cube
+
+The data object is of type &lt;class &#39;pyaerocom.modeldata.ModelData&#39;&gt; and contains 1826 time stamps
+</pre></div>
+</div>
+<p>From the output we can see that based on our specified time range and
+temporal resolution, we got 6 netCDF files that were merged all into an
+instance of the <code class="docutils literal notranslate"><span class="pre">pyaerocom.ModelData</span></code> class, which will be introduced
+in more detail later.</p>
+<p>Now as a final step, we compute and plot a time series of the global
+weighted average aerosol optical density as well as the same time series
+at the coordinates in the ciry of Leipzig, Germany.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="k">import</span> <span class="n">gaussian_filter1d</span>
+<span class="c1">#compute global mean (area weighted)</span>
+<span class="n">glob_mean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
+
+<span class="c1">#extract AODs at the position of Leipzig</span>
+<span class="n">lon_leipzig</span> <span class="o">=</span> <span class="mf">12.44</span>
+<span class="n">lat_leipzig</span> <span class="o">=</span> <span class="mf">51.35</span>
+
+<span class="n">data_leipzig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">lat_leipzig</span><span class="p">),</span>
+                                 <span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">lon_leipzig</span><span class="p">)])</span>
+
+<span class="c1"># create pandas Series for global average</span>
+<span class="n">s_glob</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">glob_mean</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+
+<span class="c1"># create pandas Series for leipzig average (and smooth in time)</span>
+<span class="n">GAUSS_SIGMA</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">s_leipzig</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">data_leipzig</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">GAUSS_SIGMA</span><span class="p">),</span>
+                   <span class="n">data_leipzig</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">s_leipzig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;City of Leipzig (smoothed $\sigma$=</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="k">GAUSS_SIGMA</span>, figsize=(16,6))
+<span class="n">s_glob</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Global trend&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/output_20_0.png" src="_images/output_20_0.png" />
+<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class is
+introduced, which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and
+allows for importing data from multiple models.</p>
+</div>
+</div>
+<div class="section" id="aerocom-default-regions">
+<h2>AEROCOM default regions<a class="headerlink" href="#aerocom-default-regions" title="Permalink to this headline">¶</a></h2>
+<p>This notebook introduces how pyaerocom handles information related to
+default regions (e.g. Europe, Asia, …) as used in the <a class="reference external" href="http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl">AEROCOM
+interface</a>.
+All default regions are defined in the file
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/config_files.html#default-regions">regions.ini</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">get_all_default_region_ids</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;WORLD&#39;</span><span class="p">,</span> <span class="s1">&#39;EUROPE&#39;</span><span class="p">,</span> <span class="s1">&#39;ASIA&#39;</span><span class="p">,</span> <span class="s1">&#39;AUSTRALIA&#39;</span><span class="p">,</span> <span class="s1">&#39;CHINA&#39;</span><span class="p">,</span> <span class="s1">&#39;INDIA&#39;</span><span class="p">,</span> <span class="s1">&#39;NAFRICA&#39;</span><span class="p">,</span> <span class="s1">&#39;SAFRICA&#39;</span><span class="p">,</span> <span class="s1">&#39;SAMERICA&#39;</span><span class="p">,</span> <span class="s1">&#39;NAMERICA&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now load some default regions and print them.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">europe</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
+<span class="n">asia</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;ASIA&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">europe</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">asia</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaeorocom</span> <span class="n">Region</span>
+<span class="n">Name</span><span class="p">:</span> <span class="n">EUROPE</span>
+<span class="n">Longitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
+<span class="n">Latitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
+<span class="n">Longitude</span> <span class="nb">range</span> <span class="p">(</span><span class="n">plots</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
+<span class="n">Latitude</span> <span class="nb">range</span> <span class="p">(</span><span class="n">plots</span><span class="p">):</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
+
+<span class="n">pyaeorocom</span> <span class="n">Region</span>
+<span class="n">Name</span><span class="p">:</span> <span class="n">ASIA</span>
+<span class="n">Longitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">150</span><span class="p">]</span>
+<span class="n">Latitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
+<span class="n">Longitude</span> <span class="nb">range</span> <span class="p">(</span><span class="n">plots</span><span class="p">):</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">150</span><span class="p">]</span>
+<span class="n">Latitude</span> <span class="nb">range</span> <span class="p">(</span><span class="n">plots</span><span class="p">):</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="load-example-data-and-apply-region-specific-crop">
+<h3>Load example data and apply region specific crop<a class="headerlink" href="#load-example-data-and-apply-region-specific-crop" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span>
+<span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
+<span class="n">crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+</pre></div>
+</div>
+<img alt="_images/output_5_1.png" src="_images/output_5_1.png" />
 <div class="section" id="introducing-the-modeldata-class">
-<h2>Introducing the <code class="docutils literal"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#introducing-the-modeldata-class" title="Permalink to this headline">¶</a></h2>
+<h4>Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#introducing-the-modeldata-class" title="Permalink to this headline">¶</a></h4>
 <p>This notebook introduces basic features of the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.modeldata.ModelData">ModelData</a>
-class of pyaerocom. The <code class="docutils literal"><span class="pre">ModelData</span></code> class is the fundamental base
+class of pyaerocom. The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is the fundamental base
 class for the analysis of model data. The underlying data type is
 <a class="reference external" href="http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube">iris.cube.Cube</a>
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of <code class="docutils literal"><span class="pre">ModelData</span></code> (i.e. by passing the
+files when creating an instance of <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> (i.e. by passing the
 filename and specifying the variable name on initialisation). This
-notebook introduces some of the features of the <code class="docutils literal"><span class="pre">ModelData</span></code> class.
+notebook introduces some of the features of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class.
 Starting with some imports…</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
 </pre></div>
 </div>
 <p>Let’s get a test file to load</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
 
 <span class="n">test_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">filepath</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">aatsr_su_v4</span><span class="o">.</span><span class="mi">3</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aatsr_su_v4</span><span class="o">.</span><span class="mi">3</span>
 <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom</span><span class="o">.</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mf">3.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2008.</span><span class="n">nc</span>
 
 <span class="n">ecmwf_osuite</span>
 <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom</span><span class="o">.</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2018.</span><span class="n">nc</span>
 </pre></div>
 </div>
-<p>The dictionary, returned by the <code class="docutils literal"><span class="pre">get()</span></code> function is categorised into
-two subirectories for model based test files (<code class="docutils literal"><span class="pre">key=&quot;models&quot;</span></code>) and for
-observation based test files (<code class="docutils literal"><span class="pre">key=observations</span></code>). So far, there is
+<p>The dictionary, returned by the <code class="docutils literal notranslate"><span class="pre">get()</span></code> function is categorised into
+two subirectories for model based test files (<code class="docutils literal notranslate"><span class="pre">key=&quot;models&quot;</span></code>) and for
+observation based test files (<code class="docutils literal notranslate"><span class="pre">key=observations</span></code>). So far, there is
 not much in there (i.e. only two files).</p>
 <p>Let’s pick out the ECMWF OSUITE test file and load the data directly
-into an instance of the <code class="docutils literal"><span class="pre">ModelData</span></code> class. The <code class="docutils literal"><span class="pre">ModelData</span></code> class
-takes either preloaded instances of the <code class="docutils literal"><span class="pre">iris.cube.Cube</span></code> class as
+into an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class. The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class
+takes either preloaded instances of the <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> class as
 input, or a valid netCDF file path. The latter requires specification of
 the variable name which is then filtered from the data stored in the
 netCDF file (which may contain multiple variables. The following example
 imports the data for the aerosol optical density at 550 nm. The string
-representation of the <code class="docutils literal"><span class="pre">ModelData</span></code> class (see print at end of following
-code cell) was slitghtly adapted from the underlying <code class="docutils literal"><span class="pre">Cube</span></code> object.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fpath</span> <span class="o">=</span> <span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">]</span>
+representation of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class (see print at end of following
+code cell) was slitghtly adapted from the underlying <code class="docutils literal notranslate"><span class="pre">Cube</span></code> object.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fpath</span> <span class="o">=</span> <span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">]</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
      <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
@@ -249,24 +690,27 @@ code cell) was slitghtly adapted from the underlying <code class="docutils liter
           <span class="n">mean</span><span class="p">:</span> <span class="n">time</span>
 </pre></div>
 </div>
+</div>
+</div>
+</div>
 <div class="section" id="note">
-<h3>Note<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h3>
+<h2>Note<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h2>
 <div class="alert alert-block alert-info"><p>The longitudes in the ECMWF OSUITE data files are defined</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[0 \leq\,\text{lon}\,\leq360\]</div>
 <p>and are converted automatically to</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[-180\leq\,\text{lon}\,\leq180\]</div>
-<p>when an instance of the <code class="docutils literal"><span class="pre">ModelData</span></code> class is created (see print
+<p>when an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is created (see print
 statment above <em>Rolling longitudes to -180 -&gt; 180 definition</em>)</p>
 </div><p>In the following cell, some of the most important attributes are
 introduced. These are mostly reimplementations of the underlying
-<code class="docutils literal"><span class="pre">Cube</span></code> data which is stored in the <code class="docutils literal"><span class="pre">ModelData.grid</span></code> attribute. For
-instance the attribute <code class="docutils literal"><span class="pre">ModelData.longitude</span></code> get’s you
-<code class="docutils literal"><span class="pre">ModelData.grid.coord(&quot;longitude&quot;)</span></code>, <code class="docutils literal"><span class="pre">ModelData.latitude</span></code> get’s you
-<code class="docutils literal"><span class="pre">ModelData.grid.coord(&quot;latitude&quot;)</span></code> and <code class="docutils literal"><span class="pre">ModelData.time</span></code> get’s you
-<code class="docutils literal"><span class="pre">ModelData.grid.coord(&quot;time&quot;)</span></code>.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+<code class="docutils literal notranslate"><span class="pre">Cube</span></code> data which is stored in the <code class="docutils literal notranslate"><span class="pre">ModelData.grid</span></code> attribute. For
+instance the attribute <code class="docutils literal notranslate"><span class="pre">ModelData.longitude</span></code> get’s you
+<code class="docutils literal notranslate"><span class="pre">ModelData.grid.coord(&quot;longitude&quot;)</span></code>, <code class="docutils literal notranslate"><span class="pre">ModelData.latitude</span></code> get’s you
+<code class="docutils literal notranslate"><span class="pre">ModelData.grid.coord(&quot;latitude&quot;)</span></code> and <code class="docutils literal notranslate"><span class="pre">ModelData.time</span></code> get’s you
+<code class="docutils literal notranslate"><span class="pre">ModelData.grid.coord(&quot;time&quot;)</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Longitude attr is pointer to DimCoord instance of underlying Cube: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span> <span class="ow">is</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
@@ -276,7 +720,7 @@ instance the attribute <code class="docutils literal"><span class="pre">ModelDat
 <span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>od550aer
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>od550aer
 &lt;class &#39;iris.coords.DimCoord&#39;&gt;
 Longitude attr is pointer to DimCoord instance of underlying Cube: True
 -180.0 179.60000610351562
@@ -287,30 +731,30 @@ Longitude attr is pointer to DimCoord instance of underlying Cube: True
 </div>
 <p>If you do not specify the variable type, an Exception is raised, that
 will get you some information about what variables are available in the
-file (if the file is readable using the <code class="docutils literal"><span class="pre">iris.load</span></code> method).</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+file (if the file is readable using the <code class="docutils literal notranslate"><span class="pre">iris.load</span></code> method).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550so4&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550oa&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550so4&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550oa&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
 <span class="mf">6.357274804629144</span> <span class="mf">0.0009405642475446783</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;Blaaa&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This also did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This also did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">also</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="n">ConstraintMismatchError</span><span class="p">(</span><span class="s1">&#39;no cubes found&#39;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">also</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="n">ConstraintMismatchError</span><span class="p">(</span><span class="s1">&#39;no cubes found&#39;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>You can have a quick look at the data using the class-own quickplot
 method</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                          <span class="n">fix_aspect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                          <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                          <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -319,16 +763,16 @@ method</p>
 </div>
 <img alt="_images/output_14_0.png" src="_images/output_14_0.png" />
 <p>Why not load some of the other variables…</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_so4</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 <span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 </pre></div>
 </div>
 <p>… and plot them as well</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">data_bc</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">data_bc</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 <span class="n">fig2</span> <span class="o">=</span> <span class="n">data_so4</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
                      <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
                                                        <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
@@ -338,12 +782,9 @@ method</p>
 <img alt="_images/output_18_0.png" src="_images/output_18_0.png" />
 <img alt="_images/output_18_1.png" src="_images/output_18_1.png" />
 <div class="section" id="to-be-continued">
-<h4>To be continued ..<a class="headerlink" href="#to-be-continued" title="Permalink to this headline">¶</a></h4>
-</div>
-</div>
-</div>
+<h3>To be continued ..<a class="headerlink" href="#to-be-continued" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="handling-of-cf-time-in-pyaerocom">
-<h2>Handling of CF time in <em>Pyaerocom</em><a class="headerlink" href="#handling-of-cf-time-in-pyaerocom" title="Permalink to this headline">¶</a></h2>
+<h4>Handling of CF time in <em>Pyaerocom</em><a class="headerlink" href="#handling-of-cf-time-in-pyaerocom" title="Permalink to this headline">¶</a></h4>
 <p>The
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.modeldata">ModelData</a>
 class of <em>Pyaerocom</em> was introduced in <a class="reference external" href="http://aerocom.met.no/pyaerocom/notebooks.html#introducing-the-modeldata-class">this
@@ -364,38 +805,41 @@ timestamps to be datetime-like objects.</p>
 particularly in the
 <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube">Cube</a>
 class, which is the basic data representation object in the <em>Pyaerocom</em>
-<code class="docutils literal"><span class="pre">ModelData</span></code> class. In particular, it emphazises some peculiarities
+<code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class. In particular, it emphazises some peculiarities
 that can lead to complications and finally shows, how <em>Pyaerocom</em>
 circumvents these issues. We shall see, that this does not only reduce
 the risk of conversion Errors, bu even results in a quite significant
 performance boost when converting from numerical CF timestamps to
-<code class="docutils literal"><span class="pre">numpy.datetime64</span></code> time stamps.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<code class="docutils literal notranslate"><span class="pre">numpy.datetime64</span></code> time stamps.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">pyaerocom</span>
 </pre></div>
 </div>
+</div>
+</div>
+</div>
 <div class="section" id="load-and-plot-some-example-data">
-<h3>Load and plot some example data<a class="headerlink" href="#load-and-plot-some-example-data" title="Permalink to this headline">¶</a></h3>
+<h2>Load and plot some example data<a class="headerlink" href="#load-and-plot-some-example-data" title="Permalink to this headline">¶</a></h2>
 <p>Get and load test data file using the new pyaerocom interface (the
-underlying datatype of <code class="docutils literal"><span class="pre">ModelData</span></code> is <code class="docutils literal"><span class="pre">iris.cube.Cube</span></code>.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">testfiles</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+underlying datatype of <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> is <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">testfiles</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 
 <span class="n">fpath_ecmwf</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;ecmwf_osuite&#39;</span><span class="p">]</span>
 <span class="n">fpath_aatsr</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 </pre></div>
 </div>
 <p>Note that, if the longitudes are defined on a 0 -&gt; 360 degree grid, they
 are automatically converted to -180 -&gt; 180 (the case of the ECMWF data).</p>
 <p>Now, let’s have a quick look and see what is in there.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 <span class="n">fig2</span> <span class="o">=</span> <span class="n">data_aatsr</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -403,21 +847,21 @@ are automatically converted to -180 -&gt; 180 (the case of the ECMWF data).</p>
 <img alt="_images/output_6_1.png" src="_images/output_6_1.png" />
 </div>
 <div class="section" id="digging-into-the-time-representation-of-iris-cubes">
-<h3>Digging into the time representation of iris Cubes<a class="headerlink" href="#digging-into-the-time-representation-of-iris-cubes" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal"><span class="pre">ModelData</span></code> class is based on the <code class="docutils literal"><span class="pre">iris.Cube</span></code> object, which can
-be accessed via the <code class="docutils literal"><span class="pre">grid</span></code> attribute. In the following, some features
-of the <code class="docutils literal"><span class="pre">Cube</span></code> class are introduced.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">cube_ecmwf</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">grid</span>
+<h2>Digging into the time representation of iris Cubes<a class="headerlink" href="#digging-into-the-time-representation-of-iris-cubes" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is based on the <code class="docutils literal notranslate"><span class="pre">iris.Cube</span></code> object, which can
+be accessed via the <code class="docutils literal notranslate"><span class="pre">grid</span></code> attribute. In the following, some features
+of the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> class are introduced.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cube_ecmwf</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">grid</span>
 <span class="n">cube_aatsr</span> <span class="o">=</span> <span class="n">data_aatsr</span><span class="o">.</span><span class="n">grid</span>
 </pre></div>
 </div>
 <div class="section" id="peculiarities-of-time-handling-when-using-the-cube-interface">
-<h4>Peculiarities of time handling when using the <code class="docutils literal"><span class="pre">Cube</span></code> interface<a class="headerlink" href="#peculiarities-of-time-handling-when-using-the-cube-interface" title="Permalink to this headline">¶</a></h4>
+<h3>Peculiarities of time handling when using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> interface<a class="headerlink" href="#peculiarities-of-time-handling-when-using-the-cube-interface" title="Permalink to this headline">¶</a></h3>
 <p>Starting with how time is handled. The time is represented as numerical
 value relative to a basic date and frequency unit and in the optimum
 case, also the specification of a calendar, according to the <a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate">NetCDF CF
 conventions</a>.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">times_ecmwf</span> <span class="o">=</span> <span class="n">cube_ecmwf</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">times_ecmwf</span> <span class="o">=</span> <span class="n">cube_ecmwf</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ECMWF</span><span class="se">\n</span><span class="s2">First point:</span><span class="si">%s</span><span class="se">\n</span><span class="s2">Time unit: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Calendar: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                                                <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                                                <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">calendar</span><span class="p">))</span>
@@ -427,7 +871,7 @@ conventions</a>.</p>
                                                              <span class="n">times_aatsr</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">calendar</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ECMWF</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ECMWF</span>
 <span class="n">First</span> <span class="n">point</span><span class="p">:</span><span class="mf">0.0</span>
 <span class="n">Time</span> <span class="n">unit</span><span class="p">:</span> <span class="n">day</span> <span class="n">since</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.00000000</span> <span class="n">UTC</span>
 <span class="n">Calendar</span><span class="p">:</span> <span class="n">gregorian</span>
@@ -439,40 +883,40 @@ conventions</a>.</p>
 </pre></div>
 </div>
 <p>Note that the AATSR data is defined using a Julian calendar. The actual
-time objects are instances of the <code class="docutils literal"><span class="pre">DimCoord</span></code> class of the iris
+time objects are instances of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> class of the iris
 package.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">times_aatsr</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">times_aatsr</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;class &#39;iris.coords.DimCoord&#39;&gt; &lt;class &#39;iris.coords.DimCoord&#39;&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;class &#39;iris.coords.DimCoord&#39;&gt; &lt;class &#39;iris.coords.DimCoord&#39;&gt;
 </pre></div>
 </div>
 <p>Now, if we want to convert these numerically represented time stamps
-into datetime-like objects that, for instance, the <code class="docutils literal"><span class="pre">pandas</span></code> library
+into datetime-like objects that, for instance, the <code class="docutils literal notranslate"><span class="pre">pandas</span></code> library
 understands, we have several options. The first one, which is the most
 obvious one, is using the provided iris interface which does the
-conversion for us, that is, using the <code class="docutils literal"><span class="pre">cell(index)</span></code> method (with the
-corresponding <code class="docutils literal"><span class="pre">index</span></code>) of the <code class="docutils literal"><span class="pre">DimCoord</span></code> class in combination with
-the <code class="docutils literal"><span class="pre">cells()</span></code> iterator method. However, as we shall see below, this is
+conversion for us, that is, using the <code class="docutils literal notranslate"><span class="pre">cell(index)</span></code> method (with the
+corresponding <code class="docutils literal notranslate"><span class="pre">index</span></code>) of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> class in combination with
+the <code class="docutils literal notranslate"><span class="pre">cells()</span></code> iterator method. However, as we shall see below, this is
 not only the slowest solution but it is also prone to errors in case the
 calendar is not standard (e.g. Julian).</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">t0_ecmwf</span> <span class="o">=</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0_ecmwf</span> <span class="o">=</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="n">t0_aatsr</span> <span class="o">=</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First time stamp ECMWF </span><span class="si">%s</span><span class="s2"> (data type: </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First time stamp AATSR </span><span class="si">%s</span><span class="s2"> (data type: </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">t0_aatsr</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">t0_aatsr</span><span class="p">)))</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>First time stamp ECMWF 2018-01-01 00:00:00 (data type: &lt;class &#39;datetime.datetime&#39;&gt;)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>First time stamp ECMWF 2018-01-01 00:00:00 (data type: &lt;class &#39;datetime.datetime&#39;&gt;)
 First time stamp AATSR 2008-01-01 00:00:00 (data type: &lt;class &#39;netcdftime._netcdftime.DatetimeJulian&#39;&gt;)
 </pre></div>
 </div>
-<p>As you can see, the <code class="docutils literal"><span class="pre">cell</span></code> method returns different datatypes,
+<p>As you can see, the <code class="docutils literal notranslate"><span class="pre">cell</span></code> method returns different datatypes,
 dependent on the CF unit convention, that is, a standard Python
-<code class="docutils literal"><span class="pre">datetime.datetime</span></code> object, if the calendar is Gregorian, and a
-<code class="docutils literal"><span class="pre">netcdftime._netcdftime.DatetimeJulian</span></code> object in case of a Julian
+<code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code> object, if the calendar is Gregorian, and a
+<code class="docutils literal notranslate"><span class="pre">netcdftime._netcdftime.DatetimeJulian</span></code> object in case of a Julian
 calendar. Problem here is, that the former is understood by pandas,
 while the latter is not.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span>
 
 <span class="n">t0_ecmwf_pandas</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
@@ -481,75 +925,75 @@ while the latter is not.</p>
     <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Cannot convert input [2008-01-01 00:00:00] of type &lt;class &#39;netcdftime._netcdftime.DatetimeJulian&#39;&gt; to Timestamp&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Cannot convert input [2008-01-01 00:00:00] of type &lt;class &#39;netcdftime._netcdftime.DatetimeJulian&#39;&gt; to Timestamp&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Nontheless, numpy is easier in that sense, since it understands both
 datatypes.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">t0_ecmwf_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">)</span>
 <span class="n">t0_aatsr_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t0_aatsr</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">t0_ecmwf_np</span><span class="p">,</span> <span class="n">t0_aatsr_np</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="mi">2008</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="mi">2008</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 </pre></div>
 </div>
 <p>Fair enough, but however, in the end we want to ensure to have a
 conversion method ready that handles any calendar, and that is
-considerably fast. We just saw, that <code class="docutils literal"><span class="pre">datetime64</span></code> works for both
-datetime formats that we get when calling the <code class="docutils literal"><span class="pre">cell</span></code> method of the
-<code class="docutils literal"><span class="pre">DimCoord</span></code> object that holds the time stamps. However, keep in mind,
-that whenever <code class="docutils literal"><span class="pre">call</span></code> is called, it performs a conversion of the
-numeric value into either <code class="docutils literal"><span class="pre">datetime.datetime</span></code> or, for non-standard
+considerably fast. We just saw, that <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> works for both
+datetime formats that we get when calling the <code class="docutils literal notranslate"><span class="pre">cell</span></code> method of the
+<code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> object that holds the time stamps. However, keep in mind,
+that whenever <code class="docutils literal notranslate"><span class="pre">call</span></code> is called, it performs a conversion of the
+numeric value into either <code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code> or, for non-standard
 calendars, into a datetime object from the
 <a class="reference external" href="https://github.com/Unidata/cftime">cftime</a> package. So, either way,
-when using the <code class="docutils literal"><span class="pre">cell</span></code> method we have to iterate over all indices to
+when using the <code class="docutils literal notranslate"><span class="pre">cell</span></code> method we have to iterate over all indices to
 convert the numerical values into datetime-like objects. The latter may
-be done using the <code class="docutils literal"><span class="pre">cells()</span></code> iterator of the <code class="docutils literal"><span class="pre">DimCoord</span></code> class.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="n">times_ecmwf_conv</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">point</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
+be done using the <code class="docutils literal notranslate"><span class="pre">cells()</span></code> iterator of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> class.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">times_ecmwf_conv</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">point</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
 <span class="n">times_aatsr_conv</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">point</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
 <span class="c1">#display first two</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">times_ecmwf_conv</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span><span class="n">times_aatsr_conv</span><span class="p">[:</span><span class="mi">2</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
 
 <span class="p">[</span><span class="n">netcdftime</span><span class="o">.</span><span class="n">_netcdftime</span><span class="o">.</span><span class="n">DatetimeJulian</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">netcdftime</span><span class="o">.</span><span class="n">_netcdftime</span><span class="o">.</span><span class="n">DatetimeJulian</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>This worked, but however, is it fast?</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">point</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+[t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>129 ms ± 13.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>129 ms ± 13.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">point</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+[t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>111 ms ± 8.62 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>111 ms ± 8.62 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
 will not be accepted by pandas as a valid datetime object. We can,
 however, convert the datapoints to numpy datetime64 objects during the
 conversion (if we want).</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">point</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+[np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>184 ms ± 23.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>184 ms ± 23.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 </pre></div>
 </div>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">point</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cells</span><span class="p">()]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+[np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>114 ms ± 7 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>114 ms ± 7 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -557,27 +1001,27 @@ performance and ensures, that pandas will understand the datatype.
 However, about 100ms for conversion of 365 dates is rather slow.</p>
 </div>
 <div class="section" id="other-options-to-convert-timestamps">
-<h4>Other options to convert timestamps<a class="headerlink" href="#other-options-to-convert-timestamps" title="Permalink to this headline">¶</a></h4>
+<h3>Other options to convert timestamps<a class="headerlink" href="#other-options-to-convert-timestamps" title="Permalink to this headline">¶</a></h3>
 <p>Above we saw how we can convert the numerical timestamps into an array
-of numpy <code class="docutils literal"><span class="pre">datetime64</span></code> objects (which is what we want in the end). As
+of numpy <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> objects (which is what we want in the end). As
 we shall see below, the conversion can be significantly accelarated if
-we do not use the iris interface provided by the <code class="docutils literal"><span class="pre">cell(index)</span></code> method
-and the <code class="docutils literal"><span class="pre">cells()</span></code> iterator, but rather directly use the underlying
-<code class="docutils literal"><span class="pre">cftime</span></code> library (that iris uses).</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="o">.</span><span class="n">points</span><span class="p">)]</span>
+we do not use the iris interface provided by the <code class="docutils literal notranslate"><span class="pre">cell(index)</span></code> method
+and the <code class="docutils literal notranslate"><span class="pre">cells()</span></code> iterator, but rather directly use the underlying
+<code class="docutils literal notranslate"><span class="pre">cftime</span></code> library (that iris uses).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+[np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>1.89 ms ± 186 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.89 ms ± 186 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
 boost this even more, as we shall see in the following. Basically, what
 it does is accessing the base date that is encrypted in the unit, i.e.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">day</span> <span class="n">since</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.00000000</span> <span class="n">UTC</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">day</span> <span class="n">since</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.00000000</span> <span class="n">UTC</span>
 </pre></div>
 </div>
 <p>and based on this base date, and the encrypted temporal resolution (here
@@ -585,12 +1029,12 @@ it does is accessing the base date that is encrypted in the unit, i.e.</p>
 functionality</a>
 to convert the stuff. For this, we have to test if the first sub string
 (here <em>day</em>) is valid according to the CF standard, which we do using
-some features from the <code class="docutils literal"><span class="pre">netCDF4</span></code> package and by defining a function,
-that translates the numerical timestamps into <code class="docutils literal"><span class="pre">datetime64</span></code> objects
+some features from the <code class="docutils literal notranslate"><span class="pre">netCDF4</span></code> package and by defining a function,
+that translates the numerical timestamps into <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> objects
 based on the information encoded in the units string(e.g. <em>day since
 2018-01-01 00:00:00.00000000 UTC</em>) and the corresponding calendar (e.g.
 “gregorian”).</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">Unit</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">Unit</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">MINYEAR</span><span class="p">,</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">asarray</span><span class="p">,</span> <span class="n">datetime64</span>
 <span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="p">(</span><span class="n">microsec_units</span><span class="p">,</span> <span class="n">millisec_units</span><span class="p">,</span> <span class="n">sec_units</span><span class="p">,</span> <span class="n">min_units</span><span class="p">,</span>
@@ -676,63 +1120,62 @@ based on the information encoded in the units string(e.g. <em>day since
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;unsupported time units&#39;</span><span class="p">)</span>
 
         <span class="n">basedate</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="n">basedate</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="n">asarray</span><span class="p">(</span><span class="n">timesnum</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;timedelta64[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span><span class="n">tstr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="n">asarray</span><span class="p">(</span><span class="n">timesnum</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;timedelta64[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span><span class="k">tstr</span>)
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">asarray</span><span class="p">([</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">timesnum</span><span class="p">)])</span>
 </pre></div>
 </div>
 <p>Now let’s see how this one performs.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>58.5 µs ± 1.25 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>58.5 µs ± 1.25 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>Actually, due to this significant increase in performance for standard
 calendars (compared to the methods used in netCDF4), the above method
 was implemented in the pyaerocom package (<a class="reference external" href="aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64">see
 here</a>).</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pyaerocom_tconversion</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pyaerocom_tconversion</span>
 </pre></div>
 </div>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="n">pyaerocom_tconversion</span><span class="p">(</span><span class="n">times_ecmwf</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>63 µs ± 2.82 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>63 µs ± 2.82 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
-<code class="docutils literal"><span class="pre">num2date</span></code> method is used.</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="n">pyaerocom_tconversion</span><span class="p">(</span><span class="n">times_aatsr</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<code class="docutils literal notranslate"><span class="pre">num2date</span></code> method is used.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>1.76 ms ± 27.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.76 ms ± 27.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
-iris interface (i.e. iterating over <code class="docutils literal"><span class="pre">cells</span></code> of the <code class="docutils literal"><span class="pre">DimCoord</span></code>), for
+iris interface (i.e. iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
 conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.</p>
 <p>The method is also the standard conversion method in the
-<code class="docutils literal"><span class="pre">ModelData.time_stamps()</span></code> method:</p>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="n">data_ecmwf</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+<code class="docutils literal notranslate"><span class="pre">ModelData.time_stamps()</span></code> method:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>90 µs ± 4.76 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>90 µs ± 4.76 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
-<div class="code ipython3 highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="n">data_aatsr</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span>1.93 ms ± 129 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.93 ms ± 129 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
-</div>
 </div>
 </div>
 </div>
@@ -793,9 +1236,6 @@ them in a format that also pandas understands.</p>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

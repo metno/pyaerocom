@@ -30,8 +30,6 @@
   
 
   
-    <link rel="stylesheet" href="../../../_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
-  
 
   
         <link rel="index" title="Index"
@@ -93,7 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
@@ -209,14 +207,14 @@
 <span class="kn">from</span> <span class="nn">iris.experimental.equalise_cubes</span> <span class="k">import</span> <span class="n">equalise_attributes</span>
 <span class="kn">from</span> <span class="nn">iris.util</span> <span class="k">import</span> <span class="n">unify_time_units</span>
 
-<span class="kn">import</span> <span class="nn">pyaerocom.config</span> <span class="k">as</span> <span class="nn">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">VERBOSE</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">check_time_coord</span><span class="p">,</span> <span class="n">correct_time_coord</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
 
-<div class="viewcode-block" id="ReadModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadModelData</span><span class="p">:</span>
+<div class="viewcode-block" id="ReadModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadModelData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class that stores read import results for model data</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
@@ -647,7 +645,7 @@
                 <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to read variable </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">var</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="n">_vars_read</span></div></div>
         
-<div class="viewcode-block" id="ReadMultiModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadMultiModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadMultiModelData</span><span class="p">:</span>
+<div class="viewcode-block" id="ReadMultiModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadMultiModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadMultiModelData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class that can be used to import model data from multiple models</span>
 <span class="sd">    </span>
 <span class="sd">    This class provides an interface to import model results from an arbitrary</span>
@@ -954,9 +952,6 @@
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="../../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
-      <script type="text/javascript" src="../../../_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
-      <script type="text/javascript" src="../../../_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 

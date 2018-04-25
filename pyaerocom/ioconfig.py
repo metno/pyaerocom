@@ -90,8 +90,8 @@ class IOConfig(object):
         self.MODELDIRS = []
         
         # Directories
-        self._MODELBASEDIR = None
-        self._OBSBASEDIR = None
+        self.MODELBASEDIR = None
+        self.OBSBASEDIR = None
         self.OBSDATACACHEDIR = None
         
         if isinstance(config_file, str) and os.path.exists(config_file):
@@ -101,9 +101,9 @@ class IOConfig(object):
             self._config_ini = os.path.join(__dir__, 'data', 'paths.ini')
         
         if self.check_dir(model_base_dir):
-            self._MODELBASEDIR = model_base_dir
+            self.MODELBASEDIR = model_base_dir
         if self.check_dir(obs_base_dir):
-            self._OBSBASEDIR = obs_base_dir
+            self.OBSBASEDIR = obs_base_dir
         if self.check_dir(obs_cache_dir):
             self.OBSDATACACHEDIR = obs_cache_dir
         self.read_config(config_file)
@@ -117,10 +117,10 @@ class IOConfig(object):
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""
         ok =True
-        if not self.check_dir(self._MODELBASEDIR):
+        if not self.check_dir(self.MODELBASEDIR):
             warn("Model base directory %s does not exist")
             ok=False
-        if not self.check_dir(self._OBSBASEDIR):
+        if not self.check_dir(self.OBSBASEDIR):
             warn("Observations base directory %s does not exist")
             ok=False
         if not self.check_dir(self.OBSDATACACHEDIR):
@@ -134,7 +134,7 @@ class IOConfig(object):
         return False
     
     def reload(self):
-        self.read_config()
+        self.read_config(self._config_ini)
         
     def read_config(self, config_file):
         """Read and import form paths.ini"""
@@ -146,11 +146,11 @@ class IOConfig(object):
         cr = ConfigParser()
         cr.read(_config_ini)
         #init base directories for Model data
-        if not self.check_dir(self._MODELBASEDIR):
-            self._MODELBASEDIR = cr['modelfolders']['BASEDIR']
+        if not self.check_dir(self.MODELBASEDIR):
+            self.MODELBASEDIR = cr['modelfolders']['BASEDIR']
         
         self.MODELDIRS = (cr['modelfolders']['dir'].
-                          replace('${BASEDIR}', self._MODELBASEDIR).
+                          replace('${BASEDIR}', self.MODELBASEDIR).
                           replace('\n','').split(','))
 
         # read obs network names from ini file
@@ -181,14 +181,14 @@ class IOConfig(object):
     
     
         #Read directories for observation location
-        if not self.check_dir(self._OBSBASEDIR):
-            self._OBSBASEDIR = cr['obsfolders']['BASEDIR']
+        if not self.check_dir(self.OBSBASEDIR):
+            self.OBSBASEDIR = cr['obsfolders']['BASEDIR']
             
         OBSCONFIG = self.OBSCONFIG
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME]['PATH'] =\
         cr['obsfolders']['AERONET_SUN_V2L15_AOD_DAILY'].\
-        replace('${BASEDIR}', self._OBSBASEDIR)
+        replace('${BASEDIR}', self.OBSBASEDIR)
         
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L15_AOD_DAILY']
@@ -196,98 +196,123 @@ class IOConfig(object):
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L15_AOD_ALL_POINTS'].\
-            replace('${BASEDIR}', self._OBSBASEDIR)
+            replace('${BASEDIR}', self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_AOD_DAILY'].\
-            replace('${BASEDIR}', self._OBSBASEDIR)
+            replace('${BASEDIR}', self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_DAILY_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L2_AOD_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_AOD_ALL_POINTS'].\
-            replace('${BASEDIR}',self._OBSBASEDIR)
+            replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_DAILY_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_SDA_DAILY'].\
-            replace('${BASEDIR}',self._OBSBASEDIR)
+            replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_DAILY_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L2_SDA_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_SDA_ALL_POINTS'].\
-            replace('${BASEDIR}',self._OBSBASEDIR)
+            replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L15_AOD_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_AOD_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_SDA_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_DAILY']
     
         OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L2_DAILY']
     
         OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L2_ALL_POINTS']
     
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME] = {}
-        OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['PATH'] = cr['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['PATH'] = cr['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['START_YEAR'] = cr['obsstartyears']['EBAS_MULTICOLUMN']
     
         OBSCONFIG[self.EEA_NAME] = {}
-        OBSCONFIG[self.EEA_NAME]['PATH'] = cr['obsfolders']['EEA'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.EEA_NAME]['PATH'] = cr['obsfolders']['EEA'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.EEA_NAME]['START_YEAR'] = cr['obsstartyears']['EEA']
     
         cr.clear()
     
-    def __str__(self):
-        s = 'Pyaerocom IOConfig\n'
+    def short_str(self):
+        s = 'Pyaerocom IOConfig'
         for k, v in self.__dict__.items():
             if isinstance(v, dict):
-                s += "%s (dict)\n"
+                s += "\n%s (dict)" %k
+            elif isinstance(v, list):
+                s += "\n%s (list)" %k
+                s += list_to_shortstr(v)
+            else:
+                s += "\n%s: %s" %(k,v)
+        return s
+    
+    def __str__(self):
+        s = 'Pyaerocom IOConfig'
+        for k, v in self.__dict__.items():
+            if isinstance(v, dict):
+                s += "\n%s (dict)" %k
                 s = dict_to_str(v, s)
             else:
-                s += "%s: %s\n" %(k,v)
+                s += "\n%s: %s" %(k,v)
         return s
 
-def dict_to_str(dictionary, s="", indent=0):
+def list_to_shortstr(lst, indent=3):
+    """Custom function to convert a list into a short string representation"""
+    s = "\n" + indent*" " + "[%s\n" %lst[0]
+    if len(lst) > 4:
+        s += (indent+1)*" " + "%s\n" %lst[1]
+        s += (indent+1)*" " + "...\n"
+        s += (indent+1)*" " + "%s\n" %lst[-2]
+    else: 
+        for item in lst[1:-1]:
+            s += (indent+1)*" " + "%s" %item
+    s += (indent+1)*" " + "%s]\n" %lst[-1]
+    return s
+        
+def dict_to_str(dictionary, s="", indent=3):
     """Custom function to convert dictionary into string (e.g. for print)
     
     Parameters
@@ -311,9 +336,9 @@ def dict_to_str(dictionary, s="", indent=0):
     >>> d = dict(Bla=1, Blub=dict(BlaBlub=2))
     >>> print(dict_to_str(d, string))
     Printing dictionary d
-    Bla: 1
-    Blub (dict)
-     BlaBlub: 2
+       Bla: 1
+       Blub (dict)
+        BlaBlub: 2
     
     """
     for k, v in dictionary.items():

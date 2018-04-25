@@ -30,8 +30,6 @@
   
 
   
-    <link rel="stylesheet" href="_static/sphinxcontrib-images/LightBox2/lightbox2/css/lightbox.css" type="text/css" />
-  
 
   
         <link rel="index" title="Index"
@@ -93,7 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">API test-suite</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration files</a><ul>
@@ -167,11 +165,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="configuration-files">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="configuration-files">
 <h1>Configuration files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="variables">
 <h2>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># variables.ini</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># variables.ini</span>
 <span class="c1"># ini file that contains supplementary information about variables in </span>
 <span class="c1"># pyaerocom</span>
 <span class="c1"># So far, these mostly comprise default plot settings and units</span>
@@ -184,7 +201,7 @@
 <span class="n">map_cbar_ticks</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">var</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
 <span class="go">pyaeorocom Variable</span>
@@ -199,7 +216,7 @@
 <div class="section" id="default-regions">
 <h2>Default regions<a class="headerlink" href="#default-regions" title="Permalink to this headline">¶</a></h2>
 <p>The following file contains all pyaerocom default regions.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#regions.ini</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#regions.ini</span>
 <span class="c1">#ini file that contains information about default regions in pyaerocom</span>
 <span class="c1">#</span>
 <span class="c1">#So far, these only contain information about data extraction range</span>
@@ -261,7 +278,7 @@
 </pre></div>
 </div>
 <p>Each region defined here can easily be loaded as follows using its id. For instance:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">region</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
 <span class="go">pyaeorocom Region</span>
@@ -274,7 +291,7 @@
 <div class="section" id="file-conventions">
 <h2>File conventions<a class="headerlink" href="#file-conventions" title="Permalink to this headline">¶</a></h2>
 <p>The following file contains file naming conventions for data import</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#file_conventions.ini</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#file_conventions.ini</span>
 <span class="c1">#ini file that contains information about file naming conventions</span>
 <span class="c1">#</span>
 <span class="c1">#ToDo: Include also information about extraction of model_id</span>
@@ -295,7 +312,7 @@
 </div>
 <p>Each convention defined here can easily be loaded as follows using its id.
 For instance:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">FileConventionRead</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;aerocom2&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
 <span class="go">pyaeorocom FileConventionRead</span>
@@ -311,7 +328,7 @@ For instance:</p>
 <h2>Test paths<a class="headerlink" href="#test-paths" title="Permalink to this headline">¶</a></h2>
 <p>The following file contains paths to test files for different models
 and observations.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#test_paths.ini</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#test_paths.ini</span>
 <span class="c1">#ini file that contain pairs of model / observation IDs and corresponding</span>
 <span class="c1">#paths</span>
 
@@ -330,7 +347,7 @@ and observations.</p>
 <div class="section" id="paths-and-directories">
 <h2>Paths and directories<a class="headerlink" href="#paths-and-directories" title="Permalink to this headline">¶</a></h2>
 <p>The following file contains relevant search paths for data import</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>#paths.ini
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#paths.ini
 #ini file with paths
 #
 #created 20170824 by Jan Griesfeller for Met Norway
@@ -509,9 +526,6 @@ EEA = 2013
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/jquery-1.11.0.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2/js/lightbox.min.js"></script>
-      <script type="text/javascript" src="_static/sphinxcontrib-images/LightBox2/lightbox2-customize/jquery-noconflict.js"></script>
 
   
 
