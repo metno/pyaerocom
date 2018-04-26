@@ -30,8 +30,6 @@ import argparse
 # import os
 import getpass
 import socket
-from pyaerocom.ioconfig import IOConfig
-const = IOConfig()
 
 def cli():
     """Pyaerocom command line interface (CLI)
@@ -39,7 +37,8 @@ def cli():
     Pyaerocom is a Python package for the Aerocom project 
     """
     user = getpass.getuser()
-    from pyaerocom import config as const
+    from pyaerocom.ioconfig import IOConfig
+    const = IOConfig()
     import pyaerocom.io as pio
     SupportedObsNetworks = ''
 
@@ -141,8 +140,22 @@ def cli():
         ObsData = pio.ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
                                   verboseflag = Options['VERBOSE'])
         ObsData.read_daily()
-        test = ObsData.to_timeseries()
-        return ObsData
+
+        print('Latitudes:')
+        print(ObsData.latitude)
+        print('Longitudes:')
+        print(ObsData.longitude)
+        print('station names')
+        print(ObsData)
+        # This returns all stations
+        all = ObsData.to_timeseries()
+        # this returns a single station in a dictionary using the station name as key
+        test = ObsData.to_timeseries('AOE_Baotou')
+        print(test)
+        #This returns a dictionary with more elements
+        test_list = ObsData.to_timeseries(['AOE_Baotou','Karlsruhe'])
+        print(test_list)
+        #return ObsData
 
 ###########################################################################################################################
 if __name__ == '__main__':
