@@ -46,8 +46,6 @@ from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.ioconfig import IOConfig
 const = IOConfig()
 
-
-# class ReadObsData(ReadAeronetSDAV2,ReadAeronetSunV2):
 class ReadObsData():
     """pyaerocom observation data reading class
     """
@@ -280,7 +278,7 @@ class ReadObsData():
 
     ###################################################################################
 
-    def to_timeseries(self, station_name=None):
+    def to_timeseries(self, station_names=None):
         """method to get the ObsData object data as dict using pd.Series for the variables
 
         Example
@@ -293,7 +291,7 @@ class ReadObsData():
         import pandas as pd
 
         out_data = {}
-        if station_name is None:
+        if station_names is None:
             for index, val in self.metadata.items():
                 out_data[val['station name']] = {}
                 out_data[val['station name']]['latitude'] = val['latitude']
@@ -307,10 +305,10 @@ class ReadObsData():
                                                                            self.data[
                                                                                val['indexes'][var], self._TIMEINDEX],
                                                                            unit='s'))
-        elif isinstance(station_name, str):
+        elif isinstance(station_names, str):
             # user asked for a single station name
             for index, val in self.metadata.items():
-                if station_name == val['station name']:
+                if station_names == val['station name']:
                     out_data[val['station name']] = {}
                     out_data[val['station name']]['latitude'] = val['latitude']
                     out_data[val['station name']]['longitude'] = val['longitude']
@@ -325,10 +323,12 @@ class ReadObsData():
                                         val['indexes'][var], self._TIMEINDEX],
                                     unit='s'))
                     break
-        elif isinstance(station_name, list):
+        elif isinstance(station_names, list):
             # user asked for a list of station names
             for index, val in self.metadata.items():
-                if station_name == val['station name']:
+                #station_name = val['station name']
+                print(val['station name'])
+                if val['station name'] in station_names:
                     out_data[val['station name']] = {}
                     out_data[val['station name']]['latitude'] = val['latitude']
                     out_data[val['station name']]['longitude'] = val['longitude']
