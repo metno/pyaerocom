@@ -30,7 +30,7 @@ import argparse
 # import os
 import getpass
 import socket
-import pdb
+#import pdb
 
 def cli():
     """Pyaerocom command line interface (CLI)
@@ -39,7 +39,7 @@ def cli():
     """
     user = getpass.getuser()
     from pyaerocom import config as const
-    from ..io.readobsdata import ReadObsData
+    import pyaerocom.io as pio
     SupportedObsNetworks = ''
 
     # command line interface using argparse
@@ -130,7 +130,6 @@ def cli():
         Options['PLOTDAILYTIMESERIES'] = args.plotdailyts
 
     hostname = socket.gethostname()
-    pdb.set_trace()
     for Model in args.model:
         print(Model)
         if Model != const.NOMODELNAME:
@@ -138,10 +137,13 @@ def cli():
             continue
 
         # start Obs reading
-        pdb.set_trace()
-        ObsData = ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME, 
-                              VerboseFlag=Options['VERBOSE'])
-        ObsData.ReadDaily()
+        ObsData = pio.ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
+                                  verboseflag = Options['VERBOSE'])
+        ObsData.read_daily()
+        test = ObsData.to_timeseries()
+        return ObsData
+
+###########################################################################################################################
 if __name__ == '__main__':
     cli()
     
