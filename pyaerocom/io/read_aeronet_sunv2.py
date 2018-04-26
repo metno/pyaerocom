@@ -45,7 +45,10 @@ import numpy as np
 
 import pandas as pd
 import re
-from pyaerocom import config as const
+#from pyaerocom import config as const
+from pyaerocom.ioconfig import IOConfig
+const = IOConfig()
+
 
 
 class ReadAeronetSunV2:
@@ -87,12 +90,9 @@ class ReadAeronetSunV2:
     def __init__(self, index_pointer = 0, verboseflag = False):
         self.verboseflag = verboseflag
         self.metadata = {}
-        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
+        self.data = []
         self.index = len(self.metadata)
-        self.files = self.get_file_list()
-        # read revision data from 1st data file name
-        # example: 920801_160312_Minsk.ONEILL_20
-        self.revision = os.path.basename(self.files[0]).split('_')[1]
+        self.files = []
         #set the revision to the one from Revision.txt if that file exist
         self.revision = self.get_data_revision()
 
@@ -261,7 +261,9 @@ Length: 223, dtype: float64}
         # Metadata key is float because the numpy array holding it is float
 
         met_data_key = 0.
-    
+        self.files = self.get_file_list()
+        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
+
         for _file in sorted(self.files):
             if self.verboseflag:
                 sys.stdout.write(_file+"\n")

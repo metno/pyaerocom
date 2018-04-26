@@ -30,7 +30,8 @@ import argparse
 # import os
 import getpass
 import socket
-#import pdb
+from pyaerocom.ioconfig import IOConfig
+const = IOConfig()
 
 def cli():
     """Pyaerocom command line interface (CLI)

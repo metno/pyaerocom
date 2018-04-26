@@ -42,7 +42,9 @@ import sys
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
-from pyaerocom import config as const
+#from pyaerocom import config as const
+from pyaerocom.ioconfig import IOConfig
+const = IOConfig()
 
 
 # class ReadObsData(ReadAeronetSDAV2,ReadAeronetSunV2):
@@ -69,7 +71,7 @@ class ReadObsData():
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
 
-    # when this file exists, even an existing cache file is not read
+    # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
     def __init__(self, data_set_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME], vars_to_read=['od550aer'],
@@ -226,6 +228,8 @@ class ReadObsData():
                 read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, verboseflag=self.verboseflag)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
+                    if self.verboseflag:
+                        sys.stdout.write('cache file '+cache_file+' read\n')
                     # TODO we might need to adjust self.index_pointer in case we really work with more than one data set!
                     in_handle.close()
                 else:
