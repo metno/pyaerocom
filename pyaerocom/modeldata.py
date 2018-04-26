@@ -4,6 +4,7 @@
 Pyaerocom ModelData class
 """
 from os.path import exists
+import sys
 from collections import OrderedDict as od
 from iris import Constraint, load, load_cube
 from iris.cube import Cube, CubeList
@@ -11,15 +12,17 @@ from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
 from pandas import Timestamp
 from warnings import warn
+from numpy import nan
 
-from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, VERBOSE, ON_LOAD
+from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, ON_LOAD
+from pyaerocom.exceptions import DataExtractionError
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
                                str_to_iris)
 
 from pyaerocom.region import Region
 
-class ModelData:
+class ModelData(object):
     """Base class representing model data
     
     This class is largely based on the :class:`iris.Cube` object. However, this
@@ -84,10 +87,11 @@ class ModelData:
     """
     _grid = None
     _ON_LOAD = ON_LOAD
-    def __init__(self, input=None, var_name=None, verbose=VERBOSE, **suppl_info):
+    def __init__(self, input=None, var_name=None, verbose=False, **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
-                             model_id = "Unknown")
+                             model_id = "Unknown",
+                             ts_type  = "Unknown")
         #attribute used to store area weights (if applicable, see method
         #area_weights)
         self._area_weights = None
@@ -186,6 +190,25 @@ class ModelData:
     def area_weights(self, val):
         raise AttributeError("Area weights cannot be set manually yet...")
         
+    @property
+    def start_time(self):
+        """Start time of dataset as datetime64 object"""
+        if not self.is_cube:
+            if self.verbose:
+                print("Start time could not be accessed in "
+                                 "ModelData class")
+            return nan
+        return cftime_to_datetime64(self.time[0])[0]
+    
+    @property
+    def stop_time(self):
+        """Start time of dataset as datetime64 object"""
+        if self.verbose:
+            print("Stop time could not be accessed in "
+                             "ModelData class")
+            return nan
+        return cftime_to_datetime64(self.time[-1])[0]
+        
     def load_input(self, input, var_name=None):
         """Interprete and load input
         
@@ -223,7 +246,7 @@ class ModelData:
                 self.grid.coord("time").bounds = None
         except:
             if self.verbose:
-                print("Failed to access time coordinate")
+                print("Failed to access time coordinate in ModelData class")
         if self._ON_LOAD["SHIFT_LONS"]:
             self.check_and_regrid_lons()
             
@@ -239,7 +262,7 @@ class ModelData:
         """
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
-        
+    
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         self._check_lonlat_bounds()
@@ -332,8 +355,8 @@ class ModelData:
             data = self.grid.intersection(latitude=lat_range)
         else:
             data = self.grid
-        if data is None:
-            raise Exception
+        if not data:
+            raise DataExtractionError("Failed to apply spatial cropping...")
         if time_range is None:
             return ModelData(data, **self.suppl_info)
         else:
@@ -349,6 +372,8 @@ class ModelData:
                 if self.verbose:
                     print("Cropping along time axis based on indices")
                 data = data[time_range[0]:time_range[1]]
+            if not data:
+                raise DataExtractionError("Failed to apply temporal cropping")
         return ModelData(data, **self.suppl_info)
         
     def area_weighted_mean(self):
@@ -376,6 +401,20 @@ class ModelData:
         """
         return get_time_constraint(start_time, stop_time)
     
+    def get(self, lons=None, lats=None, times=None):
+        """Get nearest value or values based on input coordinates
+        
+        Wrapper for :func:`interpolate`
+        
+        Parameters
+        ----------
+        lons : :obj:`float` or iterable
+            longitude or array of longitudes to be extracted
+        lats : :obj:`float` or iterable
+            longitude or array of longitudes to be extracted    
+        """
+        raise NotImplementedError
+        
     # redefined methods from iris.Cube class. This includes all Cube 
     # processing methods that exist in the Cube class and that work on the 
     # Cube and return a Cube instance. These may be expanded (e.g. for 
@@ -412,10 +451,10 @@ class ModelData:
             >>> from pyaerocom import ModelData
             >>> data = ModelData()
             >>> data._init_testdata_default()
-            >>> itp = data.interpolate([("longitude", (10, 20)),
-            ...                         ("latitude" , (35, 40))])
-            >>> print(itp)
-            
+            >>> itp = data.interpolate([("longitude", (10)),
+            ...                         ("latitude" , (35))])
+            >>> print(itp.shape)
+            (365, 1, 1)
         """
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
@@ -469,6 +508,8 @@ class ModelData:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
         data_crop = self.grid.extract(constraint)
+        if not data_crop:
+            raise DataExtractionError("Failed to extract subset")
         
         return ModelData(data_crop, **self.suppl_info)
     
@@ -530,6 +571,20 @@ class ModelData:
                        self.time.cell(time_idx)))
         return fig
     
+    def short_str(self):
+        """Short string representation"""
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = ("\n{}\n{}\n"
+             "Variable: {}\n"
+             "Temporal resolution: {}\n"
+             "Start / Stop: {} - {}".format(head,
+                                            len(head)*"-",
+                                            self.var_name, 
+                                            self.suppl_info["ts_type"],
+                                            self.start_time,
+                                            self.stop_time))
+        return s
+    
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
         if self.longitude.bounds is None:
@@ -541,6 +596,7 @@ class ModelData:
         """Helper method that loads ECMWF_OSUITE test data"""
         from pyaerocom.io.testfiles import get
         self.load_input(get()["models"]["ecmwf_osuite"], var_name="od550aer")
+        return self
     
     def __getitem__(self, indices):
         """x.__getitem__(y) <==> x[y]"""
@@ -561,8 +617,8 @@ if __name__=='__main__':
     
     data = ModelData()
     data._init_testdata_default()
-    itp = data.interpolate([("longitude", (10, 20)),
-                            ("latitude" , (35, 40))])
+    itp = data.interpolate([("longitude", (10)),
+                            ("latitude" , (35))])
     
     if RUN_OLD_STUFF:
         from pyaerocom.io.testfiles import get

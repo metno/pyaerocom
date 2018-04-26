@@ -7,10 +7,14 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 
 	Under development
 	
-.. include:: get_started.rst
+.. include:: 00_get_started.rst
 
-.. include:: intro_regions.rst
+.. include:: 01_intro_regions.rst
 
-.. include:: intro_class_ModelData.rst
+.. include:: 02_intro_class_ReadModelData.rst
 
-.. include:: intro_time_handling.rst
+.. include:: 03_intro_class_ReadMultiModelData.rst
+
+.. include:: 04_intro_class_ModelData.rst
+
+.. include:: 05_intro_time_handling.rst

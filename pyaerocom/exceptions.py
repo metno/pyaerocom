@@ -26,3 +26,6 @@ class IllegalArgumentError(ValueError):
 
 class LongitudeConstraintError(ValueError):
     pass
+
+class DataExtractionError(ValueError):
+    pass

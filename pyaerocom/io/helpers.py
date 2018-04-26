@@ -3,6 +3,8 @@
 """
 I/O helper methods of the pyaerocom package
 """
+import sys
+from pyaerocom.glob import VERBOSE
 from pyaerocom import config as paths
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom import __dir__
@@ -25,7 +27,7 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
-def check_time_coord(cube, ts_type, year):
+def check_time_coord(cube, ts_type, year, verbose=VERBOSE):
     """Method that checks the time coordinate of an iris Cube
     
     This method checks if the time dimension of a cube is accessible and 
@@ -50,7 +52,6 @@ def check_time_coord(cube, ts_type, year):
     """
     
     ok = True
-    print(ts_type, year)
     try:
         try:
             t = cube.coord("time")
@@ -74,7 +75,9 @@ def check_time_coord(cube, ts_type, year):
                              %(test_datenums, t.units.name,
                                ts_nominal, ts_values))
     except Exception as e:
-        print("Invalid time dimension. Error message: %s" %repr(e))
+        if verbose:
+            print("Invalid time dimension.\n"
+                  "Error message: {}".format(repr(e)))
         ok = False
     return ok
 

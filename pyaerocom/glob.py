@@ -22,19 +22,19 @@
 
 """Global constants for pyaerocom library"""
 
-from pandas import Timestamp
 from iris.cube import Cube
 
 VERBOSE = True
-FIRST_DATE = Timestamp(1900,1,1)
-LAST_DATE = Timestamp(2200,1,1)
 
+MIN_YEAR=0
+MAX_YEAR=3000
 
 SUPPORTED_DATA_TYPES_MODEL = [Cube]
 # If True, pre-existing time bounds in data files are removed on 
 # import
 ON_LOAD = dict(DEL_TIME_BOUNDS = True,
-               SHIFT_LONS = True)
+               SHIFT_LONS = True,
+               CHECK_TIME_FILENAME = True)
 
 TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
 

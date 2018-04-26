@@ -165,6 +165,7 @@
 <span class="sd">Pyaerocom ModelData class</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">exists</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span><span class="p">,</span> <span class="n">load</span><span class="p">,</span> <span class="n">load_cube</span>
 <span class="kn">from</span> <span class="nn">iris.cube</span> <span class="k">import</span> <span class="n">Cube</span><span class="p">,</span> <span class="n">CubeList</span>
@@ -172,15 +173,17 @@
 <span class="kn">from</span> <span class="nn">iris.analysis</span> <span class="k">import</span> <span class="n">MEAN</span>
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">nan</span>
 
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">SUPPORTED_DATA_TYPES_MODEL</span><span class="p">,</span> <span class="n">VERBOSE</span><span class="p">,</span> <span class="n">ON_LOAD</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">SUPPORTED_DATA_TYPES_MODEL</span><span class="p">,</span> <span class="n">ON_LOAD</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">DataExtractionError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">get_time_constraint</span><span class="p">,</span> 
                                <span class="n">cftime_to_datetime64</span><span class="p">,</span>
                                <span class="n">str_to_iris</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
 
-<div class="viewcode-block" id="ModelData"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData">[docs]</a><span class="k">class</span> <span class="nc">ModelData</span><span class="p">:</span>
+<div class="viewcode-block" id="ModelData"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData">[docs]</a><span class="k">class</span> <span class="nc">ModelData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class representing model data</span>
 <span class="sd">    </span>
 <span class="sd">    This class is largely based on the :class:`iris.Cube` object. However, this</span>
@@ -245,10 +248,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_grid</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_ON_LOAD</span> <span class="o">=</span> <span class="n">ON_LOAD</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">,</span> <span class="o">**</span><span class="n">suppl_info</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">suppl_info</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">from_files</span> <span class="o">=</span> <span class="p">[],</span>
-                             <span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
+                             <span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
+                             <span class="n">ts_type</span>  <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
         <span class="c1">#attribute used to store area weights (if applicable, see method</span>
         <span class="c1">#area_weights)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="o">=</span> <span class="kc">None</span>
@@ -347,6 +351,25 @@
     <span class="k">def</span> <span class="nf">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Area weights cannot be set manually yet...&quot;</span><span class="p">)</span>
         
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start time of dataset as datetime64 object&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start time could not be accessed in &quot;</span>
+                                 <span class="s2">&quot;ModelData class&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">nan</span>
+        <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start time of dataset as datetime64 object&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stop time could not be accessed in &quot;</span>
+                             <span class="s2">&quot;ModelData class&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">nan</span>
+        <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        
 <div class="viewcode-block" id="ModelData.load_input"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.load_input">[docs]</a>    <span class="k">def</span> <span class="nf">load_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Interprete and load input</span>
 <span class="sd">        </span>
@@ -384,7 +407,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to access time coordinate&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to access time coordinate in ModelData class&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ON_LOAD</span><span class="p">[</span><span class="s2">&quot;SHIFT_LONS&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_and_regrid_lons</span><span class="p">()</span></div>
             
@@ -400,7 +423,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>    
             <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
-        
+    
 <div class="viewcode-block" id="ModelData.calc_area_weights"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.calc_area_weights">[docs]</a>    <span class="k">def</span> <span class="nf">calc_area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate area weights for grid&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
@@ -493,8 +516,8 @@
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">lat_range</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span>
-        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to apply spatial cropping...&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">time_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -510,6 +533,8 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cropping along time axis based on indices&quot;</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to apply temporal cropping&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
         
 <div class="viewcode-block" id="ModelData.area_weighted_mean"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.area_weighted_mean">[docs]</a>    <span class="k">def</span> <span class="nf">area_weighted_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -537,6 +562,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">get_time_constraint</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span></div>
     
+<div class="viewcode-block" id="ModelData.get"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get nearest value or values based on input coordinates</span>
+<span class="sd">        </span>
+<span class="sd">        Wrapper for :func:`interpolate`</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lons : :obj:`float` or iterable</span>
+<span class="sd">            longitude or array of longitudes to be extracted</span>
+<span class="sd">        lats : :obj:`float` or iterable</span>
+<span class="sd">            longitude or array of longitudes to be extracted    </span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        
     <span class="c1"># redefined methods from iris.Cube class. This includes all Cube </span>
     <span class="c1"># processing methods that exist in the Cube class and that work on the </span>
     <span class="c1"># Cube and return a Cube instance. These may be expanded (e.g. for </span>
@@ -573,10 +611,10 @@
 <span class="sd">            &gt;&gt;&gt; from pyaerocom import ModelData</span>
 <span class="sd">            &gt;&gt;&gt; data = ModelData()</span>
 <span class="sd">            &gt;&gt;&gt; data._init_testdata_default()</span>
-<span class="sd">            &gt;&gt;&gt; itp = data.interpolate([(&quot;longitude&quot;, (10, 20)),</span>
-<span class="sd">            ...                         (&quot;latitude&quot; , (35, 40))])</span>
-<span class="sd">            &gt;&gt;&gt; print(itp)</span>
-<span class="sd">            </span>
+<span class="sd">            &gt;&gt;&gt; itp = data.interpolate([(&quot;longitude&quot;, (10)),</span>
+<span class="sd">            ...                         (&quot;latitude&quot; , (35))])</span>
+<span class="sd">            &gt;&gt;&gt; print(itp.shape)</span>
+<span class="sd">            (365, 1, 1)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheme</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">scheme</span> <span class="o">=</span> <span class="n">str_to_iris</span><span class="p">(</span><span class="n">scheme</span><span class="p">)</span>
@@ -630,6 +668,8 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This feature is only available if the&quot;</span>
                                       <span class="s2">&quot;underlying data is of type iris.Cube&quot;</span><span class="p">)</span>
         <span class="n">data_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data_crop</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to extract subset&quot;</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">data_crop</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
     
@@ -691,6 +731,20 @@
                        <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">time_idx</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">fig</span></div>
     
+<div class="viewcode-block" id="ModelData.short_str"><a class="viewcode-back" href="../../api.html#pyaerocom.modeldata.ModelData.short_str">[docs]</a>    <span class="k">def</span> <span class="nf">short_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Short string representation&quot;&quot;&quot;</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Variable: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Temporal resolution: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Start / Stop: </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span>
+                                            <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+    
     <span class="k">def</span> <span class="nf">_check_lonlat_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if longitude and latitude bounds are set and if not, guess&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -702,6 +756,7 @@
         <span class="sd">&quot;&quot;&quot;Helper method that loads ECMWF_OSUITE test data&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="n">get</span><span class="p">()[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
     
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;x.__getitem__(y) &lt;==&gt; x[y]&quot;&quot;&quot;</span>
@@ -722,8 +777,8 @@
     
     <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">()</span>
     <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
-    <span class="n">itp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)),</span>
-                            <span class="p">(</span><span class="s2">&quot;latitude&quot;</span> <span class="p">,</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">))])</span>
+    <span class="n">itp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">)),</span>
+                            <span class="p">(</span><span class="s2">&quot;latitude&quot;</span> <span class="p">,</span> <span class="p">(</span><span class="mi">35</span><span class="p">))])</span>
     
     <span class="k">if</span> <span class="n">RUN_OLD_STUFF</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>

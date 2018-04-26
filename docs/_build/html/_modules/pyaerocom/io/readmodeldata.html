@@ -196,7 +196,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
 <span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">match</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">dirname</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">basename</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">arange</span>
@@ -208,14 +208,21 @@
 <span class="kn">from</span> <span class="nn">iris.util</span> <span class="k">import</span> <span class="n">unify_time_units</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">const</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">FIRST_DATE</span><span class="p">,</span> <span class="n">LAST_DATE</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">VERBOSE</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">TS_TYPES</span><span class="p">,</span> <span class="n">VERBOSE</span><span class="p">,</span> <span class="n">MIN_YEAR</span><span class="p">,</span> <span class="n">MAX_YEAR</span><span class="p">,</span> <span class="n">ON_LOAD</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">check_time_coord</span><span class="p">,</span> <span class="n">correct_time_coord</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.modeldata</span> <span class="k">import</span> <span class="n">ModelData</span>
 
 <div class="viewcode-block" id="ReadModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadModelData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Class that stores read import results for model data</span>
+    <span class="sd">&quot;&quot;&quot;Class for reading model results from AEROCOM NetCDF files</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The reading only works if files are stored using a valid file naming </span>
+<span class="sd">    convention. See package data file `file_conventions.ini &lt;http://</span>
+<span class="sd">    aerocom.met.no/pyaerocom/config_files.html#file-conventions&gt;`__ for valid</span>
+<span class="sd">    keys. You may define your own fileconvention in this file, if you wish.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -265,10 +272,16 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; read = ReadModelData(model_id=&quot;ECMWF_OSUITE&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550aer&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550so4&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550bc&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(data.short_str()) for data in read.data</span>
+<span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_MODELDIRS</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span>
-    <span class="n">_start_time</span> <span class="o">=</span> <span class="n">FIRST_DATE</span>
-    <span class="n">_stop_time</span> <span class="o">=</span> <span class="n">LAST_DATE</span>
+    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># Directory containing model data for this species</span>
     <span class="n">_model_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">_USE_SUBDIR_RENAMED</span> <span class="o">=</span> <span class="kc">True</span>
@@ -290,9 +303,9 @@
         <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
         <span class="c1"># setter methods, that ensure that the input is convertible to </span>
         <span class="c1"># pandas.Timestamp</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
@@ -310,6 +323,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_model_dir</span><span class="p">():</span>
@@ -343,12 +357,14 @@
 <span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
 <span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value encountered for start time &quot;</span>
-                             <span class="s2">&quot;in reading engine: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">t</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">t</span>
-    
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for start time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1">#     </span>
+<span class="c1"># =============================================================================</span>
     <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>    
@@ -369,11 +385,13 @@
 <span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value encountered for stop time &quot;</span>
-                             <span class="s2">&quot;in reading engine: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">t</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for stop time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1"># =============================================================================</span>
     
     <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -393,7 +411,13 @@
 <span class="sd">        -------</span>
 <span class="sd">        ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;No information available for available &quot;</span>
+                                 <span class="s2">&quot;years. Please run method &quot;</span>
+                                 <span class="s2">&quot;search_all_files first&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span>
     
 <div class="viewcode-block" id="ReadModelData.search_model_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData.search_model_dir">[docs]</a>    <span class="k">def</span> <span class="nf">search_model_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search the directory of this model</span>
@@ -413,11 +437,11 @@
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chk_dir</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">chk_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Found: &#39;</span><span class="o">+</span> <span class="n">chk_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found: &#39;</span><span class="o">+</span> <span class="n">chk_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="k">return</span> <span class="kc">True</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;directory: </span><span class="si">%s</span><span class="s1"> does not exist</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;directory: </span><span class="si">%s</span><span class="s1"> does not exist</span><span class="se">\n</span><span class="s1">&#39;</span>
                                      <span class="o">%</span><span class="n">search_dir</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span></div>
     
@@ -447,49 +471,28 @@
             <span class="c1"># updated in case there can be more than one file naming convention</span>
             <span class="c1"># within one model directory)</span>
             <span class="n">first_file_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">nc_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">first_file_name</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">import_default</span><span class="p">(</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">first_file_name</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">import_default</span><span class="p">(</span><span class="s2">&quot;aerocom2&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">first_file_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Failed to identify file naming convention &quot;</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to identify file naming convention &quot;</span>
                             <span class="s2">&quot;from first file in model directory for model &quot;</span>
                             <span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">model_dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">File name: </span><span class="si">%s</span><span class="s2">&quot;</span>
                             <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">first_file_name</span><span class="p">))</span>
         <span class="n">_vars_temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_years_temp</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">nc_files</span><span class="p">:</span>
-            <span class="c1"># split file based on delimiter specified in file naming </span>
-            <span class="c1"># convention</span>
-            <span class="n">spl</span> <span class="o">=</span> <span class="n">_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">file_sep</span><span class="p">)</span>
-            <span class="c1"># aerocom3 convention</span>
-            <span class="k">if</span> <span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="n">data_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;surface&#39;</span><span class="p">,</span> <span class="s1">&#39;column&#39;</span><span class="p">,</span> <span class="s1">&#39;modellevel&#39;</span><span class="p">]</span>
-                <span class="c1"># phase 3 file naming convention</span>
-                
-                <span class="c1"># include vars for the surface</span>
-                <span class="k">if</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">data_types</span><span class="p">:</span>
-                    <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">var_pos</span><span class="p">])</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-                <span class="c1"># also include 3d vars that provide station based data</span>
-                <span class="c1"># and contain the string vmr</span>
-                <span class="c1"># in this case the variable name has to slightly changed to the </span>
-                <span class="c1"># aerocom phase 2 naming</span>
-                <span class="k">elif</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;modellevelatstations&#39;</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="s1">&#39;vmr&#39;</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]:</span>
-                        <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;vmr&#39;</span><span class="p">,</span> <span class="s1">&#39;vmr3d&#39;</span><span class="p">))</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-            <span class="c1"># aerocom2 convention</span>
-            <span class="k">elif</span> <span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
-                <span class="c1"># phase 2</span>
-                <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">var_pos</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;var_name&quot;</span><span class="p">])</span>
+                <span class="n">_years_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-
-            <span class="c1"># unknown file convention</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Ignoring file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to import file </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Error: </span><span class="si">%s</span><span class="s2">&quot;</span> 
+                          <span class="o">%</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
 
         <span class="c1"># make sorted list of unique vars</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">))</span></div>
         
 <div class="viewcode-block" id="ReadModelData.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadModelData.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update one or more valid parameters</span>
@@ -530,9 +533,9 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ts_type</span> <span class="ow">in</span> <span class="n">TS_TYPES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for ts_type, got: </span><span class="si">%s</span><span class="s2">, &quot;</span>
                              <span class="s2">&quot;allowed values: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">ts_type</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
         
         <span class="k">if</span> <span class="n">var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
@@ -542,24 +545,23 @@
         
         <span class="n">match_files</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">years_to_load</span><span class="p">:</span>
-            <span class="c1"># search for filename in self.files using ts_type as default ts size</span>
-            <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
-                <span class="c1">#new file naming convention (aerocom3)</span>
-                <span class="n">match_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">string_mask</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span>
-                                                              <span class="n">year</span><span class="p">,</span> 
-                                                              <span class="n">ts_type</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">match</span><span class="p">(</span><span class="n">match_mask</span><span class="p">,</span> <span class="n">_file</span><span class="p">):</span>
-                    <span class="n">match_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FOUND MATCH: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># This should never be called</span>
-                    <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Ignoring file </span><span class="si">%s</span><span class="s2"> in directory:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span>
-                         <span class="o">%</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> <span class="n">dirname</span><span class="p">(</span><span class="n">_file</span><span class="p">)))</span>
-<span class="c1"># =============================================================================</span>
-<span class="c1">#                         raise IOError(&quot;Fatal: invalid file encountered in: %s&quot;</span>
-<span class="c1">#                                       %_file)</span>
-<span class="c1"># =============================================================================</span>
+            <span class="k">if</span> <span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">MAX_YEAR</span><span class="p">:</span>
+                <span class="c1"># search for filename in self.files using ts_type as default ts size</span>
+                <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+                    <span class="c1">#new file naming convention (aerocom3)</span>
+                    <span class="n">match_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">string_mask</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span>
+                                                                  <span class="n">year</span><span class="p">,</span> 
+                                                                  <span class="n">ts_type</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">match</span><span class="p">(</span><span class="n">match_mask</span><span class="p">,</span> <span class="n">_file</span><span class="p">):</span>
+                        <span class="n">match_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FOUND MATCH: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring file </span><span class="si">%s</span><span class="s2">. File out of allowed year bounds &quot;</span>
+                          <span class="s2">&quot;(</span><span class="si">%d</span><span class="s2"> - </span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> <span class="n">MIN_YEAR</span><span class="p">,</span> <span class="n">MAX_YEAR</span><span class="p">))</span>
+            
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be found for variable </span><span class="si">%s</span><span class="s2">, and </span><span class="si">%s</span><span class="s2"> &quot;</span>
                           <span class="s2">&quot;data in specified time interval</span><span class="se">\n</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">&quot;</span>
@@ -576,25 +578,41 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">finfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
                 <span class="n">cube</span> <span class="o">=</span> <span class="n">load_cube</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">var_constraint</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span> 
-                                        <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">ON_LOAD</span><span class="p">[</span><span class="s2">&quot;CHECK_TIME_FILENAME&quot;</span><span class="p">]:</span>
+                    
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span> 
+                                            <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">],</span>
+                                            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">):</span>
+                        
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid time axis in file </span><span class="si">{}</span><span class="s2">. &quot;</span> 
+                                             <span class="s2">&quot;Attempting to correct.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                                     <span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">)))</span>
+                        
+                        <span class="n">cube</span> <span class="o">=</span> <span class="n">correct_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> 
+                                                  <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
+                                                  <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+                        
+                <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid time axis in file </span><span class="si">%s</span><span class="s2">. Attempting to &quot;</span>
-                              <span class="s2">&quot;correct.&quot;</span> <span class="o">%</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">))</span>
-                    <span class="n">cube</span> <span class="o">=</span> <span class="n">correct_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
-                                              <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: Automatic check of time &quot;</span>
+                                         <span class="s2">&quot;array in netCDF files is deactivated.&quot;</span>
+                                         <span class="s2">&quot; This may cause problems in case &quot;</span>
+                                         <span class="s2">&quot;the time dimension is not CF conform.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">cubes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
                 <span class="n">loaded_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">%s</span><span class="s2"> as Iris cube.</span><span class="se">\n</span><span class="s2">Error: </span><span class="si">%s</span><span class="s2">&quot;</span> 
-                     <span class="o">%</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">{}</span><span class="s2"> as Iris cube.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the found files for variable </span><span class="si">%s</span><span class="s2">, and </span><span class="si">%s</span><span class="s2"> &quot;</span>
-                          <span class="s2">&quot;in specified time interval</span><span class="se">\n</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
-                          <span class="s2">&quot;could be loaded&quot;</span>
-                          <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the found files for variable </span><span class="si">{}</span><span class="s2">, and </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                          <span class="s2">&quot;in specified time interval</span><span class="se">\n</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;could be loaded&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> 
+                                                   <span class="n">ts_type</span><span class="p">,</span> 
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
             
         <span class="c1">#now put the CubeList together and form one cube</span>
         <span class="c1">#1st equalise the cubes (remove non common attributes)</span>
@@ -607,22 +625,23 @@
         
         <span class="c1">#create instance of pyaerocom.ModelData</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cube_concat</span><span class="p">,</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>
-                         <span class="n">model_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">)</span>
+                         <span class="n">model_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
         <span class="c1"># crop cube in time (if applicable)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">==</span> <span class="n">FIRST_DATE</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">==</span> <span class="n">LAST_DATE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">t_constraint</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_time_constraint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
                                                         <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">t_constraint</span><span class="p">)</span>
+                <span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">t_constraint</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">_data</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to crop data for </span><span class="si">%s</span><span class="s2"> in time, error: </span><span class="si">%s</span><span class="s2">&quot;</span>
-                     <span class="o">%</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to crop data for </span><span class="si">{}</span><span class="s2"> in time.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                 <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
         
-        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loaded data for variable </span><span class="si">%s</span><span class="s2"> already exists and will be &quot;</span>
-                 <span class="s2">&quot;overwritten&quot;</span> <span class="o">%</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Data for variable </span><span class="si">{}</span><span class="s2"> already exists &quot;</span>
+                             <span class="s2">&quot;and will be overwritten&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
         <span class="k">return</span> <span class="n">data</span></div>
     
@@ -643,14 +662,38 @@
                 <span class="n">_vars_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to read variable </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">var</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="n">_vars_read</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="n">_vars_read</span></div>
+        
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Model ID: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Available variables: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Available years: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> 
+                                            <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Loaded ModelData objects:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">short_str</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
         
 <div class="viewcode-block" id="ReadMultiModelData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readmodeldata.ReadMultiModelData">[docs]</a><span class="k">class</span> <span class="nc">ReadMultiModelData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Class that can be used to import model data from multiple models</span>
+    <span class="sd">&quot;&quot;&quot;Class for import of AEROCOM model data from multiple models</span>
 <span class="sd">    </span>
 <span class="sd">    This class provides an interface to import model results from an arbitrary</span>
 <span class="sd">    number of models and specific for a certain time interval (that can be </span>
-<span class="sd">    defined, but must not be defined). The actual</span>
+<span class="sd">    defined, but must not be defined). Largely based on </span>
+<span class="sd">    :class:`ReadModelData`.</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The reading only works if files are stored using a valid file naming </span>
+<span class="sd">    convention. See package data file `file_conventions.ini &lt;http://</span>
+<span class="sd">    aerocom.met.no/pyaerocom/config_files.html#file-conventions&gt;`__ for valid</span>
+<span class="sd">    keys. You may define your own fileconvention in this file, if you wish.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -686,8 +729,8 @@
     <span class="c1"># &quot;private attributes (defined with one underscore). These may be </span>
     <span class="c1"># controlled using getter and setter methods (@property operator, see </span>
     <span class="c1"># e.g. definition of def start_time below)</span>
-    <span class="n">_start_time</span> <span class="o">=</span> <span class="n">FIRST_DATE</span>
-    <span class="n">_stop_time</span> <span class="o">=</span> <span class="n">LAST_DATE</span>
+    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                  <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">):</span>
         
@@ -707,9 +750,9 @@
         <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
         <span class="c1"># setter methods, that ensure that the input is convertible to </span>
         <span class="c1"># pandas.Timestamp</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">init_results</span><span class="p">()</span>
@@ -725,11 +768,13 @@
 <span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
 <span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value encountered for start time &quot;</span>
-                             <span class="s2">&quot;in reading engine: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">t</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for start time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1"># =============================================================================</span>
     
     <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -751,11 +796,13 @@
 <span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value encountered for stop time &quot;</span>
-                             <span class="s2">&quot;in reading engine: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">t</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for stop time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1"># =============================================================================</span>
     
     <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -842,13 +889,27 @@
 <span class="sd">        ts_type : str</span>
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            result dictionary</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">            &gt;&gt;&gt; read = ReadMultiModelData(model_ids=[&quot;ECMWF_CAMS_REAN&quot;, </span>
+<span class="sd">            ...                                      &quot;ECMWF_OSUITE&quot;],</span>
+<span class="sd">            ...                           verbose=False)</span>
+<span class="sd">            &gt;&gt;&gt; read.read([&quot;od550aer&quot;, &quot;od550so4&quot;, &quot;od550bc&quot;])</span>
+<span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ts_type</span> <span class="ow">in</span> <span class="n">TS_TYPES</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for ts_type, got: </span><span class="si">%s</span><span class="s2">, &quot;</span>
-                             <span class="s2">&quot;allowed values: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">ts_type</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for ts_type, got: </span><span class="si">{}</span><span class="s2">, &quot;</span>
+                             <span class="s2">&quot;allowed values: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ts_type</span><span class="p">,</span> <span class="n">TS_TYPES</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
 
         <span class="k">if</span> <span class="n">model_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#use all models if unspecified</span>
@@ -866,14 +927,15 @@
                     <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
                         <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">%s</span><span class="s2"> not available for model &quot;</span>
-                                        <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">model_id</span><span class="p">))</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">{}</span><span class="s2"> not available for model &quot;</span>
+                                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">model_id</span><span class="p">))</span>
                     
                 
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Failed to import model </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">model_id</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">warnings</span><span class="p">:</span>
-            <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Failed to import model </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">warnings</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
     
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_id</span><span class="p">):</span>
@@ -896,12 +958,37 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data found for model_id </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">model_id</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span></div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Model IDs: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Loaded data:&quot;</span>
+            <span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">read</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+    
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">doctest</span>
-    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
-
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadModelData</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31.12.2007&quot;</span><span class="p">,</span> 
+                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     read = ReadMultiModelData(model_ids=[&quot;ECMWF_CAMS_REAN&quot;, &quot;ECMWF_OSUITE&quot;])</span>
+<span class="c1">#     </span>
+<span class="c1">#     read.read([&quot;od550aer&quot;, &quot;od440aer&quot;])</span>
+<span class="c1">#     </span>
+<span class="c1">#     print(read)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     </span>
+<span class="c1">#     import doctest</span>
+<span class="c1">#     doctest.testmod()</span>
+<span class="c1"># </span>
+<span class="c1"># =============================================================================</span>
 
     
 

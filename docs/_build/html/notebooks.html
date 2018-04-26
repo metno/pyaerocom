@@ -93,31 +93,39 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials (Jupyter Notebooks)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#getting-started-with-pyaerocom">Getting started with Pyaerocom</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting started</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setting-global-environment-variables">Setting global environment variables</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#test-import-and-plot-some-model-data">Test import and plot some model data</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#aerocom-default-regions">AEROCOM default regions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#load-example-data-and-apply-region-specific-crop">Load example data and apply region specific crop</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#introducing-the-modeldata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-example-data-and-apply-region-specific-crop">Load example data and apply region specific crop</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-model-data-the-readmodeldata-class">Reading model data: the ReadModelData class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#remark-on-time-definition">Remark on time definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-very-brief-introduction-into-the-modeldata-class">A very brief introduction into the ModelData class</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#note">Note</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#to-be-continued">To be continued ..</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#handling-of-cf-time-in-pyaerocom">Handling of CF time in <em>Pyaerocom</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-data-from-multiple-models-the-readmultimodeldata-class">Reading data from multiple models: the ReadMultiModelData class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#iterate-over-models-and-variables">Iterate over models and variables</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#introducing-the-modeldata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#remark-on-longitude-definition">Remark on longitude definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#features-of-the-modeldata-class">Features of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#more-to-come">… more to come</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#load-and-plot-some-example-data">Load and plot some example data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#digging-into-the-time-representation-of-iris-cubes">Digging into the time representation of iris Cubes</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#peculiarities-of-time-handling-when-using-the-cube-interface">Peculiarities of time handling when using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#other-options-to-convert-timestamps">Other options to convert timestamps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-of-time-in-pyaerocom">Handling of time in Pyaerocom</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#load-and-some-example-data">Load and some example data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#digging-into-the-time-representation-of-the-iris-cube-datatype">Digging into the time representation of the iris Cube datatype</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#peculiarities-of-time-handling-when-using-the-cube-interface">Peculiarities of time handling when using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-options-to-convert-timestamps">Other options to convert timestamps</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#how-pyaerocom-does-it">How Pyaerocom does it</a></li>
 </ul>
 </li>
 </ul>
@@ -214,8 +222,8 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Under development</p>
 </div>
-<div class="section" id="getting-started-with-pyaerocom">
-<h2>Getting started with Pyaerocom<a class="headerlink" href="#getting-started-with-pyaerocom" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
 <p>This notebook gives an introduction on how to install Pyaerocom and run
 it on your local machine.</p>
 <div class="section" id="requirements">
@@ -466,109 +474,25 @@ OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
 _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
 </pre></div>
 </div>
-</div>
-<div class="section" id="test-import-and-plot-some-model-data">
-<h3>Test import and plot some model data<a class="headerlink" href="#test-import-and-plot-some-model-data" title="Permalink to this headline">¶</a></h3>
-<p>Now that we have everything set up, we can start working on the data. In
-the following cells, we use the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class to find and
-import data files containing the aerosol optical depth at 550 nm
-(<code class="docutils literal notranslate"><span class="pre">od550aer</span></code>) from the ECMWF CAMS reanalysis model
-(<code class="docutils literal notranslate"><span class="pre">ECMWF_CAMS_REAN</span></code>)for the years 2003-2007 in daily resolution. The
-files will be temporally merged and put into an instance of the
-<code class="docutils literal notranslate"><span class="pre">ModelData</span></code> instance. Starting with creating a reading object, that
-will take care of finding the model directory of us (based on the model
-ID) and all valid NetCDF files.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadModelData</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
-                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
-                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31.12.2007&quot;</span><span class="p">,</span>
-                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>This is it! Now with everything being set up correctly, we can start
+analysing the data. The following tutorials focus on the reading,
+plotting and analysis of model data. Tutorials for observational data
+will follow soon, as well as tutorials that show how to merge and
+compare model with observational data.</p>
+<p>The following notebook introduces how Pyaerocom handles regions and
+where they can be defined. In the subsequent tutorial, the
+<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class is introduced, that can be used to import model
+data in a flexible way based on variable name, time range and temporal
+resolution. The loaded data for each model and variable is then stored
+in the analysis class <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> which will be introduced in a later
+tutorial.</p>
+<p>Now what is a tutorial without a nice image? Let’s summarise in a
+oneliner what will be explained in the following tutorials:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span>
-</pre></div>
-</div>
-<p>At this point, nothing is actually imported but only the paths are set
-that contain data for this model. In order to read one variable, call
-the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable name. You can check
-available variables using the <code class="docutils literal notranslate"><span class="pre">vars</span></code> attribute.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected variables for model </span><span class="si">%s</span><span class="s2">:</span><span class="se">\n</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">read</span><span class="o">.</span><span class="n">vars</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Detected</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">model</span> <span class="n">ECMWF_CAMS_REAN</span><span class="p">:</span>
- <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2003.nc
-FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2004.nc
-FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2005.nc
-FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2006.nc
-FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2007.nc
-daily 2003
-Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
-Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2003.nc. Attempting to correct.
-daily 2004
-Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
-Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2004.nc. Attempting to correct.
-daily 2005
-Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
-Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2005.nc. Attempting to correct.
-daily 2006
-Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
-Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2006.nc. Attempting to correct.
-daily 2007
-Invalid time dimension. Error message: AttributeError(&#39;Cube does not contain time dimension&#39;,)
-Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2007.nc. Attempting to correct.
-Rolling longitudes to -180 -&gt; 180 definition
-Applying temporal cropping of result cube
-
-The data object is of type &lt;class &#39;pyaerocom.modeldata.ModelData&#39;&gt; and contains 1826 time stamps
-</pre></div>
-</div>
-<p>From the output we can see that based on our specified time range and
-temporal resolution, we got 6 netCDF files that were merged all into an
-instance of the <code class="docutils literal notranslate"><span class="pre">pyaerocom.ModelData</span></code> class, which will be introduced
-in more detail later.</p>
-<p>Now as a final step, we compute and plot a time series of the global
-weighted average aerosol optical density as well as the same time series
-at the coordinates in the ciry of Leipzig, Germany.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
-<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="k">import</span> <span class="n">gaussian_filter1d</span>
-<span class="c1">#compute global mean (area weighted)</span>
-<span class="n">glob_mean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
-
-<span class="c1">#extract AODs at the position of Leipzig</span>
-<span class="n">lon_leipzig</span> <span class="o">=</span> <span class="mf">12.44</span>
-<span class="n">lat_leipzig</span> <span class="o">=</span> <span class="mf">51.35</span>
-
-<span class="n">data_leipzig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">lat_leipzig</span><span class="p">),</span>
-                                 <span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">lon_leipzig</span><span class="p">)])</span>
-
-<span class="c1"># create pandas Series for global average</span>
-<span class="n">s_glob</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">glob_mean</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
-
-<span class="c1"># create pandas Series for leipzig average (and smooth in time)</span>
-<span class="n">GAUSS_SIGMA</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">s_leipzig</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">data_leipzig</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">GAUSS_SIGMA</span><span class="p">),</span>
-                   <span class="n">data_leipzig</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
-
-<span class="n">ax</span> <span class="o">=</span> <span class="n">s_leipzig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;City of Leipzig (smoothed $\sigma$=</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="k">GAUSS_SIGMA</span>, figsize=(16,6))
-<span class="n">s_glob</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Global trend&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<img alt="_images/output_20_0.png" src="_images/output_20_0.png" />
-<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class is
-introduced, which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and
-allows for importing data from multiple models.</p>
+<img alt="_images/output_15_0.png" src="_images/output_15_0.png" />
 </div>
 </div>
 <div class="section" id="aerocom-default-regions">
@@ -612,18 +536,419 @@ All default regions are defined in the file
 </div>
 <div class="section" id="load-example-data-and-apply-region-specific-crop">
 <h3>Load example data and apply region specific crop<a class="headerlink" href="#load-example-data-and-apply-region-specific-crop" title="Permalink to this headline">¶</a></h3>
+<p>In the following cell, we create an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class
+(hich is introduced in more detail in a later tutorial), load some test
+data (from the CAMS ECMWF OSUITE dataset), crop it and plot a map of the
+results over Europe.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span>
 <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
 <span class="n">crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<img alt="_images/output_5_0.png" src="_images/output_5_0.png" />
+</div>
+</div>
+<div class="section" id="reading-model-data-the-readmodeldata-class">
+<h2>Reading model data: the ReadModelData class<a class="headerlink" href="#reading-model-data-the-readmodeldata-class" title="Permalink to this headline">¶</a></h2>
+<p>This notebook introduces the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class of Pyaerocom, a
+flexible interface for importing model results from a single model,
+based on variable name (e.g. <em>od550aer</em>, <em>od550bc</em>), start / stop time
+stamps and temporal resolution (e.g. <em>hourly, 3hourly, daily, monthly</em>).</p>
+<p>In the following cells, we create an instance of the the
+<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and use this object to find and import data
+files containing the aerosol optical depth at 550 nm (<em>od550aer</em>) from
+the ECMWF CAMS reanalysis model (<em>ECMWF_CAMS_REAN</em>) for the years
+2003-2007 in daily resolution. The files will be temporally merged and
+put into an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class.</p>
+<p>We start with creating a reading object, that will take care of finding
+the model directory of us (based on the model ID) and all valid NetCDF
+files on initialisation. The <code class="docutils literal notranslate"><span class="pre">print</span></code> statetment prints the string
+representation of the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> object, which provides useful
+information about what is in there.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadModelData</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31.12.2007&quot;</span><span class="p">,</span>
+                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/output_5_1.png" src="_images/output_5_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+<span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span>
+
+<span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2004</span><span class="o">.</span><span class="n">nc</span>
+<span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file od550aer.29feb2004.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
+<span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2007</span><span class="o">.</span><span class="n">nc</span>
+<span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file od550aer.29feb2007.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
+<span class="o">-----------------------</span>
+<span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
+<span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Looking at the output we can see that there were some files that did not
+follow the Aerocom file naming conventions. These were automatically
+ignored.</p>
+<p>Note that at this point, no data is actually imported but only the paths
+are set that contain data for this model. In order to read one variable,
+call the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable name. You can check
+available variables using the <code class="docutils literal notranslate"><span class="pre">vars</span></code> attribute (or by printing the
+string representation, as shown in the cell above).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected variables for model </span><span class="si">%s</span><span class="s2">:</span><span class="se">\n</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">read</span><span class="o">.</span><span class="n">vars</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Detected</span> <span class="n">variables</span> <span class="k">for</span> <span class="n">model</span> <span class="n">ECMWF_CAMS_REAN</span><span class="p">:</span>
+ <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FOUND</span> <span class="n">MATCH</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2003.</span><span class="n">nc</span>
+<span class="n">FOUND</span> <span class="n">MATCH</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2004.</span><span class="n">nc</span>
+<span class="n">FOUND</span> <span class="n">MATCH</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2005.</span><span class="n">nc</span>
+<span class="n">FOUND</span> <span class="n">MATCH</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2006.</span><span class="n">nc</span>
+<span class="n">FOUND</span> <span class="n">MATCH</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2007.</span><span class="n">nc</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
+<span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2003.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
+<span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2004.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
+<span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2005.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
+<span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2006.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
+<span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
+<span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2007.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Applying</span> <span class="n">temporal</span> <span class="n">cropping</span> <span class="n">of</span> <span class="n">result</span> <span class="n">cube</span>
+</pre></div>
+</div>
+<p>From the output we can see that based on our specified time range and
+temporal resolution, we got 6 netCDF files that were merged all into an
+instance of the <code class="docutils literal notranslate"><span class="pre">pyaerocom.ModelData</span></code> class, which will be introduced
+in more detail later.</p>
+<p>Now that we have actual data imported, we can print again to see if
+everything worked as expected.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
+<span class="o">-----------------------</span>
+<span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
+<span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+
+<span class="n">Loaded</span> <span class="n">ModelData</span> <span class="n">objects</span><span class="p">:</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
+<span class="o">-------------------</span>
+<span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
+<span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2007</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>The data object is of type &lt;class &#39;pyaerocom.modeldata.ModelData&#39;&gt; and contains 1826 time stamps
+</pre></div>
+</div>
+<p>The returned data object is of type <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> (introduced in later
+tutorials) which contains 1826 time stamps. Given that the defined
+period of 5 years includes one leap year, we should expect that we
+imported data for each day of the five years?</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="mi">1826</span> <span class="o">==</span> <span class="mi">5</span><span class="o">*</span><span class="mi">365</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kc">True</span>
+</pre></div>
+</div>
+<div class="section" id="remark-on-time-definition">
+<h3>Remark on time definition<a class="headerlink" href="#remark-on-time-definition" title="Permalink to this headline">¶</a></h3>
+<p>As you can see in the output above</p>
+<p><code class="docutils literal notranslate"><span class="pre">Error</span> <span class="pre">message:</span> <span class="pre">AttributeError('Cube</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">contain</span> <span class="pre">time</span> <span class="pre">dimension',)</span>&#160; <span class="pre">Invalid</span> <span class="pre">time</span> <span class="pre">axis</span> <span class="pre">in</span> <span class="pre">file</span> <span class="pre">ECMWF_CAMS_REAN.daily.od550aer.2007.nc.</span> <span class="pre">Attempting</span> <span class="pre">to</span> <span class="pre">correct.</span></code></p>
+<p>these data has some issue with the time dimension, in this case, the
+time variable is not properly defined in the NetCDF file. Pyaerocom can
+correct for this on data import by</p>
+<ol class="arabic simple">
+<li>First checking if the time dimension in the NetCDF file is correct
+according to CF convention (<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.helpers.check_time_coord">see here for details on the
+implementation</a>
+and if a problem is detected, then …</li>
+<li>the time axis is redefined based on the year and time resolution
+(<em>ts_type</em>) that is encrypted in the filename. The latter requires
+that the file follows one of the <a class="reference external" href="http://aerocom.met.no/pyaerocom/config_files.html#file-conventions">Pyaerocom file
+conventions</a>.</li>
+</ol>
+</div>
+<div class="section" id="a-very-brief-introduction-into-the-modeldata-class">
+<h3>A very brief introduction into the ModelData class<a class="headerlink" href="#a-very-brief-introduction-into-the-modeldata-class" title="Permalink to this headline">¶</a></h3>
+<p>Now as a final step, we briefly introduce some of the features of the
+<code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class by computing 1. plotting an overview map of the data
+and plotting a time series of the global weighted average aerosol
+optical density as well as the same time series at the coordinates in
+the city of Leipzig, Germany.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="k">import</span> <span class="n">gaussian_filter1d</span>
+<span class="c1">#compute global mean (area weighted)</span>
+<span class="n">glob_mean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
+
+<span class="c1">#extract AODs at the position of Leipzig</span>
+<span class="n">lon_leipzig</span> <span class="o">=</span> <span class="mf">12.44</span>
+<span class="n">lat_leipzig</span> <span class="o">=</span> <span class="mf">51.35</span>
+
+<span class="n">data_leipzig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">lat_leipzig</span><span class="p">),</span>
+                                 <span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">lon_leipzig</span><span class="p">)])</span>
+
+<span class="c1"># create pandas Series for global average</span>
+<span class="n">s_glob</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">glob_mean</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+
+<span class="c1"># create pandas Series for leipzig average (and smooth in time)</span>
+<span class="n">GAUSS_SIGMA</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">s_leipzig</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">data_leipzig</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">GAUSS_SIGMA</span><span class="p">),</span>
+                   <span class="n">data_leipzig</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">s_leipzig</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;City of Leipzig (smoothed $\sigma$=</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="k">GAUSS_SIGMA</span>, figsize=(14,5))
+<span class="n">s_glob</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Global trend&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/output_13_0.png" src="_images/output_13_0.png" />
+<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class is
+introduced, which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and
+allows for importing data from multiple models.</p>
+</div>
+</div>
+<div class="section" id="reading-data-from-multiple-models-the-readmultimodeldata-class">
+<h2>Reading data from multiple models: the ReadMultiModelData class<a class="headerlink" href="#reading-data-from-multiple-models-the-readmultimodeldata-class" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadMultiModelData</span></code> class provides an interface to
+import multiple variables for an arbitrary number of different models
+and within a specific time interval. It makes large use of the
+<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class that provides an interface for importing results
+from a single model.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readmodeldata</span> <span class="k">import</span> <span class="n">ReadMultiModelData</span>
+</pre></div>
+</div>
+<p>Define two models (this list can contain as many models as you like)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">,</span> <span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Create and initiate <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class. The direcory for each
+model as well as all valid files in the model directories are searched
+on initiation of the instance. Valid here means, that the files belong
+to the corresponding model. Subsetting of the time interval is done in a
+later process.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadMultiModelData</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2011-12-31&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECLIPSE</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">SATELLITE</span><span class="o">-</span><span class="n">DATA</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span>
+<span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
+
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECLIPSE</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">SATELLITE</span><span class="o">-</span><span class="n">DATA</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ACCMIP</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span><span class="n">EMEP_COPERNICUS</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span><span class="n">EMEP</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span><span class="n">EMEP_GLOBAL</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span><span class="n">EMEP_SVN_TEST</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span><span class="n">NorESM_SVN_TEST</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span><span class="n">INCA</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">HTAP</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">I</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">HTAP</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">I</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span>
+<span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
+
+<span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="nb">all</span><span class="o">.</span><span class="n">nc</span>
+<span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file all.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>Let’s have a look into one of the two import classes</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read_aatsr</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model ID: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="s2">&quot;Model dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="s2">&quot;First detected file: </span><span class="si">%s</span><span class="s2">&quot;</span>
+      <span class="o">%</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">read_aatsr</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
+<span class="n">Model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">renamed</span>
+<span class="n">First</span> <span class="n">detected</span> <span class="n">file</span><span class="p">:</span> <span class="n">aerocom</span><span class="o">.</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mf">3.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550erraer</span><span class="o">.</span><span class="mf">2003.</span><span class="n">nc</span>
+</pre></div>
+</div>
+<p>Define a bunch of test variables that are supposed to be loaded for each
+model (i.e. that must be contained in both input models)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;od550dust&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Read all variables for all models</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result_dict</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">test_vars</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="literal-block">
+FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2010.nc
+FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2011.nc
+Applying temporal cropping of result cube
+FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2010.nc
+FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2011.nc
+Applying temporal cropping of result cube
+FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
+Invalid time dimension.
+Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
+Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
+Applying temporal cropping of result cube
+FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
+Invalid time dimension.
+Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
+Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
+Applying temporal cropping of result cube
+</pre>
+<p>Print what is in there (similar to the previously introduced
+<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class has a
+nice string representation)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadMultiModelData</span>
+<span class="o">----------------------------</span>
+<span class="n">Model</span> <span class="n">IDs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AATSR_SU_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
+
+<span class="n">Loaded</span> <span class="n">data</span><span class="p">:</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
+<span class="o">-----------------------</span>
+<span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
+<span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550erraer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">]</span>
+
+<span class="n">Loaded</span> <span class="n">ModelData</span> <span class="n">objects</span><span class="p">:</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
+<span class="o">-------------------</span>
+<span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
+<span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
+<span class="o">-------------------</span>
+<span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
+<span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
+<span class="o">-----------------------</span>
+<span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
+<span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;deltaz3d&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity3d&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer3d&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aerh2o&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dryaer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550lt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od870aer&#39;</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2006</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2010</span><span class="p">]</span>
+
+<span class="n">Loaded</span> <span class="n">ModelData</span> <span class="n">objects</span><span class="p">:</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
+<span class="o">-------------------</span>
+<span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
+<span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+
+<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
+<span class="o">-------------------</span>
+<span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
+<span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+</pre></div>
+</div>
+<p>Print some information about the different data objects</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current model: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">model_id</span>)
+    <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Current variable: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">var_name</span>)
+        <span class="c1"># data is of type pyaerocom.ModelData which uses an extended representation of the Cube class</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">model</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
+
+<span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550aer</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">730</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">180</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">360</span><span class="p">)</span><span class="o">&gt;</span>
+
+<span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550dust</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">730</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">180</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">360</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">Current</span> <span class="n">model</span><span class="p">:</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
+
+<span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550aer</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">288</span><span class="p">)</span><span class="o">&gt;</span>
+
+<span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550dust</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">mineral</span> <span class="n">aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">288</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Now arbitrarily crop the last data object.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Start / stop before crop: </span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="o">%</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+
+<span class="n">dat_crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+                     <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">),</span>
+                     <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;2010-03-15&#39;</span><span class="p">,</span><span class="s1">&#39;2010-06-22&#39;</span><span class="p">))</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start / stop after crop: </span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">&quot;</span>
+      <span class="o">%</span><span class="p">(</span><span class="n">dat_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">,</span>
+        <span class="n">dat_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+
+<span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">after</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">15</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">22</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+</pre></div>
+</div>
+<p>Plot a map of the first day.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/output_19_0.png" src="_images/output_19_0.png" />
+<div class="section" id="iterate-over-models-and-variables">
+<h3>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h3>
+<p>The following cell iterates over all imported variables and models and
+plots the first time stamp of each result file.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">model_data</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/output_21_0.png" src="_images/output_21_0.png" />
+<img alt="_images/output_21_1.png" src="_images/output_21_1.png" />
+<img alt="_images/output_21_2.png" src="_images/output_21_2.png" />
+<img alt="_images/output_21_3.png" src="_images/output_21_3.png" />
+</div>
+</div>
 <div class="section" id="introducing-the-modeldata-class">
-<h4>Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#introducing-the-modeldata-class" title="Permalink to this headline">¶</a></h4>
+<h2>Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#introducing-the-modeldata-class" title="Permalink to this headline">¶</a></h2>
 <p>This notebook introduces basic features of the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.modeldata.ModelData">ModelData</a>
 class of pyaerocom. The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is the fundamental base
@@ -640,7 +965,7 @@ Starting with some imports…</p>
 </pre></div>
 </div>
 <p>Let’s get a test file to load</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.test_files</span> <span class="k">import</span> <span class="n">get</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
 
 <span class="n">test_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">filepath</span><span class="p">))</span>
@@ -671,8 +996,7 @@ code cell) was slitghtly adapted from the underlying <code class="docutils liter
 <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
      <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
           <span class="n">time</span>                                       <span class="n">x</span>              <span class="o">-</span>               <span class="o">-</span>
@@ -690,20 +1014,21 @@ code cell) was slitghtly adapted from the underlying <code class="docutils liter
           <span class="n">mean</span><span class="p">:</span> <span class="n">time</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
-<div class="section" id="note">
-<h2>Note<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h2>
-<div class="alert alert-block alert-info"><p>The longitudes in the ECMWF OSUITE data files are defined</p>
+<div class="section" id="remark-on-longitude-definition">
+<h3>Remark on longitude definition<a class="headerlink" href="#remark-on-longitude-definition" title="Permalink to this headline">¶</a></h3>
+<div class="alert alert-block alert-info"><p>If the longitudes in the original NetCDF file are defined as</p>
 <div class="math notranslate nohighlight">
 \[0 \leq\,\text{lon}\,\leq360\]</div>
-<p>and are converted automatically to</p>
+<p>they are converted automatically to</p>
 <div class="math notranslate nohighlight">
 \[-180\leq\,\text{lon}\,\leq180\]</div>
 <p>when an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is created (see print
-statment above <em>Rolling longitudes to -180 -&gt; 180 definition</em>)</p>
-</div><p>In the following cell, some of the most important attributes are
+statment above <em>Rolling longitudes to -180 -&gt; 180 definition</em>). This is,
+for instance, the case for the ECMWF OSUITE data files.</p>
+</div></div>
+<div class="section" id="features-of-the-modeldata-class">
+<h3>Features of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#features-of-the-modeldata-class" title="Permalink to this headline">¶</a></h3>
+<p>In the following cell, some of the most important attributes are
 introduced. These are mostly reimplementations of the underlying
 <code class="docutils literal notranslate"><span class="pre">Cube</span></code> data which is stored in the <code class="docutils literal notranslate"><span class="pre">ModelData.grid</span></code> attribute. For
 instance the attribute <code class="docutils literal notranslate"><span class="pre">ModelData.longitude</span></code> get’s you
@@ -738,8 +1063,7 @@ file (if the file is readable using the <code class="docutils literal notranslat
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550so4&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550oa&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
-<span class="mf">6.357274804629144</span> <span class="mf">0.0009405642475446783</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550oa&#39;, &#39;od550so4&#39;, &#39;od550dust&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
@@ -767,10 +1091,6 @@ method</p>
 <span class="n">data_so4</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
-<span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
-</pre></div>
-</div>
 <p>… and plot them as well</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">data_bc</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 <span class="n">fig2</span> <span class="o">=</span> <span class="n">data_so4</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
@@ -781,14 +1101,18 @@ method</p>
 </div>
 <img alt="_images/output_18_0.png" src="_images/output_18_0.png" />
 <img alt="_images/output_18_1.png" src="_images/output_18_1.png" />
-<div class="section" id="to-be-continued">
-<h3>To be continued ..<a class="headerlink" href="#to-be-continued" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="handling-of-cf-time-in-pyaerocom">
-<h4>Handling of CF time in <em>Pyaerocom</em><a class="headerlink" href="#handling-of-cf-time-in-pyaerocom" title="Permalink to this headline">¶</a></h4>
+</div>
+<div class="section" id="more-to-come">
+<h3>… more to come<a class="headerlink" href="#more-to-come" title="Permalink to this headline">¶</a></h3>
+<p>This tutorial is not yet completed as the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is
+currently under development.</p>
+</div>
+</div>
+<div class="section" id="handling-of-time-in-pyaerocom">
+<h2>Handling of time in Pyaerocom<a class="headerlink" href="#handling-of-time-in-pyaerocom" title="Permalink to this headline">¶</a></h2>
 <p>The
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.modeldata">ModelData</a>
-class of <em>Pyaerocom</em> was introduced in <a class="reference external" href="http://aerocom.met.no/pyaerocom/notebooks.html#introducing-the-modeldata-class">this
-notebook</a>.</p>
+class of <em>Pyaerocom</em> was introduced in the previous tutorial.</p>
 <p>Here, we want to illustrate one particular feature of <em>Pyaerocom</em>,
 namely the conversion of CF conform numerical time stamps with a defined
 unit (i.e. basedate and calendar, see e.g.
@@ -808,22 +1132,15 @@ class, which is the basic data representation object in the <em>Pyaerocom</em>
 <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class. In particular, it emphazises some peculiarities
 that can lead to complications and finally shows, how <em>Pyaerocom</em>
 circumvents these issues. We shall see, that this does not only reduce
-the risk of conversion Errors, bu even results in a quite significant
+the risk of conversion Errors, but even results in a quite significant
 performance boost when converting from numerical CF timestamps to
 <code class="docutils literal notranslate"><span class="pre">numpy.datetime64</span></code> time stamps.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">pyaerocom</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="load-and-plot-some-example-data">
-<h2>Load and plot some example data<a class="headerlink" href="#load-and-plot-some-example-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="load-and-some-example-data">
+<h3>Load and some example data<a class="headerlink" href="#load-and-some-example-data" title="Permalink to this headline">¶</a></h3>
 <p>Get and load test data file using the new pyaerocom interface (the
 underlying datatype of <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> is <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">testfiles</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<span class="n">files</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">testfiles</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 
 <span class="n">fpath_ecmwf</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;ecmwf_osuite&#39;</span><span class="p">]</span>
 <span class="n">fpath_aatsr</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
@@ -833,21 +1150,11 @@ underlying datatype of <code class="docutils literal notranslate"><span class="p
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
-</pre></div>
-</div>
 <p>Note that, if the longitudes are defined on a 0 -&gt; 360 degree grid, they
 are automatically converted to -180 -&gt; 180 (the case of the ECMWF data).</p>
-<p>Now, let’s have a quick look and see what is in there.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
-<span class="n">fig2</span> <span class="o">=</span> <span class="n">data_aatsr</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
-</pre></div>
 </div>
-<img alt="_images/output_6_0.png" src="_images/output_6_0.png" />
-<img alt="_images/output_6_1.png" src="_images/output_6_1.png" />
-</div>
-<div class="section" id="digging-into-the-time-representation-of-iris-cubes">
-<h2>Digging into the time representation of iris Cubes<a class="headerlink" href="#digging-into-the-time-representation-of-iris-cubes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="digging-into-the-time-representation-of-the-iris-cube-datatype">
+<h3>Digging into the time representation of the iris Cube datatype<a class="headerlink" href="#digging-into-the-time-representation-of-the-iris-cube-datatype" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is based on the <code class="docutils literal notranslate"><span class="pre">iris.Cube</span></code> object, which can
 be accessed via the <code class="docutils literal notranslate"><span class="pre">grid</span></code> attribute. In the following, some features
 of the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> class are introduced.</p>
@@ -856,7 +1163,7 @@ of the <code class="docutils literal notranslate"><span class="pre">Cube</span><
 </pre></div>
 </div>
 <div class="section" id="peculiarities-of-time-handling-when-using-the-cube-interface">
-<h3>Peculiarities of time handling when using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> interface<a class="headerlink" href="#peculiarities-of-time-handling-when-using-the-cube-interface" title="Permalink to this headline">¶</a></h3>
+<h4>Peculiarities of time handling when using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> interface<a class="headerlink" href="#peculiarities-of-time-handling-when-using-the-cube-interface" title="Permalink to this headline">¶</a></h4>
 <p>Starting with how time is handled. The time is represented as numerical
 value relative to a basic date and frequency unit and in the optimum
 case, also the specification of a calendar, according to the <a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate">NetCDF CF
@@ -968,14 +1275,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>129 ms ± 13.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>113 ms ± 2.33 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>111 ms ± 8.62 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>111 ms ± 13.5 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -986,14 +1293,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>184 ms ± 23.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 7.99 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>114 ms ± 7 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>101 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -1001,7 +1308,7 @@ performance and ensures, that pandas will understand the datatype.
 However, about 100ms for conversion of 365 dates is rather slow.</p>
 </div>
 <div class="section" id="other-options-to-convert-timestamps">
-<h3>Other options to convert timestamps<a class="headerlink" href="#other-options-to-convert-timestamps" title="Permalink to this headline">¶</a></h3>
+<h4>Other options to convert timestamps<a class="headerlink" href="#other-options-to-convert-timestamps" title="Permalink to this headline">¶</a></h4>
 <p>Above we saw how we can convert the numerical timestamps into an array
 of numpy <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> objects (which is what we want in the end). As
 we shall see below, the conversion can be significantly accelarated if
@@ -1012,7 +1319,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.89 ms ± 186 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.64 ms ± 49.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -1130,9 +1437,13 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>58.5 µs ± 1.25 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>61.5 µs ± 3.62 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
+</div>
+</div>
+<div class="section" id="how-pyaerocom-does-it">
+<h3>How Pyaerocom does it<a class="headerlink" href="#how-pyaerocom-does-it" title="Permalink to this headline">¶</a></h3>
 <p>Actually, due to this significant increase in performance for standard
 calendars (compared to the methods used in netCDF4), the above method
 was implemented in the pyaerocom package (<a class="reference external" href="aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64">see
@@ -1144,7 +1455,7 @@ here</a>).</p>
 pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>63 µs ± 2.82 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>69.6 µs ± 1.15 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -1153,7 +1464,7 @@ pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.76 ms ± 27.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.97 ms ± 176 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -1167,14 +1478,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>90 µs ± 4.76 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>88.5 µs ± 4.66 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.93 ms ± 129 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.14 ms ± 181 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>

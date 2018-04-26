@@ -5,7 +5,7 @@ Low level classes and methods for io
 """
 from collections import OrderedDict as od
 from os.path import join, exists, basename, splitext
-from warnings import warn
+from pyaerocom.glob import TS_TYPES
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -67,7 +67,7 @@ class FileConventionRead(object):
         Example
         -------
         >>> from pyaerocom.io import FileConventionRead
-        >>> filename = 'aerocom_NCAR_CAM5.3_all_2000_rsntcsnoa_TOA_monthly.nc'
+        >>> filename = 'aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc'
         >>> print(FileConventionRead().from_file(filename))
         pyaeorocom FileConventionRead
         name: aerocom3
@@ -84,8 +84,59 @@ class FileConventionRead(object):
         else:
             raise NameError("Could not identify convention from input file %s"
                             %basename(file))
+        self.check_validity(file)
         return self
-
+    
+    def check_validity(self, file):
+        info = self.get_info_from_file(file)
+        if not info['ts_type'] in TS_TYPES:
+            raise IOError("Invalid ts_type %s in filename %s"
+                          %(info['ts_type'], basename(file)))
+        elif not 0 <= info["year"] <= 3000:
+            raise IOError("Invalid year %d in filename %s"
+                          %(info['year'], basename(file)))
+    
+    def _info_from_aerocom3(self, file):
+        """Custom method that loads info for aerocom3 convention
+        
+        See method :func:` get_info_from_file` for details.
+        """
+        #remove .nc before splitting using delimiter "_"
+        info = od(year=None, var_name=None, ts_type=None)
+        spl = splitext(basename(file))[0].split(self.file_sep)
+        data_types = ['surface', 'column', 'modellevel']
+        # phase 3 file naming convention
+        try:
+            info["year"] = int(spl[self.year_pos])
+        except:
+            raise IOError("Failed to extract year information from file %s "
+                          "using file convention %s" 
+                          %(basename(file), self.name))
+        try:
+            # include vars for the surface
+            if spl[-3].lower() in data_types:
+                info["var_name"] = spl[self.var_pos]
+            # also include 3d vars that provide station based data
+            # and contain the string vmr in this case the variable name has to 
+            # be slightly changed to the  aerocom phase 2 naming
+            elif spl[-3].lower() == 'modellevelatstations':
+                if 'vmr' in spl[-4]:
+                    info["var_name"] = spl[-4].replace('vmr', 'vmr3d')
+            else:
+                raise IOError("Invalid file name for Aerocom3 convention")
+        except Exception as e:
+            raise IOError("Failed to extract variable name from file %s "
+                          "using file convention %s.\nError: %s" 
+                          %(basename(file), self.name, repr(e)))
+        try:
+            info["ts_type"] = spl[self.ts_pos]
+        except:
+            raise IOError("Failed to extract ts_type from file %s "
+                          "using file convention %s" 
+                          %(basename(file), self.name))
+            
+        return info
+    
     def get_info_from_file(self, file):
         """Identify convention from a file
         
@@ -111,31 +162,41 @@ class FileConventionRead(object):
         Example
         -------
         >>> from pyaerocom.io import FileConventionRead
-        >>> filename = ('aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc')
+        >>> filename = 'aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc'
         >>> conv = FileConventionRead("aerocom3")
         >>> info = conv.get_info_from_file(filename)
         >>> for item in info.items(): print(item)
         ('year', 2010)
         ('var_name', 'od550aer')
-        ('ts_type', 'monthly.nc')
+        ('ts_type', 'monthly')
         """
-        info = od(year=None, var_name=None, ts_type=None)
-        if self.file_sep is ".":
-            spl = basename(file).split(self.file_sep)
+        if self.name == "aerocom3":
+            return self._info_from_aerocom3(file)
         else:
-            spl = splitext(basename(file))[0].split(self.file_sep)
-        try:
-            info["year"] = int(spl[self.year_pos])
-        except:
-            warn("Failed to extract year information")
-        try:
-            info["var_name"] = spl[self.var_pos]
-        except:
-            warn("Failed to extract variable information")
-        try:
-            info["ts_type"] = spl[self.ts_pos]
-        except:
-            warn("Failed to extract ts_type")
+            info = od(year=None, var_name=None, ts_type=None)
+            if self.file_sep is ".":
+                spl = basename(file).split(self.file_sep)
+            else:
+                spl = splitext(basename(file))[0].split(self.file_sep)
+            try:
+                info["year"] = int(spl[self.year_pos])
+            except:
+                raise IOError("Failed to extract year information from file %s "
+                              "using file convention %s" 
+                              %(basename(file), self.name))
+            try:
+                info["var_name"] = spl[self.var_pos]
+            except:
+                raise IOError("Failed to extract variable name from file %s "
+                              "using file convention %s" 
+                              %(basename(file), self.name))
+            try:
+                info["ts_type"] = spl[self.ts_pos]
+            except:
+                raise IOError("Failed to extract ts_type from file %s "
+                              "using file convention %s" 
+                              %(basename(file), self.name))
+                
         return info
     
     def string_mask(self, var, year, ts_type):
@@ -249,6 +310,7 @@ if __name__=="__main__":
     
     conf = FileConventionRead(name="aerocom2")
     print(conf)
+
     
     import doctest
     doctest.testmod()

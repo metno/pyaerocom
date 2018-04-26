@@ -35,7 +35,7 @@
 import sys
 from glob import glob
 from re import match
-from os.path import join, isdir, basename, dirname
+from os.path import join, isdir, basename
 from collections import OrderedDict as od
 from warnings import warn
 from numpy import arange
@@ -47,14 +47,21 @@ from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 
 from pyaerocom import config as const
-from pyaerocom.glob import FIRST_DATE, LAST_DATE, TS_TYPES, VERBOSE
+from pyaerocom.glob import TS_TYPES, VERBOSE, MIN_YEAR, MAX_YEAR, ON_LOAD
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import check_time_coord, correct_time_coord
 from pyaerocom.modeldata import ModelData
 
 class ReadModelData(object):
-    """Class that stores read import results for model data
+    """Class for reading model results from AEROCOM NetCDF files
+    
+    Note
+    ----
+    The reading only works if files are stored using a valid file naming 
+    convention. See package data file `file_conventions.ini <http://
+    aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__ for valid
+    keys. You may define your own fileconvention in this file, if you wish.
     
     Attributes
     ----------
@@ -104,10 +111,16 @@ class ReadModelData(object):
     Examples
     --------
     
+        >>> read = ReadModelData(model_id="ECMWF_OSUITE")
+        >>> read.read_var("od550aer")
+        >>> read.read_var("od550so4")
+        >>> read.read_var("od550bc")
+        >>> print(data.short_str()) for data in read.data
+        
     """
     _MODELDIRS = const.MODELDIRS
-    _start_time = FIRST_DATE
-    _stop_time = LAST_DATE
+    _start_time = None
+    _stop_time = None
     # Directory containing model data for this species
     _model_dir = ""
     _USE_SUBDIR_RENAMED = True
@@ -129,9 +142,9 @@ class ReadModelData(object):
         # start_time and stop_time are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
         # pandas.Timestamp
-        if start_time is not None:
+        if start_time:
             self.start_time = start_time
-        if stop_time is not None:
+        if stop_time:
             self.stop_time = stop_time
         
         self.verbose = verbose
@@ -149,6 +162,7 @@ class ReadModelData(object):
         self.files = []
         
         self.vars = []
+        self.years = []
         
         if init:
             if self.search_model_dir():
@@ -182,12 +196,14 @@ class ReadModelData(object):
         If input is not :class:`pandas.Timestamp`, it must be convertible 
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         """
-        t = self._start_time
-        if not isinstance(t, Timestamp):
-            raise ValueError("Invalid value encountered for start time "
-                             "in reading engine: %s" %t)
-        return t
-    
+        return self._start_time
+# =============================================================================
+#         if not isinstance(t, Timestamp):
+#             raise ValueError("Invalid value encountered for start time "
+#                              "in reading engine: %s" %t)
+#         return t
+#     
+# =============================================================================
     @start_time.setter
     def start_time(self, value):
         if not isinstance(value, Timestamp):    
@@ -208,11 +224,13 @@ class ReadModelData(object):
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         
         """
-        t = self._stop_time
-        if not isinstance(t, Timestamp):
-            raise ValueError("Invalid value encountered for stop time "
-                             "in reading engine: %s" %t)
-        return t
+        return self._stop_time
+# =============================================================================
+#         if not isinstance(t, Timestamp):
+#             raise ValueError("Invalid value encountered for stop time "
+#                              "in reading engine: %s" %t)
+#         return t
+# =============================================================================
     
     @stop_time.setter
     def stop_time(self, value):
@@ -232,7 +250,13 @@ class ReadModelData(object):
         -------
         ndarray
         """
-        return arange(self.start_time.year, self.stop_time.year + 1, 1)
+        if self.start_time and self.stop_time:
+            return arange(self.start_time.year, self.stop_time.year + 1, 1)
+        if not self.years:
+            raise AttributeError("No information available for available "
+                                 "years. Please run method "
+                                 "search_all_files first")
+        return self.years
     
     def search_model_dir(self):
         """Search the directory of this model
@@ -252,11 +276,11 @@ class ReadModelData(object):
                 if len(chk_dir) > 0:
                     self.model_dir = chk_dir[0]
                     if self.verbose:
-                        sys.stderr.write('Found: '+ chk_dir[0] + '\n')
+                        print('Found: '+ chk_dir[0] + '\n')
                     return True
             else:
                 if self.verbose:
-                    sys.stderr.write('directory: %s does not exist\n'
+                    print('directory: %s does not exist\n'
                                      %search_dir)
         return False
     
@@ -286,49 +310,28 @@ class ReadModelData(object):
             # updated in case there can be more than one file naming convention
             # within one model directory)
             first_file_name = basename(nc_files[0])
-            if first_file_name.count("_") >= 4:
-                self.file_convention.import_default("aerocom3")
-            elif first_file_name.count(".") >= 4:
-                self.file_convention.import_default("aerocom2")
+            self.file_convention.from_file(first_file_name)
         else:
-            raise TypeError("Failed to identify file naming convention "
+            raise IOError("Failed to identify file naming convention "
                             "from first file in model directory for model "
                             "%s\nmodel_dir: %s\nFile name: %s"
                             %(self.model_id, self.model_dir, first_file_name))
         _vars_temp = []
+        _years_temp = []
         for _file in nc_files:
-            # split file based on delimiter specified in file naming 
-            # convention
-            spl = _file.split(self.file_convention.file_sep)
-            # aerocom3 convention
-            if basename(_file).count('_') >= 4:
-                data_types = ['surface', 'column', 'modellevel']
-                # phase 3 file naming convention
-                
-                # include vars for the surface
-                if spl[-3].lower() in data_types:
-                    _vars_temp.append(spl[self.file_convention.var_pos])
-                    self.files.append(_file)
-                # also include 3d vars that provide station based data
-                # and contain the string vmr
-                # in this case the variable name has to slightly changed to the 
-                # aerocom phase 2 naming
-                elif spl[-3].lower() == 'modellevelatstations':
-                    if 'vmr' in spl[-4]:
-                        _vars_temp.append(spl[-4].replace('vmr', 'vmr3d'))
-                        self.files.append(_file)
-            # aerocom2 convention
-            elif basename(_file).count('.') >= 4:
-                # phase 2
-                _vars_temp.append(spl[self.file_convention.var_pos])
+            try:
+                info = self.file_convention.get_info_from_file(_file)
+                _vars_temp.append(info["var_name"])
+                _years_temp.append(info["year"])
                 self.files.append(_file)
-
-            # unknown file convention
-            else:
-                warn("Ignoring file: %s" %_file)
+            except Exception as e:
+                if self.verbose:
+                    print("Failed to import file %s\nError: %s" 
+                          %(basename(_file), repr(e)))
 
         # make sorted list of unique vars
         self.vars = sorted(od.fromkeys(_vars_temp))
+        self.years = sorted(od.fromkeys(_years_temp))
         
     def update(self, **kwargs):
         """Update one or more valid parameters
@@ -369,9 +372,9 @@ class ReadModelData(object):
         if not ts_type in TS_TYPES:
             raise ValueError("Invalid input for ts_type, got: %s, "
                              "allowed values: %s" %(ts_type, TS_TYPES))
-        if start_time is not None:
+        if start_time:
             self.start_time = start_time
-        if stop_time is not None:
+        if stop_time:
             self.stop_time = stop_time
         
         if var_name not in self.vars:
@@ -381,24 +384,23 @@ class ReadModelData(object):
         
         match_files = []
         for year in self.years_to_load:
-            # search for filename in self.files using ts_type as default ts size
-            for _file in self.files:
-                #new file naming convention (aerocom3)
-                match_mask = self.file_convention.string_mask(var_name,
-                                                              year, 
-                                                              ts_type)
-                if match(match_mask, _file):
-                    match_files.append(_file)
-                    if self.verbose:
-                        print("FOUND MATCH: %s" %basename(_file))
-                else:
-                    # This should never be called
-                    warn("Ignoring file %s in directory:\n%s"
-                         %(basename(_file), dirname(_file)))
-# =============================================================================
-#                         raise IOError("Fatal: invalid file encountered in: %s"
-#                                       %_file)
-# =============================================================================
+            if MIN_YEAR <= year <= MAX_YEAR:
+                # search for filename in self.files using ts_type as default ts size
+                for _file in self.files:
+                    #new file naming convention (aerocom3)
+                    match_mask = self.file_convention.string_mask(var_name,
+                                                                  year, 
+                                                                  ts_type)
+                    if match(match_mask, _file):
+                        match_files.append(_file)
+                        if self.verbose:
+                            print("FOUND MATCH: %s" %basename(_file))
+
+            else:
+                if self.verbose:
+                    print("Ignoring file %s. File out of allowed year bounds "
+                          "(%d - %d)" %(basename(_file), MIN_YEAR, MAX_YEAR))
+            
         if len(match_files) == 0:
             raise IOError("No files could be found for variable %s, and %s "
                           "data in specified time interval\n%s-%s"
@@ -415,25 +417,41 @@ class ReadModelData(object):
             try:
                 finfo = self.file_convention.get_info_from_file(_file)
                 cube = load_cube(_file, var_constraint)
-                if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                        year=finfo["year"]):
+                if ON_LOAD["CHECK_TIME_FILENAME"]:
+                    
+                    if not check_time_coord(cube, ts_type=finfo["ts_type"], 
+                                            year=finfo["year"],
+                                            verbose=self.verbose):
+                        
+                        if self.verbose:
+                            print("Invalid time axis in file {}. " 
+                                             "Attempting to correct.".format(
+                                                     basename(_file)))
+                        
+                        cube = correct_time_coord(cube, 
+                                                  ts_type=finfo["ts_type"],
+                                                  year=finfo["year"])
+                        
+                else:
                     if self.verbose:
-                        print("Invalid time axis in file %s. Attempting to "
-                              "correct." %basename(_file))
-                    cube = correct_time_coord(cube, ts_type=finfo["ts_type"],
-                                              year=finfo["year"])
+                        print("WARNING: Automatic check of time "
+                                         "array in netCDF files is deactivated."
+                                         " This may cause problems in case "
+                                         "the time dimension is not CF conform.\n")
                 cubes.append(cube)
                 loaded_files.append(_file)
             except Exception as e:
-                warn("Failed to load %s as Iris cube.\nError: %s" 
-                     %(_file, repr(e)))
+                if self.verbose:
+                    print("Failed to load {} as Iris cube.\n"
+                                     "Error: {}".format(_file, repr(e)))
         
         if len(loaded_files) == 0:
-            raise IOError("None of the found files for variable %s, and %s "
-                          "in specified time interval\n%s-%s\n"
-                          "could be loaded"
-                          %(self.model_id, ts_type, self.start_time,
-                            self.stop_time))
+            raise IOError("None of the found files for variable {}, and {} "
+                          "in specified time interval\n{}-{}\n"
+                          "could be loaded".format(self.model_id, 
+                                                   ts_type, 
+                                                   self.start_time,
+                                                   self.stop_time))
             
         #now put the CubeList together and form one cube
         #1st equalise the cubes (remove non common attributes)
@@ -446,22 +464,23 @@ class ReadModelData(object):
         
         #create instance of pyaerocom.ModelData
         data = ModelData(input=cube_concat, from_files=loaded_files,
-                         model_id=self.model_id)
+                         model_id=self.model_id, ts_type=ts_type)
         # crop cube in time (if applicable)
-        if not self.start_time == FIRST_DATE or not self.stop_time == LAST_DATE:
+        if self.start_time and self.stop_time:
             if self.verbose:
                 print("Applying temporal cropping of result cube")
             try:
                 t_constraint = data.get_time_constraint(self.start_time, 
                                                         self.stop_time)
-                data = data.extract(t_constraint)
+                _data = data.extract(t_constraint)
+                data = _data
             except Exception as e:
-                warn("Failed to crop data for %s in time, error: %s"
-                     %(var_name, repr(e)))
+                print("Failed to crop data for {} in time.\n"
+                                 "Error: {}".format(var_name, repr(e)))
         
-        if var_name in self.data:
-            warn("Loaded data for variable %s already exists and will be "
-                 "overwritten" %var_name)
+        if var_name in self.data and self.verbose:
+            print("Warning: Data for variable {} already exists "
+                             "and will be overwritten".format(var_name))
         self.data[var_name] = data
         return data
     
@@ -484,12 +503,36 @@ class ReadModelData(object):
                 warn("Failed to read variable %s" %var)
         self.vars = _vars_read
         
+    def __str__(self):
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = ("\n{}\n{}\n"
+             "Model ID: {}\n"
+             "Available variables: {}\n"
+             "Available years: {}\n".format(head, 
+                                            len(head)*"-",
+                                            self.model_id, 
+                                            self.vars, 
+                                            self.years))
+        if self.data:
+            s += "\nLoaded ModelData objects:\n"
+            for var_name, data in self.data.items():
+                s += "{}\n".format(data.short_str())
+        return s.rstrip()
+        
 class ReadMultiModelData(object):
-    """Class that can be used to import model data from multiple models
+    """Class for import of AEROCOM model data from multiple models
     
     This class provides an interface to import model results from an arbitrary
     number of models and specific for a certain time interval (that can be 
-    defined, but must not be defined). The actual
+    defined, but must not be defined). Largely based on 
+    :class:`ReadModelData`.
+    
+    Note
+    ----
+    The reading only works if files are stored using a valid file naming 
+    convention. See package data file `file_conventions.ini <http://
+    aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__ for valid
+    keys. You may define your own fileconvention in this file, if you wish.
     
     Attributes
     ----------
@@ -525,8 +568,8 @@ class ReadMultiModelData(object):
     # "private attributes (defined with one underscore). These may be 
     # controlled using getter and setter methods (@property operator, see 
     # e.g. definition of def start_time below)
-    _start_time = FIRST_DATE
-    _stop_time = LAST_DATE
+    _start_time = None
+    _stop_time = None
     def __init__(self, model_ids, start_time=None, stop_time=None, 
                  verbose=VERBOSE):
         
@@ -546,9 +589,9 @@ class ReadMultiModelData(object):
         # start_time and stop_time are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
         # pandas.Timestamp
-        if start_time is not None:
+        if start_time:
             self.start_time = start_time
-        if stop_time is not None:
+        if stop_time:
             self.stop_time = stop_time
         
         self.init_results()
@@ -564,11 +607,13 @@ class ReadMultiModelData(object):
         If input is not :class:`pandas.Timestamp`, it must be convertible 
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         """
-        t = self._start_time
-        if not isinstance(t, Timestamp):
-            raise ValueError("Invalid value encountered for start time "
-                             "in reading engine: %s" %t)
-        return t
+        return self._start_time
+# =============================================================================
+#         if not isinstance(t, Timestamp):
+#             raise ValueError("Invalid value encountered for start time "
+#                              "in reading engine: %s" %t)
+#         return t
+# =============================================================================
     
     @start_time.setter
     def start_time(self, value):
@@ -590,11 +635,13 @@ class ReadMultiModelData(object):
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         
         """
-        t = self._stop_time
-        if not isinstance(t, Timestamp):
-            raise ValueError("Invalid value encountered for stop time "
-                             "in reading engine: %s" %t)
-        return t
+        return self._stop_time
+# =============================================================================
+#         if not isinstance(t, Timestamp):
+#             raise ValueError("Invalid value encountered for stop time "
+#                              "in reading engine: %s" %t)
+#         return t
+# =============================================================================
     
     @stop_time.setter
     def stop_time(self, value):
@@ -681,13 +728,27 @@ class ReadMultiModelData(object):
         ts_type : str
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly")
+            
+        Returns
+        -------
+        dict
+            result dictionary
+            
+        Examples
+        --------
+        
+            >>> read = ReadMultiModelData(model_ids=["ECMWF_CAMS_REAN", 
+            ...                                      "ECMWF_OSUITE"],
+            ...                           verbose=False)
+            >>> read.read(["od550aer", "od550so4", "od550bc"])
+            
         """
         if not ts_type in TS_TYPES:
-            raise ValueError("Invalid input for ts_type, got: %s, "
-                             "allowed values: %s" %(ts_type, TS_TYPES))
-        if start_time is not None:
+            raise ValueError("Invalid input for ts_type, got: {}, "
+                             "allowed values: {}".format(ts_type, TS_TYPES))
+        if start_time:
             self.start_time = start_time
-        if stop_time is not None:
+        if stop_time:
             self.stop_time = stop_time
 
         if model_ids is None: #use all models if unspecified
@@ -705,14 +766,15 @@ class ReadMultiModelData(object):
                     if var in read.vars:
                         read.read_var(var, start_time, stop_time, ts_type)
                     else:
-                        warnings.append("Variable %s not available for model "
-                                        "%s" %(var, model_id))
+                        warnings.append("Variable {} not available for model "
+                                        "{}".format(var, model_id))
                     
                 
             else:
-                warnings.append("Failed to import model %s" %model_id)
-        for msg in warnings:
-            warn(msg)
+                warnings.append("Failed to import model {}".format(model_id))
+        if self.verbose:
+            for msg in warnings:
+                print(msg)
         return self.results
     
     def __getitem__(self, model_id):
@@ -736,11 +798,36 @@ class ReadMultiModelData(object):
         if not model_id in self.results:
             raise ValueError("No data found for model_id %s" %model_id)
         return self.results[model_id]
-
+    
+    def __str__(self):
+        head = "Pyaerocom %s" %type(self).__name__
+        s = ("\n%s\n%s\n"
+             "Model IDs: %s\n" %(head, len(head)*"-", self.model_ids))
+        if self.results:
+            s += "\nLoaded data:"
+            for model_id, read in self.results.items():
+                s += "\n%s" %read
+        return s
+    
 if __name__=="__main__":
-    import doctest
-    doctest.testmod()
-
+    read = ReadModelData(model_id="ECMWF_CAMS_REAN",
+                                  start_time="1-1-2003",
+                                  stop_time="31.12.2007", 
+                                  verbose=True)
+    data = read.read_var(var_name="od550aer", ts_type="daily")
+# =============================================================================
+#     read = ReadMultiModelData(model_ids=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
+#     
+#     read.read(["od550aer", "od440aer"])
+#     
+#     print(read)
+# =============================================================================
+# =============================================================================
+#     
+#     import doctest
+#     doctest.testmod()
+# 
+# =============================================================================
 
     
 
