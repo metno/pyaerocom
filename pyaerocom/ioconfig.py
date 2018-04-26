@@ -56,6 +56,13 @@ class IOConfig(object):
         #names of the different obs networks
         self.OBSNET_NONE = 'NONE'
         self.NOMODELNAME = 'OBSERVATIONS-ONLY'
+
+        # if this file exists no cache file is read
+        # used to ease debugging
+        self.DONOTCACHEFILE = os.path.join(obs_cache_dir, 'DONOTCACHE')
+
+        # Name of the file containing the revision string of an obs data network
+        self.REVISION_FILE = 'Revision.txt'
         
         ### NAMES
         #default names of the different obs networks

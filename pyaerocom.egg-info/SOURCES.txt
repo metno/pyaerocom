@@ -10,6 +10,7 @@ pyaerocom/modeldata.py
 pyaerocom/multiproc.py
 pyaerocom/obsdata.py
 pyaerocom/region.py
+pyaerocom/variable.py
 pyaerocom.egg-info/PKG-INFO
 pyaerocom.egg-info/SOURCES.txt
 pyaerocom.egg-info/dependency_links.txt
@@ -20,6 +21,7 @@ pyaerocom/data/model_ids.txt
 pyaerocom/data/paths.ini
 pyaerocom/data/regions.ini
 pyaerocom/data/test_files.ini
+pyaerocom/data/variables.ini
 pyaerocom/io/__init__.py
 pyaerocom/io/fileconventions.py
 pyaerocom/io/helpers.py
@@ -32,5 +34,4 @@ pyaerocom/plot/__init__.py
 pyaerocom/plot/config.py
 pyaerocom/plot/helpers.py
 pyaerocom/plot/mapping.py
-pyaerocom/plot/mapping_OLD.py
 pyaerocom/plot/plotmaps.py

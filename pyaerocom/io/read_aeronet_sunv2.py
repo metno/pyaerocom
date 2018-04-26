@@ -45,7 +45,10 @@ import numpy as np
 
 import pandas as pd
 import re
-from pyaerocom import config as const
+#from pyaerocom import config as const
+from pyaerocom.ioconfig import IOConfig
+const = IOConfig()
+
 
 
 class ReadAeronetSunV2:
@@ -65,7 +68,7 @@ class ReadAeronetSunV2:
 
     """
     _FILEMASK = '*.lev20'
-    __version__ = "0.03"
+    __version__ = "0.04"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH']
     # Flag if the dataset contains all years or not
@@ -84,17 +87,19 @@ class ReadAeronetSunV2:
     _CHUNKSIZE = 1000
     VARS_IN_DATASET = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
 
-    def __init__(self, verboseflag = False):
+    def __init__(self, index_pointer = 0, verboseflag = False):
         self.verboseflag = verboseflag
         self.metadata = {}
-        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
+        self.data = []
         self.index = len(self.metadata)
-        self.files = self.get_file_list()
-        # read revision data from 1st data file name
-        # example: 920801_160312_Minsk.ONEILL_20
-        self.revision = os.path.basename(self.files[0]).split('_')[1]
-        #pointer to 1st free row in self.data
-        self.index_pointer = 0
+        self.files = []
+        #set the revision to the one from Revision.txt if that file exist
+        self.revision = self.get_data_revision()
+
+        # pointer to 1st free row in self.data
+        # can be externally set so that in case the super class wants to read more than one data set
+        # no data modification is needed to bring several data sets together
+        self.index_pointer = index_pointer
 
     def __iter__(self):
         return self
@@ -106,15 +111,15 @@ class ReadAeronetSunV2:
         return self.metadata[float(self.index)]
 
     def __str__(self):
-        StatNames = []
+        stat_names = []
         for key in self.metadata:
-            StatNames.append(self.metadata[key]['station name'])
+            stat_names.append(self.metadata[key]['station name'])
 
-        return ','.join(StatNames)
+        return ','.join(stat_names)
 
     ###################################################################################
 
-    def read_daily_file(self, filename, varstoread = ['od550aer'], verboseflag=False):
+    def read_daily_file(self, filename, varstoread = ['od550aer'], verboseflag = False):
         """method to read an Aeronet Sun V2 level 2 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -152,27 +157,27 @@ Length: 223, dtype: float64}
         # 16:09:2006,00:00:00,259.000000,-9999.,0.036045,0.036734,0.039337,-9999.,-9999.,-9999.,-9999.,-9999.,0.064670,-9999.,-9999.,0.069614,-9999.,0.083549,0.092204,0.973909,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,1.126095,0.973741,1.474242,1.135232,1.114550,-9999.,-9999.,11,11,11,-9999.,-9999.,-9999.,-9999.,-9999.,11,-9999.,-9999.,11,-9999.,11,11,11,11,11,11,11,11,-9999.
 
         # define some row numbers. not all of them are used at this point
-        i__date_index = 0
-        i__time_index = 1
-        i_julien_day_index = 2
-        i_od1640_index = 3
-        i_od1020index = 4
-        i_od870index = 5
-        i_od675index = 6
-        i_od667index = 7
-        i_od555index = 8
-        i_od551index = 9
-        i_od532index = 10
-        i_od531index = 11
-        i__o_d500_index = 12
-        i__o_d440_index = 15
-        i_od380index = 17
-        i_od340index = 18
+        date_index = 0
+        time_index = 1
+        julien_day_index = 2
+        od1640_index = 3
+        od1020index = 4
+        od870_index = 5
+        od675index = 6
+        od667index = 7
+        od555index = 8
+        od551index = 9
+        od532index = 10
+        od531index = 11
+        od500_index = 12
+        od440_index = 15
+        od380index = 17
+        od340index = 18
 
         # This value is later put to a np.nan
-        f__nan_val = np.float_(-9999.)
+        nan_val = np.float_(-9999.)
 
-        d__data_out = {}
+        data_out = {}
         # Iterate over the lines of the file
         if verboseflag:
             sys.stderr.write(filename + '\n')
@@ -184,62 +189,62 @@ Length: 223, dtype: float64}
             i_Dummy = iter(re.split(r'=|\,', c_Dummy.rstrip()))
             dict_Loc = dict(zip(i_Dummy, i_Dummy))
 
-            d__data_out['latitude'] = float(dict_Loc['lat'])
-            d__data_out['longitude'] = float(dict_Loc['long'])
-            d__data_out['altitude'] = float(dict_Loc['elev'])
-            d__data_out['station name'] = dict_Loc['Location']
-            d__data_out['PI'] = dict_Loc['PI']
+            data_out['latitude'] = float(dict_Loc['lat'])
+            data_out['longitude'] = float(dict_Loc['long'])
+            data_out['altitude'] = float(dict_Loc['elev'])
+            data_out['station name'] = dict_Loc['Location']
+            data_out['PI'] = dict_Loc['PI']
             c_Dummy = InFile.readline()
             c_Header = InFile.readline()
 
             #
             #DataArr = {}
-            d_Time = []
+            dtime = []
             for Var in self.VARS_IN_DATASET:
-                d__data_out[Var] = []
+                data_out[Var] = []
 
             for line in InFile:
                 # process line
                 dummy_arr = line.split(',')
                 # the following uses the standatd python datetime functions
-                day, month, year = dummy_arr[i__date_index].split(':')
-                hour, minute, second = dummy_arr[i__time_index].split(':')
+                day, month, year = dummy_arr[date_index].split(':')
+                hour, minute, second = dummy_arr[time_index].split(':')
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[i__date_index].split(':')
+                day, month, year = dummy_arr[date_index].split(':')
                 # pdb.set_trace()
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[i__time_index]])
+                datestring = 'T'.join([datestring, dummy_arr[time_index]])
                 datestring = '+'.join([datestring, '00:00'])
-                d_Time.append(np.datetime64(datestring))
+                dtime.append(np.datetime64(datestring))
 
-                d__data_out['od500aer'].append(np.float_(dummy_arr[i__o_d500_index]))
-                if d__data_out['od500aer'][-1] == f__nan_val: d__data_out['od500aer'][-1] = np.nan
-                d__data_out['od440aer'].append(np.float_(dummy_arr[i__o_d440_index]))
-                if d__data_out['od440aer'][-1] == f__nan_val: d__data_out['od440aer'][-1] = np.nan
-                d__data_out['od870aer'].append(np.float_(dummy_arr[i_od870index]))
-                if d__data_out['od870aer'][-1] == f__nan_val: d__data_out['od870aer'][-1] = np.nan
+                data_out['od500aer'].append(np.float_(dummy_arr[od500_index]))
+                if data_out['od500aer'][-1] == nan_val: data_out['od500aer'][-1] = np.nan
+                data_out['od440aer'].append(np.float_(dummy_arr[od440_index]))
+                if data_out['od440aer'][-1] == nan_val: data_out['od440aer'][-1] = np.nan
+                data_out['od870aer'].append(np.float_(dummy_arr[od870_index]))
+                if data_out['od870aer'][-1] == nan_val: data_out['od870aer'][-1] = np.nan
 
-                d__data_out['ang4487aer'].append(
-                    -1.0 * np.log(d__data_out['od440aer'][-1] / d__data_out['od870aer'][-1]) / np.log(0.44 / .870))
-                d__data_out['od550aer'].append(
-                    d__data_out['od500aer'][-1] * (0.55 / 0.50) ** np.float_(-1.) * d__data_out['ang4487aer'][-1])
+                data_out['ang4487aer'].append(
+                    -1.0 * np.log(data_out['od440aer'][-1] / data_out['od870aer'][-1]) / np.log(0.44 / .870))
+                data_out['od550aer'].append(
+                    data_out['od500aer'][-1] * (0.55 / 0.50) ** np.float_(-1.) * data_out['ang4487aer'][-1])
                 # ;fill up time steps of the now calculated od550_aer that are nans with values calculated from the
                 # ;440nm wavelength to minimise gaps in the time series
-                if np.isnan(d__data_out['od550aer'][-1]):
-                    d__data_out['od550aer'][-1] = d__data_out['od440aer'][-1] * (0.55 / 0.44) ** np.float_(-1.) * \
-                                                d__data_out['ang4487aer'][-1]
+                if np.isnan(data_out['od550aer'][-1]):
+                    data_out['od550aer'][-1] = data_out['od440aer'][-1] * (0.55 / 0.44) ** np.float_(-1.) * \
+                                                data_out['ang4487aer'][-1]
 
         # convert  the vars in varstoread to pandas time series
         # and delete the other ones
         for var in self.VARS_IN_DATASET:
             if var in varstoread:
-                d__data_out[var] = pd.Series(d__data_out[var], index = d_Time)
+                data_out[var] = pd.Series(data_out[var], index = dtime)
             else:
-                del d__data_out[var]
+                del data_out[var]
 
-        return (d__data_out)
+        return (data_out)
 
     ###################################################################################
 
@@ -256,7 +261,9 @@ Length: 223, dtype: float64}
         # Metadata key is float because the numpy array holding it is float
 
         met_data_key = 0.
-    
+        self.files = self.get_file_list()
+        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
+
         for _file in sorted(self.files):
             if self.verboseflag:
                 sys.stdout.write(_file+"\n")
@@ -268,7 +275,8 @@ Length: 223, dtype: float64}
             self.metadata[met_data_key]['longitude'] = stat_obs_data['longitude']
             self.metadata[met_data_key]['altitude'] = stat_obs_data['altitude']
             self.metadata[met_data_key]['PI'] = stat_obs_data['PI']
-    
+            self.metadata[met_data_key]['data_set_name'] = self.DATASET_NAME
+
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             self.metadata[met_data_key]['indexes'] = {}
@@ -309,8 +317,21 @@ Length: 223, dtype: float64}
 
         if self.verboseflag:
             print('searching for data files. This might take a while...')
-        files = glob.glob(os.path.join(ReadAeronetSunV2.DATASET_PATH,
-                                       ReadAeronetSunV2._FILEMASK))
+        files = glob.glob(os.path.join(self.DATASET_PATH,
+                                       self._FILEMASK))
         return files
 
+    ###################################################################################
+
+    def get_data_revision(self):
+        """method to read the revision string from the file Revision.txt in the main data directory"""
+
+        revision_file = os.path.join(self.DATASET_PATH, const.REVISION_FILE)
+        revision = 'unset'
+        if os.path.isfile(revision_file):
+            with open(revision_file, 'rt') as InFile:
+                revision = InFile.readline().strip()
+                InFile.close()
+
+            self.revision = revision
 ###################################################################################
