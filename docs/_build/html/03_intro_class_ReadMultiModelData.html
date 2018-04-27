@@ -267,11 +267,13 @@ FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
+Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
+Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
 </pre>
 <p>Print what is in there (similar to the previously introduced
@@ -280,7 +282,12 @@ nice string representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadMultiModelData</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+
+<span class="nc">Pyaerocom</span> <span class="n">ReadMultiModelData</span>
 <span class="o">----------------------------</span>
 <span class="n">Model</span> <span class="n">IDs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AATSR_SU_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
 
@@ -298,13 +305,13 @@ nice string representation)</p>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ModelData</span>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
 <span class="o">-----------------------</span>
@@ -318,13 +325,13 @@ nice string representation)</p>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ModelData</span>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 </pre></div>
 </div>
 <p>Print some information about the different data objects</p>
@@ -371,8 +378,11 @@ nice string representation)</p>
         <span class="n">dat_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
 
+<span class="nc">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+
+<span class="n">Cropping</span> <span class="n">along</span> <span class="n">time</span> <span class="n">axis</span> <span class="n">based</span> <span class="n">on</span> <span class="n">Timestamps</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">after</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">15</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">22</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
@@ -380,7 +390,7 @@ nice string representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/output_19_0.png" src="_images/output_19_0.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_19_0.png" src="_images/03_intro_class_ReadMultiModelData_19_0.png" />
 <div class="section" id="iterate-over-models-and-variables">
 <h2>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h2>
 <p>The following cell iterates over all imported variables and models and
@@ -390,10 +400,10 @@ plots the first time stamp of each result file.</p>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/output_21_0.png" src="_images/output_21_0.png" />
-<img alt="_images/output_21_1.png" src="_images/output_21_1.png" />
-<img alt="_images/output_21_2.png" src="_images/output_21_2.png" />
-<img alt="_images/output_21_3.png" src="_images/output_21_3.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_0.png" src="_images/03_intro_class_ReadMultiModelData_21_0.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_1.png" src="_images/03_intro_class_ReadMultiModelData_21_1.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_2.png" src="_images/03_intro_class_ReadMultiModelData_21_2.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_3.png" src="_images/03_intro_class_ReadMultiModelData_21_3.png" />
 </div>
 </div>
 

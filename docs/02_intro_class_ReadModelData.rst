@@ -95,6 +95,7 @@ string representation, as shown in the cell above).
     Invalid time dimension.
     Error message: AttributeError('Cube does not contain time dimension',)
     Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2007.nc. Attempting to correct.
+    Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
 
 
@@ -113,6 +114,7 @@ everything worked as expected.
 
 .. parsed-literal::
 
+    Stop time could not be accessed in ModelData class
     
     Pyaerocom ReadModelData
     -----------------------
@@ -126,7 +128,7 @@ everything worked as expected.
     -------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
+    Start / Stop: 2003-01-01T00:00:00.000000 - nan
 
 
 .. code:: ipython3
@@ -213,7 +215,7 @@ the city of Leipzig, Germany.
 
 
 
-.. image:: output_13_0.png
+.. image:: 02_intro_class_ReadModelData/02_intro_class_ReadModelData_13_0.png
 
 
 In the following section, the ``ReadMultiModelData`` class is

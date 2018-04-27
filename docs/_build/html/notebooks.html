@@ -535,7 +535,7 @@ oneliner what will be explained in the following tutorials:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 </pre></div>
 </div>
-<img alt="_images/output_15_1.png" src="_images/output_15_1.png" />
+<img alt="_images/00_get_started_15_1.png" src="_images/00_get_started_15_1.png" />
 </div>
 </div>
 <div class="section" id="aerocom-default-regions">
@@ -589,7 +589,10 @@ results over Europe.</p>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/output_5_0.png" src="_images/output_5_0.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+</pre></div>
+</div>
+<img alt="_images/01_intro_regions_5_1.png" src="_images/01_intro_regions_5_1.png" />
 </div>
 </div>
 <div class="section" id="reading-model-data-the-readmodeldata-class">
@@ -670,6 +673,7 @@ string representation, as shown in the cell above).</p>
 <span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
 <span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
 <span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2007.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 <span class="n">Applying</span> <span class="n">temporal</span> <span class="n">cropping</span> <span class="n">of</span> <span class="n">result</span> <span class="n">cube</span>
 </pre></div>
 </div>
@@ -682,7 +686,9 @@ everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+
+<span class="nc">Pyaerocom</span> <span class="n">ReadModelData</span>
 <span class="o">-----------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
@@ -694,7 +700,7 @@ everything worked as expected.</p>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2007</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -764,7 +770,7 @@ the city of Leipzig, Germany.</p>
 <span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/output_13_0.png" src="_images/output_13_0.png" />
+<img alt="_images/02_intro_class_ReadModelData_13_0.png" src="_images/02_intro_class_ReadModelData_13_0.png" />
 <p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class is
 introduced, which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and
 allows for importing data from multiple models.</p>
@@ -861,11 +867,13 @@ FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
+Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
+Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
 </pre>
 <p>Print what is in there (similar to the previously introduced
@@ -874,7 +882,12 @@ nice string representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadMultiModelData</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+
+<span class="nc">Pyaerocom</span> <span class="n">ReadMultiModelData</span>
 <span class="o">----------------------------</span>
 <span class="n">Model</span> <span class="n">IDs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AATSR_SU_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
 
@@ -892,13 +905,13 @@ nice string representation)</p>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ModelData</span>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
 <span class="o">-----------------------</span>
@@ -912,13 +925,13 @@ nice string representation)</p>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ModelData</span>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 </pre></div>
 </div>
 <p>Print some information about the different data objects</p>
@@ -965,8 +978,11 @@ nice string representation)</p>
         <span class="n">dat_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
 
+<span class="nc">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+
+<span class="n">Cropping</span> <span class="n">along</span> <span class="n">time</span> <span class="n">axis</span> <span class="n">based</span> <span class="n">on</span> <span class="n">Timestamps</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">after</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">15</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">22</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
@@ -974,7 +990,7 @@ nice string representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/output_19_0.png" src="_images/output_19_0.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_19_0.png" src="_images/03_intro_class_ReadMultiModelData_19_0.png" />
 <div class="section" id="iterate-over-models-and-variables">
 <h3>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h3>
 <p>The following cell iterates over all imported variables and models and
@@ -984,10 +1000,10 @@ plots the first time stamp of each result file.</p>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/output_21_0.png" src="_images/output_21_0.png" />
-<img alt="_images/output_21_1.png" src="_images/output_21_1.png" />
-<img alt="_images/output_21_2.png" src="_images/output_21_2.png" />
-<img alt="_images/output_21_3.png" src="_images/output_21_3.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_0.png" src="_images/03_intro_class_ReadMultiModelData_21_0.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_1.png" src="_images/03_intro_class_ReadMultiModelData_21_1.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_2.png" src="_images/03_intro_class_ReadMultiModelData_21_2.png" />
+<img alt="_images/03_intro_class_ReadMultiModelData_21_3.png" src="_images/03_intro_class_ReadMultiModelData_21_3.png" />
 </div>
 </div>
 <div class="section" id="introducing-the-modeldata-class">
@@ -1039,7 +1055,8 @@ code cell) was slitghtly adapted from the underlying <code class="docutils liter
 <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
      <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
           <span class="n">time</span>                                       <span class="n">x</span>              <span class="o">-</span>               <span class="o">-</span>
@@ -1106,7 +1123,7 @@ file (if the file is readable using the <code class="docutils literal notranslat
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550oa&#39;, &#39;od550so4&#39;, &#39;od550dust&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;]&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550oa&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550so4&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
@@ -1128,10 +1145,14 @@ method</p>
                          <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/output_14_0.png" src="_images/output_14_0.png" />
+<img alt="_images/04_intro_class_ModelData_14_0.png" src="_images/04_intro_class_ModelData_14_0.png" />
 <p>Why not load some of the other variables…</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_so4</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+<span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 </pre></div>
 </div>
 <p>… and plot them as well</p>
@@ -1142,8 +1163,8 @@ method</p>
                                                        <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">70</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="_images/output_18_0.png" src="_images/output_18_0.png" />
-<img alt="_images/output_18_1.png" src="_images/output_18_1.png" />
+<img alt="_images/04_intro_class_ModelData_18_0.png" src="_images/04_intro_class_ModelData_18_0.png" />
+<img alt="_images/04_intro_class_ModelData_18_1.png" src="_images/04_intro_class_ModelData_18_1.png" />
 </div>
 <div class="section" id="more-to-come">
 <h3>… more to come<a class="headerlink" href="#more-to-come" title="Permalink to this headline">¶</a></h3>
@@ -1191,6 +1212,9 @@ underlying datatype of <code class="docutils literal notranslate"><span class="p
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 </pre></div>
 </div>
 <p>Note that, if the longitudes are defined on a 0 -&gt; 360 degree grid, they
@@ -1318,14 +1342,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>113 ms ± 2.33 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>135 ms ± 8.88 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>111 ms ± 13.5 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>107 ms ± 1.87 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -1336,14 +1360,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 7.99 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 5.59 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>101 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>104 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -1362,7 +1386,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.64 ms ± 49.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.73 ms ± 106 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -1480,7 +1504,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>61.5 µs ± 3.62 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>69.1 µs ± 7.73 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -1498,7 +1522,7 @@ here</a>).</p>
 pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>69.6 µs ± 1.15 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>66.9 µs ± 1.68 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -1507,7 +1531,7 @@ pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.97 ms ± 176 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.98 ms ± 86.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -1521,14 +1545,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>88.5 µs ± 4.66 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>88.5 µs ± 3.16 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.14 ms ± 181 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.36 ms ± 221 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>

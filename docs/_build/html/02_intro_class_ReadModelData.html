@@ -254,6 +254,7 @@ string representation, as shown in the cell above).</p>
 <span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
 <span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
 <span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2007.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 <span class="n">Applying</span> <span class="n">temporal</span> <span class="n">cropping</span> <span class="n">of</span> <span class="n">result</span> <span class="n">cube</span>
 </pre></div>
 </div>
@@ -266,7 +267,9 @@ everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+
+<span class="nc">Pyaerocom</span> <span class="n">ReadModelData</span>
 <span class="o">-----------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
@@ -278,7 +281,7 @@ everything worked as expected.</p>
 <span class="o">-------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2007</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -348,7 +351,7 @@ the city of Leipzig, Germany.</p>
 <span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/output_13_0.png" src="_images/output_13_0.png" />
+<img alt="_images/02_intro_class_ReadModelData_13_0.png" src="_images/02_intro_class_ReadModelData_13_0.png" />
 <p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class is
 introduced, which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and
 allows for importing data from multiple models.</p>

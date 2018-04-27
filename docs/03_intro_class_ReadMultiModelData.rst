@@ -111,11 +111,13 @@ Read all variables for all models
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']\nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'\n '2004-01-11T00:00:00.000000']",)
     Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
+    Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
     FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']\nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'\n '2004-01-11T00:00:00.000000']",)
     Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
+    Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
 
 
@@ -130,6 +132,10 @@ nice string representation)
 
 .. parsed-literal::
 
+    Stop time could not be accessed in ModelData class
+    Stop time could not be accessed in ModelData class
+    Stop time could not be accessed in ModelData class
+    Stop time could not be accessed in ModelData class
     
     Pyaerocom ReadMultiModelData
     ----------------------------
@@ -149,13 +155,13 @@ nice string representation)
     -------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - nan
     
     Pyaerocom ModelData
     -------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - nan
     
     Pyaerocom ReadModelData
     -----------------------
@@ -169,13 +175,13 @@ nice string representation)
     -------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - nan
     
     Pyaerocom ModelData
     -------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - nan
 
 
 Print some information about the different data objects
@@ -232,9 +238,11 @@ Now arbitrarily crop the last data object.
 
 .. parsed-literal::
 
+    Stop time could not be accessed in ModelData class
     
-    Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / stop before crop: 2010-01-01T00:00:00.000000 - nan
     
+    Cropping along time axis based on Timestamps
     Start / stop after crop: 2010-03-15 00:00:00 - 2010-06-22 00:00:00
 
 
@@ -246,7 +254,7 @@ Plot a map of the first day.
 
 
 
-.. image:: output_19_0.png
+.. image:: 03_intro_class_ReadMultiModelData/03_intro_class_ReadMultiModelData_19_0.png
 
 
 Iterate over models and variables
@@ -263,17 +271,17 @@ plots the first time stamp of each result file.
 
 
 
-.. image:: output_21_0.png
+.. image:: 03_intro_class_ReadMultiModelData/03_intro_class_ReadMultiModelData_21_0.png
 
 
 
-.. image:: output_21_1.png
+.. image:: 03_intro_class_ReadMultiModelData/03_intro_class_ReadMultiModelData_21_1.png
 
 
 
-.. image:: output_21_2.png
+.. image:: 03_intro_class_ReadMultiModelData/03_intro_class_ReadMultiModelData_21_2.png
 
 
 
-.. image:: output_21_3.png
+.. image:: 03_intro_class_ReadMultiModelData/03_intro_class_ReadMultiModelData_21_3.png
 
