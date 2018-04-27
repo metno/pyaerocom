@@ -1,0 +1,8 @@
+Machine: pc4971
+Time to find all files for model: 0.022720 s
+Time to read all files t-interval: 1.188741 s
+Time to compute global mean t-series: 8.158663 s
+Time to compute Leipzig: 0.708842 s
+Total time: 10.078966 s
+Total time (without global mean): 1.920303 s
+
