@@ -1,20 +1,15 @@
-Machine: pc4971
-Time to find all files for model: 0.022720 s
-Time to read all files t-interval: 1.188741 s
-Time to compute global mean t-series: 8.158663 s
-Time to compute Leipzig: 0.708842 s
-Total time: 10.078966 s
-Total time (without global mean): 1.920303 s
+Script: read_tseries_leipzig_performance_test.py
+Folder: pyaerocom/dev_scripts
 
-Machine: pc4971
-Time to find all files for model: 0.029253 s
-Time to read all files t-interval: 1.083386 s
-Time to compute global mean t-series: 7.892527 s
-Time to compute Leipzig: 0.716952 s
-Total time: 9.722118 s
-Total time (without global mean): 1.829591 s
+What the script does
+--------------------
 
-Machine: pc4971
+Use class ReadModelData to import results from ECMWF CAMS reanalysis for the years 2003-2007 (5 years), variable od550aer in daily resolution. After reading the files, the global weighted mean time series is calculated as well as a time series over the city of Leipzig is retrieved using neirest neighbour interpolation.
+
+Results
+-------
+
+Machine: pc4971 (Jonas' machine)
 Time to find all files for model: 0.031969 s
 Time to read all files t-interval: 1.164280 s
 Time to compute global mean t-series: 9.379349 s
