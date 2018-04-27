@@ -25,3 +25,11 @@ Time to compute Leipzig: 2.042752 s
 Total time: 30.650435 s
 Total time (without global mean): 4.829385 s
 
+Machine: xvis-m4a
+Time to find all files for model: 0.011632 s
+Time to read all files t-interval: 5.963553 s
+Time to compute global mean t-series: 11.792782 s
+Time to compute Leipzig: 4.923666 s
+Total time: 22.691633 s
+Total time (without global mean): 10.898852 s
+
