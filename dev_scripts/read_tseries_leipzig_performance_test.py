@@ -11,7 +11,7 @@ from time import time
 import socket
 if __name__=="__main__":    
     
-    
+    print(pyaerocom.const)
     msgs = []
     with open("read_tseries_leipzig_performance_test.txt", "a") as f:
         
