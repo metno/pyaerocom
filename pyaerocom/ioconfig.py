@@ -57,10 +57,6 @@ class IOConfig(object):
         self.OBSNET_NONE = 'NONE'
         self.NOMODELNAME = 'OBSERVATIONS-ONLY'
 
-        # if this file exists no cache file is read
-        # used to ease debugging
-        self.DONOTCACHEFILE = os.path.join(obs_cache_dir, 'DONOTCACHE')
-
         # Name of the file containing the revision string of an obs data network
         self.REVISION_FILE = 'Revision.txt'
         
@@ -113,6 +109,14 @@ class IOConfig(object):
             self.OBSBASEDIR = obs_base_dir
         if self.check_dir(obs_cache_dir):
             self.OBSDATACACHEDIR = obs_cache_dir
+        else: 
+            from pyaerocom import __dir__
+            self.OBSDATACACHEDIR = os.path.join(__dir__, "_cache")
+        
+        # if this file exists no cache file is read
+        # used to ease debugging
+        self.DONOTCACHEFILE = os.path.join(obs_cache_dir, 'DONOTCACHE')
+        
         self.read_config(config_file)
         try:
             self.read_config(config_file)

@@ -207,9 +207,11 @@
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.check_validity">check_validity() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
+      <li><a href="api.html#pyaerocom.plot.config.ColorTheme.cmap_map">cmap_map (pyaerocom.plot.config.ColorTheme attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.plot.config.ColorTheme.cmap_map">cmap_map (pyaerocom.plot.config.ColorTheme attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.code_lat_lon_in_float">code_lat_lon_in_float() (pyaerocom.io.readobsdata.ReadObsData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.modeldata.ModelData.collapsed">collapsed() (pyaerocom.modeldata.ModelData method)</a>
 </li>
@@ -231,9 +233,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSDA2_0">DATASET_IDX_AERONETSDA2_0 (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
-</li>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.DATASET_IDX_AERONETSUN2_0">DATASET_IDX_AERONETSUN2_0 (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.decode_lat_lon_from_float">decode_lat_lon_from_float() (pyaerocom.io.readobsdata.ReadObsData method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -295,10 +295,10 @@
 </li>
       <li><a href="api.html#pyaerocom.helpers.get_constraint">get_constraint() (in module pyaerocom.helpers)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.get_info_from_file">get_info_from_file() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.helpers.get_lat_constraint">get_lat_constraint() (in module pyaerocom.helpers)</a>
 </li>
       <li><a href="api.html#pyaerocom.helpers.get_lon_constraint">get_lon_constraint() (in module pyaerocom.helpers)</a>
@@ -311,6 +311,10 @@
         <li><a href="api.html#pyaerocom.modeldata.ModelData.get_time_constraint">(pyaerocom.modeldata.ModelData method)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.GetDataDir">GetDataDir() (pyaerocom.io.readobsdata.ReadObsData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.GetDataRevision">GetDataRevision() (pyaerocom.io.readobsdata.ReadObsData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.modeldata.ModelData.grid">grid (pyaerocom.modeldata.ModelData attribute)</a>, <a href="api.html#pyaerocom.modeldata.ModelData.grid">[1]</a>
 </li>
   </ul></td>
@@ -359,8 +363,12 @@
 </li>
       <li><a href="api.html#pyaerocom.region.Region.lat_range_plot">lat_range_plot (pyaerocom.region.Region attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.modeldata.ModelData.latitude">latitude (pyaerocom.modeldata.ModelData attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.latitude">latitude (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.modeldata.ModelData.latitude">(pyaerocom.modeldata.ModelData attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api.html#pyaerocom.obsdata.ObsData.latitude">latitude() (pyaerocom.obsdata.ObsData method)</a>
 
       <ul>
@@ -381,8 +389,12 @@
 </li>
       <li><a href="api.html#pyaerocom.region.Region.lon_range_plot">lon_range_plot (pyaerocom.region.Region attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.modeldata.ModelData.longitude">longitude (pyaerocom.modeldata.ModelData attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.longitude">longitude (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.modeldata.ModelData.longitude">(pyaerocom.modeldata.ModelData attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api.html#pyaerocom.obsdata.ObsData.longitude">longitude() (pyaerocom.obsdata.ObsData method)</a>
 
       <ul>
@@ -493,14 +505,12 @@
 </li>
       <li><a href="api.html#pyaerocom.io.readmodeldata.ReadModelData.read_all_vars">read_all_vars() (pyaerocom.io.readmodeldata.ReadModelData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readmodeldata.ReadModelData.read_var">read_var() (pyaerocom.io.readmodeldata.ReadModelData method)</a>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.read_daily">read_daily() (pyaerocom.io.readobsdata.ReadObsData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.ReadCacheData">ReadCacheData() (pyaerocom.io.readobsdata.ReadObsData method)</a>
+      <li><a href="api.html#pyaerocom.io.readmodeldata.ReadModelData.read_var">read_var() (pyaerocom.io.readmodeldata.ReadModelData method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.ReadDaily">ReadDaily() (pyaerocom.io.readobsdata.ReadObsData method)</a>
-</li>
       <li><a href="api.html#pyaerocom.io.readmodeldata.ReadModelData">ReadModelData (class in pyaerocom.io.readmodeldata)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readmodeldata.ReadMultiModelData">ReadMultiModelData (class in pyaerocom.io.readmodeldata)</a>
@@ -517,10 +527,6 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.SaveCacheData">SaveCacheData() (pyaerocom.io.readobsdata.ReadObsData method)</a>
-</li>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.SDA_TEST_FILE">SDA_TEST_FILE (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
-</li>
       <li><a href="api.html#pyaerocom.io.readmodeldata.ReadModelData.search_all_files">search_all_files() (pyaerocom.io.readmodeldata.ReadModelData method)</a>
 
       <ul>
@@ -561,8 +567,6 @@
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.string_mask">string_mask() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.SUN_TEST_FILE">SUN_TEST_FILE (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
-</li>
       <li><a href="api.html#pyaerocom.modeldata.ModelData.suppl_info">suppl_info (pyaerocom.modeldata.ModelData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.SUPPORTED_DATASETS">SUPPORTED_DATASETS (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
@@ -575,8 +579,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_testsuite.html#pyaerocom.test.test_mathutils.test_exponent">test_exponent() (in module pyaerocom.test.test_mathutils)</a>
 </li>
-      <li><a href="api.html#pyaerocom.modeldata.ModelData.time">time (pyaerocom.modeldata.ModelData attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.time">time (pyaerocom.io.readobsdata.ReadObsData attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.modeldata.ModelData.time">(pyaerocom.modeldata.ModelData attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api.html#pyaerocom.obsdata.ProfileData.time_stamps">time_stamps (pyaerocom.obsdata.ProfileData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.modeldata.ModelData.time_stamps">time_stamps() (pyaerocom.modeldata.ModelData method)</a>
@@ -593,6 +601,8 @@
         <li><a href="api.html#pyaerocom.plot.config.ColorTheme.to_dict">(pyaerocom.plot.config.ColorTheme method)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.io.readobsdata.ReadObsData.to_timeseries">to_timeseries() (pyaerocom.io.readobsdata.ReadObsData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.ts_pos">ts_pos (pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
 </li>
   </ul></td>
