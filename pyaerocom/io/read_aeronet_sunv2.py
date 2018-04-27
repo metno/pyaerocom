@@ -65,7 +65,7 @@ class ReadAeronetSunV2:
 
     """
     _FILEMASK = '*.lev20'
-    __version__ = "0.04"
+    __version__ = "0.05"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH']
     # Flag if the dataset contains all years or not
@@ -82,7 +82,7 @@ class ReadAeronetSunV2:
     _COLNO = 11
     _ROWNO = 10000
     _CHUNKSIZE = 1000
-    VARS_IN_DATASET = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
+    PROVIDES_VARIABLES = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
 
     def __init__(self, index_pointer = 0, verboseflag = False):
         self.verboseflag = verboseflag
@@ -197,7 +197,7 @@ Length: 223, dtype: float64}
             #
             #DataArr = {}
             dtime = []
-            for Var in self.VARS_IN_DATASET:
+            for Var in self.PROVIDES_VARIABLES:
                 data_out[Var] = []
 
             for line in InFile:
@@ -235,7 +235,7 @@ Length: 223, dtype: float64}
 
         # convert  the vars in varstoread to pandas time series
         # and delete the other ones
-        for var in self.VARS_IN_DATASET:
+        for var in self.PROVIDES_VARIABLES:
             if var in varstoread:
                 data_out[var] = pd.Series(data_out[var], index = dtime)
             else:

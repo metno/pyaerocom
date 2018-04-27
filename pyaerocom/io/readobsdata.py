@@ -39,6 +39,7 @@ import glob
 # import pdb
 import numpy as np
 import sys
+import pandas as pd
 
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
@@ -71,7 +72,8 @@ class ReadObsData():
     # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
-    def __init__(self, data_set_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME], vars_to_read=['od550aer'],
+    def __init__(self, data_set_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME],
+                 vars_to_read=ReadAeronetSunV2.PROVIDES_VARIABLES,
                  verboseflag=False):
         if isinstance(data_set_to_read, list):
             self.data_sets_to_read = data_set_to_read
@@ -226,7 +228,7 @@ class ReadObsData():
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
                     if self.verboseflag:
-                        sys.stdout.write('cache file '+cache_file+' read\n')
+                        sys.stdout.write('cache file ' + cache_file + ' read\n')
                     # TODO we might need to adjust self.index_pointer in case we really work with more than one data set!
                     in_handle.close()
                 else:
@@ -287,60 +289,24 @@ class ReadObsData():
         >>> obj.read_daily()
         >>> pdseries = obj.to_timeseries()
         """
-        import pandas as pd
 
-        out_data = {}
+        out_data = []
         if station_names is None:
             for index, val in self.metadata.items():
-                out_data[val['station name']] = {}
-                out_data[val['station name']]['latitude'] = val['latitude']
-                out_data[val['station name']]['longitude'] = val['longitude']
-                out_data[val['station name']]['altitude'] = val['altitude']
-                out_data[val['station name']]['PI'] = val['PI']
-                for var in val['indexes']:
-                    if var in self.vars_to_read:
-                        out_data[val['station name']][var] = pd.Series(self.data[val['indexes'][var], self._DATAINDEX],
-                                                                       index=pd.to_datetime(
-                                                                           self.data[
-                                                                               val['indexes'][var], self._TIMEINDEX],
-                                                                           unit='s'))
+                out_data.append(self._to_timeseries_helper(val))
         elif isinstance(station_names, str):
             # user asked for a single station name
+            # return a single dictionary in this case
             for index, val in self.metadata.items():
                 if station_names == val['station name']:
-                    out_data[val['station name']] = {}
-                    out_data[val['station name']]['latitude'] = val['latitude']
-                    out_data[val['station name']]['longitude'] = val['longitude']
-                    out_data[val['station name']]['altitude'] = val['altitude']
-                    out_data[val['station name']]['PI'] = val['PI']
-                    for var in val['indexes']:
-                        if var in self.vars_to_read:
-                            out_data[val['station name']][var] = pd.Series(
-                                self.data[val['indexes'][var], self._DATAINDEX],
-                                index=pd.to_datetime(
-                                    self.data[
-                                        val['indexes'][var], self._TIMEINDEX],
-                                    unit='s'))
-                    break
+                    # we might change this to return a list at some point
+                    return self._to_timeseries_helper(val)
         elif isinstance(station_names, list):
             # user asked for a list of station names
             for index, val in self.metadata.items():
-                #station_name = val['station name']
-                print(val['station name'])
+                # print(val['station name'])
                 if val['station name'] in station_names:
-                    out_data[val['station name']] = {}
-                    out_data[val['station name']]['latitude'] = val['latitude']
-                    out_data[val['station name']]['longitude'] = val['longitude']
-                    out_data[val['station name']]['altitude'] = val['altitude']
-                    out_data[val['station name']]['PI'] = val['PI']
-                    for var in val['indexes']:
-                        if var in self.vars_to_read:
-                            out_data[val['station name']][var] = pd.Series(
-                                self.data[val['indexes'][var], self._DATAINDEX],
-                                index=pd.to_datetime(
-                                    self.data[
-                                        val['indexes'][var], self._TIMEINDEX],
-                                    unit='s'))
+                    out_data.append(self._to_timeseries_helper(val))
 
         return out_data
 
@@ -370,3 +336,23 @@ class ReadObsData():
             return const.OBSCONFIG[data_set_name]['PATH']
         except:
             raise AttributeError("data set name " + data_set_name + "not found ")
+
+    ###################################################################################
+
+    def _to_timeseries_helper(self, val):
+        """small helper routine for self.to_timeseries to not to repeat the same code fragment three times"""
+
+        temp_dict = {}
+        temp_dict['station name'] = val['station name']
+        temp_dict['latitude'] = val['latitude']
+        temp_dict['longitude'] = val['longitude']
+        temp_dict['altitude'] = val['altitude']
+        temp_dict['PI'] = val['PI']
+        for var in val['indexes']:
+            if var in self.vars_to_read:
+                temp_dict[var] = pd.Series(self.data[val['indexes'][var], self._DATAINDEX],
+                                           index=pd.to_datetime(
+                                               self.data[
+                                                   val['indexes'][var], self._TIMEINDEX],
+                                               unit='s'))
+        return temp_dict
