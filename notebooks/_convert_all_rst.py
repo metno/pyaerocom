@@ -10,11 +10,16 @@ import os
 
 
 if __name__=="__main__":
-    paths = [p for p in os.listdir(".") if p.endswith("ipynb")]
+    paths = sorted([p for p in os.listdir(".") if p.endswith("ipynb")])
     
     converter = nbconvert.RSTExporter()
     
-    nb = nbformat.reads(paths[0])
+    nb = nbformat.read(paths[0], 4)
+    
+    (body, resources) = converter.from_notebook_node(nb)
+    
+    
+    
     
     
     

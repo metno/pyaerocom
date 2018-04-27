@@ -41,7 +41,7 @@ if __name__=="__main__":
     
     args = parser.parse_args()
     msgs = []
-    msgs.append("Machine: {} (repitions: {}".format(socket.gethostname(),
+    msgs.append("Machine: {} (repitions: {})".format(socket.gethostname(),
                                                     args.n))
     dts = np.zeros((args.n, 4))*np.nan
     for k in range(args.n):
