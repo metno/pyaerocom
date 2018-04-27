@@ -33,3 +33,11 @@ Time to compute Leipzig: 4.923666 s
 Total time: 22.691633 s
 Total time (without global mean): 10.898852 s
 
+Machine: pc4971 (repitions: 10)
+Avg. time to find all files for model: 0.031919 s
+Avg. time to read all files t-interval: 1.165652 s
+Avg. time to compute global mean t-series: 7.895610 s
+Avg. time to compute Leipzig: 0.725414 s
+Total avg. time: 9.818596 s
+Total avg. time (without global mean): 1.922985 s
+
