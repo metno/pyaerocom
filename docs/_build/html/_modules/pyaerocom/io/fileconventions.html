@@ -166,7 +166,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">splitext</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">TS_TYPES</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">ConfigParser</span> <span class="k">import</span> <span class="n">ConfigParser</span>
 <span class="k">except</span><span class="p">:</span> 
@@ -250,7 +250,7 @@
     
 <div class="viewcode-block" id="FileConventionRead.check_validity"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.fileconventions.FileConventionRead.check_validity">[docs]</a>    <span class="k">def</span> <span class="nf">check_validity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
         <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">TS_TYPES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Invalid ts_type </span><span class="si">%s</span><span class="s2"> in filename </span><span class="si">%s</span><span class="s2">&quot;</span>
                           <span class="o">%</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">],</span> <span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">)))</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">3000</span><span class="p">:</span>

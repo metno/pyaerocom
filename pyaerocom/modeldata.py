@@ -4,7 +4,6 @@
 Pyaerocom ModelData class
 """
 from os.path import exists
-import sys
 from collections import OrderedDict as od
 from iris import Constraint, load, load_cube
 from iris.cube import Cube, CubeList
@@ -14,7 +13,7 @@ from pandas import Timestamp
 from warnings import warn
 from numpy import nan
 
-from pyaerocom.glob import SUPPORTED_DATA_TYPES_MODEL, ON_LOAD
+from pyaerocom import const
 from pyaerocom.exceptions import DataExtractionError
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
@@ -86,8 +85,9 @@ class ModelData(object):
         
     """
     _grid = None
-    _ON_LOAD = ON_LOAD
-    def __init__(self, input=None, var_name=None, verbose=False, **suppl_info):
+    _ON_LOAD = const.ON_LOAD
+    def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
+                 **suppl_info):
         self.verbose = verbose
         self.suppl_info = od(from_files = [],
                              model_id = "Unknown",
@@ -141,8 +141,8 @@ class ModelData(object):
     
     @grid.setter
     def grid(self, value):
-        if not type(value) in SUPPORTED_DATA_TYPES_MODEL:
-            raise TypeError("Grid data format %s is not supported" 
+        if not isinstance(value, Cube):
+            raise TypeError("Grid data format %s is not supported, need Cube" 
                             %type(value))
         self._grid = value
     

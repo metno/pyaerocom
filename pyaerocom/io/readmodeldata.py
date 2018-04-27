@@ -32,7 +32,7 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
-import sys
+
 from glob import glob
 from re import match
 from os.path import join, isdir, basename
@@ -46,8 +46,7 @@ from iris.cube import CubeList
 from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 
-from pyaerocom import config as const
-from pyaerocom.glob import TS_TYPES, VERBOSE, MIN_YEAR, MAX_YEAR, ON_LOAD
+from pyaerocom import const
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import check_time_coord, correct_time_coord
@@ -125,7 +124,8 @@ class ReadModelData(object):
     _model_dir = ""
     _USE_SUBDIR_RENAMED = True
     def __init__(self, model_id="", start_time=None, stop_time=None, 
-                 file_convention="aerocom3", init=True, verbose=VERBOSE):
+                 file_convention="aerocom3", init=True, 
+                 verbose=const.VERBOSE):
         # model ID
         if not isinstance(model_id, str):
             if isinstance(model_id, list):
@@ -369,22 +369,23 @@ class ReadModelData(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly")
         """
-        if not ts_type in TS_TYPES:
-            raise ValueError("Invalid input for ts_type, got: %s, "
-                             "allowed values: %s" %(ts_type, TS_TYPES))
+        if not ts_type in const.TS_TYPES:
+            raise ValueError("Invalid input for ts_type, got: {}, "
+                             "allowed values: {}".format(ts_type, 
+                                                    const.TS_TYPES))
         if start_time:
             self.start_time = start_time
         if stop_time:
             self.stop_time = stop_time
         
         if var_name not in self.vars:
-            raise ValueError("Error: variable %s not found in files contained "
-                             "in model directory: %s" 
-                             %(var_name, self.model_dir))
+            raise ValueError("Error: variable {} not found in files contained "
+                             "in model directory: {}".format(var_name, 
+                                                  self.model_dir))
         
         match_files = []
         for year in self.years_to_load:
-            if MIN_YEAR <= year <= MAX_YEAR:
+            if const.MIN_YEAR <= year <= const.MAX_YEAR:
                 # search for filename in self.files using ts_type as default ts size
                 for _file in self.files:
                     #new file naming convention (aerocom3)
@@ -394,12 +395,14 @@ class ReadModelData(object):
                     if match(match_mask, _file):
                         match_files.append(_file)
                         if self.verbose:
-                            print("FOUND MATCH: %s" %basename(_file))
+                            print("FOUND MATCH: {}".format(basename(_file)))
 
             else:
                 if self.verbose:
-                    print("Ignoring file %s. File out of allowed year bounds "
-                          "(%d - %d)" %(basename(_file), MIN_YEAR, MAX_YEAR))
+                    print("Ignoring file {}. File out of allowed year bounds "
+                          "({:d} - {:d})" %(basename(_file), 
+                                            const.MIN_YEAR, 
+                                            const.MAX_YEAR))
             
         if len(match_files) == 0:
             raise IOError("No files could be found for variable %s, and %s "
@@ -417,7 +420,7 @@ class ReadModelData(object):
             try:
                 finfo = self.file_convention.get_info_from_file(_file)
                 cube = load_cube(_file, var_constraint)
-                if ON_LOAD["CHECK_TIME_FILENAME"]:
+                if const.ON_LOAD["CHECK_TIME_FILENAME"]:
                     
                     if not check_time_coord(cube, ts_type=finfo["ts_type"], 
                                             year=finfo["year"],
@@ -571,7 +574,7 @@ class ReadMultiModelData(object):
     _start_time = None
     _stop_time = None
     def __init__(self, model_ids, start_time=None, stop_time=None, 
-                 verbose=VERBOSE):
+                 verbose=const.VERBOSE):
         
         if isinstance(model_ids, str):
             model_ids = [model_ids]
@@ -743,9 +746,10 @@ class ReadMultiModelData(object):
             >>> read.read(["od550aer", "od550so4", "od550bc"])
             
         """
-        if not ts_type in TS_TYPES:
+        if not ts_type in const.TS_TYPES:
             raise ValueError("Invalid input for ts_type, got: {}, "
-                             "allowed values: {}".format(ts_type, TS_TYPES))
+                             "allowed values: {}".format(ts_type, 
+                                                         const.TS_TYPES))
         if start_time:
             self.start_time = start_time
         if stop_time:

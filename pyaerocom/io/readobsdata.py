@@ -43,8 +43,7 @@ import sys
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 #from pyaerocom import config as const
-from pyaerocom.ioconfig import IOConfig
-const = IOConfig()
+from pyaerocom import const
 
 class ReadObsData():
     """pyaerocom observation data reading class

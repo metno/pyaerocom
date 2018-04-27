@@ -9,7 +9,7 @@ Created on Thu Apr 12 14:45:43 2018
 import pytest
 import numpy.testing as npt
 from datetime import datetime
-from pyaerocom.glob import TEST_RTOL
+from pyaerocom.test.settings import TEST_RTOL
 from pyaerocom import ModelData
 
 @pytest.fixture(scope='module')

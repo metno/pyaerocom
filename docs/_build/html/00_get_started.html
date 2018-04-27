@@ -219,14 +219,23 @@ pyaerocom from within a Python3 console.</p>
 <h2>Setting global environment variables<a class="headerlink" href="#setting-global-environment-variables" title="Permalink to this headline">¶</a></h2>
 <p>The import of data from the AEROCOM database in Pyaerocom is controlled
 via an instance of the <code class="docutils literal notranslate"><span class="pre">IOConfig</span></code> class.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
+<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+   <span class="p">[</span><span class="n">hourly</span>
+    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
 <span class="n">NOMODELNAME</span><span class="p">:</span> <span class="n">OBSERVATIONS</span><span class="o">-</span><span class="n">ONLY</span>
+<span class="n">REVISION_FILE</span><span class="p">:</span> <span class="n">Revision</span><span class="o">.</span><span class="n">txt</span>
 <span class="n">AERONET_SUN_V2L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
 <span class="n">AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSun_2</span><span class="o">.</span><span class="mi">0</span><span class="n">_NRT</span>
 <span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily</span>
@@ -257,11 +266,12 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
 <span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
 </pre></div>
 </div>
 <p>You can check if the relevant base directories <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and
 <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> are valid.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.READY)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.READY)
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? True
@@ -280,7 +290,7 @@ in your Python console by calling
 <li>Change the settings directly within the instance of the <code class="docutils literal notranslate"><span class="pre">IOConfig</span></code>
 class, as follows:</li>
 </ol>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">const</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">MODELBASEDIR</span><span class="o">=</span><span class="s2">&quot;path/that/does/not/exist&quot;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">OBSBASEDIR</span><span class="o">=</span><span class="s2">&quot;path/that/does/not/exist&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">cfg</span>.READY)
@@ -290,14 +300,23 @@ class, as follows:</li>
 </pre></div>
 </div>
 <p>See what’s currently in there.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
+<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+   <span class="p">[</span><span class="n">hourly</span>
+    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
 <span class="n">NOMODELNAME</span><span class="p">:</span> <span class="n">OBSERVATIONS</span><span class="o">-</span><span class="n">ONLY</span>
+<span class="n">REVISION_FILE</span><span class="p">:</span> <span class="n">Revision</span><span class="o">.</span><span class="n">txt</span>
 <span class="n">AERONET_SUN_V2L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
 <span class="n">AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSun_2</span><span class="o">.</span><span class="mi">0</span><span class="n">_NRT</span>
 <span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily</span>
@@ -328,6 +347,7 @@ class, as follows:</li>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
 <span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
 </pre></div>
 </div>
 <p>As you can see, <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> contain the invalid
@@ -337,14 +357,23 @@ the method <code class="docutils literal notranslate"><span class="pre">load_con
 <code class="docutils literal notranslate"><span class="pre">reload()</span></code> which does the same. Now reload of the config_file and
 print.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
+<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+   <span class="p">[</span><span class="n">hourly</span>
+    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
 <span class="n">NOMODELNAME</span><span class="p">:</span> <span class="n">OBSERVATIONS</span><span class="o">-</span><span class="n">ONLY</span>
+<span class="n">REVISION_FILE</span><span class="p">:</span> <span class="n">Revision</span><span class="o">.</span><span class="n">txt</span>
 <span class="n">AERONET_SUN_V2L15_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev1</span><span class="o">.</span><span class="mf">5.</span><span class="n">daily</span>
 <span class="n">AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetSun_2</span><span class="o">.</span><span class="mi">0</span><span class="n">_NRT</span>
 <span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span> <span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily</span>
@@ -375,6 +404,7 @@ print.</p>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
 <span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">reload</span></code> (and <code class="docutils literal notranslate"><span class="pre">load_config</span></code>) method actually checks if the
@@ -382,20 +412,29 @@ currently defined base directories exist, and if not, it uses the ones
 that are defined in the paths.ini file. This is the why the above
 configuration is the intial one. If you choose valid paths, this should
 work.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">const</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">MODELBASEDIR</span><span class="o">=</span><span class="s2">&quot;.&quot;</span>
 <span class="n">cfg</span><span class="o">.</span><span class="n">OBSBASEDIR</span><span class="o">=</span><span class="s2">&quot;.&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All paths valid? </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">cfg</span>.READY)
 <span class="n">cfg</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.config.short_str())
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">cfg</span>.short_str())
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? True
 Current config: Pyaerocom IOConfig
+VERBOSE: True
+MIN_YEAR: 0
+MAX_YEAR: 3000
+ON_LOAD (dict)
+TS_TYPES (list)
+   [hourly
+    3hourly    daily    monthly]
+
 GCOSPERCENTCRIT: 0.1
 GCOSABSCRIT: 0.04
 OBSNET_NONE: NONE
 NOMODELNAME: OBSERVATIONS-ONLY
+REVISION_FILE: Revision.txt
 AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
 AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
 AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
@@ -426,6 +465,7 @@ MODELBASEDIR: .
 OBSBASEDIR: .
 OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
 _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
 </pre></div>
 </div>
 <p>This is it! Now with everything being set up correctly, we can start
@@ -446,7 +486,10 @@ oneliner what will be explained in the following tutorials:</p>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/output_15_0.png" src="_images/output_15_0.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
+</pre></div>
+</div>
+<img alt="_images/output_15_1.png" src="_images/output_15_1.png" />
 </div>
 </div>
 

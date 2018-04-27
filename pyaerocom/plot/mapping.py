@@ -10,7 +10,8 @@ from matplotlib.colors import BoundaryNorm, LogNorm
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from numpy import meshgrid, linspace, ceil
-from pyaerocom.glob import VERBOSE
+
+from pyaerocom import const
 from pyaerocom.plot.config import COLOR_THEME, ColorTheme
 from pyaerocom.plot.helpers import (calc_figsize, custom_mpl, 
                                     calc_pseudolog_cmaplevels)
@@ -24,7 +25,7 @@ custom_mpl()
 def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None, 
              add_zero=False, c_under=None, c_over=None, log_scale=True, 
              discrete_norm=True, figh=8, fix_aspect=None, 
-             color_theme=COLOR_THEME, fig=None, verbose=VERBOSE):
+             color_theme=COLOR_THEME, fig=None, verbose=const.VERBOSE):
     """Make a plot of grid data onto a map
     
     Parameters

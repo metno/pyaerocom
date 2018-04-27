@@ -22,22 +22,5 @@
 
 """Global constants for pyaerocom library"""
 
-from iris.cube import Cube
 
-VERBOSE = True
-
-MIN_YEAR=0
-MAX_YEAR=3000
-
-SUPPORTED_DATA_TYPES_MODEL = [Cube]
-# If True, pre-existing time bounds in data files are removed on 
-# import
-ON_LOAD = dict(DEL_TIME_BOUNDS = True,
-               SHIFT_LONS = True,
-               CHECK_TIME_FILENAME = True)
-
-TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
-
-#relative tolerance for test session
-TEST_RTOL = 1e-7
 

@@ -5,7 +5,7 @@ Low level classes and methods for io
 """
 from collections import OrderedDict as od
 from os.path import join, exists, basename, splitext
-from pyaerocom.glob import TS_TYPES
+from pyaerocom import const
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -89,7 +89,7 @@ class FileConventionRead(object):
     
     def check_validity(self, file):
         info = self.get_info_from_file(file)
-        if not info['ts_type'] in TS_TYPES:
+        if not info['ts_type'] in const.TS_TYPES:
             raise IOError("Invalid ts_type %s in filename %s"
                           %(info['ts_type'], basename(file)))
         elif not 0 <= info["year"] <= 3000:

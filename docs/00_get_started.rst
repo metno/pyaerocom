@@ -61,16 +61,25 @@ via an instance of the ``IOConfig`` class.
 
 .. code:: ipython3
 
-    print("Current config: %s" %pyaerocom.config.short_str())
+    print("Current config: %s" %pyaerocom.const.short_str())
 
 
 .. parsed-literal::
 
     Current config: Pyaerocom IOConfig
+    VERBOSE: True
+    MIN_YEAR: 0
+    MAX_YEAR: 3000
+    ON_LOAD (dict)
+    TS_TYPES (list)
+       [hourly
+        3hourly    daily    monthly]
+    
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
     NOMODELNAME: OBSERVATIONS-ONLY
+    REVISION_FILE: Revision.txt
     AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
     AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
@@ -101,6 +110,7 @@ via an instance of the ``IOConfig`` class.
     OBSBASEDIR: /lustre/storeA/project/aerocom/
     OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
 
 
 You can check if the relevant base directories ``MODELBASEDIR`` and
@@ -108,7 +118,7 @@ You can check if the relevant base directories ``MODELBASEDIR`` and
 
 .. code:: ipython3
 
-    print("All paths valid? %s" %pyaerocom.config.READY)
+    print("All paths valid? %s" %pyaerocom.const.READY)
 
 
 .. parsed-literal::
@@ -131,7 +141,7 @@ options to do this:
 
 .. code:: ipython3
 
-    cfg = pyaerocom.config
+    cfg = pyaerocom.const
     cfg.MODELBASEDIR="path/that/does/not/exist"
     cfg.OBSBASEDIR="path/that/does/not/exist"
     print("All paths valid? %s" %cfg.READY)
@@ -146,16 +156,25 @@ See what's currently in there.
 
 .. code:: ipython3
 
-    print("Current config: %s" %pyaerocom.config.short_str())
+    print("Current config: %s" %pyaerocom.const.short_str())
 
 
 .. parsed-literal::
 
     Current config: Pyaerocom IOConfig
+    VERBOSE: True
+    MIN_YEAR: 0
+    MAX_YEAR: 3000
+    ON_LOAD (dict)
+    TS_TYPES (list)
+       [hourly
+        3hourly    daily    monthly]
+    
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
     NOMODELNAME: OBSERVATIONS-ONLY
+    REVISION_FILE: Revision.txt
     AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
     AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
@@ -186,6 +205,7 @@ See what's currently in there.
     OBSBASEDIR: path/that/does/not/exist
     OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
 
 
 As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
@@ -198,16 +218,25 @@ print.
 .. code:: ipython3
 
     cfg.reload()
-    print("Current config: %s" %pyaerocom.config.short_str())
+    print("Current config: %s" %pyaerocom.const.short_str())
 
 
 .. parsed-literal::
 
     Current config: Pyaerocom IOConfig
+    VERBOSE: True
+    MIN_YEAR: 0
+    MAX_YEAR: 3000
+    ON_LOAD (dict)
+    TS_TYPES (list)
+       [hourly
+        3hourly    daily    monthly]
+    
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
     NOMODELNAME: OBSERVATIONS-ONLY
+    REVISION_FILE: Revision.txt
     AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
     AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
@@ -238,6 +267,7 @@ print.
     OBSBASEDIR: /lustre/storeA/project/aerocom/
     OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
 
 
 The ``reload`` (and ``load_config``) method actually checks if the
@@ -248,22 +278,31 @@ work.
 
 .. code:: ipython3
 
-    cfg = pyaerocom.config
+    cfg = pyaerocom.const
     cfg.MODELBASEDIR="."
     cfg.OBSBASEDIR="."
     print("All paths valid? %s" %cfg.READY)
     cfg.reload()
-    print("Current config: %s" %pyaerocom.config.short_str())
+    print("Current config: %s" %cfg.short_str())
 
 
 .. parsed-literal::
 
     All paths valid? True
     Current config: Pyaerocom IOConfig
+    VERBOSE: True
+    MIN_YEAR: 0
+    MAX_YEAR: 3000
+    ON_LOAD (dict)
+    TS_TYPES (list)
+       [hourly
+        3hourly    daily    monthly]
+    
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
     NOMODELNAME: OBSERVATIONS-ONLY
+    REVISION_FILE: Revision.txt
     AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
     AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
@@ -294,6 +333,7 @@ work.
     OBSBASEDIR: .
     OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
 
 
 This is it! Now with everything being set up correctly, we can start
@@ -319,6 +359,11 @@ oneliner what will be explained in the following tutorials:
     fig = pyaerocom.ModelData()._init_testdata_default().crop(region="SAMERICA").quickplot_map()
 
 
+.. parsed-literal::
 
-.. image:: output_15_0.png
+    Rolling longitudes to -180 -> 180 definition
+
+
+
+.. image:: output_15_1.png
 

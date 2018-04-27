@@ -3,9 +3,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
-import sys
-from pyaerocom.glob import VERBOSE
-from pyaerocom import config as paths
+from pyaerocom import const
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom import __dir__
 from os.path import join, isdir
@@ -27,7 +25,7 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
-def check_time_coord(cube, ts_type, year, verbose=VERBOSE):
+def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
     """Method that checks the time coordinate of an iris Cube
     
     This method checks if the time dimension of a cube is accessible and 
@@ -138,7 +136,7 @@ def search_model_ids(update_inifile=True, check_nc_file=True):
         can be detected in the corresponding renamed sub directory
     """
     model_ids = []
-    for mdir in paths.MODELDIRS:
+    for mdir in const.MODELDIRS:
         print("\n%s\n" %mdir)
         sub = listdir(mdir)
         for item in sub:

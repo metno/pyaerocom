@@ -45,11 +45,8 @@ import numpy as np
 
 import pandas as pd
 import re
-#from pyaerocom import config as const
-from pyaerocom.ioconfig import IOConfig
-const = IOConfig()
 
-
+from pyaerocom import const
 
 class ReadAeronetSunV2:
     """class to read Aeronet direct sun version 2 Level 2.0 data

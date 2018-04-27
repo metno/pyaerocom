@@ -164,9 +164,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">I/O helper methods of the pyaerocom package</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.glob</span> <span class="k">import</span> <span class="n">VERBOSE</span>
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">paths</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="fm">__dir__</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span>
@@ -188,7 +186,7 @@
               <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">,</span>
               <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">}</span>
 
-<div class="viewcode-block" id="check_time_coord"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.check_time_coord">[docs]</a><span class="k">def</span> <span class="nf">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">VERBOSE</span><span class="p">):</span>
+<div class="viewcode-block" id="check_time_coord"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.check_time_coord">[docs]</a><span class="k">def</span> <span class="nf">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Method that checks the time coordinate of an iris Cube</span>
 <span class="sd">    </span>
 <span class="sd">    This method checks if the time dimension of a cube is accessible and </span>
@@ -299,7 +297,7 @@
 <span class="sd">        can be detected in the corresponding renamed sub directory</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model_ids</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">mdir</span> <span class="ow">in</span> <span class="n">paths</span><span class="o">.</span><span class="n">MODELDIRS</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">mdir</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">mdir</span><span class="p">)</span>
         <span class="n">sub</span> <span class="o">=</span> <span class="n">listdir</span><span class="p">(</span><span class="n">mdir</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sub</span><span class="p">:</span>
