@@ -37,8 +37,7 @@ def cli():
     Pyaerocom is a Python package for the Aerocom project 
     """
     user = getpass.getuser()
-    from pyaerocom.ioconfig import IOConfig
-    const = IOConfig()
+    from pyaerocom import const
     import pyaerocom.io as pio
     SupportedObsNetworks = ''
 
