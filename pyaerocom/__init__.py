@@ -10,7 +10,7 @@ def _init_config():
     
     if gethostname() == 'aerocom-users-ng':
         print("Initiating global PATHS for Aerocom users server")
-        bdir = "/metno/aerocom-users-database"
+        bdir = "/metno/aerocom-users-database/"
         const = Config(model_base_dir=bdir, 
                        obs_base_dir=bdir)        
     else:
