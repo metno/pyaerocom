@@ -15,7 +15,7 @@ the ECMWF CAMS reanalysis model (*ECMWF\_CAMS\_REAN*) for the years
 put into an instance of the ``ModelData`` class.
 
 We start with creating a reading object, that will take care of finding
-the model directory of us (based on the model ID) and all valid NetCDF
+the model directory for us (based on the model ID) and all valid NetCDF
 files on initialisation. The ``print`` statetment prints the string
 representation of the ``ReadModelData`` object, which provides useful
 information about what is in there.
@@ -25,7 +25,7 @@ information about what is in there.
     import pyaerocom
     read = pyaerocom.io.ReadModelData(model_id="ECMWF_CAMS_REAN",
                                       start_time="1-1-2003",
-                                      stop_time="31.12.2007", 
+                                      stop_time="31-12-2007", 
                                       verbose=True)
     print(read)
 

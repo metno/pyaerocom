@@ -189,14 +189,14 @@ the ECMWF CAMS reanalysis model (<em>ECMWF_CAMS_REAN</em>) for the years
 2003-2007 in daily resolution. The files will be temporally merged and
 put into an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class.</p>
 <p>We start with creating a reading object, that will take care of finding
-the model directory of us (based on the model ID) and all valid NetCDF
+the model directory for us (based on the model ID) and all valid NetCDF
 files on initialisation. The <code class="docutils literal notranslate"><span class="pre">print</span></code> statetment prints the string
 representation of the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> object, which provides useful
 information about what is in there.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
 <span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadModelData</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
                                   <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
-                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31.12.2007&quot;</span><span class="p">,</span>
+                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
                                   <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
