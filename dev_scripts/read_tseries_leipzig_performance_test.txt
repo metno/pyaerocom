@@ -22,3 +22,11 @@ Time to compute Leipzig: 0.704428 s
 Total time: 11.280027 s
 Total time (without global mean): 1.900677 s
 
+Machine: aerocom-users-ng
+Time to find all files for model: 0.054394 s
+Time to read all files t-interval: 2.732239 s
+Time to compute global mean t-series: 25.821050 s
+Time to compute Leipzig: 2.042752 s
+Total time: 30.650435 s
+Total time (without global mean): 4.829385 s
+
