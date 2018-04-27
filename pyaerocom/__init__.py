@@ -4,24 +4,23 @@ def _init_supplemental():
     return (get_distribution('pyaerocom').version, abspath(dirname(__file__)))
 
 
-def _init_config():
+def _init_config(package_dir):
     from .config import Config
     from socket import gethostname
-    
+    from os.path import join, exists
     if gethostname() == 'aerocom-users-ng':
         print("Initiating global PATHS for Aerocom users server")
-        bdir = "/metno/aerocom-users-database/"
-        const = Config(model_base_dir=bdir, 
-                       obs_base_dir=bdir)        
+        cfg = join(package_dir, 'data', 'paths_user_server.ini')
     else:
-        const = Config()
-        
-    return const
+        cfg = join(package_dir, 'data', 'paths.ini')
+    return Config(config_file=cfg)
 
 __version__, __dir__ = _init_supplemental()
 
-const = _init_config()
-
+const = _init_config(__dir__)
+if not const.READY:
+    print("WARNING: Failed to initiate data directories")
+    
 from . import mathutils
 from . import multiproc
 
