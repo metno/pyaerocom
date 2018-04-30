@@ -89,15 +89,14 @@ class Config(object):
     """Class containing relevant paths for read and write routines"""
     
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
-                 config_file=None, 
-                 obs_cache_dir='/lustre/storeA/users/jang/cache/'):
+                 out_base_dir=None, config_file=None, 
+                 obs_cache_dir=None):
 
         self.VERBOSE = True
         
         self.MIN_YEAR=0
         self.MAX_YEAR=3000
         
-    
         # If True, pre-existing time bounds in data files are removed on 
         # import
         self.ON_LOAD = OnLoad()
@@ -150,6 +149,7 @@ class Config(object):
         self.MODELBASEDIR = None
         self.OBSBASEDIR = None
         self.OBSDATACACHEDIR = None
+        self.OUT_BASEDIR = None
         
         if isinstance(config_file, str) and os.path.exists(config_file):
             self._config_ini = config_file
@@ -161,15 +161,22 @@ class Config(object):
             self.MODELBASEDIR = model_base_dir
         if self.check_dir(obs_base_dir):
             self.OBSBASEDIR = obs_base_dir
+        if self.check_dir(out_base_dir):
+            self.OUT_BASEDIR = out_base_dir
+        else:
+            self.OUT_BASEDIR = os.path.join(os.path.expanduser("~"), "pyaerocom")
+            if not os.path.exists(self.OUT_BASEDIR):
+                os.mkdir(self.OUT_BASEDIR)
         if self.check_dir(obs_cache_dir):
             self.OBSDATACACHEDIR = obs_cache_dir
         else: 
-            from pyaerocom import __dir__
-            self.OBSDATACACHEDIR = os.path.join(__dir__, "_cache")
+            self.OBSDATACACHEDIR = os.path.join(self.OUT_BASEDIR, "_cache")
+            if not os.path.exists(self.OBSDATACACHEDIR):
+                os.mkdir(self.OBSDATACACHEDIR)
         
         # if this file exists no cache file is read
         # used to ease debugging
-        self.DONOTCACHEFILE = os.path.join(obs_cache_dir, 'DONOTCACHE')
+        self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 'DONOTCACHE')
         
         self.read_config(config_file)
         try:

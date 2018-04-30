@@ -211,4 +211,4 @@ if __name__ == "__main__":
                                       stop_time="2019")
     
     data = read.read_var("od550aer")
-    [print(f) for f in read._match_files]
+    
