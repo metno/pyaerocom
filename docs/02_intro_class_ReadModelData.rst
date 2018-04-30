@@ -15,7 +15,7 @@ the ECMWF CAMS reanalysis model (*ECMWF\_CAMS\_REAN*) for the years
 put into an instance of the ``ModelData`` class.
 
 We start with creating a reading object, that will take care of finding
-the model directory of us (based on the model ID) and all valid NetCDF
+the model directory for us (based on the model ID) and all valid NetCDF
 files on initialisation. The ``print`` statetment prints the string
 representation of the ``ReadModelData`` object, which provides useful
 information about what is in there.
@@ -25,7 +25,7 @@ information about what is in there.
     import pyaerocom
     read = pyaerocom.io.ReadModelData(model_id="ECMWF_CAMS_REAN",
                                       start_time="1-1-2003",
-                                      stop_time="31.12.2007", 
+                                      stop_time="31-12-2007", 
                                       verbose=True)
     print(read)
 
@@ -95,6 +95,7 @@ string representation, as shown in the cell above).
     Invalid time dimension.
     Error message: AttributeError('Cube does not contain time dimension',)
     Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2007.nc. Attempting to correct.
+    Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
 
 
@@ -113,6 +114,7 @@ everything worked as expected.
 
 .. parsed-literal::
 
+    Stop time could not be accessed in ModelData class
     
     Pyaerocom ReadModelData
     -----------------------
@@ -126,7 +128,7 @@ everything worked as expected.
     -------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
+    Start / Stop: 2003-01-01T00:00:00.000000 - nan
 
 
 .. code:: ipython3
@@ -213,7 +215,7 @@ the city of Leipzig, Germany.
 
 
 
-.. image:: output_13_0.png
+.. image:: 02_intro_class_ReadModelData/02_intro_class_ReadModelData_13_0.png
 
 
 In the following section, the ``ReadMultiModelData`` class is

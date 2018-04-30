@@ -365,5 +365,5 @@ oneliner what will be explained in the following tutorials:
 
 
 
-.. image:: output_15_1.png
+.. image:: 00_get_started/00_get_started_15_1.png
 

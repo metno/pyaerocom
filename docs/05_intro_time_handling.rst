@@ -49,6 +49,12 @@ underlying datatype of ``ModelData`` is ``iris.cube.Cube``.
     data_ecmwf = pyaerocom.ModelData(fpath_ecmwf, var_name="od550aer", model_id="ECMWF_OSUITE")
     data_aatsr = pyaerocom.ModelData(fpath_aatsr, var_name="od550aer", model_id="AATSR")
 
+
+.. parsed-literal::
+
+    Rolling longitudes to -180 -> 180 definition
+
+
 Note that, if the longitudes are defined on a 0 -> 360 degree grid, they
 are automatically converted to -180 -> 180 (the case of the ECMWF data).
 
@@ -214,7 +220,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    113 ms ± 2.33 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    135 ms ± 8.88 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -225,7 +231,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    111 ms ± 13.5 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    107 ms ± 1.87 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -241,7 +247,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    121 ms ± 7.99 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    121 ms ± 5.59 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -252,7 +258,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    101 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    104 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -277,7 +283,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.64 ms ± 49.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.73 ms ± 106 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -407,7 +413,7 @@ Now let's see how this one performs.
 
 .. parsed-literal::
 
-    61.5 µs ± 3.62 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    69.1 µs ± 7.73 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How Pyaerocom does it
@@ -430,7 +436,7 @@ here <aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64>`
 
 .. parsed-literal::
 
-    69.6 µs ± 1.15 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    66.9 µs ± 1.68 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -444,7 +450,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    1.97 ms ± 176 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.98 ms ± 86.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -464,7 +470,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    88.5 µs ± 4.66 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    88.5 µs ± 3.16 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 .. code:: ipython3
@@ -475,5 +481,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.14 ms ± 181 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.36 ms ± 221 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

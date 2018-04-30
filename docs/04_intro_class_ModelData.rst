@@ -63,6 +63,7 @@ code cell) was slitghtly adapted from the underlying ``Cube`` object.
 
 .. parsed-literal::
 
+    Rolling longitudes to -180 -> 180 definition
     pyaerocom.ModelData: ECMWF_OSUITE
     Grid data: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
          Dimension coordinates:
@@ -152,7 +153,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550oa', 'od550so4', 'od550dust', 'od550aer', 'od550bc']",)
+    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550oa', 'od550aer', 'od550bc', 'od550so4', 'od550dust']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -183,7 +184,7 @@ method
 
 
 
-.. image:: output_14_0.png
+.. image:: 04_intro_class_ModelData/04_intro_class_ModelData_14_0.png
 
 
 Why not load some of the other variables...
@@ -192,6 +193,13 @@ Why not load some of the other variables...
 
     data_bc = ModelData(fpath, var_name="od550bc", model_id="ECMWF_OSUITE")
     data_so4 = ModelData(fpath, var_name="od550so4", model_id="ECMWF_OSUITE")
+
+
+.. parsed-literal::
+
+    Rolling longitudes to -180 -> 180 definition
+    Rolling longitudes to -180 -> 180 definition
+
 
 ... and plot them as well
 
@@ -205,11 +213,11 @@ Why not load some of the other variables...
 
 
 
-.. image:: output_18_0.png
+.. image:: 04_intro_class_ModelData/04_intro_class_ModelData_18_0.png
 
 
 
-.. image:: output_18_1.png
+.. image:: 04_intro_class_ModelData/04_intro_class_ModelData_18_1.png
 
 
 ... more to come
