@@ -205,5 +205,10 @@ def plot_map_aerocom(data, variable, region, fig=None, **kwargs):
                         "region, got: %s" %type(variable))    
     
 if __name__ == "__main__":
+    import pyaerocom
     
-    pass
+    read = pyaerocom.io.ReadModelData("ECMWF_OSUITE", start_time="2010",
+                                      stop_time="2019")
+    
+    data = read.read_var("od550aer")
+    [print(f) for f in read._match_files]

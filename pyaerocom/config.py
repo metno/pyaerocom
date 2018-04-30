@@ -43,6 +43,48 @@ try:
 except: 
     from configparser import ConfigParser
 
+class OnLoad(object):
+    """Settings class for default IO settings"""
+    def __init__(self, **kwargs):
+        #delete time bounds if they exist in netCDF files
+        self.DEL_TIME_BOUNDS = True
+        #shift longitudes to -180 -> 180 repr (if applicable)
+        self.SHIFT_LONS = True 
+        #check and correct time axis (if applicable)        
+        self.CHECK_TIME_FILENAME = True
+         # check and update metadata dictionary on Cube load since 
+         # iris concatenate of Cubes only works if metadata is equal
+        self.EQUALISE_METADATA = True
+    
+    def __setitem__(self, key, value):
+        """Set item
+        
+        OnLoad["<key>"] = value <=> OnLoad.<key> = value 
+        <=> OnLoad.__setitem__(<key>, value)
+        
+        Raises
+        ------
+        IOError 
+            if key is not a valid setting
+        """
+        if not key in self.__dict__.keys():
+            raise IOError("Could not update IO setting: Invalid key")
+        self.__dict__[key] = value
+        
+    def __getitem__(self, key):
+        """Get item using curly brackets
+        
+        OnLoad["<key>"] => value
+        
+        Returns
+        -------
+        
+        """
+        if not key in self.__dict__.keys():
+            raise IOError("Invalid attribute")
+        return self.__dict__[key]
+        
+        
 class Config(object):
     """Class containing relevant paths for read and write routines"""
     
@@ -58,9 +100,7 @@ class Config(object):
     
         # If True, pre-existing time bounds in data files are removed on 
         # import
-        self.ON_LOAD = dict(DEL_TIME_BOUNDS = True,
-                       SHIFT_LONS = True,
-                       CHECK_TIME_FILENAME = True)
+        self.ON_LOAD = OnLoad()
         
         self.TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
         
