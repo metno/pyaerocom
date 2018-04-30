@@ -491,10 +491,10 @@ class ReadModelData(object):
             if not all([x.metadata == meta_init for x in cubes]):
                 if self.verbose:
                     print("Cubes for variable {} have different meta data "
-                          "settings. These will be unified using the metadata"
+                          "settings. These will be unified using the metadata "
                           "dictionary of the first cube (otherwise the method "
-                          "concatenate of the iris package won't work): {}".format(
-                          var_name, meta_init))
+                          "concatenate of the iris package won't work)".format(
+                          var_name))
                 for cube in cubes:
                     cube.metadata =meta_init
             
@@ -864,7 +864,7 @@ class ReadMultiModelData(object):
 if __name__=="__main__":
     read = ReadModelData(model_id="ECMWF_CAMS_REAN",
                                   start_time="1-1-2003",
-                                  stop_time="31.12.2007", 
+                                  stop_time="31-12-2007", 
                                   verbose=True)
     data = read.read_var(var_name="od550aer", ts_type="daily")
 # =============================================================================

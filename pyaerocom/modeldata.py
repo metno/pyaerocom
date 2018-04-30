@@ -4,6 +4,7 @@
 Pyaerocom ModelData class
 """
 from os.path import exists
+from copy import deepcopy
 from collections import OrderedDict as od
 from iris import Constraint, load, load_cube
 from iris.cube import Cube, CubeList
@@ -89,9 +90,10 @@ class ModelData(object):
     def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
                  **suppl_info):
         self.verbose = verbose
-        self.suppl_info = od(from_files = [],
-                             model_id = "Unknown",
-                             ts_type  = "Unknown")
+        self.suppl_info = od(from_files     = [],
+                             model_id       = "Unknown",
+                             ts_type        = "Unknown",
+                             region         = None)
         #attribute used to store area weights (if applicable, see method
         #area_weights)
         self._area_weights = None
@@ -100,7 +102,7 @@ class ModelData(object):
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
-           
+       
     @property
     def longitude(self):
         """Longitudes of data"""
@@ -152,6 +154,21 @@ class ModelData(object):
         if not self.is_cube:
             raise NotImplementedError("Attribute var_name is not available...")
         return self.grid.var_name
+    
+    @property
+    def plot_settings(self):
+        """:class:`Variable` instance that contains plot settings
+        
+        The settings can be specified in the variables.ini file based on the
+        unique var_name, see e.g. `here <http://aerocom.met.no/pyaerocom/
+        config_files.html#variables>`__
+        
+        If no default settings can be found for this variable, all parameters
+        will be initiated with ``None``, in which case the Aerocom plot method
+        uses
+        """
+        from pyaerocom import Variable
+        return Variable(self.var_name)
             
     @property 
     def model_id(self):
@@ -336,15 +353,19 @@ class ModelData(object):
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
+        suppl = deepcopy(self.suppl_info)
         if region is not None:
             if isinstance(region, str):
                 try:
                     region = Region(region)
                 except Exception as e:
-                    warn("Failed to access longitude / latitude range using "
-                         "region ID %s. Error msg: %s" %(region, repr(e)))
+                    if self.verbose:
+                        print("Failed to access longitude / latitude range "
+                              "using region ID {}. Error msg: {}".format(region, 
+                                               repr(e)))
             if not isinstance(region, Region):
                 raise ValueError("Invalid input for region")
+            suppl["region"] = region
             lon_range, lat_range = region.lon_range, region.lat_range
         if lon_range is not None and lat_range is not None:
             data = self.grid.intersection(longitude=lon_range, 
@@ -358,7 +379,7 @@ class ModelData(object):
         if not data:
             raise DataExtractionError("Failed to apply spatial cropping...")
         if time_range is None:
-            return ModelData(data, **self.suppl_info)
+            return ModelData(data, **suppl)
         else:
             if all(isinstance(x, str) for x in time_range):
                 time_range = (Timestamp(time_range[0]),
@@ -374,7 +395,7 @@ class ModelData(object):
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
-        return ModelData(data, **self.suppl_info)
+        return ModelData(data, **suppl)
         
     def area_weighted_mean(self):
         """Get area weighted mean"""

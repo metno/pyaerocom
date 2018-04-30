@@ -5,17 +5,15 @@ This module contains functionality related to regions in pyaerocom
 """
 from os.path import join, exists
 from ast import literal_eval
-from collections import OrderedDict as od
-from warnings import warn
 from configparser import ConfigParser
 from pyaerocom import __dir__
 
 class Variable(object):
-    """Interface that specifies a region
+    """Interface that specifies default settings for a variable
     
-    See `regions.ini <https://github.com/metno/pyaerocom/blob/master/
-    pyaerocom/data/regions.ini>`__ file for an overview of currently available 
-    default regions.
+    See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
+    pyaerocom/data/variables.ini>`__ file for an overview of currently available 
+    default variables.
     
     Parameters
     ----------
@@ -41,7 +39,7 @@ class Variable(object):
     >>> print(v)
     pyaeorocom Variable
     Name: od550aer
-    Unit: ''
+    Unit: None
     Value range: 0 - 1.0
     Levels colorbar: [0.0, 0.01, ..., 0.9, 1.0]
     Colorbar ticks: [0.0, 0.02, ..., 0.7, 0.9]
@@ -58,9 +56,11 @@ class Variable(object):
     def __init__(self, var_name="od550aer", **kwargs):
         self.var_name = var_name
         
-        self.unit = ''
+        self.unit = None
         self.map_vmin = None
         self.map_vmax = None
+        self.map_c_over = None 
+        self.map_c_under = None
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
         
@@ -106,13 +106,15 @@ class Variable(object):
         for key, val in conf_reader[var_name].items():
             if key in self.__dict__:
                 if "," in val:
-                    
                     val = list(literal_eval(val))# [float(x) for x in val.split(",")]
                 else:
                     try:
                         val = int(val)
                     except:
-                        pass
+                        try:
+                            val = float(val)
+                        except:
+                            pass
                 self.__dict__[key] = val
         return True
     
@@ -139,7 +141,7 @@ class Variable(object):
    
 if __name__=="__main__":
 
-    r = Variable("od550aer")
-    print(r)
+    v = Variable("od550aer")
+    print(v)
     import doctest
     doctest.testmod()

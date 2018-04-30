@@ -163,13 +163,19 @@ class Config(object):
             self.OBSBASEDIR = obs_base_dir
         if self.check_dir(out_base_dir):
             self.OUT_BASEDIR = out_base_dir
-        else:
+        if self.check_dir(obs_cache_dir):
+            self.OBSDATACACHEDIR = obs_cache_dir
+         
+        try:
+            self.read_config(config_file)
+        except Exception as e:
+            print("Failed to read config file. Error: %s" %repr(e))
+        
+        if not self.check_dir(self.OUT_BASEDIR):
             self.OUT_BASEDIR = os.path.join(os.path.expanduser("~"), "pyaerocom")
             if not os.path.exists(self.OUT_BASEDIR):
                 os.mkdir(self.OUT_BASEDIR)
-        if self.check_dir(obs_cache_dir):
-            self.OBSDATACACHEDIR = obs_cache_dir
-        else: 
+        if not self.check_dir(self.OBSDATACACHEDIR):
             self.OBSDATACACHEDIR = os.path.join(self.OUT_BASEDIR, "_cache")
             if not os.path.exists(self.OBSDATACACHEDIR):
                 os.mkdir(self.OBSDATACACHEDIR)
@@ -177,12 +183,9 @@ class Config(object):
         # if this file exists no cache file is read
         # used to ease debugging
         self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 'DONOTCACHE')
-        
-        self.read_config(config_file)
-        try:
-            self.read_config(config_file)
-        except Exception as e:
-            print("Failed to read config file. Error: %s" %repr(e))
+        self.PLOT_DIR = os.path.join(self.OUT_BASEDIR, "plots")
+        if not self.check_dir(self.PLOT_DIR):
+            os.mkdir(self.PLOT_DIR)
         self.READY
         
     @property
