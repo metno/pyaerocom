@@ -22,7 +22,7 @@ _COLOR_THEMES = dict(light = dict(name="light",
                                  cmap_map="viridis", 
                                  color_coastline ="#e6e6e6"))
 
-MAP_AXES_ASPECT = 2.0
+MAP_AXES_ASPECT = 1.5
 
 class MapPlotSettings(object):
     """Class specifying predefined plot settings for a species and region

@@ -43,24 +43,63 @@ try:
 except: 
     from configparser import ConfigParser
 
+class OnLoad(object):
+    """Settings class for default IO settings"""
+    def __init__(self, **kwargs):
+        #delete time bounds if they exist in netCDF files
+        self.DEL_TIME_BOUNDS = True
+        #shift longitudes to -180 -> 180 repr (if applicable)
+        self.SHIFT_LONS = True 
+        #check and correct time axis (if applicable)        
+        self.CHECK_TIME_FILENAME = True
+         # check and update metadata dictionary on Cube load since 
+         # iris concatenate of Cubes only works if metadata is equal
+        self.EQUALISE_METADATA = True
+    
+    def __setitem__(self, key, value):
+        """Set item
+        
+        OnLoad["<key>"] = value <=> OnLoad.<key> = value 
+        <=> OnLoad.__setitem__(<key>, value)
+        
+        Raises
+        ------
+        IOError 
+            if key is not a valid setting
+        """
+        if not key in self.__dict__.keys():
+            raise IOError("Could not update IO setting: Invalid key")
+        self.__dict__[key] = value
+        
+    def __getitem__(self, key):
+        """Get item using curly brackets
+        
+        OnLoad["<key>"] => value
+        
+        Returns
+        -------
+        
+        """
+        if not key in self.__dict__.keys():
+            raise IOError("Invalid attribute")
+        return self.__dict__[key]
+        
+        
 class Config(object):
     """Class containing relevant paths for read and write routines"""
     
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
-                 config_file=None, 
-                 obs_cache_dir='/lustre/storeA/users/jang/cache/'):
+                 out_base_dir=None, config_file=None, 
+                 obs_cache_dir=None):
 
         self.VERBOSE = True
         
         self.MIN_YEAR=0
         self.MAX_YEAR=3000
         
-    
         # If True, pre-existing time bounds in data files are removed on 
         # import
-        self.ON_LOAD = dict(DEL_TIME_BOUNDS = True,
-                       SHIFT_LONS = True,
-                       CHECK_TIME_FILENAME = True)
+        self.ON_LOAD = OnLoad()
         
         self.TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
         
@@ -113,6 +152,7 @@ class Config(object):
         self.MODELBASEDIR = None
         self.OBSBASEDIR = None
         self.OBSDATACACHEDIR = None
+        self.OUT_BASEDIR = None
         
         if isinstance(config_file, str) and os.path.exists(config_file):
             self._config_ini = config_file
@@ -124,21 +164,31 @@ class Config(object):
             self.MODELBASEDIR = model_base_dir
         if self.check_dir(obs_base_dir):
             self.OBSBASEDIR = obs_base_dir
+        if self.check_dir(out_base_dir):
+            self.OUT_BASEDIR = out_base_dir
         if self.check_dir(obs_cache_dir):
             self.OBSDATACACHEDIR = obs_cache_dir
-        else: 
-            from pyaerocom import __dir__
-            self.OBSDATACACHEDIR = os.path.join(__dir__, "_cache")
-        
-        # if this file exists no cache file is read
-        # used to ease debugging
-        self.DONOTCACHEFILE = os.path.join(obs_cache_dir, 'DONOTCACHE')
-        
-        self.read_config(config_file)
+         
         try:
             self.read_config(config_file)
         except Exception as e:
             print("Failed to read config file. Error: %s" %repr(e))
+        
+        if not self.check_dir(self.OUT_BASEDIR):
+            self.OUT_BASEDIR = os.path.join(os.path.expanduser("~"), "pyaerocom")
+            if not os.path.exists(self.OUT_BASEDIR):
+                os.mkdir(self.OUT_BASEDIR)
+        if not self.check_dir(self.OBSDATACACHEDIR):
+            self.OBSDATACACHEDIR = os.path.join(self.OUT_BASEDIR, "_cache")
+            if not os.path.exists(self.OBSDATACACHEDIR):
+                os.mkdir(self.OBSDATACACHEDIR)
+        
+        # if this file exists no cache file is read
+        # used to ease debugging
+        self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 'DONOTCACHE')
+        self.PLOT_DIR = os.path.join(self.OUT_BASEDIR, "plots")
+        if not self.check_dir(self.PLOT_DIR):
+            os.mkdir(self.PLOT_DIR)
         self.READY
         
     @property

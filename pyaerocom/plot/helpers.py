@@ -6,6 +6,39 @@ Helper methods for plotting sub-package
 from pyaerocom.mathutils import exponent
 import numpy as np
 
+def custom_mpl(mpl_rcparams=None, default_large=True, **kwargs):
+    """Custom matplotlib settings"""
+    if mpl_rcparams is None:
+        from matplotlib import rcParams as mpl_rcparams
+    small = 10
+    medium = 12
+    big = 14
+    huge = 18
+    if default_large:
+        default = {'font.size'          :   huge, 
+                   'axes.titlesize'     :   huge,
+                   'axes.labelsize'     :   huge, 
+                   'xtick.labelsize'    :   big, 
+                   'ytick.labelsize'    :   big, 
+                   'legend.fontsize'    :   big, 
+                   'figure.titlesize'   :   huge}
+    else:
+        default = {'font.size'          :   small, 
+                   'axes.titlesize'     :   big,
+                   'axes.labelsize'     :   medium, 
+                   'xtick.labelsize'    :   medium, 
+                   'ytick.labelsize'    :   medium, 
+                   'legend.fontsize'    :   small, 
+                   'figure.titlesize'   :   big}
+    
+    for k, v in default.items():
+        try:
+            mpl_rcparams[k] = kwargs[k]
+        except:
+            mpl_rcparams[k] = v
+    return mpl_rcparams
+
+
 def calc_figsize(lon_range, lat_range, figh=8, add_cbar=True):
     """Calculate figure size based on data
     
@@ -29,34 +62,12 @@ def calc_figsize(lon_range, lat_range, figh=8, add_cbar=True):
         2-element tuple containing figure width and height
     """
     wfac = (lon_range[1] - lon_range[0]) / (lat_range[1] - lat_range[0])
+    figw = int(wfac*figh)
     if add_cbar:
-        wfac += .05
-    figw = int(figh * wfac)
+        figw += 2
+    
     return (figw, figh)
     
-def custom_mpl(mpl_rcparams=None, **kwargs):
-    """Custom matplotlib settings"""
-    if mpl_rcparams is None:
-        from matplotlib import rcParams as mpl_rcparams
-    small = 10
-    medium = 12
-    big = 14
-    
-    default = {'font.size'          :   small, 
-               'axes.titlesize'     :   big,
-               'axes.labelsize'     :   medium, 
-               'xtick.labelsize'    :   medium, 
-               'ytick.labelsize'    :   medium, 
-               'legend.fontsize'    :   small, 
-               'figure.titlesize'   :   big}
-    
-    for k, v in default.items():
-        try:
-            mpl_rcparams[k] = kwargs[k]
-        except:
-            mpl_rcparams[k] = v
-    return mpl_rcparams
-
 def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     """Initiate pseudo-log discrete colormap levels
     

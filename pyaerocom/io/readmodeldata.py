@@ -45,6 +45,7 @@ from iris import Constraint, load_cube
 from iris.cube import CubeList
 from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
+from iris._concatenate import concatenate
 
 from pyaerocom import const
 from pyaerocom.exceptions import IllegalArgumentError
@@ -161,6 +162,7 @@ class ReadModelData(object):
         # ReadModelData, method: `get_model_files`
         self.files = []
         
+        self._match_files = None
         self.vars = []
         self.years = []
         
@@ -354,6 +356,28 @@ class ReadModelData(object):
                  ts_type='daily'):
         """Read model data for a specific variable
         
+        This method searches all valid files for a given variable and for a 
+        provided temporal resolution (e.g. *daily, monthly*), optionally
+        within a certain time window, that may be specified on class 
+        instantiation or using the corresponding input parameters provided in 
+        this method.
+        
+        The individual NetCDF files for a given temporal period are loaded as
+        instances of the :class:`iris.Cube` object and appended to an instance
+        of the :class:`iris.cube.CubeList` object. The latter is then used to 
+        concatenate the individual cubes in time into a single instance of the
+        :class:`pyaerocom.ModelData` class. In order to ensure that this
+        works, several things need to be ensured, which are listed in the 
+        following and which may be controlled within the global settings for 
+        NetCDF import using the attribute :attr:`ON_LOAD` (instance of 
+        :class:`OnLoad`) in the default instance of the 
+        :class:`pyaerocom.config.Config` object accessible via 
+        ``pyaerocom.const``.
+        
+        Required settings::
+            
+            1. 
+        
         Parameters
         ----------
         var_name : str
@@ -368,6 +392,11 @@ class ReadModelData(object):
         ts_type : str
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly")
+            
+        Returns
+        -------
+        ModelData
+            t
         """
         if not ts_type in const.TS_TYPES:
             raise ValueError("Invalid input for ts_type, got: {}, "
@@ -403,12 +432,13 @@ class ReadModelData(object):
                           "({:d} - {:d})" %(basename(_file), 
                                             const.MIN_YEAR, 
                                             const.MAX_YEAR))
-            
+           
         if len(match_files) == 0:
             raise IOError("No files could be found for variable %s, and %s "
                           "data in specified time interval\n%s-%s"
                           %(self.model_id, ts_type, self.start_time,
                             self.stop_time))
+        self._match_files = match_files
         # Define Iris var_constraint -> ensures that only the current 
         # variable is extracted from the netcdf file 
         var_constraint = Constraint(cube_func=lambda c: c.var_name==var_name)
@@ -441,6 +471,7 @@ class ReadModelData(object):
                                          "array in netCDF files is deactivated."
                                          " This may cause problems in case "
                                          "the time dimension is not CF conform.\n")
+                
                 cubes.append(cube)
                 loaded_files.append(_file)
             except Exception as e:
@@ -455,18 +486,35 @@ class ReadModelData(object):
                                                    ts_type, 
                                                    self.start_time,
                                                    self.stop_time))
+        if const.ON_LOAD.EQUALISE_METADATA:
+            meta_init = cubes[0].metadata
+            if not all([x.metadata == meta_init for x in cubes]):
+                if self.verbose:
+                    print("Cubes for variable {} have different meta data "
+                          "settings. These will be unified using the metadata "
+                          "dictionary of the first cube (otherwise the method "
+                          "concatenate of the iris package won't work)".format(
+                          var_name))
+                for cube in cubes:
+                    cube.metadata =meta_init
             
         #now put the CubeList together and form one cube
         #1st equalise the cubes (remove non common attributes)
         equalise_attributes(cubes)
         #unify time units
         unify_time_units(cubes)
-
+        self._cubes = cubes
         #now concatenate the cube list to one cube
-        cube_concat = cubes.concatenate()[0]
+        cubes_concat = concatenate(cubes, error_on_mismatch=True)
+        if len(cubes_concat) > 1:
+            long_names = [x.long_name for x in cubes_concat]
+            raise IOError("Could not concatenate all individual Cubes for in "
+                          "var_name {} in time: likely due to multiple "
+                          "long_name attributes in source files: {}".format(
+                                  var_name, long_names))
         
         #create instance of pyaerocom.ModelData
-        data = ModelData(input=cube_concat, from_files=loaded_files,
+        data = ModelData(input=cubes_concat[0], from_files=loaded_files,
                          model_id=self.model_id, ts_type=ts_type)
         # crop cube in time (if applicable)
         if self.start_time and self.stop_time:
@@ -816,7 +864,7 @@ class ReadMultiModelData(object):
 if __name__=="__main__":
     read = ReadModelData(model_id="ECMWF_CAMS_REAN",
                                   start_time="1-1-2003",
-                                  stop_time="31.12.2007", 
+                                  stop_time="31-12-2007", 
                                   verbose=True)
     data = read.read_var(var_name="od550aer", ts_type="daily")
 # =============================================================================
