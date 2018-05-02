@@ -460,7 +460,7 @@ if __name__ == "__main__":
     
     data = read.read_var("od550aer")
     fig0 = data.quickplot_map(fix_aspect=False)
-    fig1 = data.quickplot_map(fix_aspect=True)
+    fig1 = data.quickplot_map(fix_aspect=True, color_theme="light")
     
     figs = []
     for region in pyaerocom.region.get_all_default_regions():
