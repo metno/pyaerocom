@@ -26,7 +26,7 @@ main program with a command line interface for pyaerocom
 """
 
 import argparse
-# import sys
+import sys
 # import os
 import getpass
 import socket
@@ -39,7 +39,7 @@ def cli():
     user = getpass.getuser()
     from pyaerocom import const
     import pyaerocom.io as pio
-    SupportedObsNetworks = ''
+    supported_obs_networks = ",".join(pio.ReadObsData.SUPPORTED_DATASETS)
 
     # command line interface using argparse
     Options = {}
@@ -49,20 +49,20 @@ def cli():
                         help="model names to use; can be a comma separated "
                               "list; use " + const.NOMODELNAME +
                              " for observations only",nargs="+")
+    parser.add_argument("-v", "--verbose", help="switch on verbosity", action='store_true')
     parser.add_argument("--variable", help="list of variables; comma seperated.")
     parser.add_argument("--modelyear",
                         help="model years to run; use 9999 for climatology, leave out for all years; comma separated list; Use this to limit the plotting of the OBSERVATION-ONLY model to certain years.")
     parser.add_argument("--obsyear",
                         help="observation years to run; use 9999 for climatology, leave out for same as model year")
-    parser.add_argument("--nosend", help="switch off webserver upload", action='store_true')
-    parser.add_argument("-v", "--verbose", help="switch on verbosity", action='store_false')
+    parser.add_argument("--nosend", help="switch off webserver upload", action='store_false')
     parser.add_argument("--debug", help="switch on debug mode: Do NOT start idl, just print what would be done",
                         action='store_true')
     parser.add_argument("--numcpu",
                         help="Number of Processes to start. Default is using half of the number of logical cores available.",
                         type=int)
     parser.add_argument("--obsnetwork",
-                        help=const.NOMODELNAME + " mode: run all variables for a certain obs network; model mode: Run a variable with a non standard obs network. Supported are " + SupportedObsNetworks)
+                        help=const.NOMODELNAME + " mode: run all variables for a certain obs network; model mode: Run a variable with a non standard obs network. Supported are " + supported_obs_networks)
     parser.add_argument("--forecast", help="forecast mode for CAMS; daily maps only, nothing else", action='store_true')
     parser.add_argument("--htapfilters",
                         help="also run the htap filters; model has to have 1x1 degree resolution at the moment",
@@ -129,33 +129,52 @@ def cli():
         Options['PLOTDAILYTIMESERIES'] = args.plotdailyts
 
     hostname = socket.gethostname()
+    model_obj = []
+    model_data = []
     for Model in args.model:
         print(Model)
         if Model != const.NOMODELNAME:
             # start model read
-            continue
+            start_time = "1-1-" + Options['ModelYear']
+            end_time = "31-12-" + Options['ModelYear']
+            model_obj.append(pio.ReadModelData(model_id = Model,
+                                     start_time = start_time,
+                                     stop_time = end_time,
+                                     verbose=Options['VERBOSE']))
 
-        # start Obs reading
-        ObsData = pio.ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-                                  verboseflag = Options['VERBOSE'])
-        ObsData.read_daily()
+            print(model_obj[0])
+            model_data.append(model_obj[0].read_var(var_name="od550aer", ts_type="daily"))
+            print(model_data[0])
+        else:
+            # observations only
+            # 1st check if the obs network string is right
+            if Options['ObsNetworkName'][0] in pio.ReadObsData.SUPPORTED_DATASETS:
+                # start Obs reading
+                ObsData = pio.ReadObsData(data_set_to_read = const.EARLINET_NAME,
+                                          vars_to_read = ['zdust'],
+                                          verboseflag = args.verbose)
+                ObsData.read_daily()
 
-        print('Latitudes:')
-        print(ObsData.latitude)
-        print('Longitudes:')
-        print(ObsData.longitude)
-        print('station names')
-        print(ObsData)
-        # This returns all stations
-        all = ObsData.to_timeseries()
-        # this returns a single station in a dictionary using the station name as key
-        test = ObsData.to_timeseries('AOE_Baotou')
-        print(test)
-        #This returns a dictionary with more elements
-        test_list = ObsData.to_timeseries(['AOE_Baotou','Karlsruhe'])
-        print(test_list)
-        #return ObsData
-
+                print('Latitudes:')
+                print(ObsData.latitude)
+                print('Longitudes:')
+                print(ObsData.longitude)
+                print('station names')
+                print(ObsData)
+                # This returns all stations
+                all = ObsData.to_timeseries()
+                print(all)
+                # this returns a single station in a dictionary using the station name as key
+                # test = ObsData.to_timeseries('AOE_Baotou')
+                # print(test)
+                # #This returns a dictionary with more elements
+                # test_list = ObsData.to_timeseries(['AOE_Baotou','Karlsruhe'])
+                # print(test_list)
+                #return ObsData
+            else:
+                sys.stdout.write(
+                    "ERROR: {0} is not a supported observation network name.\n".format(Options['ObsNetworkName'][0]))
+                sys.stdout.write("Supported are: {0}".format(supported_obs_networks))
 ###########################################################################################################################
 if __name__ == '__main__':
     cli()
