@@ -9,6 +9,7 @@ Created on Fri Apr 13 11:34:57 2018
 from collections import OrderedDict as od
 from multiprocessing.pool import Pool
 from functools import partial
+from pyaerocom.plot.mapping import plot_map_aerocom
 
 class PlotMultiCore(Pool):
     """Class that may be used for running multi
@@ -26,22 +27,25 @@ class PlotMultiCore(Pool):
     
     @property
     def plotfun(self):
-        raise NotImplementedError
+        return self._func_input
+        
     def run():
         raise NotImplementedError
         
 if  __name__=="__main__":
-    #mp = PlotMultiCore()
+    
     import numpy as np
     import matplotlib.pyplot as plt
+    
+    #mp = PlotMultiCore()
     
     def plotfun(yoffs, x, y, color):
         pass
     
-    def func(a1=1, a2=1, a3=1, a4=1, a5=1):
-        return a1 + a2 + a3 + a4 +a5 
-    
-    
+    def func(a1, a2, a3, a4, a5):
+        val = a1 + a2 + a3 + a4 + a5 
+        print(val)
+        return val
     
     def fix_params(func, **fix_args):
         import inspect
@@ -53,10 +57,22 @@ if  __name__=="__main__":
                                %arg_name)
             remove_idx.append(args.index(arg_name))
         
-        return func( **fix_args)
+        return func(**fix_args)
     
-    func_fix = fix_params(func, a1=2, a2=2)
+    #func_fix = fix_params(func, a1=5, a2=5)
+    
+    fix_args = dict(a2=10, a3=20)
+    
+    func_reduced = partial(func, **fix_args)
+    
+    
         
-    print(func())
+    #print(func())
     print(func(2,2,2,2,2))
-    #print(func_fix(2, 2, 2))
+    print(func_reduced(a1=2, a4=2, a5=2))
+    #print(func_reduced(2, 2, 2))
+    
+    
+    p = Pool()
+    jobs = [zip(a1=2, a4=2, a5=2), dict(a1=2, a4=2, a5=2), dict(a1=2, a4=2, a5=2)]
+    p.starmap(func, jobs)

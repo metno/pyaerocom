@@ -387,7 +387,7 @@ class ModelData(object):
             if all(isinstance(x, Timestamp) for x in time_range):
                 if self.verbose:
                     print("Cropping along time axis based on Timestamps")
-                time_constraint = self.get_time_constraint(*time_range)
+                time_constraint = get_time_constraint(*time_range)
                 data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
                 if self.verbose:
@@ -403,38 +403,6 @@ class ModelData(object):
         return self.collapsed(coords=["longitude", "latitude"], 
                               aggregator=MEAN, 
                               weights=ws).grid.data
-        
-    def get_time_constraint(self, start_time, stop_time):
-        """Create iris.Constraint for data extraction along time axis
-        
-        Parameters
-        ----------
-        start_time : Timestamp
-            start time of desired subset
-        stop_time : Timestamp
-            stop time of desired subset
-        
-        Returns
-        -------
-        Constraint
-            iris Constraint instance that can, e.g., be used as input for
-            :func:`extract`
-        """
-        return get_time_constraint(start_time, stop_time)
-    
-    def get(self, lons=None, lats=None, times=None):
-        """Get nearest value or values based on input coordinates
-        
-        Wrapper for :func:`interpolate`
-        
-        Parameters
-        ----------
-        lons : :obj:`float` or iterable
-            longitude or array of longitudes to be extracted
-        lats : :obj:`float` or iterable
-            longitude or array of longitudes to be extracted    
-        """
-        raise NotImplementedError
         
     # redefined methods from iris.Cube class. This includes all Cube 
     # processing methods that exist in the Cube class and that work on the 
@@ -512,27 +480,29 @@ class ModelData(object):
         collapsed = self.grid.collapsed(coords, aggregator, **kwargs)
         return ModelData(collapsed, **self.suppl_info)
     
-    def extract(self, constraint):
-        """Extract subset
-        
-        Parameters
-        ----------
-        constraint : iris.Constraint
-            constraint that is to be applied
-            
-        Returns
-        -------
-        ModelData
-            new data object containing cropped data
-        """
-        if not self.is_cube:
-            raise NotImplementedError("This feature is only available if the"
-                                      "underlying data is of type iris.Cube")
-        data_crop = self.grid.extract(constraint)
-        if not data_crop:
-            raise DataExtractionError("Failed to extract subset")
-        
-        return ModelData(data_crop, **self.suppl_info)
+# =============================================================================
+#     def extract(self, constraint):
+#         """Extract subset
+#         
+#         Parameters
+#         ----------
+#         constraint : iris.Constraint
+#             constraint that is to be applied
+#             
+#         Returns
+#         -------
+#         ModelData
+#             new data object containing cropped data
+#         """
+#         if not self.is_cube:
+#             raise NotImplementedError("This feature is only available if the"
+#                                       "underlying data is of type iris.Cube")
+#         data_crop = self.grid.extract(constraint)
+#         if not data_crop:
+#             raise DataExtractionError("Failed to extract subset")
+#         
+#         return ModelData(data_crop, **self.suppl_info)
+# =============================================================================
     
     def intersection(self, *args, **kwargs):
         """Ectract subset using :func:`iris.cube.Cube.intersection` 
