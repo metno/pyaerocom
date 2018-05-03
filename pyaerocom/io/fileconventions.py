@@ -89,10 +89,11 @@ class FileConventionRead(object):
     
     def check_validity(self, file):
         info = self.get_info_from_file(file)
+        year = info["year"]
         if not info['ts_type'] in const.TS_TYPES:
             raise IOError("Invalid ts_type %s in filename %s"
                           %(info['ts_type'], basename(file)))
-        elif not 0 <= info["year"] <= 3000:
+        elif not (0 <= year <= 3000 or year == 9999):
             raise IOError("Invalid year %d in filename %s"
                           %(info['year'], basename(file)))
     

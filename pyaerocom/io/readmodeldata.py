@@ -36,6 +36,7 @@
 from glob import glob
 from re import match
 from os.path import join, isdir, basename
+from os import listdir
 from collections import OrderedDict as od
 from warnings import warn
 from numpy import arange
@@ -169,7 +170,7 @@ class ReadModelData(object):
         if init:
             if self.search_model_dir():
                 self.search_all_files()
-      
+                
     @property
     def model_dir(self):
         """Model directory"""
@@ -187,8 +188,7 @@ class ReadModelData(object):
             self._model_dir = value
         else:
             raise ValueError("Could not set directory: %s" %value)
-        
-    
+
     @property
     def start_time(self):
         """Start time of the dataset
@@ -199,13 +199,7 @@ class ReadModelData(object):
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         """
         return self._start_time
-# =============================================================================
-#         if not isinstance(t, Timestamp):
-#             raise ValueError("Invalid value encountered for start time "
-#                              "in reading engine: %s" %t)
-#         return t
-#     
-# =============================================================================
+
     @start_time.setter
     def start_time(self, value):
         if not isinstance(value, Timestamp):    
@@ -268,22 +262,30 @@ class ReadModelData(object):
         bool
             True, if directory was found, else False
         """
+        sid = self.model_id
+        _candidates = []
         for search_dir in self._MODELDIRS:
             if self.verbose:
                 print('Searching dir for ID %s in: %s' 
                       %(self.model_id, search_dir))
             # get the directories
             if isdir(search_dir):
-                chk_dir = glob(search_dir + self.model_id)
-                if len(chk_dir) > 0:
-                    self.model_dir = chk_dir[0]
-                    if self.verbose:
-                        print('Found: '+ chk_dir[0] + '\n')
-                    return True
+                subdirs = listdir(search_dir)
+                for subdir in subdirs:
+                    if sid == subdir:
+                        self.model_dir = join(search_dir, subdir)
+                        if self.verbose:
+                            print('Found model dir: {}'.format(self.model_dir))    
+                        return True
+                    elif sid.lower() in subdir.lower():
+                        _candidates.append(subdir)
             else:
                 if self.verbose:
                     print('directory: %s does not exist\n'
                                      %search_dir)
+        print("Model directory could not be found.")
+        if _candidates:
+            print("Did you mean either of: {} ?".format(_candidates))
         return False
     
     # get the model directory (note that the folder "renamed" is used)
@@ -315,9 +317,9 @@ class ReadModelData(object):
             self.file_convention.from_file(first_file_name)
         else:
             raise IOError("Failed to identify file naming convention "
-                            "from first file in model directory for model "
-                            "%s\nmodel_dir: %s\nFile name: %s"
-                            %(self.model_id, self.model_dir, first_file_name))
+                          "from first file in model directory for model "
+                          "%s\nmodel_dir: %s\nFile name: %s"
+                          %(self.model_id, self.model_dir, first_file_name))
         _vars_temp = []
         _years_temp = []
         for _file in nc_files:
