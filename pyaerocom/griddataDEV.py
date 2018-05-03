@@ -13,8 +13,10 @@ from iris.analysis import MEAN
 from pandas import Timestamp
 from warnings import warn
 from numpy import nan
+import abc
 
 from pyaerocom import const
+#from pyaerocom.griddata import GridData
 from pyaerocom.exceptions import DataExtractionError
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
@@ -22,7 +24,164 @@ from pyaerocom.helpers import (get_time_constraint,
 
 from pyaerocom.region import Region
 
-class ModelData(object):
+class GridDataBase(abc.ABC):
+    """Abstract base class representing gridded data
+    
+    Attributes
+    ----------
+    grid
+        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)
+    suppl_info : dict
+        dictionary containing supplementary information about this data
+        object (these may be attributes that are not already stored within
+        the metadata representation of the underlying data object)
+        
+    """
+    def __init__(self, input=None, var_name=None, **suppl_info):
+    
+        self.var_name = var_name
+        
+        self.from_files = []
+        
+        self.suppl_info = od()
+
+        if input:
+            self.load_input(input, var_name)
+        
+        self.suppl_info.update(**suppl_info)
+        super(GridDataBase, self).__init__()
+    
+    @property
+    def grid(self):
+        """Underlying grid data object"""
+        return self._grid
+    
+    @grid.setter
+    def grid(self, value):
+        if not isinstance(value, Cube):
+            raise TypeError("Grid data format %s is not supported, need Cube" 
+                            %type(value))
+        self._grid = value
+       
+    @property
+    def has_data(self):
+        """True if grid data is available (:attr:`grid` =! None)
+        
+        Note
+        ----
+        Since so far, the only supported type is :class:`iris.cube.Cube`, this
+        method simply returns :attr:`is_cube`.
+        """
+        return self.is_cube
+    
+    @property
+    def is_cube(self):
+        """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
+        return True if isinstance(self.grid, Cube) else False
+    
+    @property
+    def shape(self):
+        if not self.is_cube:
+            raise NotImplementedError("Attribute shape is not available...")
+        return self.grid.shape 
+            
+    def load_input(self, input, var_name=None):
+        """Interprete and load input
+        
+        Parameters
+        ----------
+        input : :obj:`str:` or :obj:`Cube`
+            data input. Can be a single .nc file or a preloaded iris Cube.
+        var_name : :obj:`str`, optional
+            variable name that is extracted if `input` is a file path . Irrelevant
+            if `input` is preloaded Cube
+        """
+        if isinstance(input, str) and exists(input):
+            # input is a path
+            if not isinstance(var_name, str):
+                _var_names = []
+                try:
+                    ctemp = load(input)
+                    if isinstance(ctemp, CubeList):
+                        _var_names = [x.var_name for x in ctemp]
+                        _addstr = ("The following variable names exist in "
+                                   "input file: %s" %_var_names)
+                except:
+                    _addstr = ""
+                            
+                raise ValueError("Loading data from input file %s requires "
+                                 "specification of a variable name using "
+                                 "input parameter var_name. %s" %(input, _addstr))
+            func = lambda c: c.var_name == var_name
+            constraint = Constraint(cube_func=func)
+            self.grid = load_cube(input, constraint) #instance of CubeList
+            self.suppl_info["from_files"].append(input)
+        elif isinstance(input, Cube):
+            #input is a Cube
+            self.grid = input #instance of Cube
+            self.var_name = input.var_name
+        try:
+            if self._ON_LOAD["DEL_TIME_BOUNDS"]:
+                self.grid.coord("time").bounds = None
+        except:
+            if self.verbose:
+                print("Failed to access time coordinate in GridData class")
+        if self._ON_LOAD["SHIFT_LONS"]:
+            self.check_and_regrid_lons()
+    
+            
+    def __getitem__(self, indices):
+        """x.__getitem__(y) <==> x[y]"""
+        sub = self.grid.__getitem__(indices)
+        return GridData(sub, **self.suppl_info)
+        
+    def __str__(self):
+        """For now, use string representation of underlying data"""
+        return ("pyaerocom.GridData: %s\nGrid data: %s" 
+                %(self.model_id, self.grid.__str__()))
+    
+    def __repr__(self):
+        """For now, use representation of underlying data"""
+        return "pyaerocom.GridData\nGrid data: %s" %self.grid.__repr__() 
+    
+class GridDataCF(GridDataBase):
+    """Gridded data according to the CF conventions"""    
+    
+    @property
+    def longitude(self):
+        """Longitudes of data"""
+        if self.is_cube:
+            return self.grid.coord("longitude")
+        
+    @longitude.setter
+    def longitude(self, value):
+        raise AttributeError("Longitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+    
+    @property
+    def latitude(self):
+        """Latitudes of data"""
+        if self.is_cube:
+            return self.grid.coord("latitude")
+        
+    @latitude.setter
+    def latitude(self, value):
+        raise AttributeError("Latitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+        
+    @property
+    def time(self):
+        """Time dimension of data"""
+        if self.is_cube:
+            return self.grid.coord("time")
+        
+    @time.setter
+    def time(self, value):
+        raise AttributeError("Time array cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+        
+        
+class ModelData(GridDataBase, GridDataCF):
     """Base class representing model data
     
     This class is largely based on the :class:`iris.Cube` object. However, this
@@ -89,20 +248,10 @@ class ModelData(object):
     _ON_LOAD = const.ON_LOAD
     def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
                  **suppl_info):
-        #super(ModelData, self).__init__(input, var_name, verbose, **suppl_info)
+        super(ModelData, self).__init__(input, var_name, verbose, **suppl_info)
         self.verbose = verbose
-        self.suppl_info = od(from_files     = [],
-                             model_id       = "Unknown",
-                             ts_type        = "Unknown",
-                             region         = None)
-        #attribute used to store area weights (if applicable, see method
-        #area_weights)
+        
         self._area_weights = None
-        if input:
-            self.load_input(input, var_name)
-        for k, v in suppl_info.items():
-            if k in self.suppl_info:
-                self.suppl_info[k] = v
        
     @property
     def longitude(self):
