@@ -84,8 +84,8 @@ class ReadAeronetSunV2:
     _CHUNKSIZE = 1000
     PROVIDES_VARIABLES = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
 
-    def __init__(self, index_pointer = 0, verboseflag = False):
-        self.verboseflag = verboseflag
+    def __init__(self, index_pointer = 0, verbose = False):
+        self.verboseflag = verbose
         self.metadata = {}
         self.data = []
         self.index = len(self.metadata)
