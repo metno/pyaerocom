@@ -140,6 +140,9 @@ class Config(object):
         #
         self.EBAS_MULTICOLUMN_NAME = 'EBASMC'
         self.EEA_NAME = 'EEAAQeRep'
+
+        # Earlinet;
+        self.EARLINET_NAME = 'EARLINET'
         
         # Attributes that are used to store import results
         self.OBSCONFIG = {}
@@ -253,6 +256,7 @@ class Config(object):
         
         self.EBAS_MULTICOLUMN_NAME = cr['obsnames']['EBAS_MULTICOLUMN']
         self.EEA_NAME = cr['obsnames']['EEA']
+        self.EARLINET_NAME = cr['obsnames']['EARLINET']
     
     
         #Read directories for observation location
@@ -349,7 +353,11 @@ class Config(object):
         OBSCONFIG[self.EEA_NAME] = {}
         OBSCONFIG[self.EEA_NAME]['PATH'] = cr['obsfolders']['EEA'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.EEA_NAME]['START_YEAR'] = cr['obsstartyears']['EEA']
-    
+
+        OBSCONFIG[self.EARLINET_NAME] = {}
+        OBSCONFIG[self.EARLINET_NAME]['PATH'] = cr['obsfolders']['EARLINET'].replace('${BASEDIR}',self.OBSBASEDIR)
+        OBSCONFIG[self.EARLINET_NAME]['START_YEAR'] = cr['obsstartyears']['EARLINET']
+        
         cr.clear()
     
     def short_str(self):

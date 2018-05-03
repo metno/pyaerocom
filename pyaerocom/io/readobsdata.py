@@ -41,8 +41,10 @@ import numpy as np
 import sys
 import pandas as pd
 
-from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
+#from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
+from pyaerocom.io.read_earlinet import ReadEarlinet
+
 #from pyaerocom import config as const
 from pyaerocom import const
 
@@ -50,7 +52,8 @@ class ReadObsData():
     """pyaerocom observation data reading class
     """
 
-    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
+    #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
+    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.EARLINET_NAME]
     #
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
@@ -234,8 +237,22 @@ class ReadObsData():
                 else:
                     # re-read data
                     read_dummy.read_daily(self.vars_to_read)
+
             elif data_set_to_read == const.AERONET_SUN_V2L2_SDA_DAILY_NAME:
                 print("Not implemented at this point.")
+
+            elif data_set_to_read == const.EARLINET_NAME:
+                read_dummy = ReadEarlinet(index_pointer=self.index_pointer, verboseflag=self.verboseflag)
+                if cache_hit_flag and object_version_saved == read_dummy.__version__:
+                    read_dummy = pickle.load(in_handle)
+                    if self.verboseflag:
+                        sys.stdout.write('cache file ' + cache_file + ' read\n')
+                    # TODO we might need to adjust self.index_pointer in case we really work with more than one data set!
+                    in_handle.close()
+                else:
+                    # re-read data
+                    read_dummy.read_daily(self.vars_to_read)
+
             else:
                 continue
             self.infiles.append(read_dummy.files)
@@ -293,7 +310,9 @@ class ReadObsData():
         out_data = []
         if station_names is None:
             for index, val in self.metadata.items():
-                out_data.append(self._to_timeseries_helper(val))
+                data = self._to_timeseries_helper(val)
+                if data is not None:
+                    out_data.append(data)
         elif isinstance(station_names, str):
             # user asked for a single station name
             # return a single dictionary in this case
@@ -306,7 +325,9 @@ class ReadObsData():
             for index, val in self.metadata.items():
                 # print(val['station name'])
                 if val['station name'] in station_names:
-                    out_data.append(self._to_timeseries_helper(val))
+                    data = self._to_timeseries_helper(val)
+                    if data is not None:
+                        out_data.append(self._to_timeseries_helper(val))
 
         return out_data
 
@@ -329,7 +350,7 @@ class ReadObsData():
 
     ###################################################################################
 
-    def GetDataDir(selfself, data_set_name):
+    def GetDataDir(self, data_set_name):
         """method to return the path of an obs data set"""
 
         try:
@@ -342,17 +363,36 @@ class ReadObsData():
     def _to_timeseries_helper(self, val):
         """small helper routine for self.to_timeseries to not to repeat the same code fragment three times"""
 
+        data_found_flag = False
         temp_dict = {}
+        # do not return anything for stations without data
         temp_dict['station name'] = val['station name']
         temp_dict['latitude'] = val['latitude']
         temp_dict['longitude'] = val['longitude']
         temp_dict['altitude'] = val['altitude']
         temp_dict['PI'] = val['PI']
+        temp_dict['data_set_name'] = val['data_set_name']
+        if 'files' in val:
+            temp_dict['files'] = val['files']
         for var in val['indexes']:
             if var in self.vars_to_read:
+                data_found_flag = True
                 temp_dict[var] = pd.Series(self.data[val['indexes'][var], self._DATAINDEX],
                                            index=pd.to_datetime(
                                                self.data[
                                                    val['indexes'][var], self._TIMEINDEX],
                                                unit='s'))
-        return temp_dict
+        if data_found_flag:
+            return temp_dict
+        else:
+            return None
+
+    ###################################################################################
+
+    def CheckObsnetworkName(self, obs_network_name):
+        """method to quick check if the user supplied obs network string is right"""
+
+        if obs_network_name in self.SUPPORTED_DATASETS:
+            return True
+        else:
+            return False
