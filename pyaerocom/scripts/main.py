@@ -55,6 +55,9 @@ def cli():
                         help="model years to run; use 9999 for climatology, leave out for all years; comma separated list; Use this to limit the plotting of the OBSERVATION-ONLY model to certain years.")
     parser.add_argument("--obsyear",
                         help="observation years to run; use 9999 for climatology, leave out for same as model year")
+    parser.add_argument("--startdate", help="startdate as YYYY-MM-DD e.g. 2012-01-01", default='2011-01-01')
+    parser.add_argument("--enddate", help="enddate  as YYYY-MM-DD e.g. 2012-12-31", default='2012-12-31')
+
     parser.add_argument("--nosend", help="switch off webserver upload", action='store_false')
     parser.add_argument("--debug", help="switch on debug mode: Do NOT start idl, just print what would be done",
                         action='store_true')
@@ -135,15 +138,13 @@ def cli():
         print(Model)
         if Model != const.NOMODELNAME:
             # start model read
-            start_time = "1-1-" + Options['ModelYear']
-            end_time = "31-12-" + Options['ModelYear']
             model_obj.append(pio.ReadModelData(model_id = Model,
-                                     start_time = start_time,
-                                     stop_time = end_time,
+                                     start_time = args.startdate,
+                                     stop_time = args.enddate,
                                      verbose=Options['VERBOSE']))
 
             print(model_obj[0])
-            model_data.append(model_obj[0].read_var(var_name="od550aer", ts_type="daily"))
+            model_data.append(model_obj[0].read_var(var_name=Options['VariablesToRun'][0], ts_type="daily"))
             print(model_data[0])
         else:
             # observations only
@@ -151,19 +152,23 @@ def cli():
             if Options['ObsNetworkName'][0] in pio.ReadObsData.SUPPORTED_DATASETS:
                 # start Obs reading
                 ObsData = pio.ReadObsData(data_set_to_read = const.EARLINET_NAME,
-                                          vars_to_read = ['zdust'],
-                                          verboseflag = args.verbose)
+                                          vars_to_read = Options['VariablesToRun'][0],
+                                          verbose= args.verbose)
                 ObsData.read_daily()
 
-                print('Latitudes:')
-                print(ObsData.latitude)
-                print('Longitudes:')
-                print(ObsData.longitude)
-                print('station names')
-                print(ObsData)
+                # print('Latitudes:')
+                # print(ObsData.latitude)
+                # print('Longitudes:')
+                # print(ObsData.longitude)
+                # print('station names')
+                # print(ObsData)
                 # This returns all stations
-                all = ObsData.to_timeseries()
-                print(all)
+                TimeSeriesSingle = ObsData.to_timeseries(station_name="L'Aquila, Italy",start_date = args.startdate, end_date=args.enddate)
+                TimeSeries = ObsData.to_timeseries(start_date = args.startdate, end_date=args.enddate)
+                for series in TimeSeries:
+                    print(series['station name'])
+                    print(series[Options['VariablesToRun'][0]])
+
                 # this returns a single station in a dictionary using the station name as key
                 # test = ObsData.to_timeseries('AOE_Baotou')
                 # print(test)
@@ -171,6 +176,8 @@ def cli():
                 # test_list = ObsData.to_timeseries(['AOE_Baotou','Karlsruhe'])
                 # print(test_list)
                 #return ObsData
+
+
             else:
                 sys.stdout.write(
                     "ERROR: {0} is not a supported observation network name.\n".format(Options['ObsNetworkName'][0]))
