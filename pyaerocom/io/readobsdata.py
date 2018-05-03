@@ -49,7 +49,7 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom import const
 
 class ReadObsData():
-    """pyaerocom observation data reading class
+    """pyaerocom observation data (ungridded data) reading class
     """
 
     #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
@@ -77,13 +77,13 @@ class ReadObsData():
 
     def __init__(self, data_set_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME],
                  vars_to_read=ReadAeronetSunV2.PROVIDES_VARIABLES,
-                 verboseflag=False):
+                 verbose=False):
         if isinstance(data_set_to_read, list):
             self.data_sets_to_read = data_set_to_read
         else:
             self.data_sets_to_read = [data_set_to_read]
 
-        self.verboseflag = verboseflag
+        self.verboseflag = verbose
         self.vars_to_read = vars_to_read
         self.metadata = {}
         self.data = []
@@ -164,6 +164,17 @@ class ReadObsData():
     @latitude.setter
     def latitude(self, value):
         raise AttributeError("Latitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+
+    @property
+    def station_name(self):
+        """Latitudes of data"""
+        stat_names = [self.metadata[np.float(x)]['station name'] for x in range(len(self.metadata))]
+        return stat_names
+
+    @station_name.setter
+    def station_name(self, value):
+        raise AttributeError("Station names cannot be changed, please check "
                              "underlying data type stored in attribute grid")
 
     @property
@@ -296,38 +307,58 @@ class ReadObsData():
 
     ###################################################################################
 
-    def to_timeseries(self, station_names=None):
+    def to_timeseries(self, station_name = None, start_date = None, end_date = None, freq = None):
         """method to get the ObsData object data as dict using pd.Series for the variables
+
+        Parameters
+        ----------
+        station_names : :obj:`tuple` or :obj:`str:`, optional
+            station name or list of station names to return
+        start_date, end_date : :obj:`str:`, optional
+            date strings with start and end date to return
+        freq : obj:`str:`, optional
+            frequency to resample to using the pandas resample method
+            us the offset aliases as noted in
+            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+
+        Returns
+        -------
+        list or dictionary
+            station_names is a string: dictionary with station data
+            station_names is list or None: list of dictionaries with station data
 
         Example
         -------
         >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadObsData
+        >>> obj = pyaerocom.io.readobsdata.ReadObsData(verbose=True)
         >>> obj.read_daily()
         >>> pdseries = obj.to_timeseries()
+        >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
         """
 
         out_data = []
-        if station_names is None:
+        if station_name is None:
+            # return all stations
             for index, val in self.metadata.items():
-                data = self._to_timeseries_helper(val)
+                data = self._to_timeseries_helper(val, start_date, end_date, freq)
                 if data is not None:
                     out_data.append(data)
-        elif isinstance(station_names, str):
+        elif isinstance(station_name, str):
             # user asked for a single station name
             # return a single dictionary in this case
             for index, val in self.metadata.items():
-                if station_names == val['station name']:
+                if station_name == val['station name']:
                     # we might change this to return a list at some point
-                    return self._to_timeseries_helper(val)
-        elif isinstance(station_names, list):
+                    return self._to_timeseries_helper(val, start_date, end_date, freq)
+        elif isinstance(station_name, list):
             # user asked for a list of station names
+            # return list with matching station names
             for index, val in self.metadata.items():
                 # print(val['station name'])
-                if val['station name'] in station_names:
+                if val['station name'] in station_name:
                     data = self._to_timeseries_helper(val)
                     if data is not None:
-                        out_data.append(self._to_timeseries_helper(val))
+                        out_data.append(self._to_timeseries_helper(val, start_date, end_date, freq))
 
         return out_data
 
@@ -360,7 +391,7 @@ class ReadObsData():
 
     ###################################################################################
 
-    def _to_timeseries_helper(self, val):
+    def _to_timeseries_helper(self, val, start_date = None, end_date = None, freq = None):
         """small helper routine for self.to_timeseries to not to repeat the same code fragment three times"""
 
         data_found_flag = False
@@ -382,6 +413,11 @@ class ReadObsData():
                                                self.data[
                                                    val['indexes'][var], self._TIMEINDEX],
                                                unit='s'))
+
+                temp_dict[var] = temp_dict[var][start_date:end_date].drop_duplicates()
+                if freq is not None:
+                    temp_dict[var] = temp_dict[var][start_date:end_date].resample(freq).mean()
+
         if data_found_flag:
             return temp_dict
         else:
