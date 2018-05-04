@@ -35,7 +35,7 @@
 from .read_aeronet_sdav2 import ReadAeronetSDAV2
 from .read_aeronet_sunv2 import ReadAeronetSunV2
 # =============================================================================
-from .readobsdata import ReadObsData
+#from .readobsdata import ReadObsData
 from .readgrid import ReadGrid, ReadMultiGrid
 from .fileconventions import FileConventionRead
 
