@@ -116,7 +116,7 @@ class ReadAeronetSunV2:
 
     ###################################################################################
 
-    def read_daily_file(self, filename, varstoread = ['od550aer'], verboseflag = False):
+    def read_daily_file(self, filename, varstoread = ['od550aer'], verbose = False):
         """method to read an Aeronet Sun V2 level 2 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -126,7 +126,7 @@ class ReadAeronetSunV2:
             absolute path to filename to read
         varstoread : list
             list of str with variable names to read; defaults to ['od550aer']
-        verboseflag : Bool
+        verbose : Bool
             set to True to increase verbosity
 
         Example
@@ -176,7 +176,7 @@ Length: 223, dtype: float64}
 
         data_out = {}
         # Iterate over the lines of the file
-        if verboseflag:
+        if verbose:
             sys.stderr.write(filename + '\n')
         with open(filename, 'rt') as InFile:
             c_HeadLine = InFile.readline()
@@ -245,14 +245,14 @@ Length: 223, dtype: float64}
 
     ###################################################################################
 
-    def read_daily(self, varstoread = ['od550aer'], verboseflag = False):
+    def read(self, varstoread = ['od550aer'], verbose = False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
         -------
         >>> import pyaerocom.io.read_aeronet_sunv2
         >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
-        >>> obj.read_daily(verboseflag = True)
+        >>> obj.read(verbose = True)
         """
 
         # Metadata key is float because the numpy array holding it is float
@@ -262,7 +262,7 @@ Length: 223, dtype: float64}
         self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
 
         for _file in sorted(self.files):
-            if self.verboseflag:
+            if self.verbose:
                 sys.stdout.write(_file+"\n")
             stat_obs_data = self.read_daily_file(_file, varstoread = varstoread)
             # Fill the metatdata dict
@@ -312,7 +312,7 @@ Length: 223, dtype: float64}
     def get_file_list(self):
         """search for files to read """
 
-        if self.verboseflag:
+        if self.verbose:
             print('searching for data files. This might take a while...')
         files = glob.glob(os.path.join(self.DATASET_PATH,
                                        self._FILEMASK))
