@@ -10,7 +10,7 @@ from iris import Constraint, load, load_cube
 from iris.cube import Cube, CubeList
 from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
-from pandas import Timestamp
+from pandas import Timestamp, Series
 from warnings import warn
 from numpy import nan
 
@@ -300,9 +300,31 @@ class GridData(object):
         
         Returns
         -------
-        tuple
+        list
+            list of result dictionaries for each coordinate. Dictionary keys 
+            are: ``longitude, latitude, :attr:`var_name```
         """
-        time_stamps = self.time_stamps()
+        result = []
+        if sample_points:
+            data = self.interpolate(sample_points, **kwargs)
+        else:
+            data = self
+        
+        var = self.var_name
+        times = data.time_stamps()
+        lats = data.latitude.points
+        lons = data.longitude.points
+        arr = data.grid.data
+        for i, lat in enumerate(lats):
+            for j, lon in enumerate(lons):        
+                result.append({'latitude'   :   lat,
+                               'longitude'  :   lon,
+                               var          :   Series(arr[:, i, j], 
+                                                       index=times)})
+                
+        return result
+            
+    
             
             
         
@@ -643,30 +665,7 @@ if __name__=='__main__':
                         time_range=(start, stop))
 
     cropped.quickplot_map()
-    
-    import pandas
-    
-    times = cropped.time_stamps()
-    lons = cropped.longitude.points
-    lats = cropped.latitude.points
-    
-    arr = cropped.grid.data
-    
-    pan = pandas.Panel(arr)
-    
-    from time import time
-    t0 = time()
-    result = []
-    varname=cropped.var_name
-    num = len(lats)
-    for i, lat in enumerate(lats):
-        print("At latitude {} ({} / {})".format(lat, i, num))
-        for j, lon in enumerate(lons):
-            result.append(dict(latitude=lat,
-                               longitude=lon,
-                               varname=pandas.Series(arr[:, i, j], index=times)))
-    
-    
+    s = cropped.to_time_series()
     
     
     if RUN_OLD_STUFF:

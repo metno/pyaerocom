@@ -95,14 +95,14 @@
 <li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#data-types-and-data-representation">Data types and data representation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.griddata">Model data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.obsdata">Observation data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.griddata">Gridded data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.nogriddata">Ungridded data</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#input-output">Input / Output</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#reading-routines">Reading routines</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#module-pyaerocom.io.readgrid">Reading of gridded data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-pyaerocom.io.readobsdata">Reading of ungridded data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-pyaerocom.io.read_aeronet_sdav2">Reading of ungridded data</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.fileconventions">File naming conventions</a></li>
@@ -220,7 +220,7 @@
 <div class="section" id="data-types-and-data-representation">
 <h2>Data types and data representation<a class="headerlink" href="#data-types-and-data-representation" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-pyaerocom.griddata">
-<span id="model-data"></span><h3>Model data<a class="headerlink" href="#module-pyaerocom.griddata" title="Permalink to this headline">¶</a></h3>
+<span id="gridded-data"></span><h3>Gridded data<a class="headerlink" href="#module-pyaerocom.griddata" title="Permalink to this headline">¶</a></h3>
 <p>Pyaerocom GridData class</p>
 <dl class="class">
 <dt id="pyaerocom.griddata.GridData">
@@ -408,6 +408,35 @@ if <cite>input</cite> is preloaded Cube</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list containing all time stamps as datetime64 objects</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddata.GridData.to_time_series">
+<code class="descname">to_time_series</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddata.html#GridData.to_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddata.GridData.to_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert this cube to time series</p>
+<p>Extract time series for each lon / lat coordinate in this cube or at
+predefined sample points (e.g. station data). If sample points are
+provided, the cube is interpolated first onto the sample points.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – coordinates (lon / lat) at which time series is supposed to be
+retrieved</li>
+<li><strong>**kwargs</strong> – additional keyword args passed to <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of result dictionaries for each coordinate. Dictionary keys
+are: <code class="docutils literal notranslate"><span class="pre">longitude,</span> <span class="pre">latitude,</span> <span class="pre">:attr:`var_name`</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -635,80 +664,123 @@ related to method and input parameters.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-pyaerocom.obsdata">
-<span id="observation-data"></span><h3>Observation data<a class="headerlink" href="#module-pyaerocom.obsdata" title="Permalink to this headline">¶</a></h3>
-<p>This file could contain classes, that represent observation data. Below are
-some dummies inserted.</p>
+<div class="section" id="module-pyaerocom.nogriddata">
+<span id="ungridded-data"></span><h3>Ungridded data<a class="headerlink" href="#module-pyaerocom.nogriddata" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="pyaerocom.obsdata.ObsData">
-<em class="property">class </em><code class="descclassname">pyaerocom.obsdata.</code><code class="descname">ObsData</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ObsData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ObsData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Abstract base class for observation data</p>
-<p>This class could contain everything that all observationals have in common.
-The abstract class interface can be used to ensure the implementation of
-certain class methods that are required to be implemented in subclasses
-(declared with &#64;abstractmethod decorator).</p>
-<dl class="method">
-<dt id="pyaerocom.obsdata.ObsData.time_stamps">
-<code class="descname">time_stamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ObsData.time_stamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ObsData.time_stamps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return array containing time stamps of observations</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.obsdata.ObsData.longitude">
-<code class="descname">longitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ObsData.longitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ObsData.longitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get longitude(s) of data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.obsdata.ObsData.latitude">
-<code class="descname">latitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ObsData.latitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ObsData.latitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get latitude(s) of data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.obsdata.ObsData.import_data">
-<code class="descname">import_data</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ObsData.import_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ObsData.import_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Declaration of abstract data import method</p>
-<p>If declared here, it is required to be implemented in subclasses</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyaerocom.obsdata.ProfileData">
-<em class="property">class </em><code class="descclassname">pyaerocom.obsdata.</code><code class="descname">ProfileData</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Data object for profile observations</p>
+<dt id="pyaerocom.nogriddata.NoGridData">
+<em class="property">class </em><code class="descclassname">pyaerocom.nogriddata.</code><code class="descname">NoGridData</code><span class="sig-paren">(</span><em>data_set_to_read=['AeronetSunV2Lev2.daily'], vars_to_read=['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData" title="Permalink to this definition">¶</a></dt>
+<dd><p>pyaerocom observation data (ungridded data) reading class</p>
 <dl class="attribute">
-<dt id="pyaerocom.obsdata.ProfileData.time_stamps">
-<code class="descname">time_stamps</code><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.time_stamps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns time stamp array</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.obsdata.ProfileData.longitude">
-<code class="descname">longitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData.longitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.longitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get longitude(s) of data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.obsdata.ProfileData.latitude">
-<code class="descname">latitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData.latitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.latitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get latitude(s) of data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.obsdata.ProfileData.import_data">
-<code class="descname">import_data</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#ProfileData.import_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.ProfileData.import_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Declaration of abstract data import method</p>
-<p>If declared here, it is required to be implemented in subclasses</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyaerocom.obsdata.StationData">
-<em class="property">class </em><code class="descclassname">pyaerocom.obsdata.</code><code class="descname">StationData</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/obsdata.html#StationData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.obsdata.StationData" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.nogriddata.NoGridData.SUPPORTED_DATASETS">
+<code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSunV2Lev2.daily', 'EARLINET']</em><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.code_lat_lon_in_float">
+<code class="descname">code_lat_lon_in_float</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.code_lat_lon_in_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.code_lat_lon_in_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to code lat and lon in a single number so that we can use np.unique to
+determine single locations</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.decode_lat_lon_from_float">
+<code class="descname">decode_lat_lon_from_float</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.decode_lat_lon_from_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.decode_lat_lon_from_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to decode lat and lon from a single number calculated by code_lat_lon_in_float</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.nogriddata.NoGridData.longitude">
+<code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.longitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Longitudes of data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.nogriddata.NoGridData.latitude">
+<code class="descname">latitude</code><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.latitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Latitudes of data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.nogriddata.NoGridData.station_name">
+<code class="descname">station_name</code><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.station_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Latitudes of data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.nogriddata.NoGridData.time">
+<code class="descname">time</code><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time dimension of data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read observations</p>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.nogriddata</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">nogriddata</span><span class="o">.</span><span class="n">NoGridData</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="mf">0.</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.to_timeseries">
+<code class="descname">to_timeseries</code><span class="sig-paren">(</span><em>station_name=None</em>, <em>start_date=None</em>, <em>end_date=None</em>, <em>freq=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.to_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.to_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to get the ObsData object data as dict using pd.Series for the variables</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station name or list of station names to return</li>
+<li><strong>end_date</strong> (<em>start_date</em><em>,</em>) – date strings with start and end date to return</li>
+<li><strong>freq</strong> (obj:<cite>str:</cite>, optional) – frequency to resample to using the pandas resample method
+us the offset aliases as noted in
+<a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases">http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">station_names is a string: dictionary with station data
+station_names is list or None: list of dictionaries with station data</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a> or dictionary</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.readobsdata</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">readobsdata</span><span class="o">.</span><span class="n">NoGridData</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdseries</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pdseriesmonthly</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">station_name</span><span class="o">=</span><span class="s1">&#39;Avignon&#39;</span><span class="p">,</span><span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2011-01-01&#39;</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2012-12-31&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.GetDataRevision">
+<code class="descname">GetDataRevision</code><span class="sig-paren">(</span><em>data_set_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.GetDataRevision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.GetDataRevision" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to read the revision string from the file Revision.txt in the main data directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.GetDataDir">
+<code class="descname">GetDataDir</code><span class="sig-paren">(</span><em>data_set_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.GetDataDir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.GetDataDir" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to return the path of an obs data set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.nogriddata.NoGridData.CheckObsnetworkName">
+<code class="descname">CheckObsnetworkName</code><span class="sig-paren">(</span><em>obs_network_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/nogriddata.html#NoGridData.CheckObsnetworkName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.nogriddata.NoGridData.CheckObsnetworkName" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to quick check if the user supplied obs network string is right</p>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 </div>
@@ -1128,120 +1200,395 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.Re
 </dd></dl>
 
 </div>
-<div class="section" id="module-pyaerocom.io.readobsdata">
-<span id="reading-of-ungridded-data"></span><h4>Reading of ungridded data<a class="headerlink" href="#module-pyaerocom.io.readobsdata" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="module-pyaerocom.io.read_aeronet_sdav2">
+<span id="reading-of-ungridded-data"></span><h4>Reading of ungridded data<a class="headerlink" href="#module-pyaerocom.io.read_aeronet_sdav2" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This module has not yet been translated / shipped to the pyaerocom
+library</p>
+</div>
 <dl class="class">
-<dt id="pyaerocom.io.readobsdata.ReadObsData">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readobsdata.</code><code class="descname">ReadObsData</code><span class="sig-paren">(</span><em>data_set_to_read=['AeronetSunV2Lev2.daily'], vars_to_read=['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData" title="Permalink to this definition">¶</a></dt>
-<dd><p>pyaerocom observation data (ungridded data) reading class</p>
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2">
+<em class="property">class </em><code class="descclassname">pyaerocom.io.read_aeronet_sdav2.</code><code class="descname">ReadAeronetSDAV2</code><span class="sig-paren">(</span><em>VerboseFlag=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav2.html#ReadAeronetSDAV2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read Aeronet SDA data class</p>
 <dl class="attribute">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.SUPPORTED_DATASETS">
-<code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSunV2Lev2.daily', 'EARLINET']</em><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.FILEMASK">
+<code class="descname">FILEMASK</code><em class="property"> = '*.ONEILL_20'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.FILEMASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.version__">
+<code class="descname">version__</code><em class="property"> = '0.02'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.version__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_NAME">
+<code class="descname">DATASET_NAME</code><em class="property"> = 'AeronetSDAV2Lev2.daily'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_NAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_PATH">
+<code class="descname">DATASET_PATH</code><em class="property"> = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_IS_YEARLY">
+<code class="descname">DATASET_IS_YEARLY</code><em class="property"> = False</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_IS_YEARLY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.code_lat_lon_in_float">
-<code class="descname">code_lat_lon_in_float</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.code_lat_lon_in_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.code_lat_lon_in_float" title="Permalink to this definition">¶</a></dt>
-<dd><p>method to code lat and lon in a single number so that we can use np.unique to
-determine single locations</p>
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDailyFile">
+<code class="descname">ReadDailyFile</code><span class="sig-paren">(</span><em>VarsToReturn=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav2.html#ReadAeronetSDAV2.ReadDailyFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDailyFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDaily">
+<code class="descname">ReadDaily</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav2.html#ReadAeronetSDAV2.ReadDaily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDaily" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a dictionary with all the stations using the station name as key</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.decode_lat_lon_from_float">
-<code class="descname">decode_lat_lon_from_float</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.decode_lat_lon_from_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.decode_lat_lon_from_float" title="Permalink to this definition">¶</a></dt>
-<dd><p>method to decode lat and lon from a single number calculated by code_lat_lon_in_float</p>
+<dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.GetFileList">
+<code class="descname">GetFileList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav2.html#ReadAeronetSDAV2.GetFileList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.GetFileList" title="Permalink to this definition">¶</a></dt>
+<dd><p>search for files to read</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.longitude">
-<code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.longitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Longitudes of data</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.latitude">
-<code class="descname">latitude</code><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.latitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Latitudes of data</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.station_name">
-<code class="descname">station_name</code><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.station_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Latitudes of data</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.time">
-<code class="descname">time</code><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.time" title="Permalink to this definition">¶</a></dt>
-<dd><p>Time dimension of data</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.read_daily">
-<code class="descname">read_daily</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.read_daily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.read_daily" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read observations</p>
-<p class="rubric">Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.readobsdata</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">readobsdata</span><span class="o">.</span><span class="n">ReadObsData</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read_daily</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="mf">0.</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
-</pre></div>
+<span class="target" id="module-pyaerocom.io.read_aeronet_sunv2"></span><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This module has not yet been translated / shipped to the pyaerocom
+library</p>
 </div>
+<dl class="class">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2">
+<em class="property">class </em><code class="descclassname">pyaerocom.io.read_aeronet_sunv2.</code><code class="descname">ReadAeronetSunV2</code><span class="sig-paren">(</span><em>index_pointer=0</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sunv2.html#ReadAeronetSunV2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2" title="Permalink to this definition">¶</a></dt>
+<dd><p>class to read Aeronet direct sun version 2 Level 2.0 data</p>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.data">
+<code class="descname">data</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>numpy array of dtype np.float64 initially of shape (10000,8)</em> – data point array</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.to_timeseries">
-<code class="descname">to_timeseries</code><span class="sig-paren">(</span><em>station_name=None</em>, <em>start_date=None</em>, <em>end_date=None</em>, <em>freq=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.to_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.to_timeseries" title="Permalink to this definition">¶</a></dt>
-<dd><p>method to get the ObsData object data as dict using pd.Series for the variables</p>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – meta data dictionary</p>
+</dd></dl>
+
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station name or list of station names to return</li>
-<li><strong>end_date</strong> (<em>start_date</em><em>,</em>) – date strings with start and end date to return</li>
-<li><strong>freq</strong> (obj:<cite>str:</cite>, optional) – frequency to resample to using the pandas resample method
-us the offset aliases as noted in
-<a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases">http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</a></li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">station_names is a string: dictionary with station data
-station_names is list or None: list of dictionaries with station data</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a> or dictionary</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verboseflag</strong> (<em>Bool</em>) – if True some running information is printed</td>
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_NAME">
+<code class="descname">DATASET_NAME</code><em class="property"> = 'AeronetSunV2Lev2.daily'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_NAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_PATH">
+<code class="descname">DATASET_PATH</code><em class="property"> = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_IS_YEARLY">
+<code class="descname">DATASET_IS_YEARLY</code><em class="property"> = False</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_IS_YEARLY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.PROVIDES_VARIABLES">
+<code class="descname">PROVIDES_VARIABLES</code><em class="property"> = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.PROVIDES_VARIABLES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_daily_file">
+<code class="descname">read_daily_file</code><span class="sig-paren">(</span><em>filename, varstoread=['od550aer'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sunv2.html#ReadAeronetSunV2.read_daily_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_daily_file" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>method to read an Aeronet Sun V2 level 2 file and return it in a dictionary</dt>
+<dd><p class="first">with the data variables as pandas time series</p>
+<dl class="docutils">
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>absolute path to filename to read</dd>
+<dt>varstoread <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list of str with variable names to read; defaults to [‘od550aer’]</dd>
+<dt>verbose <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd>set to True to increase verbosity</dd>
+</dl>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.read_aeronet_sunv2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_aeronet_sunv2</span><span class="o">.</span><span class="n">ReadAeronetSunV2</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filedata</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">read_daily_file</span><span class="p">(</span><span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_170401_Zambezi.lev20&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">filedata</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>{‘latitude’: -13.533, ‘longitude’: 23.107, ‘altitude’: 1040.0, ‘station name’: ‘Zambezi’, ‘PI’: ‘Brent Holben’, ‘od550aer’: 1996-08-10    0.801845
+1996-08-11    1.062833
+1996-08-12    0.850586
+1996-08-13    0.839460</p>
+<blockquote>
+<div>…</div></blockquote>
+<p>2000-09-22    1.304724
+2000-09-23    1.197722
+2000-09-24    1.035123
+Length: 223, dtype: float64}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>varstoread=['od550aer'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sunv2.html#ReadAeronetSunV2.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to read all files in self.files into self.data and self.metadata</p>
 <p class="rubric">Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.readobsdata</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">readobsdata</span><span class="o">.</span><span class="n">ReadObsData</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read_daily</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pdseries</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pdseriesmonthly</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">station_name</span><span class="o">=</span><span class="s1">&#39;Avignon&#39;</span><span class="p">,</span><span class="n">start_date</span><span class="o">=</span><span class="s1">&#39;2011-01-01&#39;</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="s1">&#39;2012-12-31&#39;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.read_aeronet_sunv2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_aeronet_sunv2</span><span class="o">.</span><span class="n">ReadAeronetSunV2</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.GetDataRevision">
-<code class="descname">GetDataRevision</code><span class="sig-paren">(</span><em>data_set_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.GetDataRevision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.GetDataRevision" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_file_list">
+<code class="descname">get_file_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sunv2.html#ReadAeronetSunV2.get_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>search for files to read</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_data_revision">
+<code class="descname">get_data_revision</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sunv2.html#ReadAeronetSunV2.get_data_revision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_data_revision" title="Permalink to this definition">¶</a></dt>
 <dd><p>method to read the revision string from the file Revision.txt in the main data directory</p>
 </dd></dl>
 
+</dd></dl>
+
+<span class="target" id="module-pyaerocom.io.read_earlinet"></span><dl class="class">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet">
+<em class="property">class </em><code class="descclassname">pyaerocom.io.read_earlinet.</code><code class="descname">ReadEarlinet</code><span class="sig-paren">(</span><em>index_pointer=0</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_earlinet.html#ReadEarlinet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet" title="Permalink to this definition">¶</a></dt>
+<dd><p>class to read EARLINET data</p>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.data">
+<code class="descname">data</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>numpy array of dtype np.float64 initially of shape (10000,8)</em> – data point array</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – meta data dictionary</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verboseflag</strong> (<em>Bool</em>) – if True some running information is printed</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_NAME">
+<code class="descname">DATASET_NAME</code><em class="property"> = 'EARLINET'</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_NAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_PATH">
+<code class="descname">DATASET_PATH</code><em class="property"> = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data'</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_PATH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_IS_YEARLY">
+<code class="descname">DATASET_IS_YEARLY</code><em class="property"> = False</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_IS_YEARLY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.PROVIDES_VARIABLES">
+<code class="descname">PROVIDES_VARIABLES</code><em class="property"> = ('ec5503daer', 'ec5323daer', 'ec3553daer', 'zdust')</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.PROVIDES_VARIABLES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.Z3D_VARNAME">
+<code class="descname">Z3D_VARNAME</code><em class="property"> = 'Altitude'</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.Z3D_VARNAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.VAR_INFO">
+<code class="descname">VAR_INFO</code><em class="property"> = {'ec3553daer': {'file_mask': '*/f*/*.e3*', 'netcdf_nar_name': 'Extinction'}, 'ec5323daer': {'file_mask': '*/f*/*.e5*', 'netcdf_nar_name': 'Extinction'}, 'ec5503daer': {'file_mask': '*/f*/*.e5*', 'netcdf_nar_name': 'Extinction'}, 'zdust': {'file_mask': '*/f*/*.e*', 'netcdf_var_name': 'DustLayerHeight', 'min_val': 0.0, 'max_val': 10000.0}}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_INFO" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.GetDataDir">
-<code class="descname">GetDataDir</code><span class="sig-paren">(</span><em>data_set_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.GetDataDir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.GetDataDir" title="Permalink to this definition">¶</a></dt>
-<dd><p>method to return the path of an obs data set</p>
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.read_file">
+<code class="descname">read_file</code><span class="sig-paren">(</span><em>filename, varstoread=['zdust'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_earlinet.html#ReadEarlinet.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.read_file" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>method to read an EARLINET file and return it in a dictionary</dt>
+<dd><p class="first">with the data variables as pandas time series</p>
+<dl class="docutils">
+<dt>filename <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>absolute path to filename to read</dd>
+<dt>varstoread <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>list of str with variable names to read; defaults to [‘od550aer’]</dd>
+<dt>verbose <span class="classifier-delimiter">:</span> <span class="classifier">Bool</span></dt>
+<dd>set to True to increase verbosity</dd>
+</dl>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.read_earlinet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_earlinet</span><span class="o">.</span><span class="n">ReadEarlinet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filedata</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/le/f2013/le1309091830.e355&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">filedata</span><span class="p">)</span>
+<span class="go">&lt;xarray.Dataset&gt;</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Dimensions:           (Length: 48)
+Dimensions without coordinates: Length
+Data variables:</p>
+<blockquote>
+<div>Altitude          (Length) float64 1.384e+03 1.414e+03 1.443e+03 …
+Extinction        (Length) float64 7.284e-05 7.685e-05 7.375e-05 …
+ErrorExtinction   (Length) float64 -5.045e-05 -5.056e-05 -4.974e-05 …
+Backscatter       (Length) float64 1.675e-06 1.641e-06 1.604e-06 …
+ErrorBackscatter  (Length) float64 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 …
+DustLayerHeight   float32 3200.0</div></blockquote>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.System">
+<code class="descname">System</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.System" title="Permalink to this definition">¶</a></dt>
+<dd><p>PollyXT_ift</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.Location">
+<code class="descname">Location</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.Location" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leipzig, Germany</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.Longitude_degrees_east">
+<code class="descname">Longitude_degrees_east</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.Longitude_degrees_east" title="Permalink to this definition">¶</a></dt>
+<dd><p>12.43</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.Latitude_degrees_north">
+<code class="descname">Latitude_degrees_north</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.Latitude_degrees_north" title="Permalink to this definition">¶</a></dt>
+<dd><p>51.35</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.Altitude_meter_asl">
+<code class="descname">Altitude_meter_asl</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.Altitude_meter_asl" title="Permalink to this definition">¶</a></dt>
+<dd><p>90</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.EmissionWavelength_nm">
+<code class="descname">EmissionWavelength_nm</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.EmissionWavelength_nm" title="Permalink to this definition">¶</a></dt>
+<dd><p>355</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.DetectionWavelength_nm">
+<code class="descname">DetectionWavelength_nm</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.DetectionWavelength_nm" title="Permalink to this definition">¶</a></dt>
+<dd><p>387</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.DetectionMode">
+<code class="descname">DetectionMode</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.DetectionMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>photon counting</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.EvaluationMethod">
+<code class="descname">EvaluationMethod</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.EvaluationMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raman</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.InputParameters">
+<code class="descname">InputParameters</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.InputParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lindenberg_LV_13090918.txt;PollyXT_ift_20131001-…</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.ZenithAngle_degrees">
+<code class="descname">ZenithAngle_degrees</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.ZenithAngle_degrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>5</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.ResolutionRaw_meter">
+<code class="descname">ResolutionRaw_meter</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.ResolutionRaw_meter" title="Permalink to this definition">¶</a></dt>
+<dd><p>29.89</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.ResolutionEvaluated">
+<code class="descname">ResolutionEvaluated</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.ResolutionEvaluated" title="Permalink to this definition">¶</a></dt>
+<dd><p>567.83</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.StartDate">
+<code class="descname">StartDate</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.StartDate" title="Permalink to this definition">¶</a></dt>
+<dd><p>20130909</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.StartTime_UT">
+<code class="descname">StartTime_UT</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.StartTime_UT" title="Permalink to this definition">¶</a></dt>
+<dd><p>183000</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.StopTime_UT">
+<code class="descname">StopTime_UT</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.StopTime_UT" title="Permalink to this definition">¶</a></dt>
+<dd><p>192900</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.ShotsAveraged">
+<code class="descname">ShotsAveraged</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.ShotsAveraged" title="Permalink to this definition">¶</a></dt>
+<dd><p>106200</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.Comments">
+<code class="descname">Comments</code><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.Comments" title="Permalink to this definition">¶</a></dt>
+<dd><p>EARLINET</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readobsdata.ReadObsData.CheckObsnetworkName">
-<code class="descname">CheckObsnetworkName</code><span class="sig-paren">(</span><em>obs_network_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readobsdata.html#ReadObsData.CheckObsnetworkName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readobsdata.ReadObsData.CheckObsnetworkName" title="Permalink to this definition">¶</a></dt>
-<dd><p>method to quick check if the user supplied obs network string is right</p>
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>varstoread=['zdust'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_earlinet.html#ReadEarlinet.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to read all files in self.files into self.data and self.metadata</p>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.read_earlinet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_earlinet</span><span class="o">.</span><span class="n">ReadEarlinet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">
+<code class="descname">get_file_list</code><span class="sig-paren">(</span><em>varstoread=['zdust']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_earlinet.html#ReadEarlinet.get_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>search for files to read</p>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.read_earlinet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_earlinet</span><span class="o">.</span><span class="n">ReadEarlinet</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_earlinet.ReadEarlinet.get_data_revision">
+<code class="descname">get_data_revision</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_earlinet.html#ReadEarlinet.get_data_revision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.get_data_revision" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to read the revision string from the file Revision.txt in the main data directory</p>
 </dd></dl>
 
 </dd></dl>

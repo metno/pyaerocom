@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyaerocom.io.readobsdata &mdash; pyaerocom  documentation</title>
+  <title>pyaerocom.nogriddata &mdash; pyaerocom  documentation</title>
   
 
   
@@ -26,20 +26,20 @@
 
   
   
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   
 
   
 
   
         <link rel="index" title="Index"
-              href="../../../genindex.html"/>
-        <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
-        <link rel="up" title="Module code" href="../../index.html"/> 
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
 
   
-  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -55,7 +55,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+            <a href="../../index.html" class="icon icon-home"> pyaerocom
           
 
           
@@ -68,7 +68,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -87,14 +87,14 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../config_files.html">Configuration files</a></li>
 </ul>
 
             
@@ -109,7 +109,7 @@
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">pyaerocom</a>
+          <a href="../../index.html">pyaerocom</a>
         
       </nav>
 
@@ -137,11 +137,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
         
-      <li>pyaerocom.io.readobsdata</li>
+      <li>pyaerocom.nogriddata</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,7 +158,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for pyaerocom.io.readobsdata</h1><div class="highlight"><pre>
+  <h1>Source code for pyaerocom.nogriddata</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1">################################################################</span>
@@ -209,7 +209,7 @@
 <span class="c1">#from pyaerocom import config as const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 
-<div class="viewcode-block" id="ReadObsData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData">[docs]</a><span class="k">class</span> <span class="nc">ReadObsData</span><span class="p">():</span>
+<div class="viewcode-block" id="NoGridData"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData">[docs]</a><span class="k">class</span> <span class="nc">NoGridData</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;pyaerocom observation data (ungridded data) reading class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -244,7 +244,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_sets_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_set_to_read</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span> <span class="o">=</span> <span class="n">vars_to_read</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -282,7 +282,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
 
     <span class="c1">###################################################################################</span>
-<div class="viewcode-block" id="ReadObsData.code_lat_lon_in_float"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.code_lat_lon_in_float"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to code lat and lon in a single number so that we can use np.unique to</span>
 <span class="sd">        determine single locations&quot;&quot;&quot;</span>
 
@@ -292,7 +292,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span></div>
 
     <span class="c1">###################################################################################</span>
-<div class="viewcode-block" id="ReadObsData.decode_lat_lon_from_float"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.decode_lat_lon_from_float">[docs]</a>    <span class="k">def</span> <span class="nf">decode_lat_lon_from_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.decode_lat_lon_from_float"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.decode_lat_lon_from_float">[docs]</a>    <span class="k">def</span> <span class="nf">decode_lat_lon_from_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to decode lat and lon from a single number calculated by code_lat_lon_in_float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -350,14 +350,14 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.read_daily"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.read_daily">[docs]</a>    <span class="k">def</span> <span class="nf">read_daily</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.read"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read observations</span>
 
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
-<span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadObsData()</span>
-<span class="sd">        &gt;&gt;&gt; obj.read_daily()</span>
+<span class="sd">        &gt;&gt;&gt; import pyaerocom.nogriddata</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.nogriddata.NoGridData()</span>
+<span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &gt;&gt;&gt; print(obj)</span>
 <span class="sd">        &gt;&gt;&gt; print(obj.metadata[0.][&#39;latitude&#39;])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -399,31 +399,31 @@
             <span class="c1"># call the different obs data reading classes</span>
             <span class="k">if</span> <span class="n">data_set_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span>
                 <span class="c1"># read AERONETSUN V2 L2 daily data set</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> <span class="n">verboseflag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">)</span>
+                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
                     <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
                     <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read_daily</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">)</span>
+                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">data_set_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not implemented at this point.&quot;</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">data_set_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">:</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadEarlinet</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> <span class="n">verboseflag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">)</span>
+                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadEarlinet</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
                     <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
                     <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read_daily</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">)</span>
+                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -449,7 +449,7 @@
             <span class="c1"># write the cache file</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_hit_flag</span><span class="p">:</span>
                 <span class="c1"># write cache file in case the data was newly read</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Writing cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="c1"># OutHandle = gzip.open(c__cache_file, &#39;wb&#39;) # takes too much time</span>
                 <span class="n">out_handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
@@ -463,12 +463,12 @@
                 <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">object_version_saved</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
                 <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">read_dummy</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
                 <span class="n">out_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;done</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.to_timeseries"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to get the ObsData object data as dict using pd.Series for the variables</span>
 
 <span class="sd">        Parameters</span>
@@ -491,8 +491,8 @@
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadObsData(verbose=True)</span>
-<span class="sd">        &gt;&gt;&gt; obj.read_daily()</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.NoGridData(verbose=True)</span>
+<span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &gt;&gt;&gt; pdseries = obj.to_timeseries()</span>
 <span class="sd">        &gt;&gt;&gt; pdseriesmonthly = obj.to_timeseries(station_name=&#39;Avignon&#39;,start_date=&#39;2011-01-01&#39;, end_date=&#39;2012-12-31&#39;, freq=&#39;M&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -525,7 +525,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.GetDataRevision"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.GetDataRevision">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataRevision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.GetDataRevision"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.GetDataRevision">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataRevision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to read the revision string from the file Revision.txt in the main data directory&quot;&quot;&quot;</span>
 
         <span class="n">revision</span> <span class="o">=</span> <span class="s1">&#39;unset&#39;</span>
@@ -542,7 +542,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.GetDataDir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.GetDataDir">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.GetDataDir"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.GetDataDir">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to return the path of an obs data set&quot;&quot;&quot;</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -586,7 +586,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.CheckObsnetworkName"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.CheckObsnetworkName">[docs]</a>    <span class="k">def</span> <span class="nf">CheckObsnetworkName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_network_name</span><span class="p">):</span>
+<div class="viewcode-block" id="NoGridData.CheckObsnetworkName"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.CheckObsnetworkName">[docs]</a>    <span class="k">def</span> <span class="nf">CheckObsnetworkName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_network_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to quick check if the user supplied obs network string is right&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">obs_network_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
@@ -628,7 +628,7 @@
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
+            URL_ROOT:'../../',
             VERSION:'',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -636,16 +636,16 @@
             SOURCELINK_SUFFIX: '.txt'
         };
     </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
   
   
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
   

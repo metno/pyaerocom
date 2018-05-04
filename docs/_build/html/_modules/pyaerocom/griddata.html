@@ -171,7 +171,7 @@
 <span class="kn">from</span> <span class="nn">iris.cube</span> <span class="k">import</span> <span class="n">Cube</span><span class="p">,</span> <span class="n">CubeList</span>
 <span class="kn">from</span> <span class="nn">iris.analysis.cartography</span> <span class="k">import</span> <span class="n">area_weights</span>
 <span class="kn">from</span> <span class="nn">iris.analysis</span> <span class="k">import</span> <span class="n">MEAN</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span><span class="p">,</span> <span class="n">Series</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">nan</span>
 
@@ -383,9 +383,10 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start time of dataset as datetime64 object&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stop time could not be accessed in &quot;</span>
-                             <span class="s2">&quot;GridData class&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stop time could not be accessed in &quot;</span>
+                                 <span class="s2">&quot;GridData class&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">nan</span>
         <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
         
@@ -443,6 +444,52 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>    
             <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
     
+<div class="viewcode-block" id="GridData.to_time_series"><a class="viewcode-back" href="../../api.html#pyaerocom.griddata.GridData.to_time_series">[docs]</a>    <span class="k">def</span> <span class="nf">to_time_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert this cube to time series</span>
+<span class="sd">        </span>
+<span class="sd">        Extract time series for each lon / lat coordinate in this cube or at </span>
+<span class="sd">        predefined sample points (e.g. station data). If sample points are</span>
+<span class="sd">        provided, the cube is interpolated first onto the sample points.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_points : :obj:`list`, optional</span>
+<span class="sd">            coordinates (lon / lat) at which time series is supposed to be </span>
+<span class="sd">            retrieved</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional keyword args passed to :func:`interpolate`</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            list of result dictionaries for each coordinate. Dictionary keys </span>
+<span class="sd">            are: ``longitude, latitude, :attr:`var_name```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">sample_points</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span>
+        
+        <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span>
+        <span class="n">times</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+    
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">lon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lons</span><span class="p">):</span>        
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;latitude&#39;</span>   <span class="p">:</span>   <span class="n">lat</span><span class="p">,</span>
+                               <span class="s1">&#39;longitude&#39;</span>  <span class="p">:</span>   <span class="n">lon</span><span class="p">,</span>
+                               <span class="n">var</span>          <span class="p">:</span>   <span class="n">Series</span><span class="p">(</span><span class="n">arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> 
+                                                       <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">)})</span>
+                
+        <span class="k">return</span> <span class="n">result</span></div>
+            
+    
+            
+            
+        
 <div class="viewcode-block" id="GridData.calc_area_weights"><a class="viewcode-back" href="../../api.html#pyaerocom.griddata.GridData.calc_area_weights">[docs]</a>    <span class="k">def</span> <span class="nf">calc_area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate area weights for grid&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
@@ -560,6 +607,7 @@
                 <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to apply temporal cropping&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GridData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">suppl</span><span class="p">)</span></div>
         
+    
 <div class="viewcode-block" id="GridData.area_weighted_mean"><a class="viewcode-back" href="../../api.html#pyaerocom.griddata.GridData.area_weighted_mean">[docs]</a>    <span class="k">def</span> <span class="nf">area_weighted_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get area weighted mean&quot;&quot;&quot;</span>
         <span class="n">ws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_weights</span>
@@ -771,8 +819,16 @@
     
     <span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">()</span>
     <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
-    <span class="n">itp</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">)),</span>
-                            <span class="p">(</span><span class="s2">&quot;latitude&quot;</span> <span class="p">,</span> <span class="p">(</span><span class="mi">35</span><span class="p">))])</span>
+    
+    <span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2018-1-22&quot;</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2018-2-5&quot;</span><span class="p">)</span>
+    
+    <span class="n">cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">80</span><span class="p">),</span> 
+                        <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+
+    <span class="n">cropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">to_time_series</span><span class="p">()</span>
+    
     
     <span class="k">if</span> <span class="n">RUN_OLD_STUFF</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
@@ -826,8 +882,11 @@
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         
-    <span class="kn">import</span> <span class="nn">doctest</span>
-    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     import doctest</span>
+<span class="c1">#     doctest.testmod()</span>
+<span class="c1"># </span>
+<span class="c1"># =============================================================================</span>
 </pre></div>
 
            </div>

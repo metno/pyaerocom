@@ -684,9 +684,13 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">t_constraint</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_time_constraint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
-                                                        <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
-                <span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">t_constraint</span><span class="p">)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#                 t_constraint = data.get_time_constraint(self.start_time, </span>
+<span class="c1">#                                                         self.stop_time)</span>
+<span class="c1">#                 _data = data.extract(t_constraint)</span>
+<span class="c1"># =============================================================================</span>
+                <span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">_data</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to crop data for </span><span class="si">{}</span><span class="s2"> in time.</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -754,7 +758,7 @@
 <span class="sd">        list containing string IDs of all models that should be imported</span>
 <span class="sd">    results : dict</span>
 <span class="sd">        dictionary containing :class:`ReadGrid` instances for each</span>
-<span class="sd">        name </span>
+<span class="sd">        name</span>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>

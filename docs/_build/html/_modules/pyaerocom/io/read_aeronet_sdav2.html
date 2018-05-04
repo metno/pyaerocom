@@ -1,0 +1,480 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.io.read_aeronet_sdav2 &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.io.read_aeronet_sdav2</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.io.read_aeronet_sdav2</h1><div class="highlight"><pre>
+<span></span><span class="c1">################################################################</span>
+<span class="c1"># read_aeronet_sdav1.py</span>
+<span class="c1">#</span>
+<span class="c1"># class to read aeronet sda data </span>
+<span class="c1"># (https://aeronet.gsfc.nasa.gov/cgi-bin/combined_data_access_new)</span>
+<span class="c1">#</span>
+<span class="c1"># this file is part of the aerocom_pt package</span>
+<span class="c1">#</span>
+<span class="c1">#################################################################</span>
+<span class="c1"># Created 20171026 by Jan Griesfeller for Met Norway</span>
+<span class="c1">#</span>
+<span class="c1"># Last changed: See git log</span>
+<span class="c1">#################################################################</span>
+
+<span class="c1">#Copyright (C) 2017 met.no</span>
+<span class="c1">#Contact information:</span>
+<span class="c1">#Norwegian Meteorological Institute</span>
+<span class="c1">#Box 43 Blindern</span>
+<span class="c1">#0313 OSLO</span>
+<span class="c1">#NORWAY</span>
+<span class="c1">#E-mail: jan.griesfeller@met.no</span>
+<span class="c1">#This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#(at your option) any later version.</span>
+<span class="c1">#This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1">#GNU General Public License for more details.</span>
+<span class="c1">#You should have received a copy of the GNU General Public License</span>
+<span class="c1">#along with this program; if not, write to the Free Software</span>
+<span class="c1">#Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
+<span class="c1">#MA 02110-1301, USA</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Note</span>
+<span class="sd">----</span>
+<span class="sd">    This module has not yet been translated / shipped to the pyaerocom </span>
+<span class="sd">    library</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">const</span>
+
+<div class="viewcode-block" id="ReadAeronetSDAV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetSDAV2</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;Read Aeronet SDA data class</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1">#FILEMASK = &#39;*_A*.ONEILL_20&#39;</span>
+	<span class="n">FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.ONEILL_20&#39;</span>
+	<span class="n">version__</span><span class="o">=</span><span class="s1">&#39;0.02&#39;</span>
+	<span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span>
+	<span class="n">DATASET_PATH</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">][</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span>
+	<span class="c1">#Flag if the dataset contains all years or not</span>
+	<span class="n">DATASET_IS_YEARLY</span> <span class="o">=</span> <span class="kc">False</span>
+
+	<span class="c1">###################################################################################</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">VerboseFlag</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">VerboseFlag</span> <span class="o">=</span> <span class="n">VerboseFlag</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">GetFileList</span><span class="p">()</span>
+		<span class="c1">#read revision data from 1st data file name</span>
+		<span class="c1">#example: 920801_160312_Minsk.ONEILL_20</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">Revision</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+
+
+	<span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span>
+
+	<span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">StopIteration</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+
+	<span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+	<span class="c1">###################################################################################</span>
+	
+
+
+	<span class="c1">###################################################################################</span>
+
+<div class="viewcode-block" id="ReadAeronetSDAV2.ReadDailyFile"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDailyFile">[docs]</a>	<span class="k">def</span> <span class="nf">ReadDailyFile</span><span class="p">(</span><span class="n">InFile</span><span class="p">,</span> <span class="n">VarsToReturn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+		<span class="c1">#This how the beginning of data file lookes like</span>
+
+		<span class="c1">#Level 2.0 Quality Assured Data. The following AERONET-SDA data are derived from AOD data which are pre and post-field calibrated and manually inspected.</span>
+		<span class="c1">#SDA Version 4.1 (tauf_tauc),Note: the labels in square brackets that follow some of the parameter (column) names are the symbols associated with these parameters in the original SDA publication of O&#39;Neill et al. (2003)</span>
+		<span class="c1">#Location=Zvenigorod,Latitude=55.695000,Longitude=36.775000,Elevation[m]=200.000000,PI=Brent_Holben,Email=Brent.N.Holben@nasa.gov</span>
+		<span class="c1">#SDA from Level 2.0 AOD,Daily Average,UNITS can be found at,,, http://aeronet.gsfc.nasa.gov/data_menu.html</span>
+		<span class="c1">#Date(dd:mm:yyyy),Time(hh:mm:ss),Julian_Day,Total_AOD_500nm[tau_a],Fine_Mode_AOD_500nm[tau_f],Coarse_Mode_AOD_500nm[tau_c],FineModeFraction_500nm[eta],2nd_Order_Reg_Fit_Error-Total_AOD_500nm[regression_dtau_a],RMSE_Fine_Mode_AOD_500nm[Dtau_f],RMSE_Coarse_Mode_AOD_500nm[Dtau_c],RMSE_FineModeFraction_500nm[Deta],Angstrom_Exponent(AE)-Total_500nm[alpha],dAE/dln(wavelength)-Total_500nm[alphap],AE-Fine_Mode_500nm[alpha_f],dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f],870nm_Input_AOD,675nm_Input_AOD,667nm_Input_AOD,555nm_Input_AOD,551nm_Input_AOD,532nm_Input_AOD,531nm_Input_AOD,500nm_Input_AOD,490nm_Input_AOD,443nm_Input_AOD,440nm_Input_AOD,412nm_Input_AOD,380nm_Input_AOD,Last_Processing_Date,Number_of_Wavelengths,Number_of_Observations,Exact_Wavelengths_for_Input_AOD</span>
+		<span class="c1">#16:09:2006,00:00:00,259.000000,0.059239,0.032410,0.026828,0.571506,0.004645,0.007370,0.005064,0.091573,1.278830,-0.656569,2.354811,1.413517,0.036734,0.039337,-999.,-999.,-999.,-999.,-999.,0.064670,-999.,-999.,0.069614,-999.,0.083549,27:11:2007,5,11,0.868800,0.675600,0.440400,0.500500,0.380100</span>
+
+		<span class="n">DATE_INDEX</span><span class="o">=</span><span class="mi">0</span>
+		<span class="n">TIME_INDEX</span><span class="o">=</span><span class="mi">1</span>
+		<span class="n">JULIEN_DAY_INDEX</span><span class="o">=</span><span class="mi">2</span>
+		<span class="n">TOTAL_AOD_500NM_TAU_A_INDEX</span><span class="o">=</span><span class="mi">3</span>
+		<span class="n">FINE_MODE_AOD_500NM_TAU_F_INDEX</span><span class="o">=</span><span class="mi">4</span>
+		<span class="n">COARSE_MODE_AOD_500NM_TAU_C_INDEX</span><span class="o">=</span><span class="mi">5</span>
+		<span class="n">FINE_MODE_FRACTION_500NM_ETA_INDEX</span><span class="o">=</span><span class="mi">6</span>
+		<span class="c1">#i_2nd_Order_Reg_Fit_Error-Total_AOD_500nm[regression_dtau_a]=7</span>
+		<span class="n">RMSE_FINE_MODE_AOD_500NM_DTAU_INDEX</span><span class="o">=</span><span class="mi">8</span>
+		<span class="n">RMSE_COARSE_MODE_AOD_500NM_DTAU_INDEX</span><span class="o">=</span><span class="mi">9</span>
+		<span class="n">RMSE_FINE_MODE_FRACTION_500NM_DETA_INDEX</span><span class="o">=</span><span class="mi">10</span>
+		<span class="c1">#i_Angstrom_Exponent(AE)-Total_500nm[alpha]=11</span>
+		<span class="c1">#i_dAE/dln(wavelength)-Total_500nm[alphap]=12</span>
+		<span class="c1">#i_AE-Fine_Mode_500nm[alpha_f]=13</span>
+		<span class="c1">#i_dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f]=14</span>
+		<span class="n">I870NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">15</span>
+		<span class="n">I675NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">16</span>
+		<span class="n">I667NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">17</span>
+		<span class="n">I555NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">18</span>
+		<span class="n">I551NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">19</span>
+		<span class="n">I532NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">20</span>
+		<span class="n">I531NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">21</span>
+		<span class="n">I500NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">22</span>
+		<span class="n">I490NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">23</span>
+		<span class="n">I443NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">24</span>
+		<span class="n">I440NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">25</span>
+		<span class="n">I412NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">26</span>
+		<span class="n">I380NM_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">27</span>
+		<span class="n">LAST_PROCESSING_DATE_INDEX</span><span class="o">=</span><span class="mi">28</span>
+		<span class="n">NUMBER_OF_WAVELENGTHS_INDEX</span><span class="o">=</span><span class="mi">29</span>
+		<span class="n">NUMBER_OF_OBSERVATIONS_INDEX</span><span class="o">=</span><span class="mi">30</span>
+		<span class="n">EXACT_WAVELENGTHS_FOR_INPUT_AOD_INDEX</span><span class="o">=</span><span class="mi">31</span>
+
+
+
+		<span class="n">f_NanVal</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="o">-</span><span class="mf">9999.</span><span class="p">)</span>
+
+		<span class="n">d_DataOut</span><span class="o">=</span><span class="p">{}</span>
+		<span class="c1">#Iterate over the lines of the file</span>
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">InFile</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">InFile</span><span class="p">:</span>
+			<span class="n">c_HeadLine</span><span class="o">=</span><span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+			<span class="n">c_Algorithm</span><span class="o">=</span><span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+			<span class="n">c_Dummy</span><span class="o">=</span><span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+			<span class="c1">#re.split(r&#39;=|\,&#39;,c_Dummy)</span>
+			<span class="n">i_Dummy</span><span class="o">=</span><span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=|\,&#39;</span><span class="p">,</span><span class="n">c_Dummy</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span> 
+			<span class="n">dict_Loc</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">i_Dummy</span><span class="p">,</span> <span class="n">i_Dummy</span><span class="p">))</span>
+
+			<span class="c1">#pdb.set_trace()</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">])</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">])</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;Elevation[m]&#39;</span><span class="p">])</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
+			<span class="n">c_Dummy</span><span class="o">=</span><span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+			<span class="n">c_Header</span><span class="o">=</span><span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+
+
+			<span class="n">DataArr</span><span class="o">=</span><span class="p">{}</span>
+			<span class="c1">#d_DataOut[&#39;time&#39;]=[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550gt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[]</span>
+			<span class="n">d_Time</span><span class="o">=</span><span class="p">[]</span>
+
+
+			<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">InFile</span><span class="p">:</span>
+				<span class="c1"># process line</span>
+				<span class="n">c_DummyArr</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+				<span class="c1">#the following uses the standatd python datetime functions</span>
+				<span class="n">day</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">year</span> <span class="o">=</span> <span class="n">c_DummyArr</span><span class="p">[</span><span class="n">DATE_INDEX</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+				<span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="n">c_DummyArr</span><span class="p">[</span><span class="n">TIME_INDEX</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+
+				<span class="c1">#This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta</span>
+				<span class="c1">#Build a proper ISO 8601 UTC date string</span>
+				<span class="n">day</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">year</span> <span class="o">=</span> <span class="n">c_DummyArr</span><span class="p">[</span><span class="n">DATE_INDEX</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+				<span class="c1">#pdb.set_trace()</span>
+				<span class="n">datestring</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">])</span>
+				<span class="n">datestring</span><span class="o">=</span><span class="s1">&#39;T&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">datestring</span><span class="p">,</span>  <span class="n">c_DummyArr</span><span class="p">[</span><span class="n">TIME_INDEX</span><span class="p">]])</span>
+				<span class="n">datestring</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">datestring</span><span class="p">,</span> <span class="s1">&#39;00:00&#39;</span><span class="p">])</span>
+				<span class="n">d_Time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datestring</span><span class="p">))</span>
+
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">c_DummyArr</span><span class="p">[</span><span class="n">TOTAL_AOD_500NM_TAU_A_INDEX</span><span class="p">]))</span>
+				<span class="k">if</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">f_NanVal</span><span class="p">:</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">c_DummyArr</span><span class="p">[</span><span class="n">I440NM_INPUT_AOD_INDEX</span><span class="p">]))</span>
+				<span class="k">if</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">f_NanVal</span><span class="p">:</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">c_DummyArr</span><span class="p">[</span><span class="n">I870NM_INPUT_AOD_INDEX</span><span class="p">]))</span>
+				<span class="k">if</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">f_NanVal</span><span class="p">:</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">c_DummyArr</span><span class="p">[</span><span class="n">COARSE_MODE_AOD_500NM_TAU_C_INDEX</span><span class="p">]))</span>
+				<span class="k">if</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">f_NanVal</span><span class="p">:</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">c_DummyArr</span><span class="p">[</span><span class="n">FINE_MODE_AOD_500NM_TAU_F_INDEX</span><span class="p">]))</span>
+				<span class="k">if</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">f_NanVal</span><span class="p">:</span> <span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+				
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.44</span><span class="o">/.</span><span class="mi">870</span><span class="p">))</span>
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mf">0.55</span><span class="o">/</span><span class="mf">0.50</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">*</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550gt1aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mf">0.55</span><span class="o">/</span><span class="mf">0.50</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">*</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+				<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mf">0.55</span><span class="o">/</span><span class="mf">0.50</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">*</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+				<span class="c1">#;fill up time steps of the now calculated od550_aer that are nans with values calculated from the</span>
+				<span class="c1">#;440nm wavelength to minimise gaps in the time series</span>
+				<span class="c1">#if np.isnan(d_DataOut[&#39;od550aer&#39;][-1]): </span>
+					<span class="c1">#d_DataOut[&#39;od550aer&#39;][-1]=d_DataOut[&#39;od440aer&#39;][-1]*(0.55/0.44)**np.float_(-1.)*d_DataOut[&#39;ang4487aer&#39;][-1]</span>
+
+		<span class="c1">#convert to pandas series</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550gt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550gt1aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+		<span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d_DataOut</span><span class="p">[</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">d_Time</span><span class="p">)</span>
+
+		<span class="k">return</span> <span class="n">d_DataOut</span></div>
+		<span class="c1">#pdb.set_trace()</span>
+
+
+	<span class="c1">###################################################################################</span>
+
+<div class="viewcode-block" id="ReadAeronetSDAV2.ReadDaily"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDaily">[docs]</a>	<span class="k">def</span> <span class="nf">ReadDaily</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;create a dictionary with all the stations using the station name as key&quot;&quot;&quot;</span>
+
+		<span class="k">for</span> <span class="n">File</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+			<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">VerboseFlag</span><span class="p">:</span>
+				<span class="nb">print</span><span class="p">(</span><span class="n">File</span><span class="p">)</span>
+
+			<span class="n">TempData</span><span class="o">=</span><span class="n">ReadAeronetSDAV2</span><span class="o">.</span><span class="n">ReadDailyFile</span><span class="p">(</span><span class="n">File</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">TempData</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">TempData</span></div>
+
+
+	<span class="c1">###################################################################################</span>
+
+<div class="viewcode-block" id="ReadAeronetSDAV2.GetFileList"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.GetFileList">[docs]</a>	<span class="k">def</span> <span class="nf">GetFileList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;search for files to read &quot;&quot;&quot;</span>
+
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">VerboseFlag</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;searching for data files. This might take a while...&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">=</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ReadAeronetSDAV2</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span><span class="n">ReadAeronetSDAV2</span><span class="o">.</span><span class="n">FILEMASK</span><span class="p">))</span></div></div>
+
+
+<span class="c1">###################################################################################</span>
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -8,8 +8,7 @@ Created on Wed May  2 12:43:26 2018
 
 
 from pyaerocom import const
-import pyaerocom.io as pio
-import pandas
+import pyaerocom
 import numpy as np
 RELOAD = False
 if __name__=="__main__":
@@ -18,25 +17,25 @@ if __name__=="__main__":
     except:
         RELOAD = True
     if RELOAD:
-        read = pio.ReadObsData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME)
-        read.read_daily()
+        data = pyaerocom.nogriddata.NoGridData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME)
+        data.read()
         
         print('Latitudes:')
-        print(read.latitude)
+        print(data.latitude)
         print('Longitudes:')
-        print(read.longitude)
+        print(data.longitude)
         print('station names')
-        print(read)
+        print(data)
         # This returns all stations
-        all = read.to_timeseries()
+        all = data.to_timeseries()
         # this returns a single station in a dictionary using the station name as key
-        test = read.to_timeseries('AOE_Baotou')
+        test = data.to_timeseries('AOE_Baotou')
         print(test)
         #This returns a dictionary with more elements
-        test_list = read.to_timeseries(['AOE_Baotou','Karlsruhe'])
+        test_list = data.to_timeseries(['AOE_Baotou','Karlsruhe'])
         print(test_list)
     
-    path = read.infiles[0][0]
+    path = data.infiles[0][0]
     
     with open(path) as f:
         data = f.readlines()

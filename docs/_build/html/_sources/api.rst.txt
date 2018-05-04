@@ -11,17 +11,17 @@ Documentation of the pyaerocom programming interface.
 Data types and data representation
 ----------------------------------
 
-Model data
-^^^^^^^^^^
+Gridded data
+^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.griddata
    :members:
    :undoc-members:
    
-Observation data 
+Ungridded data 
 ^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.obsdata
+.. automodule:: pyaerocom.nogriddata
    :members:
    :undoc-members:
 
@@ -45,11 +45,18 @@ Reading of gridded data
 Reading of ungridded data
 """""""""""""""""""""""""
 
-.. automodule:: pyaerocom.io.readobsdata
+.. automodule:: pyaerocom.io.read_aeronet_sdav2
    :members:
    :undoc-members:
   
+.. automodule:: pyaerocom.io.read_aeronet_sunv2
+   :members:
+   :undoc-members:
      
+.. automodule:: pyaerocom.io.read_earlinet
+   :members:
+   :undoc-members:
+   
 File naming conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
