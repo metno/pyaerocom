@@ -56,7 +56,7 @@ if __name__=="__main__":
     files = get()
     data = GridData(files['models']['aatsr_su_v4.3'],
                      var_name="od550aer",
-                     model_id='aatsr_su_v4.3')
+                     name='aatsr_su_v4.3')
     
 
     for tres in tres_test:

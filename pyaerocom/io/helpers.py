@@ -123,19 +123,19 @@ def correct_time_coord(cube, ts_type, year, tindex_cube=0):
     cube.add_dim_coord(tcoord, tindex_cube)
     return cube
 
-def search_model_ids(update_inifile=True, check_nc_file=True):
+def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database
     
     Parameters
     ----------
     update_inifile : bool
-        if True, the file *model_ids.txt* will be updated. The file is located
+        if True, the file *names.txt* will be updated. The file is located
         in the installation *data* directory.
     check_nc_file : bool
         If True, only model IDs are included, for which at least one nc file
         can be detected in the corresponding renamed sub directory
     """
-    model_ids = []
+    names = []
     for mdir in const.MODELDIRS:
         print("\n%s\n" %mdir)
         sub = listdir(mdir)
@@ -151,30 +151,30 @@ def search_model_ids(update_inifile=True, check_nc_file=True):
                             add = True
                             break
                 if add:
-                    model_ids.append(item)
-    model_ids = sorted(od.fromkeys(model_ids))       
+                    names.append(item)
+    names = sorted(od.fromkeys(names))
     if update_inifile:
-        fpath = join(__dir__, "data", "model_ids.txt")
+        fpath = join(__dir__, "data", "names.txt")
         f = open(fpath, "w") 
-        for model_id in model_ids:
-            f.write("%s\n" %model_id)
+        for name in names:
+            f.write("%s\n" %name)
         f.close()
-    return model_ids
+    return names
 
-def get_all_model_ids():
-    """Try to import all model IDs from file model_ids.txt in data directory"""
+def get_all_names():
+    """Try to import all model IDs from file names.txt in data directory"""
     try:
-        with open(join(__dir__, "data", "model_ids.txt")) as f:
-            model_ids = f.read().splitlines()
+        with open(join(__dir__, "data", "names.txt")) as f:
+            names = f.read().splitlines()
         f.close()
     except:
         try:
-            model_ids = search_model_ids()
+            names = search_names()
         except:
             raise Exception("Failed to access model IDs")
-    return model_ids
+    return names
     
 if __name__=="__main__":
-    #model_ids = search_model_ids()
-    model_ids = get_all_model_ids()
+    #names = search_names()
+    names = get_all_names()
     

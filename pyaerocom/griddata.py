@@ -92,7 +92,7 @@ class GridData(object):
         #super(GridData, self).__init__(input, var_name, verbose, **suppl_info)
         self.verbose = verbose
         self.suppl_info = od(from_files     = [],
-                             model_id       = "Unknown",
+                             name       = "Unknown",
                              ts_type        = "Unknown",
                              region         = None)
         #attribute used to store area weights (if applicable, see method
@@ -172,9 +172,9 @@ class GridData(object):
         return Variable(self.var_name)
             
     @property 
-    def model_id(self):
+    def name(self):
         """ID of model to which data belongs"""
-        return self.suppl_info["model_id"]
+        return self.suppl_info["name"]
        
     @property
     def has_data(self):
@@ -283,6 +283,29 @@ class GridData(object):
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
     
+    def to_time_series(self, sample_points=None, **kwargs):
+        """Convert this cube to time series
+        
+        Extract time series for each lon / lat coordinate in this cube or at 
+        predefined sample points (e.g. station data). If sample points are
+        provided, the cube is interpolated first onto the sample points.
+        
+        Parameters
+        ----------
+        sample_points : :obj:`list`, optional
+            coordinates (lon / lat) at which time series is supposed to be 
+            retrieved
+        **kwargs
+            additional keyword args passed to :func:`interpolate`
+        
+        Returns
+        -------
+        tuple
+        """
+        time_stamps = self.time_stamps()
+            
+            
+        
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         self._check_lonlat_bounds()
@@ -400,6 +423,7 @@ class GridData(object):
                 raise DataExtractionError("Failed to apply temporal cropping")
         return GridData(data, **suppl)
         
+    
     def area_weighted_mean(self):
         """Get area weighted mean"""
         ws = self.area_weights
@@ -561,7 +585,7 @@ class GridData(object):
         from pyaerocom.plot.mapping import plot_map
         fig = plot_map(self.grid[time_idx], xlim, ylim, **kwargs)
         fig.axes[0].set_title("Model: %s, var=%s (%s)" 
-                     %(self.model_id, self.var_name, 
+                     %(self.name, self.var_name,
                        self.time.cell(time_idx)))
         return fig
     
@@ -600,7 +624,7 @@ class GridData(object):
     def __str__(self):
         """For now, use string representation of underlying data"""
         return ("pyaerocom.GridData: %s\nGrid data: %s"
-                %(self.model_id, self.grid.__str__()))
+                %(self.name, self.grid.__str__()))
     
     def __repr__(self):
         """For now, use representation of underlying data"""
@@ -611,16 +635,35 @@ if __name__=='__main__':
     
     data = GridData()
     data._init_testdata_default()
-# =============================================================================
-#     itp = data.interpolate([("longitude", (10)),
-#                             ("latitude" , (35))])
-#     
-# =============================================================================
-
+    
     start = Timestamp("2018-1-22")
     stop = Timestamp("2018-2-5")
     
-    cropped = data.crop(time_range=(start, stop))
+    cropped = data.crop(lon_range=(0, 20), lat_range=(50, 80), 
+                        time_range=(start, stop))
+
+    cropped.quickplot_map()
+    
+    import pandas
+    
+    times = cropped.time_stamps()
+    lons = cropped.longitude.points
+    lats = cropped.latitude.points
+    
+    arr = cropped.grid.data
+    
+    pan = pandas.Panel(arr)
+    
+    from time import time
+    t0 = time()
+    result = []
+    for i, lat in enumerate(lats):
+        for j, lon in enumerate(lons):
+            pandas.Series(arr[:, i, j], index=times)
+    
+    
+    
+    
     if RUN_OLD_STUFF:
         from pyaerocom.io.testfiles import get
         from matplotlib.pyplot import close, figure
@@ -628,7 +671,7 @@ if __name__=='__main__':
         close("all")
         files = get()
         data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
-                         model_id='aatsr_su_v4.3')
+                         name='aatsr_su_v4.3')
         print(data.var_name)
         print(type(data.longitude))
         print(data.longitude.points.min(), data.longitude.points.max())
@@ -643,7 +686,7 @@ if __name__=='__main__':
         cropped.quickplot_map()
         
         other = GridData(files["models"]["ecmwf_osuite"],
-                          var_name="od550aer", model_id="ECMWF_OSUITE")
+                          var_name="od550aer", name="ECMWF_OSUITE")
         other.quickplot_map()
         #crop randomly
         ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))

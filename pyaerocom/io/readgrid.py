@@ -66,7 +66,7 @@ class ReadGrid(object):
     
     Attributes
     ----------
-    model_id : str
+    name : str
         string ID for model (see Aerocom interface map plots lower left corner)
     data : GridData
         imported data object 
@@ -90,7 +90,7 @@ class ReadGrid(object):
         
     Parameters
     ----------
-    model_id : str
+    name : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
     start_time : :obj:`pandas.Timestamp` or :obj:`str`, optional
         desired start time of dataset (note, that strings are passed to 
@@ -112,7 +112,7 @@ class ReadGrid(object):
     Examples
     --------
     
-        >>> read = ReadGrid(model_id="ECMWF_OSUITE")
+        >>> read = ReadGrid(name="ECMWF_OSUITE")
         >>> read.read_var("od550aer")
         >>> read.read_var("od550so4")
         >>> read.read_var("od550bc")
@@ -125,20 +125,20 @@ class ReadGrid(object):
     # Directory containing model data for this species
     _model_dir = ""
     _USE_SUBDIR_RENAMED = True
-    def __init__(self, model_id="", start_time=None, stop_time=None, 
+    def __init__(self, name="", start_time=None, stop_time=None,
                  file_convention="aerocom3", init=True, 
                  verbose=const.VERBOSE):
         # model ID
-        if not isinstance(model_id, str):
-            if isinstance(model_id, list):
-                msg = ("Input for model_id is list. You might want to use "
+        if not isinstance(name, str):
+            if isinstance(name, list):
+                msg = ("Input for name is list. You might want to use "
                        "class ReadMultiGrid for import?")
             else:
-                msg = ("Invalid input for model_id. Need str, got: %s"
-                       %type(model_id))
+                msg = ("Invalid input for name. Need str, got: %s"
+                       %type(name))
             raise TypeError(msg)
                 
-        self.model_id = model_id
+        self.name = name
         
         # only overwrite if there is input, note that the attributes
         # start_time and stop_time are defined below as @property getter and
@@ -179,7 +179,7 @@ class ReadGrid(object):
             dirloc = join(dirloc, "renamed")
         if not isdir(dirloc):
             raise IOError("Model directory for ID %s not available or does "
-                          "not exist" %self.model_id)
+                          "not exist" %self.name)
         return dirloc
     
     @model_dir.setter
@@ -262,12 +262,12 @@ class ReadGrid(object):
         bool
             True, if directory was found, else False
         """
-        sid = self.model_id
+        sid = self.name
         _candidates = []
         for search_dir in self._MODELDIRS:
             if self.verbose:
                 print('Searching dir for ID %s in: %s' 
-                      %(self.model_id, search_dir))
+                      %(self.name, search_dir))
             # get the directories
             if isdir(search_dir):
                 subdirs = listdir(search_dir)
@@ -319,7 +319,7 @@ class ReadGrid(object):
             raise IOError("Failed to identify file naming convention "
                           "from first file in model directory for model "
                           "%s\nmodel_dir: %s\nFile name: %s"
-                          %(self.model_id, self.model_dir, first_file_name))
+                          %(self.name, self.model_dir, first_file_name))
         _vars_temp = []
         _years_temp = []
         for _file in nc_files:
@@ -349,7 +349,7 @@ class ReadGrid(object):
         for k, v in kwargs.items():
             if k in self.__dict__:
                 print("Updating %s in ModelImportResult for model %s"
-                      "New value: %s" %(k, self.model_id, v))
+                      "New value: %s" %(k, self.name, v))
                 self.__dict__[k] = v
             else:
                 print("Ignoring key %s in ModelImportResult.update()"  %k)
@@ -438,7 +438,7 @@ class ReadGrid(object):
         if len(match_files) == 0:
             raise IOError("No files could be found for variable %s, and %s "
                           "data in specified time interval\n%s-%s"
-                          %(self.model_id, ts_type, self.start_time,
+                          %(self.name, ts_type, self.start_time,
                             self.stop_time))
         self._match_files = match_files
         # Define Iris var_constraint -> ensures that only the current 
@@ -484,7 +484,7 @@ class ReadGrid(object):
         if len(loaded_files) == 0:
             raise IOError("None of the found files for variable {}, and {} "
                           "in specified time interval\n{}-{}\n"
-                          "could be loaded".format(self.model_id, 
+                          "could be loaded".format(self.name,
                                                    ts_type, 
                                                    self.start_time,
                                                    self.stop_time))
@@ -517,7 +517,7 @@ class ReadGrid(object):
         
         #create instance of pyaerocom.GridData
         data = GridData(input=cubes_concat[0], from_files=loaded_files,
-                         model_id=self.model_id, ts_type=ts_type)
+                         name=self.name, ts_type=ts_type)
         # crop cube in time (if applicable)
         if self.start_time and self.stop_time:
             if self.verbose:
@@ -567,7 +567,7 @@ class ReadGrid(object):
              "Available variables: {}\n"
              "Available years: {}\n".format(head, 
                                             len(head)*"-",
-                                            self.model_id, 
+                                            self.name,
                                             self.vars, 
                                             self.years))
         if self.data:
@@ -593,11 +593,11 @@ class ReadMultiGrid(object):
     
     Attributes
     ----------
-    model_ids : list
+    names : list
         list containing string IDs of all models that should be imported
     results : dict
         dictionary containing :class:`ReadGrid` instances for each
-        model_id 
+        name
     
     Examples
     --------
@@ -605,7 +605,7 @@ class ReadMultiGrid(object):
     >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
     >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
     >>> read = pyaerocom.io.ReadMultiGrid(models, start, stop, verbose=False)
-    >>> print(read.model_ids)
+    >>> print(read.names)
     ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
     >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
     >>> assert type(read_cam) == pyaerocom.io.ReadGrid
@@ -627,15 +627,15 @@ class ReadMultiGrid(object):
     # e.g. definition of def start_time below)
     _start_time = None
     _stop_time = None
-    def __init__(self, model_ids, start_time=None, stop_time=None, 
+    def __init__(self, names, start_time=None, stop_time=None,
                  verbose=const.VERBOSE):
         
-        if isinstance(model_ids, str):
-            model_ids = [model_ids]
-        if not isinstance(model_ids, list) or not all([isinstance(x, str) for x in model_ids]):
+        if isinstance(names, str):
+            names = [names]
+        if not isinstance(names, list) or not all([isinstance(x, str) for x in names]):
             raise IllegalArgumentError("Please provide string or list of strings")
     
-        self.model_ids = model_ids
+        self.names = names
         # dictionary containing instances of ModelImportResult for each model
         # is initiated in method `init_results` at end of __init__
         self.results = None
@@ -716,12 +716,12 @@ class ReadMultiGrid(object):
         """Initiate the import result attributes
         
         Creates and initiates :class:`ModelImportResult` object for each 
-        model specified in :attr:`model_ids` and stores it in the dictionary
-        :attr:`results` using the `model_id`.
+        model specified in :attr:`names` and stores it in the dictionary
+        :attr:`results` using the `name`.
         """
         self.results = od()
-        for model_id in self.model_ids:
-            self.results[model_id] = ReadGrid(model_id,
+        for name in self.names:
+            self.results[name] = ReadGrid(name,
                                                    self.start_time, 
                                                    self.stop_time, 
                                                    init=False,
@@ -736,16 +736,16 @@ class ReadMultiGrid(object):
             True, if directory could be found, else False
         """
         #remember only the model IDs for which a directory could be found
-        model_ids_new = []
-        for model_id in self.model_ids:
+        names_new = []
+        for name in self.names:
             # loop through the list of models
-            if self.results[model_id].search_model_dir():
-                model_ids_new.append(model_id)
-        if len(model_ids_new) == 0:
+            if self.results[name].search_model_dir():
+                names_new.append(name)
+        if len(names_new) == 0:
             raise AttributeError("Failed to find model directories for all "
-                                 "model IDs specified (%s)" %self.model_ids)
-        self.model_ids = model_ids_new
-        return model_ids_new
+                                 "model IDs specified (%s)" %self.names)
+        self.names = names_new
+        return names_new
     
     def search_all_files(self):
         """Search all valid model files for each model
@@ -762,11 +762,11 @@ class ReadMultiGrid(object):
         # aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc
         # aerocom.AATSR_ensemble.v2.6.daily.od550aer.2012.nc
         # loop through the list of models
-        for model_id in self.model_ids:
-            self.results[model_id].search_all_files()
+        for name in self.names:
+            self.results[name].search_all_files()
     
         
-    def read(self, var_ids, model_ids=None, start_time=None, stop_time=None,
+    def read(self, var_ids, names=None, start_time=None, stop_time=None,
              ts_type="daily"):
         """High level method to import data for multiple variables and models
         
@@ -774,7 +774,7 @@ class ReadMultiGrid(object):
         ----------
         var_ids : :obj:`str` or :obj:`list`
             string IDs of all variables that are supposed to be imported
-        model_ids : :obj:`str` or :obj:`list`, optional
+        names : :obj:`str` or :obj:`list`, optional
             string IDs of all models that are supposed to be imported
         start_time : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
@@ -794,7 +794,7 @@ class ReadMultiGrid(object):
         Examples
         --------
         
-            >>> read = ReadMultiGrid(model_ids=["ECMWF_CAMS_REAN",
+            >>> read = ReadMultiGrid(names=["ECMWF_CAMS_REAN",
             ...                                      "ECMWF_OSUITE"],
             ...                           verbose=False)
             >>> read.read(["od550aer", "od550so4", "od550bc"])
@@ -809,38 +809,38 @@ class ReadMultiGrid(object):
         if stop_time:
             self.stop_time = stop_time
 
-        if model_ids is None: #use all models if unspecified
-            model_ids = self.model_ids
-        elif isinstance(model_ids, str):
-            model_ids = [model_ids]
+        if names is None: #use all models if unspecified
+            names = self.names
+        elif isinstance(names, str):
+            names = [names]
         if isinstance(var_ids, str):
             var_ids = [var_ids]
             
         warnings = []
-        for model_id in model_ids:
-            if model_id in self.results:
-                read = self.results[model_id]
+        for name in names:
+            if name in self.results:
+                read = self.results[name]
                 for var in var_ids:
                     if var in read.vars:
                         read.read_var(var, start_time, stop_time, ts_type)
                     else:
                         warnings.append("Variable {} not available for model "
-                                        "{}".format(var, model_id))
+                                        "{}".format(var, name))
                     
                 
             else:
-                warnings.append("Failed to import model {}".format(model_id))
+                warnings.append("Failed to import model {}".format(name))
         if self.verbose:
             for msg in warnings:
                 print(msg)
         return self.results
     
-    def __getitem__(self, model_id):
+    def __getitem__(self, name):
         """Try access import result for one of the models
         
         Parameters
         ----------
-        model_id : str
+        name : str
             string specifying model that is supposed to be extracted
         
         Returns
@@ -851,30 +851,30 @@ class ReadMultiGrid(object):
         Raises
         -------
         ValueError
-            if results for ``model_id`` are not available
+            if results for ``name`` are not available
         """
-        if not model_id in self.results:
-            raise ValueError("No data found for model_id %s" %model_id)
-        return self.results[model_id]
+        if not name in self.results:
+            raise ValueError("No data found for name %s" %name)
+        return self.results[name]
     
     def __str__(self):
         head = "Pyaerocom %s" %type(self).__name__
         s = ("\n%s\n%s\n"
-             "Model IDs: %s\n" %(head, len(head)*"-", self.model_ids))
+             "Model IDs: %s\n" %(head, len(head)*"-", self.names))
         if self.results:
             s += "\nLoaded data:"
-            for model_id, read in self.results.items():
+            for name, read in self.results.items():
                 s += "\n%s" %read
         return s
     
 if __name__=="__main__":
-    read = ReadGrid(model_id="ECMWF_CAMS_REAN",
+    read = ReadGrid(name="ECMWF_CAMS_REAN",
                                   start_time="1-1-2003",
                                   stop_time="31-12-2007", 
                                   verbose=True)
     data = read.read_var(var_name="od550aer", ts_type="daily")
 # =============================================================================
-#     read = ReadMultiGrid(model_ids=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
+#     read = ReadMultiGrid(names=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
 #     
 #     read.read(["od550aer", "od440aer"])
 #     

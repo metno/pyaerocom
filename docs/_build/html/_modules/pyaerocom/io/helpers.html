@@ -284,19 +284,19 @@
     <span class="n">cube</span><span class="o">.</span><span class="n">add_dim_coord</span><span class="p">(</span><span class="n">tcoord</span><span class="p">,</span> <span class="n">tindex_cube</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cube</span></div>
 
-<div class="viewcode-block" id="search_model_ids"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_model_ids">[docs]</a><span class="k">def</span> <span class="nf">search_model_ids</span><span class="p">(</span><span class="n">update_inifile</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_nc_file</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="search_names"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_names">[docs]</a><span class="k">def</span> <span class="nf">search_names</span><span class="p">(</span><span class="n">update_inifile</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_nc_file</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Search model IDs in database</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    update_inifile : bool</span>
-<span class="sd">        if True, the file *model_ids.txt* will be updated. The file is located</span>
+<span class="sd">        if True, the file *names.txt* will be updated. The file is located</span>
 <span class="sd">        in the installation *data* directory.</span>
 <span class="sd">    check_nc_file : bool</span>
 <span class="sd">        If True, only model IDs are included, for which at least one nc file</span>
 <span class="sd">        can be detected in the corresponding renamed sub directory</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">model_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">mdir</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">mdir</span><span class="p">)</span>
         <span class="n">sub</span> <span class="o">=</span> <span class="n">listdir</span><span class="p">(</span><span class="n">mdir</span><span class="p">)</span>
@@ -312,32 +312,32 @@
                             <span class="n">add</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">break</span>
                 <span class="k">if</span> <span class="n">add</span><span class="p">:</span>
-                    <span class="n">model_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-    <span class="n">model_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">model_ids</span><span class="p">))</span>       
+                    <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">update_inifile</span><span class="p">:</span>
-        <span class="n">fpath</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="fm">__dir__</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;model_ids.txt&quot;</span><span class="p">)</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="fm">__dir__</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;names.txt&quot;</span><span class="p">)</span>
         <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> 
-        <span class="k">for</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="n">model_ids</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">name</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">model_ids</span></div>
+    <span class="k">return</span> <span class="n">names</span></div>
 
-<div class="viewcode-block" id="get_all_model_ids"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.get_all_model_ids">[docs]</a><span class="k">def</span> <span class="nf">get_all_model_ids</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Try to import all model IDs from file model_ids.txt in data directory&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="get_all_names"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.get_all_names">[docs]</a><span class="k">def</span> <span class="nf">get_all_names</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Try to import all model IDs from file names.txt in data directory&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="fm">__dir__</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;model_ids.txt&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">model_ids</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="fm">__dir__</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;names.txt&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">model_ids</span> <span class="o">=</span> <span class="n">search_model_ids</span><span class="p">()</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">search_names</span><span class="p">()</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to access model IDs&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">model_ids</span></div>
+    <span class="k">return</span> <span class="n">names</span></div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="c1">#model_ids = search_model_ids()</span>
-    <span class="n">model_ids</span> <span class="o">=</span> <span class="n">get_all_model_ids</span><span class="p">()</span>
+    <span class="c1">#names = search_names()</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="n">get_all_names</span><span class="p">()</span>
     
 </pre></div>
 
