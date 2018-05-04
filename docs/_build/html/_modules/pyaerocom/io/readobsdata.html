@@ -202,16 +202,19 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sdav2</span> <span class="k">import</span> <span class="n">ReadAeronetSDAV2</span>
+<span class="c1">#from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sunv2</span> <span class="k">import</span> <span class="n">ReadAeronetSunV2</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.read_earlinet</span> <span class="k">import</span> <span class="n">ReadEarlinet</span>
+
 <span class="c1">#from pyaerocom import config as const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 
 <div class="viewcode-block" id="ReadObsData"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData">[docs]</a><span class="k">class</span> <span class="nc">ReadObsData</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;pyaerocom observation data reading class</span>
+    <span class="sd">&quot;&quot;&quot;pyaerocom observation data (ungridded data) reading class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">]</span>
+    <span class="c1">#SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]</span>
+    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">]</span>
     <span class="c1">#</span>
     <span class="n">_METADATAKEYINDEX</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">_TIMEINDEX</span> <span class="o">=</span> <span class="mi">1</span>
@@ -235,13 +238,13 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_to_read</span><span class="o">=</span><span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">],</span>
                  <span class="n">vars_to_read</span><span class="o">=</span><span class="n">ReadAeronetSunV2</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">,</span>
-                 <span class="n">verboseflag</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_set_to_read</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_sets_to_read</span> <span class="o">=</span> <span class="n">data_set_to_read</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_sets_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_set_to_read</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span> <span class="o">=</span> <span class="n">verboseflag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span> <span class="o">=</span> <span class="n">vars_to_read</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -325,6 +328,17 @@
                              <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
+        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
+        <span class="k">return</span> <span class="n">stat_names</span>
+
+    <span class="nd">@station_name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station names cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Time dimension of data&quot;&quot;&quot;</span>
         <span class="k">pass</span>
@@ -395,8 +409,22 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># re-read data</span>
                     <span class="n">read_dummy</span><span class="o">.</span><span class="n">read_daily</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">)</span>
+
             <span class="k">elif</span> <span class="n">data_set_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not implemented at this point.&quot;</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">data_set_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">:</span>
+                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadEarlinet</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> <span class="n">verboseflag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
+                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verboseflag</span><span class="p">:</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
+                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># re-read data</span>
+                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read_daily</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">)</span>
+
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">infiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">read_dummy</span><span class="o">.</span><span class="n">files</span><span class="p">)</span>
@@ -440,34 +468,58 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.to_timeseries"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_names</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadObsData.to_timeseries"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to get the ObsData object data as dict using pd.Series for the variables</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        station_names : :obj:`tuple` or :obj:`str:`, optional</span>
+<span class="sd">            station name or list of station names to return</span>
+<span class="sd">        start_date, end_date : :obj:`str:`, optional</span>
+<span class="sd">            date strings with start and end date to return</span>
+<span class="sd">        freq : obj:`str:`, optional</span>
+<span class="sd">            frequency to resample to using the pandas resample method</span>
+<span class="sd">            us the offset aliases as noted in</span>
+<span class="sd">            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list or dictionary</span>
+<span class="sd">            station_names is a string: dictionary with station data</span>
+<span class="sd">            station_names is list or None: list of dictionaries with station data</span>
 
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadObsData</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadObsData(verbose=True)</span>
 <span class="sd">        &gt;&gt;&gt; obj.read_daily()</span>
 <span class="sd">        &gt;&gt;&gt; pdseries = obj.to_timeseries()</span>
+<span class="sd">        &gt;&gt;&gt; pdseriesmonthly = obj.to_timeseries(station_name=&#39;Avignon&#39;,start_date=&#39;2011-01-01&#39;, end_date=&#39;2012-12-31&#39;, freq=&#39;M&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">out_data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">station_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">station_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># return all stations</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_names</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># user asked for a single station name</span>
             <span class="c1"># return a single dictionary in this case</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">station_names</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">station_name</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]:</span>
                     <span class="c1"># we might change this to return a list at some point</span>
-                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_names</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="c1"># user asked for a list of station names</span>
+            <span class="c1"># return list with matching station names</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="c1"># print(val[&#39;station name&#39;])</span>
-                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_names</span><span class="p">:</span>
-                    <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_name</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">out_data</span></div>
 
@@ -490,7 +542,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadObsData.GetDataDir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.GetDataDir">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataDir</span><span class="p">(</span><span class="n">selfself</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadObsData.GetDataDir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.GetDataDir">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to return the path of an obs data set&quot;&quot;&quot;</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -500,23 +552,47 @@
 
     <span class="c1">###################################################################################</span>
 
-    <span class="k">def</span> <span class="nf">_to_timeseries_helper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_to_timeseries_helper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">start_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;small helper routine for self.to_timeseries to not to repeat the same code fragment three times&quot;&quot;&quot;</span>
 
+        <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">temp_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># do not return anything for stations without data</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;data_set_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;data_set_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;files&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+            <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_read</span><span class="p">:</span>
+                <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">],</span>
                                            <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
                                                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
                                                    <span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">],</span>
                                                <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">temp_dict</span></div>
+
+                <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">data_found_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">temp_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1">###################################################################################</span>
+
+<div class="viewcode-block" id="ReadObsData.CheckObsnetworkName"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readobsdata.ReadObsData.CheckObsnetworkName">[docs]</a>    <span class="k">def</span> <span class="nf">CheckObsnetworkName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_network_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;method to quick check if the user supplied obs network string is right&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">obs_network_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div></div>
 </pre></div>
 
            </div>

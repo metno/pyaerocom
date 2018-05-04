@@ -1,0 +1,1114 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.io.readgrid &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.io.readgrid</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.io.readgrid</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1">################################################################</span>
+<span class="c1"># readgrid.py</span>
+<span class="c1">#</span>
+<span class="c1"># model data reading class</span>
+<span class="c1">#</span>
+<span class="c1"># this file is part of the aerocom_pt package</span>
+<span class="c1">#</span>
+<span class="c1">#################################################################</span>
+<span class="c1"># Created 20171030 by Jan Griesfeller for Met Norway</span>
+<span class="c1">#</span>
+<span class="c1"># Last changed: See git log</span>
+<span class="c1">#################################################################</span>
+
+<span class="c1">#Copyright (C) 2017 met.no</span>
+<span class="c1">#Contact information:</span>
+<span class="c1">#Norwegian Meteorological Institute</span>
+<span class="c1">#Box 43 Blindern</span>
+<span class="c1">#0313 OSLO</span>
+<span class="c1">#NORWAY</span>
+<span class="c1">#E-mail: jan.griesfeller@met.no</span>
+<span class="c1">#This program is free software; you can redistribute it and/or modify</span>
+<span class="c1">#it under the terms of the GNU General Public License as published by</span>
+<span class="c1">#the Free Software Foundation; either version 3 of the License, or</span>
+<span class="c1">#(at your option) any later version.</span>
+<span class="c1">#This program is distributed in the hope that it will be useful,</span>
+<span class="c1">#but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1">#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1">#GNU General Public License for more details.</span>
+<span class="c1">#You should have received a copy of the GNU General Public License</span>
+<span class="c1">#along with this program; if not, write to the Free Software</span>
+<span class="c1">#Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
+<span class="c1">#MA 02110-1301, USA</span>
+
+<span class="kn">from</span> <span class="nn">glob</span> <span class="k">import</span> <span class="n">glob</span>
+<span class="kn">from</span> <span class="nn">re</span> <span class="k">import</span> <span class="n">match</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">basename</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">listdir</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">arange</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
+
+<span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span><span class="p">,</span> <span class="n">load_cube</span>
+<span class="kn">from</span> <span class="nn">iris.cube</span> <span class="k">import</span> <span class="n">CubeList</span>
+<span class="kn">from</span> <span class="nn">iris.experimental.equalise_cubes</span> <span class="k">import</span> <span class="n">equalise_attributes</span>
+<span class="kn">from</span> <span class="nn">iris.util</span> <span class="k">import</span> <span class="n">unify_time_units</span>
+<span class="kn">from</span> <span class="nn">iris._concatenate</span> <span class="k">import</span> <span class="n">concatenate</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">IllegalArgumentError</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">check_time_coord</span><span class="p">,</span> <span class="n">correct_time_coord</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.griddata</span> <span class="k">import</span> <span class="n">GridData</span>
+
+<div class="viewcode-block" id="ReadGrid"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid">[docs]</a><span class="k">class</span> <span class="nc">ReadGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for reading model results from AEROCOM NetCDF files</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The reading only works if files are stored using a valid file naming </span>
+<span class="sd">    convention. See package data file `file_conventions.ini &lt;http://</span>
+<span class="sd">    aerocom.met.no/pyaerocom/config_files.html#file-conventions&gt;`__ for valid</span>
+<span class="sd">    keys. You may define your own fileconvention in this file, if you wish.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_id : str</span>
+<span class="sd">        string ID for model (see Aerocom interface map plots lower left corner)</span>
+<span class="sd">    data : GridData</span>
+<span class="sd">        imported data object </span>
+<span class="sd">    model_dir : str</span>
+<span class="sd">        directory containing result files for this model</span>
+<span class="sd">    start_time : pandas.Timestamp</span>
+<span class="sd">        start time for data import</span>
+<span class="sd">    stop_time : pandas.Timestamp</span>
+<span class="sd">        stop time for data import</span>
+<span class="sd">    file_convention : FileConventionRead</span>
+<span class="sd">        class specifying details of the file naming convention for the model</span>
+<span class="sd">    files : list</span>
+<span class="sd">        list containing all filenames that were found.</span>
+<span class="sd">        Filled, e.g. in :func:`ReadGrid.get_model_files`</span>
+<span class="sd">    from_files : list</span>
+<span class="sd">        List of all netCDF files that were used to concatenate the current </span>
+<span class="sd">        data cube (i.e. that can be based on certain matching settings such as</span>
+<span class="sd">        var_name or time interval). </span>
+<span class="sd">    vars : list</span>
+<span class="sd">        list containing all variable names that were found</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_id : str</span>
+<span class="sd">        string ID of model (e.g. &quot;AATSR_SU_v4.3&quot;,&quot;CAM5.3-Oslo_CTRL2016&quot;)</span>
+<span class="sd">    start_time : :obj:`pandas.Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        desired start time of dataset (note, that strings are passed to </span>
+<span class="sd">        :class:`pandas.Timestamp` without further checking)</span>
+<span class="sd">    stop_time : :obj:`pandas.Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        desired stop time of dataset (note, that strings are passed to </span>
+<span class="sd">        :class:`pandas.Timestamp` without further checking)</span>
+<span class="sd">    file_convention : str</span>
+<span class="sd">        string ID specifying the file convention of this model (cf. </span>
+<span class="sd">        installation file `file_conventions.ini &lt;https://github.com/metno/</span>
+<span class="sd">        pyaerocom/blob/master/pyaerocom/data/file_conventions.ini&gt;`__)</span>
+<span class="sd">    init : bool</span>
+<span class="sd">        if True, the model directory is searched (:func:`search_model_dir`) on</span>
+<span class="sd">        instantiation and if it is found, all valid files for this model are </span>
+<span class="sd">        searched using :func:`search_all_files`.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        if True, output is printed</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">        &gt;&gt;&gt; read = ReadGrid(model_id=&quot;ECMWF_OSUITE&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550aer&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550so4&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550bc&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(data.short_str()) for data in read.data</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_MODELDIRS</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span>
+    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># Directory containing model data for this species</span>
+    <span class="n">_model_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">_USE_SUBDIR_RENAMED</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">file_convention</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                 <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
+        <span class="c1"># model ID</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Input for model_id is list. You might want to use &quot;</span>
+                       <span class="s2">&quot;class ReadMultiGrid for import?&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Invalid input for model_id. Need str, got: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                       <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="n">model_id</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span> <span class="o">=</span> <span class="n">model_id</span>
+        
+        <span class="c1"># only overwrite if there is input, note that the attributes</span>
+        <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
+        <span class="c1"># setter methods, that ensure that the input is convertible to </span>
+        <span class="c1"># pandas.Timestamp</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        
+        <span class="c1"># Dictionary containing loaded results for different variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        
+        <span class="c1"># file naming convention. Default is aerocom3 file convention, change </span>
+        <span class="c1"># using self.file_convention.import_default(&quot;aerocom2&quot;). Is </span>
+        <span class="c1"># automatically updated in class ReadGrid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">(</span><span class="n">file_convention</span><span class="p">)</span>
+        
+        <span class="c1"># All files that were found for this model (updated, e.g. in class</span>
+        <span class="c1"># ReadGrid, method: `get_model_files`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_match_files</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">search_model_dir</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span>
+                
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Model directory&quot;&quot;&quot;</span>
+        <span class="n">dirloc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_dir</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_USE_SUBDIR_RENAMED</span><span class="p">:</span>
+            <span class="n">dirloc</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dirloc</span><span class="p">,</span> <span class="s2">&quot;renamed&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isdir</span><span class="p">(</span><span class="n">dirloc</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Model directory for ID </span><span class="si">%s</span><span class="s2"> not available or does &quot;</span>
+                          <span class="s2">&quot;not exist&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dirloc</span>
+    
+    <span class="nd">@model_dir</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">model_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">isdir</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model_dir</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not set directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start time of the dataset</span>
+<span class="sd">        </span>
+<span class="sd">        Note      </span>
+<span class="sd">        ----</span>
+<span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
+<span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+
+    <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>    
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert input value to pandas &quot;</span>
+                                  <span class="s2">&quot;Timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">value</span>
+            
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stop time of the dataset</span>
+<span class="sd">        </span>
+<span class="sd">        Note      </span>
+<span class="sd">        ----</span>
+<span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
+<span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for stop time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1"># =============================================================================</span>
+    
+    <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>  
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert input value to pandas &quot;</span>
+                                  <span class="s2">&quot;Timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="o">=</span> <span class="n">value</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">years_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Array containing year numbers that are supposed to be loaded</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;No information available for available &quot;</span>
+                                 <span class="s2">&quot;years. Please run method &quot;</span>
+                                 <span class="s2">&quot;search_all_files first&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span>
+    
+<div class="viewcode-block" id="ReadGrid.search_model_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.search_model_dir">[docs]</a>    <span class="k">def</span> <span class="nf">search_model_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search the directory of this model</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True, if directory was found, else False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span>
+        <span class="n">_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">search_dir</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MODELDIRS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Searching dir for ID </span><span class="si">%s</span><span class="s1"> in: </span><span class="si">%s</span><span class="s1">&#39;</span> 
+                      <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">search_dir</span><span class="p">))</span>
+            <span class="c1"># get the directories</span>
+            <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">search_dir</span><span class="p">):</span>
+                <span class="n">subdirs</span> <span class="o">=</span> <span class="n">listdir</span><span class="p">(</span><span class="n">search_dir</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">subdir</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sid</span> <span class="o">==</span> <span class="n">subdir</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">subdir</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found model dir: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">))</span>    
+                        <span class="k">return</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="n">sid</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">subdir</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;directory: </span><span class="si">%s</span><span class="s1"> does not exist</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="o">%</span><span class="n">search_dir</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model directory could not be found.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_candidates</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Did you mean either of: </span><span class="si">{}</span><span class="s2"> ?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_candidates</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+    
+    <span class="c1"># get the model directory (note that the folder &quot;renamed&quot; is used)</span>
+<div class="viewcode-block" id="ReadGrid.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_file_convention</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search all valid model files for this model</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        This method </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        update_file_convention : bool</span>
+<span class="sd">            if True, the first file in `model_dir` is used to identify the </span>
+<span class="sd">            file naming convention (cf. :class:`FileConventionRead`)</span>
+<span class="sd">            </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This function does not seperate by variable or time, it gets you all</span>
+<span class="sd">        valid files for all variables and times for this model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get all netcdf files in folder</span>
+        <span class="n">nc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span> <span class="o">+</span> <span class="s1">&#39;/*.nc&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">update_file_convention</span><span class="p">:</span>
+            <span class="c1"># Check if the found file has a naming according the aerocom conventions</span>
+            <span class="c1"># and set the convention for all files (maybe this need to be </span>
+            <span class="c1"># updated in case there can be more than one file naming convention</span>
+            <span class="c1"># within one model directory)</span>
+            <span class="n">first_file_name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">nc_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">first_file_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to identify file naming convention &quot;</span>
+                          <span class="s2">&quot;from first file in model directory for model &quot;</span>
+                          <span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">model_dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">File name: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                          <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">first_file_name</span><span class="p">))</span>
+        <span class="n">_vars_temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_years_temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">nc_files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;var_name&quot;</span><span class="p">])</span>
+                <span class="n">_years_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to import file </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Error: </span><span class="si">%s</span><span class="s2">&quot;</span> 
+                          <span class="o">%</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+
+        <span class="c1"># make sorted list of unique vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">))</span></div>
+        
+<div class="viewcode-block" id="ReadGrid.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update one or more valid parameters</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            keyword args that will be used to update (overwrite) valid class </span>
+<span class="sd">            attributes such as `data, model_dir, files`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updating </span><span class="si">%s</span><span class="s2"> in ModelImportResult for model </span><span class="si">%s</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;New value: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring key </span><span class="si">%s</span><span class="s2"> in ModelImportResult.update()&quot;</span>  <span class="o">%</span><span class="n">k</span><span class="p">)</span></div>
+                
+<div class="viewcode-block" id="ReadGrid.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read model data for a specific variable</span>
+<span class="sd">        </span>
+<span class="sd">        This method searches all valid files for a given variable and for a </span>
+<span class="sd">        provided temporal resolution (e.g. *daily, monthly*), optionally</span>
+<span class="sd">        within a certain time window, that may be specified on class </span>
+<span class="sd">        instantiation or using the corresponding input parameters provided in </span>
+<span class="sd">        this method.</span>
+<span class="sd">        </span>
+<span class="sd">        The individual NetCDF files for a given temporal period are loaded as</span>
+<span class="sd">        instances of the :class:`iris.Cube` object and appended to an instance</span>
+<span class="sd">        of the :class:`iris.cube.CubeList` object. The latter is then used to </span>
+<span class="sd">        concatenate the individual cubes in time into a single instance of the</span>
+<span class="sd">        :class:`pyaerocom.GridData` class. In order to ensure that this</span>
+<span class="sd">        works, several things need to be ensured, which are listed in the </span>
+<span class="sd">        following and which may be controlled within the global settings for </span>
+<span class="sd">        NetCDF import using the attribute :attr:`ON_LOAD` (instance of </span>
+<span class="sd">        :class:`OnLoad`) in the default instance of the </span>
+<span class="sd">        :class:`pyaerocom.config.Config` object accessible via </span>
+<span class="sd">        ``pyaerocom.const``.</span>
+<span class="sd">        </span>
+<span class="sd">        Required settings::</span>
+<span class="sd">            </span>
+<span class="sd">            1. </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : str</span>
+<span class="sd">            variable name that is supposed to be plotted (e.g. )</span>
+<span class="sd">            Must be in :attr:`vars`</span>
+<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            start time of data import (if valid input, then the current </span>
+<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            stop time of data import (if valid input, then the current </span>
+<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">        ts_type : str</span>
+<span class="sd">            string specifying temporal resolution (choose from </span>
+<span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GridData</span>
+<span class="sd">            t</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ts_type</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for ts_type, got: </span><span class="si">{}</span><span class="s2">, &quot;</span>
+                             <span class="s2">&quot;allowed values: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ts_type</span><span class="p">,</span> 
+                                                    <span class="n">const</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
+        
+        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: variable </span><span class="si">{}</span><span class="s2"> not found in files contained &quot;</span>
+                             <span class="s2">&quot;in model directory: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">model_dir</span><span class="p">))</span>
+        
+        <span class="n">match_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">years_to_load</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">const</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
+                <span class="c1"># search for filename in self.files using ts_type as default ts size</span>
+                <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+                    <span class="c1">#new file naming convention (aerocom3)</span>
+                    <span class="n">match_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">string_mask</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span>
+                                                                  <span class="n">year</span><span class="p">,</span> 
+                                                                  <span class="n">ts_type</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">match</span><span class="p">(</span><span class="n">match_mask</span><span class="p">,</span> <span class="n">_file</span><span class="p">):</span>
+                        <span class="n">match_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FOUND MATCH: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">)))</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring file </span><span class="si">{}</span><span class="s2">. File out of allowed year bounds &quot;</span>
+                          <span class="s2">&quot;(</span><span class="si">{:d}</span><span class="s2"> - </span><span class="si">{:d}</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> 
+                                            <span class="n">const</span><span class="o">.</span><span class="n">MIN_YEAR</span><span class="p">,</span> 
+                                            <span class="n">const</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">))</span>
+           
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be found for variable </span><span class="si">%s</span><span class="s2">, and </span><span class="si">%s</span><span class="s2"> &quot;</span>
+                          <span class="s2">&quot;data in specified time interval</span><span class="se">\n</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">&quot;</span>
+                          <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_match_files</span> <span class="o">=</span> <span class="n">match_files</span>
+        <span class="c1"># Define Iris var_constraint -&gt; ensures that only the current </span>
+        <span class="c1"># variable is extracted from the netcdf file </span>
+        <span class="n">var_constraint</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">cube_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">var_name</span><span class="o">==</span><span class="n">var_name</span><span class="p">)</span>
+        
+        <span class="c1"># read files using iris</span>
+        <span class="n">cubes</span> <span class="o">=</span> <span class="n">CubeList</span><span class="p">()</span>
+        <span class="n">loaded_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">match_files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">finfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                <span class="n">cube</span> <span class="o">=</span> <span class="n">load_cube</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">var_constraint</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">ON_LOAD</span><span class="p">[</span><span class="s2">&quot;CHECK_TIME_FILENAME&quot;</span><span class="p">]:</span>
+                    
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span> 
+                                            <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">],</span>
+                                            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">):</span>
+                        
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid time axis in file </span><span class="si">{}</span><span class="s2">. &quot;</span> 
+                                             <span class="s2">&quot;Attempting to correct.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                                     <span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">)))</span>
+                        
+                        <span class="n">cube</span> <span class="o">=</span> <span class="n">correct_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> 
+                                                  <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
+                                                  <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+                        
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: Automatic check of time &quot;</span>
+                                         <span class="s2">&quot;array in netCDF files is deactivated.&quot;</span>
+                                         <span class="s2">&quot; This may cause problems in case &quot;</span>
+                                         <span class="s2">&quot;the time dimension is not CF conform.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="n">cubes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
+                <span class="n">loaded_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">{}</span><span class="s2"> as Iris cube.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the found files for variable </span><span class="si">{}</span><span class="s2">, and </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                          <span class="s2">&quot;in specified time interval</span><span class="se">\n</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;could be loaded&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> 
+                                                   <span class="n">ts_type</span><span class="p">,</span> 
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">ON_LOAD</span><span class="o">.</span><span class="n">EQUALISE_METADATA</span><span class="p">:</span>
+            <span class="n">meta_init</span> <span class="o">=</span> <span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">metadata</span> <span class="o">==</span> <span class="n">meta_init</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cubes</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cubes for variable </span><span class="si">{}</span><span class="s2"> have different meta data &quot;</span>
+                          <span class="s2">&quot;settings. These will be unified using the metadata &quot;</span>
+                          <span class="s2">&quot;dictionary of the first cube (otherwise the method &quot;</span>
+                          <span class="s2">&quot;concatenate of the iris package won&#39;t work)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                          <span class="n">var_name</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">cube</span> <span class="ow">in</span> <span class="n">cubes</span><span class="p">:</span>
+                    <span class="n">cube</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span><span class="n">meta_init</span>
+            
+        <span class="c1">#now put the CubeList together and form one cube</span>
+        <span class="c1">#1st equalise the cubes (remove non common attributes)</span>
+        <span class="n">equalise_attributes</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span>
+        <span class="c1">#unify time units</span>
+        <span class="n">unify_time_units</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cubes</span> <span class="o">=</span> <span class="n">cubes</span>
+        <span class="c1">#now concatenate the cube list to one cube</span>
+        <span class="n">cubes_concat</span> <span class="o">=</span> <span class="n">concatenate</span><span class="p">(</span><span class="n">cubes</span><span class="p">,</span> <span class="n">error_on_mismatch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cubes_concat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">long_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">long_name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cubes_concat</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Could not concatenate all individual Cubes for in &quot;</span>
+                          <span class="s2">&quot;var_name </span><span class="si">{}</span><span class="s2"> in time: likely due to multiple &quot;</span>
+                          <span class="s2">&quot;long_name attributes in source files: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                  <span class="n">var_name</span><span class="p">,</span> <span class="n">long_names</span><span class="p">))</span>
+        
+        <span class="c1">#create instance of pyaerocom.GridData</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>
+                         <span class="n">model_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
+        <span class="c1"># crop cube in time (if applicable)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">t_constraint</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_time_constraint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
+                <span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">t_constraint</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">_data</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to crop data for </span><span class="si">{}</span><span class="s2"> in time.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                 <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+        
+        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Data for variable </span><span class="si">{}</span><span class="s2"> already exists &quot;</span>
+                             <span class="s2">&quot;and will be overwritten&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+    
+<div class="viewcode-block" id="ReadGrid.read_all_vars"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.read_all_vars">[docs]</a>    <span class="k">def</span> <span class="nf">read_all_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read all variables that could be found </span>
+<span class="sd">        </span>
+<span class="sd">        Reads all variables that are available (i.e. in :attr:`vars`)</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            see :func:`read_var` for valid input arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_vars_read</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">_vars_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to read variable </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="n">_vars_read</span></div>
+        
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Model ID: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Available variables: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Available years: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> 
+                                            <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Loaded GridData objects:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">short_str</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="ReadMultiGrid"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid">[docs]</a><span class="k">class</span> <span class="nc">ReadMultiGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for import of AEROCOM model data from multiple models</span>
+<span class="sd">    </span>
+<span class="sd">    This class provides an interface to import model results from an arbitrary</span>
+<span class="sd">    number of models and specific for a certain time interval (that can be </span>
+<span class="sd">    defined, but must not be defined). Largely based on </span>
+<span class="sd">    :class:`ReadGrid`.</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The reading only works if files are stored using a valid file naming </span>
+<span class="sd">    convention. See package data file `file_conventions.ini &lt;http://</span>
+<span class="sd">    aerocom.met.no/pyaerocom/config_files.html#file-conventions&gt;`__ for valid</span>
+<span class="sd">    keys. You may define your own fileconvention in this file, if you wish.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_ids : list</span>
+<span class="sd">        list containing string IDs of all models that should be imported</span>
+<span class="sd">    results : dict</span>
+<span class="sd">        dictionary containing :class:`ReadGrid` instances for each</span>
+<span class="sd">        model_id </span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pyaerocom, pandas</span>
+<span class="sd">    &gt;&gt;&gt; start, stop = pandas.Timestamp(&quot;2012-1-1&quot;), pandas.Timestamp(&quot;2012-5-1&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; models = [&quot;AATSR_SU_v4.3&quot;, &quot;CAM5.3-Oslo_CTRL2016&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; read = pyaerocom.io.ReadMultiGrid(models, start, stop, verbose=False)</span>
+<span class="sd">    &gt;&gt;&gt; print(read.model_ids)</span>
+<span class="sd">    [&#39;AATSR_SU_v4.3&#39;, &#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; read_cam = read[&#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; assert type(read_cam) == pyaerocom.io.ReadGrid</span>
+<span class="sd">    &gt;&gt;&gt; for var in read_cam.vars: print(var)</span>
+<span class="sd">    abs550aer</span>
+<span class="sd">    deltaz3d</span>
+<span class="sd">    humidity3d</span>
+<span class="sd">    od440aer</span>
+<span class="sd">    od550aer</span>
+<span class="sd">    od550aer3d</span>
+<span class="sd">    od550aerh2o</span>
+<span class="sd">    od550dryaer</span>
+<span class="sd">    od550dust</span>
+<span class="sd">    od550lt1aer</span>
+<span class="sd">    od870aer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># &quot;private attributes (defined with one underscore). These may be </span>
+    <span class="c1"># controlled using getter and setter methods (@property operator, see </span>
+    <span class="c1"># e.g. definition of def start_time below)</span>
+    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_ids</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">model_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_ids</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_ids</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">model_ids</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="n">IllegalArgumentError</span><span class="p">(</span><span class="s2">&quot;Please provide string or list of strings&quot;</span><span class="p">)</span>
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span> <span class="o">=</span> <span class="n">model_ids</span>
+        <span class="c1"># dictionary containing instances of ModelImportResult for each model</span>
+        <span class="c1"># is initiated in method `init_results` at end of __init__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        
+        <span class="c1"># only overwrite if there is input, note that the attributes</span>
+        <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
+        <span class="c1"># setter methods, that ensure that the input is convertible to </span>
+        <span class="c1"># pandas.Timestamp</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_results</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_model_dirs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start time for the data import</span>
+<span class="sd">        </span>
+<span class="sd">        Note      </span>
+<span class="sd">        ----</span>
+<span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
+<span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for start time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1"># =============================================================================</span>
+    
+    <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>    
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert input value to pandas &quot;</span>
+                                  <span class="s2">&quot;Timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">value</span>
+            
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stop time for the data import</span>
+<span class="sd">        </span>
+<span class="sd">        Note      </span>
+<span class="sd">        ----</span>
+<span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
+<span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         if not isinstance(t, Timestamp):</span>
+<span class="c1">#             raise ValueError(&quot;Invalid value encountered for stop time &quot;</span>
+<span class="c1">#                              &quot;in reading engine: %s&quot; %t)</span>
+<span class="c1">#         return t</span>
+<span class="c1"># =============================================================================</span>
+    
+    <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>  
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert input value to pandas &quot;</span>
+                                  <span class="s2">&quot;Timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="o">=</span> <span class="n">value</span>
+        
+    
+    
+<div class="viewcode-block" id="ReadMultiGrid.init_results"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.init_results">[docs]</a>    <span class="k">def</span> <span class="nf">init_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initiate the import result attributes</span>
+<span class="sd">        </span>
+<span class="sd">        Creates and initiates :class:`ModelImportResult` object for each </span>
+<span class="sd">        model specified in :attr:`model_ids` and stores it in the dictionary</span>
+<span class="sd">        :attr:`results` using the `model_id`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">ReadGrid</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span>
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span> 
+                                                   <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                   <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="ReadMultiGrid.search_model_dirs"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.search_model_dirs">[docs]</a>    <span class="k">def</span> <span class="nf">search_model_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the directory where model data for a given model resides in</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True, if directory could be found, else False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#remember only the model IDs for which a directory could be found</span>
+        <span class="n">model_ids_new</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span><span class="p">:</span>
+            <span class="c1"># loop through the list of models</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span><span class="o">.</span><span class="n">search_model_dir</span><span class="p">():</span>
+                <span class="n">model_ids_new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_ids_new</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Failed to find model directories for all &quot;</span>
+                                 <span class="s2">&quot;model IDs specified (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span> <span class="o">=</span> <span class="n">model_ids_new</span>
+        <span class="k">return</span> <span class="n">model_ids_new</span></div>
+    
+<div class="viewcode-block" id="ReadMultiGrid.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search all valid model files for each model</span>
+<span class="sd">        </span>
+<span class="sd">        See also :func:`ReadGrid.search_all_files`</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This function does not seperate by variable or time.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># unfortunately there&#39;s more than one file naming convention</span>
+        <span class="c1"># examples</span>
+        <span class="c1"># aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc</span>
+        <span class="c1"># aerocom.AATSR_ensemble.v2.6.daily.od550aer.2012.nc</span>
+        <span class="c1"># loop through the list of models</span>
+        <span class="k">for</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span></div>
+    
+        
+<div class="viewcode-block" id="ReadMultiGrid.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_ids</span><span class="p">,</span> <span class="n">model_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;High level method to import data for multiple variables and models</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_ids : :obj:`str` or :obj:`list`</span>
+<span class="sd">            string IDs of all variables that are supposed to be imported</span>
+<span class="sd">        model_ids : :obj:`str` or :obj:`list`, optional</span>
+<span class="sd">            string IDs of all models that are supposed to be imported</span>
+<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            start time of data import (if valid input, then the current </span>
+<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            stop time of data import (if valid input, then the current </span>
+<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">        ts_type : str</span>
+<span class="sd">            string specifying temporal resolution (choose from </span>
+<span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            result dictionary</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">            &gt;&gt;&gt; read = ReadMultiGrid(model_ids=[&quot;ECMWF_CAMS_REAN&quot;,</span>
+<span class="sd">            ...                                      &quot;ECMWF_OSUITE&quot;],</span>
+<span class="sd">            ...                           verbose=False)</span>
+<span class="sd">            &gt;&gt;&gt; read.read([&quot;od550aer&quot;, &quot;od550so4&quot;, &quot;od550bc&quot;])</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ts_type</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for ts_type, got: </span><span class="si">{}</span><span class="s2">, &quot;</span>
+                             <span class="s2">&quot;allowed values: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ts_type</span><span class="p">,</span> 
+                                                         <span class="n">const</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
+        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
+
+        <span class="k">if</span> <span class="n">model_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1">#use all models if unspecified</span>
+            <span class="n">model_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">model_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">model_ids</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var_ids</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">var_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">var_ids</span><span class="p">]</span>
+            
+        <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="n">model_ids</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_ids</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
+                        <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">{}</span><span class="s2"> not available for model &quot;</span>
+                                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">model_id</span><span class="p">))</span>
+                    
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Failed to import model </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">warnings</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Try access import result for one of the models</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_id : str</span>
+<span class="sd">            string specifying model that is supposed to be extracted</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ReadGrid</span>
+<span class="sd">            the corresponding read class for this model</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if results for ``model_id`` are not available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">model_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data found for model_id </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_id</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Model IDs: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_ids</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Loaded data:&quot;</span>
+            <span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">read</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+    
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadGrid</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span> 
+                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     read = ReadMultiGrid(model_ids=[&quot;ECMWF_CAMS_REAN&quot;, &quot;ECMWF_OSUITE&quot;])</span>
+<span class="c1">#     </span>
+<span class="c1">#     read.read([&quot;od550aer&quot;, &quot;od440aer&quot;])</span>
+<span class="c1">#     </span>
+<span class="c1">#     print(read)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     </span>
+<span class="c1">#     import doctest</span>
+<span class="c1">#     doctest.testmod()</span>
+<span class="c1"># </span>
+<span class="c1"># =============================================================================</span>
+
+    
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

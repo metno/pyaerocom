@@ -11,10 +11,10 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 
 .. include:: 01_intro_regions.rst
 
-.. include:: 02_intro_class_ReadModelData.rst
+.. include:: 02_intro_class_ReadGrid.rst
 
-.. include:: 03_intro_class_ReadMultiModelData.rst
+.. include:: 03_intro_class_ReadMultiGrid.rst
 
-.. include:: 04_intro_class_ModelData.rst
+.. include:: 04_intro_class_GridData.rst
 
 .. include:: 05_intro_time_handling.rst

@@ -167,15 +167,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">get_cmap</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.variable</span> <span class="k">import</span> <span class="n">Variable</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">cmocean.cm</span> <span class="k">import</span> <span class="n">dense</span>
-    <span class="n">_cmap_lighttheme</span> <span class="o">=</span> <span class="n">dense</span>
+    <span class="kn">from</span> <span class="nn">cmocean.cm</span> <span class="k">import</span> <span class="n">amp</span>
+    <span class="n">_cmap_lighttheme</span> <span class="o">=</span> <span class="n">amp</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="n">_cmap_lighttheme</span> <span class="o">=</span> <span class="s2">&quot;Blues&quot;</span>
 
-<span class="n">DEFAULT_THEME</span> <span class="o">=</span> <span class="s2">&quot;dark&quot;</span>
+<span class="n">DEFAULT_THEME</span> <span class="o">=</span> <span class="s2">&quot;light&quot;</span>
 <span class="n">_COLOR_THEMES</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">light</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;light&quot;</span><span class="p">,</span> 
                                   <span class="n">cmap_map</span><span class="o">=</span><span class="n">_cmap_lighttheme</span><span class="p">,</span> 
                                   <span class="n">color_coastline</span> <span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">),</span>
@@ -183,7 +181,7 @@
                                  <span class="n">cmap_map</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> 
                                  <span class="n">color_coastline</span> <span class="o">=</span><span class="s2">&quot;#e6e6e6&quot;</span><span class="p">))</span>
 
-<span class="n">MAP_AXES_ASPECT</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">MAP_AXES_ASPECT</span> <span class="o">=</span> <span class="mf">1.5</span>
 
 <div class="viewcode-block" id="MapPlotSettings"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.MapPlotSettings">[docs]</a><span class="k">class</span> <span class="nc">MapPlotSettings</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class specifying predefined plot settings for a species and region</span>

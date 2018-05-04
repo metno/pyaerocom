@@ -25,9 +25,9 @@
 """Simple script that illustrates how to extract multiple model data
 
 The main class used to import model results for multiple models (and variables)
-is MultiModelData (part of pyaerocom.io.readmodeldata.py module).
+is MultiGridData (part of pyaerocom.io.readgrid.py module).
 """
-from pyaerocom.io.readmodeldata import ReadMultiModelData
+from pyaerocom.io.readgrid import ReadMultiGrid
 
 if __name__ == '__main__':
     
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
     
     # create and initiate read object 
-    read = ReadMultiModelData(models, '2010-01-01','2011-12-31', verbose=True)
+    read = ReadMultiGrid(models, '2010-01-01','2011-12-31', verbose=True)
     
     # define a bunch of test variables that are supposed to be loaded for 
     # each model (i.e. that must be contained in both input models)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         print("Current model: %s" %model_id)
         for var_name, data in result.data.items():
             print("\nCurrent variable: %s" %var_name)
-            # data is of type pyaerocom.ModelData which has a nice string representation
+            # data is of type pyaerocom.GridData which has a nice string representation
             print(repr(data))
         
     

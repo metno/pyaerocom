@@ -226,7 +226,7 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
 <span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="n">hourly</span>
     <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
@@ -254,6 +254,7 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
 <span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
 <span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">EARLINET_NAME</span><span class="p">:</span> <span class="n">EARLINET</span>
 <span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -264,9 +265,11 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 
 <span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
-<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span>
+<span class="n">OUT_BASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">PLOT_DIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">plots</span>
 </pre></div>
 </div>
 <p>You can check if the relevant base directories <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and
@@ -307,7 +310,7 @@ class, as follows:</li>
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
 <span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="n">hourly</span>
     <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
@@ -335,6 +338,7 @@ class, as follows:</li>
 <span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
 <span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
 <span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">EARLINET_NAME</span><span class="p">:</span> <span class="n">EARLINET</span>
 <span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -345,9 +349,11 @@ class, as follows:</li>
 
 <span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
-<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span>
+<span class="n">OUT_BASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">PLOT_DIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">plots</span>
 </pre></div>
 </div>
 <p>As you can see, <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> contain the invalid
@@ -364,7 +370,7 @@ print.</p>
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
 <span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="n">hourly</span>
     <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
@@ -392,6 +398,7 @@ print.</p>
 <span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
 <span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
 <span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">EARLINET_NAME</span><span class="p">:</span> <span class="n">EARLINET</span>
 <span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -402,9 +409,11 @@ print.</p>
 
 <span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
-<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span>
+<span class="n">OUT_BASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">PLOT_DIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">plots</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">reload</span></code> (and <code class="docutils literal notranslate"><span class="pre">load_config</span></code>) method actually checks if the
@@ -425,7 +434,7 @@ Current config: Pyaerocom IOConfig
 VERBOSE: True
 MIN_YEAR: 0
 MAX_YEAR: 3000
-ON_LOAD (dict)
+ON_LOAD: &lt;pyaerocom.config.OnLoad object at 0x7f1236279320&gt;
 TS_TYPES (list)
    [hourly
     3hourly    daily    monthly]
@@ -453,6 +462,7 @@ AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
 AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
 EBAS_MULTICOLUMN_NAME: EBASMC
 EEA_NAME: EEAAQeRep
+EARLINET_NAME: EARLINET
 OBSCONFIG (dict)
 MODELDIRS (list)
    [.aerocom-users-database/ECMWF/
@@ -463,9 +473,11 @@ MODELDIRS (list)
 
 MODELBASEDIR: .
 OBSBASEDIR: .
-OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
+OUT_BASEDIR: /home/jonasg/pyaerocom
 _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
+DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
+PLOT_DIR: /home/jonasg/pyaerocom/plots
 </pre></div>
 </div>
 <p>This is it! Now with everything being set up correctly, we can start
@@ -474,16 +486,15 @@ plotting and analysis of model data. Tutorials for observational data
 will follow soon, as well as tutorials that show how to merge and
 compare model with observational data.</p>
 <p>The following notebook introduces how Pyaerocom handles regions and
-where they can be defined. In the subsequent tutorial, the
-<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class is introduced, that can be used to import model
-data in a flexible way based on variable name, time range and temporal
-resolution. The loaded data for each model and variable is then stored
-in the analysis class <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> which will be introduced in a later
-tutorial.</p>
+where they can be defined. In the subsequent tutorial, the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code>
+class is introduced, that can be used to import model data in a flexible
+way based on variable name, time range and temporal resolution. The
+loaded data for each model and variable is then stored in the analysis
+class <code class="docutils literal notranslate"><span class="pre">GridData</span></code> which will be introduced in a later tutorial.</p>
 <p>Now what is a tutorial without a nice image? Let’s summarise in a
 oneliner what will be explained in the following tutorials:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">()</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>

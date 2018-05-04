@@ -47,7 +47,7 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cf_units as unit
 import os
 
-from pyaerocom.modeldata import ModelData
+from pyaerocom.griddata import GridData
 
 def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer", 
              plotdir="./"):
@@ -55,8 +55,8 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer",
 
     Will plot every supplied time step"""
 
-    if not isinstance(data, ModelData):
-        raise TypeError("Need pyaerocom.ModelData as input")
+    if not isinstance(data, GridData):
+        raise TypeError("Need pyaerocom.GridData as input")
     #define color bar;
     #will be moved somewhere else and variable specific at some point
     colorbar_levels = [0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,

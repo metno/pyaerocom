@@ -6,15 +6,13 @@ Global configurations for plotting
 """
 from matplotlib.pyplot import get_cmap
 from warnings import warn
-from pyaerocom.region import Region
-from pyaerocom.variable import Variable
 try:
-    from cmocean.cm import dense
-    _cmap_lighttheme = dense
+    from cmocean.cm import amp
+    _cmap_lighttheme = amp
 except:
     _cmap_lighttheme = "Blues"
 
-DEFAULT_THEME = "dark"
+DEFAULT_THEME = "light"
 _COLOR_THEMES = dict(light = dict(name="light", 
                                   cmap_map=_cmap_lighttheme, 
                                   color_coastline ="k"),

@@ -138,7 +138,7 @@ def cli():
         print(Model)
         if Model != const.NOMODELNAME:
             # start model read
-            model_obj.append(pio.ReadModelData(model_id = Model,
+            model_obj.append(pio.ReadGrid(model_id = Model,
                                      start_time = args.startdate,
                                      stop_time = args.enddate,
                                      verbose=Options['VERBOSE']))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Pyaerocom ModelData class
+Pyaerocom GridData class
 """
 from os.path import exists
 from copy import deepcopy
@@ -181,12 +181,12 @@ class GridDataCF(GridDataBase):
                              "underlying data type stored in attribute grid")
         
         
-class ModelData(GridDataBase, GridDataCF):
+class GridData(GridDataBase, GridDataCF):
     """Base class representing model data
     
     This class is largely based on the :class:`iris.Cube` object. However, this
     object comes with an expanded functionality for convenience, for instance, 
-    netCDF files can directly be loaded in the :class:`ModelData` object, 
+    netCDF files can directly be loaded in the :class:`GridData` object,
     whereas :class:`iris.cube.Cube` instances are typically created using
     helper methods such as
     
@@ -197,7 +197,7 @@ class ModelData(GridDataBase, GridDataCF):
     2. :func:`iris.load_cube` which directly returns a :class:`iris.cube.Cube` 
     instance and typically requires specification of a variable constraint.
     
-    The :class:`ModelData` object represents one variable in space and time, as
+    The :class:`GridData` object represents one variable in space and time, as
     well as corresponding meta information. Since it is based on the 
     :class:`iris.cube.Cube` it is optimised for netCDF files that follow the
     CF conventions and may not work for files that do not follow this standard.
@@ -214,7 +214,7 @@ class ModelData(GridDataBase, GridDataCF):
     -------
     >>> from pyaerocom.io.testfiles import get
     >>> files = get()
-    >>> data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+    >>> data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
     ...                  verbose=False)
     >>> print(data.var_name)
     od550aer
@@ -248,7 +248,7 @@ class ModelData(GridDataBase, GridDataCF):
     _ON_LOAD = const.ON_LOAD
     def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
                  **suppl_info):
-        super(ModelData, self).__init__(input, var_name, verbose, **suppl_info)
+        super(GridData, self).__init__(input, var_name, verbose, **suppl_info)
         self.verbose = verbose
         
         self._area_weights = None
@@ -364,7 +364,7 @@ class ModelData(GridDataBase, GridDataCF):
         if not self.is_cube:
             if self.verbose:
                 print("Start time could not be accessed in "
-                                 "ModelData class")
+                                 "GridData class")
             return nan
         return cftime_to_datetime64(self.time[0])[0]
     
@@ -373,7 +373,7 @@ class ModelData(GridDataBase, GridDataCF):
         """Start time of dataset as datetime64 object"""
         if self.verbose:
             print("Stop time could not be accessed in "
-                             "ModelData class")
+                             "GridData class")
             return nan
         return cftime_to_datetime64(self.time[-1])[0]
         
@@ -414,7 +414,7 @@ class ModelData(GridDataBase, GridDataCF):
                 self.grid.coord("time").bounds = None
         except:
             if self.verbose:
-                print("Failed to access time coordinate in ModelData class")
+                print("Failed to access time coordinate in GridData class")
         if self._ON_LOAD["SHIFT_LONS"]:
             self.check_and_regrid_lons()
             
@@ -498,7 +498,7 @@ class ModelData(GridDataBase, GridDataCF):
             
         Returns
         -------
-        ModelData
+        GridData
             new data object containing cropped grid
         """
         if not self.is_cube:
@@ -530,7 +530,7 @@ class ModelData(GridDataBase, GridDataCF):
         if not data:
             raise DataExtractionError("Failed to apply spatial cropping...")
         if time_range is None:
-            return ModelData(data, **suppl)
+            return GridData(data, **suppl)
         else:
             if all(isinstance(x, str) for x in time_range):
                 time_range = (Timestamp(time_range[0]),
@@ -546,7 +546,7 @@ class ModelData(GridDataBase, GridDataCF):
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
-        return ModelData(data, **suppl)
+        return GridData(data, **suppl)
         
     def area_weighted_mean(self):
         """Get area weighted mean"""
@@ -582,14 +582,14 @@ class ModelData(GridDataBase, GridDataCF):
         
         Returns
         -------
-        ModelData
+        GridData
             collapsed data object
             
         Examples
         --------
         
-            >>> from pyaerocom import ModelData
-            >>> data = ModelData()
+            >>> from pyaerocom import GridData
+            >>> data = GridData()
             >>> data._init_testdata_default()
             >>> itp = data.interpolate([("longitude", (10)),
             ...                         ("latitude" , (35))])
@@ -600,7 +600,7 @@ class ModelData(GridDataBase, GridDataCF):
             scheme = str_to_iris(scheme)
         itp_cube = self.grid.interpolate(sample_points, scheme, 
                                          collapse_scalar)
-        return ModelData(itp_cube, **self.suppl_info)
+        return GridData(itp_cube, **self.suppl_info)
     
     def collapsed(self, coords, aggregator, **kwargs):
         """Collapse cube
@@ -623,13 +623,13 @@ class ModelData(GridDataBase, GridDataCF):
         
         Returns
         -------
-        ModelData
+        GridData
             collapsed data object
         """
         if isinstance(aggregator, str):
             aggregator = str_to_iris(aggregator)
         collapsed = self.grid.collapsed(coords, aggregator, **kwargs)
-        return ModelData(collapsed, **self.suppl_info)
+        return GridData(collapsed, **self.suppl_info)
     
 # =============================================================================
 #     def extract(self, constraint):
@@ -642,7 +642,7 @@ class ModelData(GridDataBase, GridDataCF):
 #             
 #         Returns
 #         -------
-#         ModelData
+#         GridData
 #             new data object containing cropped data
 #         """
 #         if not self.is_cube:
@@ -652,7 +652,7 @@ class ModelData(GridDataBase, GridDataCF):
 #         if not data_crop:
 #             raise DataExtractionError("Failed to extract subset")
 #         
-#         return ModelData(data_crop, **self.suppl_info)
+#         return GridData(data_crop, **self.suppl_info)
 # =============================================================================
     
     def intersection(self, *args, **kwargs):
@@ -675,7 +675,7 @@ class ModelData(GridDataBase, GridDataCF):
         
         Returns
         -------
-        ModelData
+        GridData
             new data object containing cropped data
         """
         if not self.is_cube:
@@ -683,7 +683,7 @@ class ModelData(GridDataBase, GridDataCF):
                                       "underlying data is of type iris.Cube")
         data_crop = self.grid.intersection(*args, **kwargs)
         
-        return ModelData(data_crop, **self.suppl_info)
+        return GridData(data_crop, **self.suppl_info)
     
     def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90),
                       **kwargs):
@@ -743,21 +743,21 @@ class ModelData(GridDataBase, GridDataCF):
     def __getitem__(self, indices):
         """x.__getitem__(y) <==> x[y]"""
         sub = self.grid.__getitem__(indices)
-        return ModelData(sub, **self.suppl_info)
+        return GridData(sub, **self.suppl_info)
         
     def __str__(self):
         """For now, use string representation of underlying data"""
-        return ("pyaerocom.ModelData: %s\nGrid data: %s" 
+        return ("pyaerocom.GridData: %s\nGrid data: %s"
                 %(self.model_id, self.grid.__str__()))
     
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return "pyaerocom.ModelData\nGrid data: %s" %self.grid.__repr__() 
+        return "pyaerocom.GridData\nGrid data: %s" %self.grid.__repr__()
     
 if __name__=='__main__':
     RUN_OLD_STUFF = False
     
-    data = ModelData()
+    data = GridData()
     data._init_testdata_default()
     itp = data.interpolate([("longitude", (10)),
                             ("latitude" , (35))])
@@ -768,7 +768,7 @@ if __name__=='__main__':
         import numpy as np
         close("all")
         files = get()
-        data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
+        data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
                          model_id='aatsr_su_v4.3')
         print(data.var_name)
         print(type(data.longitude))
@@ -783,7 +783,7 @@ if __name__=='__main__':
         print(cropped.shape)
         cropped.quickplot_map()
         
-        other = ModelData(files["models"]["ecmwf_osuite"], 
+        other = GridData(files["models"]["ecmwf_osuite"],
                           var_name="od550aer", model_id="ECMWF_OSUITE")
         other.quickplot_map()
         #crop randomly
@@ -810,7 +810,7 @@ if __name__=='__main__':
         s.plot()
         fig.tight_layout()
         try:
-            ModelData(files["models"]["ecmwf_osuite"])
+            GridData(files["models"]["ecmwf_osuite"])
         except ValueError as e:
             warn(repr(e))
         

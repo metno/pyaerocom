@@ -11,5 +11,5 @@ import pyaerocom
 
 if __name__=="__main__":
     
-    data = pyaerocom.ModelData()._init_testdata_default()
+    data = pyaerocom.GridData()._init_testdata_default()
     

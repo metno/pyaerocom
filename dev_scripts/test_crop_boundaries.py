@@ -7,13 +7,13 @@ Created on Tue Apr 17 11:34:03 2018
 """
 from matplotlib.pyplot import close
 from pyaerocom.test_files import get
-from pyaerocom import ModelData
+from pyaerocom import GridData
 from pyaerocom.plot.mapping import plot_map
 
 if __name__=="__main__":
     close("all")
     files = get()
-    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
     
     # =============================================================================
     # data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 220),

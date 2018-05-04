@@ -10,7 +10,7 @@ import pytest
 import numpy.testing as npt
 from datetime import datetime
 from pyaerocom.test.settings import TEST_RTOL
-from pyaerocom import ModelData
+from pyaerocom import GridData
 
 @pytest.fixture(scope='module')
 def data_cci():
@@ -21,7 +21,7 @@ def data_cci():
     '''
     from pyaerocom.io.testfiles import get
     test_file = get()['models']['aatsr_su_v4.3']
-    return ModelData(test_file, var_name="od550aer")
+    return GridData(test_file, var_name="od550aer")
 
 @pytest.fixture(scope='module')
 def data_osuite():
@@ -32,7 +32,7 @@ def data_osuite():
     '''
     from pyaerocom.io.testfiles import get
     test_file = get()['models']['ecmwf_osuite']
-    return ModelData(test_file, var_name="od550aer")
+    return GridData(test_file, var_name="od550aer")
 
 
 def test_longitude(data_cci, data_osuite):

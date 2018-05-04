@@ -70,7 +70,7 @@ via an instance of the ``IOConfig`` class.
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD (dict)
+    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
     TS_TYPES (list)
        [hourly
         3hourly    daily    monthly]
@@ -98,6 +98,7 @@ via an instance of the ``IOConfig`` class.
     AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
     EBAS_MULTICOLUMN_NAME: EBASMC
     EEA_NAME: EEAAQeRep
+    EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
        [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
@@ -108,9 +109,11 @@ via an instance of the ``IOConfig`` class.
     
     MODELBASEDIR: /lustre/storeA/project/aerocom/
     OBSBASEDIR: /lustre/storeA/project/aerocom/
-    OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
+    OUT_BASEDIR: /home/jonasg/pyaerocom
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
+    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
+    PLOT_DIR: /home/jonasg/pyaerocom/plots
 
 
 You can check if the relevant base directories ``MODELBASEDIR`` and
@@ -165,7 +168,7 @@ See what's currently in there.
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD (dict)
+    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
     TS_TYPES (list)
        [hourly
         3hourly    daily    monthly]
@@ -193,6 +196,7 @@ See what's currently in there.
     AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
     EBAS_MULTICOLUMN_NAME: EBASMC
     EEA_NAME: EEAAQeRep
+    EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
        [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
@@ -203,9 +207,11 @@ See what's currently in there.
     
     MODELBASEDIR: path/that/does/not/exist
     OBSBASEDIR: path/that/does/not/exist
-    OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
+    OUT_BASEDIR: /home/jonasg/pyaerocom
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
+    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
+    PLOT_DIR: /home/jonasg/pyaerocom/plots
 
 
 As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
@@ -227,7 +233,7 @@ print.
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD (dict)
+    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
     TS_TYPES (list)
        [hourly
         3hourly    daily    monthly]
@@ -255,6 +261,7 @@ print.
     AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
     EBAS_MULTICOLUMN_NAME: EBASMC
     EEA_NAME: EEAAQeRep
+    EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
        [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
@@ -265,9 +272,11 @@ print.
     
     MODELBASEDIR: /lustre/storeA/project/aerocom/
     OBSBASEDIR: /lustre/storeA/project/aerocom/
-    OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
+    OUT_BASEDIR: /home/jonasg/pyaerocom
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
+    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
+    PLOT_DIR: /home/jonasg/pyaerocom/plots
 
 
 The ``reload`` (and ``load_config``) method actually checks if the
@@ -293,7 +302,7 @@ work.
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD (dict)
+    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
     TS_TYPES (list)
        [hourly
         3hourly    daily    monthly]
@@ -321,6 +330,7 @@ work.
     AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
     EBAS_MULTICOLUMN_NAME: EBASMC
     EEA_NAME: EEAAQeRep
+    EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
        [.aerocom-users-database/ECMWF/
@@ -331,9 +341,11 @@ work.
     
     MODELBASEDIR: .
     OBSBASEDIR: .
-    OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
+    OUT_BASEDIR: /home/jonasg/pyaerocom
     _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
+    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
+    PLOT_DIR: /home/jonasg/pyaerocom/plots
 
 
 This is it! Now with everything being set up correctly, we can start
@@ -343,12 +355,11 @@ will follow soon, as well as tutorials that show how to merge and
 compare model with observational data.
 
 The following notebook introduces how Pyaerocom handles regions and
-where they can be defined. In the subsequent tutorial, the
-``ReadModelData`` class is introduced, that can be used to import model
-data in a flexible way based on variable name, time range and temporal
-resolution. The loaded data for each model and variable is then stored
-in the analysis class ``ModelData`` which will be introduced in a later
-tutorial.
+where they can be defined. In the subsequent tutorial, the ``ReadGrid``
+class is introduced, that can be used to import model data in a flexible
+way based on variable name, time range and temporal resolution. The
+loaded data for each model and variable is then stored in the analysis
+class ``GridData`` which will be introduced in a later tutorial.
 
 Now what is a tutorial without a nice image? Let's summarise in a
 oneliner what will be explained in the following tutorials:
@@ -356,7 +367,7 @@ oneliner what will be explained in the following tutorials:
 .. code:: ipython3
 
     import pyaerocom
-    fig = pyaerocom.ModelData()._init_testdata_default().crop(region="SAMERICA").quickplot_map()
+    fig = pyaerocom.GridData()._init_testdata_default().crop(region="SAMERICA").quickplot_map()
 
 
 .. parsed-literal::

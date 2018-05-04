@@ -21,7 +21,7 @@ if __name__=="__main__":
     sample_lons = 10
     
     #load data
-    data = pyaerocom.ModelData()
+    data = pyaerocom.GridData()
     data._init_testdata_default()
     
     # Crop data
@@ -56,7 +56,7 @@ if __name__=="__main__":
                                      lats = lats))
         for name, coords in d.items():
             
-            data = pyaerocom.ModelData()
+            data = pyaerocom.GridData()
             data._init_testdata_default()
             num = len(coords['lats'])
             sample_points = [('latitude', coords['lats']),
@@ -71,7 +71,7 @@ if __name__=="__main__":
         
         from iris.analysis import Nearest
         
-        data = pyaerocom.ModelData()
+        data = pyaerocom.GridData()
         data._init_testdata_default()
                 
         scheme = Nearest()

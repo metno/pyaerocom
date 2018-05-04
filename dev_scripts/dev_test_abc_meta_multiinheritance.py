@@ -45,7 +45,7 @@ class GridDataCF(abc.ABC):
     def time(self):
         pass
 
-class ModelData(GridDataBase, GridDataCF):
+class GridData(GridDataBase, GridDataCF):
     
     def load_input(self, input, var_name):
         try:
@@ -76,8 +76,8 @@ class ModelData(GridDataBase, GridDataCF):
         return cls(input=array, var_name="from_scratch")
             
 
-class ModelDataUncomplete(GridDataBase, GridDataCF):
-    """Same as ModelData but missing implementations of longitude and time 
+class GridDataUncomplete(GridDataBase, GridDataCF):
+    """Same as GridData but missing implementations of longitude and time
     methods"""
     
     
@@ -98,13 +98,13 @@ if __name__ == "__main__":
     
     test_data = np.zeros((10,10))
     
-    d = ModelData(input = test_data, var_name="Bla")
+    d = GridData(input = test_data, var_name="Bla")
     print(d.grid.shape, "\n",  d.var_name)
     print(d.latitude, d.longitude, d.time)
     
-    d1 = ModelData.from_scratch(test_data)
+    d1 = GridData.from_scratch(test_data)
     print(d1.grid.shape, "\n",  d1.var_name)
     
     
     
-    d1 = ModelDataUncomplete(input=test_data, var_name="Bla")
+    d1 = GridDataUncomplete(input=test_data, var_name="Bla")

@@ -29,7 +29,7 @@ from . import plot
 
 from .variable import Variable
 from .region import Region
-from .modeldata import ModelData
+from .griddata import GridData
 from .obsdata import ObsData, ProfileData, StationData
 
  

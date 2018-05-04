@@ -7,7 +7,7 @@ in the iris Cube object, into datetime64 objects
 import warnings
 warnings.filterwarnings('ignore')
 from pyaerocom.io.testfiles import get
-from pyaerocom import ModelData
+from pyaerocom import GridData
 from matplotlib.pyplot import close
 import numpy as np
 try:
@@ -54,7 +54,7 @@ if __name__=="__main__":
     
     close("all")
     files = get()
-    data = ModelData(files['models']['aatsr_su_v4.3'], 
+    data = GridData(files['models']['aatsr_su_v4.3'],
                      var_name="od550aer",
                      model_id='aatsr_su_v4.3')
     

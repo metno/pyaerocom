@@ -4,7 +4,7 @@ Folder: pyaerocom/dev_scripts
 What the script does
 --------------------
 
-Use class ReadModelData to import results from ECMWF CAMS reanalysis for the years 2003-2007 (5 years), variable od550aer in daily resolution. After reading the files, the global weighted mean time series is calculated as well as a time series over the city of Leipzig is retrieved using neirest neighbour interpolation.
+Use class ReadGrid to import results from ECMWF CAMS reanalysis for the years 2003-2007 (5 years), variable od550aer in daily resolution. After reading the files, the global weighted mean time series is calculated as well as a time series over the city of Leipzig is retrieved using neirest neighbour interpolation.
 
 Results
 -------

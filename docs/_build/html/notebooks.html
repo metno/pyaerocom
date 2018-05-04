@@ -103,18 +103,18 @@
 <li class="toctree-l3"><a class="reference internal" href="#load-example-data-and-apply-region-specific-crop">Load example data and apply region specific crop</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-model-data-the-readmodeldata-class">Reading model data: the ReadModelData class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#reading-model-data-the-readgrid-class">Reading model data: the ReadGrid class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#remark-on-time-definition">Remark on time definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#a-very-brief-introduction-into-the-modeldata-class">A very brief introduction into the ModelData class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-very-brief-introduction-into-the-griddata-class">A very brief introduction into the GridData class</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-data-from-multiple-models-the-readmultimodeldata-class">Reading data from multiple models: the ReadMultiModelData class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#reading-data-from-multiple-models-the-readmultigrid-class">Reading data from multiple models: the ReadMultiGrid class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#iterate-over-models-and-variables">Iterate over models and variables</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#introducing-the-modeldata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introducing-the-griddata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#remark-on-longitude-definition">Remark on longitude definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#features-of-the-modeldata-class">Features of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#features-of-the-griddata-class">Features of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#more-to-come">… more to come</a></li>
 </ul>
 </li>
@@ -272,7 +272,7 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
 <span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="n">hourly</span>
     <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
@@ -300,6 +300,7 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
 <span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
 <span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">EARLINET_NAME</span><span class="p">:</span> <span class="n">EARLINET</span>
 <span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -310,9 +311,11 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 
 <span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
-<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span>
+<span class="n">OUT_BASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">PLOT_DIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">plots</span>
 </pre></div>
 </div>
 <p>You can check if the relevant base directories <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and
@@ -353,7 +356,7 @@ class, as follows:</li>
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
 <span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="n">hourly</span>
     <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
@@ -381,6 +384,7 @@ class, as follows:</li>
 <span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
 <span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
 <span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">EARLINET_NAME</span><span class="p">:</span> <span class="n">EARLINET</span>
 <span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -391,9 +395,11 @@ class, as follows:</li>
 
 <span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="n">path</span><span class="o">/</span><span class="n">that</span><span class="o">/</span><span class="n">does</span><span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">exist</span>
-<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span>
+<span class="n">OUT_BASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">PLOT_DIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">plots</span>
 </pre></div>
 </div>
 <p>As you can see, <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> contain the invalid
@@ -410,7 +416,7 @@ print.</p>
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
 <span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="n">hourly</span>
     <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
@@ -438,6 +444,7 @@ print.</p>
 <span class="n">AERONET_INV_V2L2_ALL_POINTS_NAME</span><span class="p">:</span> <span class="n">AeronetInvV2Lev2</span><span class="o">.</span><span class="n">AP</span>
 <span class="n">EBAS_MULTICOLUMN_NAME</span><span class="p">:</span> <span class="n">EBASMC</span>
 <span class="n">EEA_NAME</span><span class="p">:</span> <span class="n">EEAAQeRep</span>
+<span class="n">EARLINET_NAME</span><span class="p">:</span> <span class="n">EARLINET</span>
 <span class="n">OBSCONFIG</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 <span class="n">MODELDIRS</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
    <span class="p">[</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -448,9 +455,11 @@ print.</p>
 
 <span class="n">MODELBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
 <span class="n">OBSBASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span>
-<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span>
+<span class="n">OBSDATACACHEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span>
+<span class="n">OUT_BASEDIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">_config_ini</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">paths</span><span class="o">.</span><span class="n">ini</span>
-<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jang</span><span class="o">/</span><span class="n">cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">DONOTCACHEFILE</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">DONOTCACHE</span>
+<span class="n">PLOT_DIR</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">plots</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">reload</span></code> (and <code class="docutils literal notranslate"><span class="pre">load_config</span></code>) method actually checks if the
@@ -471,7 +480,7 @@ Current config: Pyaerocom IOConfig
 VERBOSE: True
 MIN_YEAR: 0
 MAX_YEAR: 3000
-ON_LOAD (dict)
+ON_LOAD: &lt;pyaerocom.config.OnLoad object at 0x7f1236279320&gt;
 TS_TYPES (list)
    [hourly
     3hourly    daily    monthly]
@@ -499,6 +508,7 @@ AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
 AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
 EBAS_MULTICOLUMN_NAME: EBASMC
 EEA_NAME: EEAAQeRep
+EARLINET_NAME: EARLINET
 OBSCONFIG (dict)
 MODELDIRS (list)
    [.aerocom-users-database/ECMWF/
@@ -509,9 +519,11 @@ MODELDIRS (list)
 
 MODELBASEDIR: .
 OBSBASEDIR: .
-OBSDATACACHEDIR: /lustre/storeA/users/jang/cache/
+OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
+OUT_BASEDIR: /home/jonasg/pyaerocom
 _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-DONOTCACHEFILE: /lustre/storeA/users/jang/cache/DONOTCACHE
+DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
+PLOT_DIR: /home/jonasg/pyaerocom/plots
 </pre></div>
 </div>
 <p>This is it! Now with everything being set up correctly, we can start
@@ -520,16 +532,15 @@ plotting and analysis of model data. Tutorials for observational data
 will follow soon, as well as tutorials that show how to merge and
 compare model with observational data.</p>
 <p>The following notebook introduces how Pyaerocom handles regions and
-where they can be defined. In the subsequent tutorial, the
-<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class is introduced, that can be used to import model
-data in a flexible way based on variable name, time range and temporal
-resolution. The loaded data for each model and variable is then stored
-in the analysis class <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> which will be introduced in a later
-tutorial.</p>
+where they can be defined. In the subsequent tutorial, the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code>
+class is introduced, that can be used to import model data in a flexible
+way based on variable name, time range and temporal resolution. The
+loaded data for each model and variable is then stored in the analysis
+class <code class="docutils literal notranslate"><span class="pre">GridData</span></code> which will be introduced in a later tutorial.</p>
 <p>Now what is a tutorial without a nice image? Let’s summarise in a
 oneliner what will be explained in the following tutorials:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">()</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
@@ -579,11 +590,11 @@ All default regions are defined in the file
 </div>
 <div class="section" id="load-example-data-and-apply-region-specific-crop">
 <h3>Load example data and apply region specific crop<a class="headerlink" href="#load-example-data-and-apply-region-specific-crop" title="Permalink to this headline">¶</a></h3>
-<p>In the following cell, we create an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class
+<p>In the following cell, we create an instance of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class
 (hich is introduced in more detail in a later tutorial), load some test
 data (from the CAMS ECMWF OSUITE dataset), crop it and plot a map of the
 results over Europe.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">()</span>
 <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
 <span class="n">crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
@@ -595,25 +606,25 @@ results over Europe.</p>
 <img alt="_images/01_intro_regions_5_1.png" src="_images/01_intro_regions_5_1.png" />
 </div>
 </div>
-<div class="section" id="reading-model-data-the-readmodeldata-class">
-<h2>Reading model data: the ReadModelData class<a class="headerlink" href="#reading-model-data-the-readmodeldata-class" title="Permalink to this headline">¶</a></h2>
-<p>This notebook introduces the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class of Pyaerocom, a
-flexible interface for importing model results from a single model,
-based on variable name (e.g. <em>od550aer</em>, <em>od550bc</em>), start / stop time
-stamps and temporal resolution (e.g. <em>hourly, 3hourly, daily, monthly</em>).</p>
-<p>In the following cells, we create an instance of the the
-<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and use this object to find and import data
-files containing the aerosol optical depth at 550 nm (<em>od550aer</em>) from
-the ECMWF CAMS reanalysis model (<em>ECMWF_CAMS_REAN</em>) for the years
-2003-2007 in daily resolution. The files will be temporally merged and
-put into an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class.</p>
+<div class="section" id="reading-model-data-the-readgrid-class">
+<h2>Reading model data: the ReadGrid class<a class="headerlink" href="#reading-model-data-the-readgrid-class" title="Permalink to this headline">¶</a></h2>
+<p>This notebook introduces the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class of Pyaerocom, a flexible
+interface for importing model results from a single model, based on
+variable name (e.g. <em>od550aer</em>, <em>od550bc</em>), start / stop time stamps and
+temporal resolution (e.g. <em>hourly, 3hourly, daily, monthly</em>).</p>
+<p>In the following cells, we create an instance of the the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code>
+class and use this object to find and import data files containing the
+aerosol optical depth at 550 nm (<em>od550aer</em>) from the ECMWF CAMS
+reanalysis model (<em>ECMWF_CAMS_REAN</em>) for the years 2003-2007 in daily
+resolution. The files will be temporally merged and put into an instance
+of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class.</p>
 <p>We start with creating a reading object, that will take care of finding
 the model directory for us (based on the model ID) and all valid NetCDF
 files on initialisation. The <code class="docutils literal notranslate"><span class="pre">print</span></code> statetment prints the string
-representation of the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> object, which provides useful
+representation of the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> object, which provides useful
 information about what is in there.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
-<span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadModelData</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+<span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGrid</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
                                   <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
                                   <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
                                   <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -621,15 +632,14 @@ information about what is in there.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
-<span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span>
-
+<span class="n">Found</span> <span class="n">model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2004</span><span class="o">.</span><span class="n">nc</span>
 <span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file od550aer.29feb2004.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2007</span><span class="o">.</span><span class="n">nc</span>
 <span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file od550aer.29feb2007.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
-<span class="o">-----------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
+<span class="o">------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
@@ -673,31 +683,34 @@ string representation, as shown in the cell above).</p>
 <span class="n">Invalid</span> <span class="n">time</span> <span class="n">dimension</span><span class="o">.</span>
 <span class="n">Error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Cube does not contain time dimension&#39;</span><span class="p">,)</span>
 <span class="n">Invalid</span> <span class="n">time</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">file</span> <span class="n">ECMWF_CAMS_REAN</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2007.</span><span class="n">nc</span><span class="o">.</span> <span class="n">Attempting</span> <span class="n">to</span> <span class="n">correct</span><span class="o">.</span>
+<span class="n">Cubes</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550aer</span> <span class="n">have</span> <span class="n">different</span> <span class="n">meta</span> <span class="n">data</span> <span class="n">settings</span><span class="o">.</span> <span class="n">These</span> <span class="n">will</span> <span class="n">be</span> <span class="n">unified</span> <span class="n">using</span> <span class="n">the</span> <span class="n">metadata</span> <span class="n">dictionary</span> <span class="n">of</span> <span class="n">the</span> <span class="n">first</span> <span class="n">cube</span> <span class="p">(</span><span class="n">otherwise</span> <span class="n">the</span> <span class="n">method</span> <span class="n">concatenate</span> <span class="n">of</span> <span class="n">the</span> <span class="n">iris</span> <span class="n">package</span> <span class="n">won</span><span class="s1">&#39;t work)</span>
 <span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 <span class="n">Applying</span> <span class="n">temporal</span> <span class="n">cropping</span> <span class="n">of</span> <span class="n">result</span> <span class="n">cube</span>
+<span class="n">Failed</span> <span class="n">to</span> <span class="n">crop</span> <span class="n">data</span> <span class="k">for</span> <span class="n">od550aer</span> <span class="ow">in</span> <span class="n">time</span><span class="o">.</span>
+<span class="n">Error</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;&#39;GridData&#39; object has no attribute &#39;get_time_constraint&#39;&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>From the output we can see that based on our specified time range and
 temporal resolution, we got 6 netCDF files that were merged all into an
-instance of the <code class="docutils literal notranslate"><span class="pre">pyaerocom.ModelData</span></code> class, which will be introduced
+instance of the <code class="docutils literal notranslate"><span class="pre">pyaerocom.GridData</span></code> class, which will be introduced
 in more detail later.</p>
 <p>Now that we have actual data imported, we can print again to see if
 everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
 
-<span class="nc">Pyaerocom</span> <span class="n">ReadModelData</span>
-<span class="o">-----------------------</span>
+<span class="nc">Pyaerocom</span> <span class="n">ReadGrid</span>
+<span class="o">------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
 
-<span class="n">Loaded</span> <span class="n">ModelData</span> <span class="n">objects</span><span class="p">:</span>
+<span class="n">Loaded</span> <span class="n">GridData</span> <span class="n">objects</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
-<span class="o">-------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GridData</span>
+<span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
@@ -706,10 +719,10 @@ everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>The data object is of type &lt;class &#39;pyaerocom.modeldata.ModelData&#39;&gt; and contains 1826 time stamps
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>The data object is of type &lt;class &#39;pyaerocom.griddata.GridData&#39;&gt; and contains 1826 time stamps
 </pre></div>
 </div>
-<p>The returned data object is of type <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> (introduced in later
+<p>The returned data object is of type <code class="docutils literal notranslate"><span class="pre">GridData</span></code> (introduced in later
 tutorials) which contains 1826 time stamps. Given that the defined
 period of 5 years includes one leap year, we should expect that we
 imported data for each day of the five years?</p>
@@ -737,10 +750,10 @@ that the file follows one of the <a class="reference external" href="http://aero
 conventions</a>.</li>
 </ol>
 </div>
-<div class="section" id="a-very-brief-introduction-into-the-modeldata-class">
-<h3>A very brief introduction into the ModelData class<a class="headerlink" href="#a-very-brief-introduction-into-the-modeldata-class" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="a-very-brief-introduction-into-the-griddata-class">
+<h3>A very brief introduction into the GridData class<a class="headerlink" href="#a-very-brief-introduction-into-the-griddata-class" title="Permalink to this headline">¶</a></h3>
 <p>Now as a final step, we briefly introduce some of the features of the
-<code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class by computing 1. plotting an overview map of the data
+<code class="docutils literal notranslate"><span class="pre">GridData</span></code> class by computing 1. plotting an overview map of the data
 and plotting a time series of the global weighted average aerosol
 optical density as well as the same time series at the coordinates in
 the city of Leipzig, Germany.</p>
@@ -770,35 +783,35 @@ the city of Leipzig, Germany.</p>
 <span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/02_intro_class_ReadModelData_13_0.png" src="_images/02_intro_class_ReadModelData_13_0.png" />
-<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class is
-introduced, which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class and
-allows for importing data from multiple models.</p>
+<img alt="_images/02_intro_class_ReadGrid_13_0.png" src="_images/02_intro_class_ReadGrid_13_0.png" />
+<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class is introduced,
+which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class and allows for
+importing data from multiple models.</p>
 </div>
 </div>
-<div class="section" id="reading-data-from-multiple-models-the-readmultimodeldata-class">
-<h2>Reading data from multiple models: the ReadMultiModelData class<a class="headerlink" href="#reading-data-from-multiple-models-the-readmultimodeldata-class" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadMultiModelData</span></code> class provides an interface to
-import multiple variables for an arbitrary number of different models
-and within a specific time interval. It makes large use of the
-<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class that provides an interface for importing results
-from a single model.</p>
+<div class="section" id="reading-data-from-multiple-models-the-readmultigrid-class">
+<h2>Reading data from multiple models: the ReadMultiGrid class<a class="headerlink" href="#reading-data-from-multiple-models-the-readmultigrid-class" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadMultiGrid</span></code> class provides an interface to import
+multiple variables for an arbitrary number of different models and
+within a specific time interval. It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code>
+class that provides an interface for importing results from a single
+model.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.io.readmodeldata</span> <span class="k">import</span> <span class="n">ReadMultiModelData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readgrid</span> <span class="k">import</span> <span class="n">ReadMultiGrid</span>
 </pre></div>
 </div>
 <p>Define two models (this list can contain as many models as you like)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">,</span> <span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Create and initiate <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class. The direcory for each
-model as well as all valid files in the model directories are searched
-on initiation of the instance. Valid here means, that the files belong
-to the corresponding model. Subsetting of the time interval is done in a
+<p>Create and initiate <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class. The direcory for each model
+as well as all valid files in the model directories are searched on
+initiation of the instance. Valid here means, that the files belong to
+the corresponding model. Subsetting of the time interval is done in a
 later process.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadMultiModelData</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2011-12-31&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadMultiGrid</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2011-12-31&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
@@ -807,8 +820,7 @@ later process.</p>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECLIPSE</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">SATELLITE</span><span class="o">-</span><span class="n">DATA</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span>
-<span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
-
+<span class="n">Found</span> <span class="n">model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span>
@@ -828,8 +840,7 @@ later process.</p>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">I</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span>
-<span class="n">Found</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
-
+<span class="n">Found</span> <span class="n">model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="nb">all</span><span class="o">.</span><span class="n">nc</span>
 <span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file all.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
 </pre></div>
@@ -859,76 +870,86 @@ model (i.e. that must be contained in both input models)</p>
 <pre class="literal-block">
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2010.nc
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2011.nc
+Cubes for variable od550aer have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
 Applying temporal cropping of result cube
+Failed to crop data for od550aer in time.
+Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2010.nc
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2011.nc
+Cubes for variable od550dust have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
 Applying temporal cropping of result cube
+Failed to crop data for od550dust in time.
+Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
 Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
+Failed to crop data for od550aer in time.
+Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
 Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
+Failed to crop data for od550dust in time.
+Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
 </pre>
 <p>Print what is in there (similar to the previously introduced
-<code class="docutils literal notranslate"><span class="pre">ReadModelData</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadMultiModelData</span></code> class has a
-nice string representation)</p>
+<code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class has a nice string
+representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
-<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
-<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
-<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
+<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
 
-<span class="nc">Pyaerocom</span> <span class="n">ReadMultiModelData</span>
-<span class="o">----------------------------</span>
+<span class="nc">Pyaerocom</span> <span class="n">ReadMultiGrid</span>
+<span class="o">-----------------------</span>
 <span class="n">Model</span> <span class="n">IDs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AATSR_SU_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
 
 <span class="n">Loaded</span> <span class="n">data</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
-<span class="o">-----------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
+<span class="o">------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550erraer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">]</span>
 
-<span class="n">Loaded</span> <span class="n">ModelData</span> <span class="n">objects</span><span class="p">:</span>
+<span class="n">Loaded</span> <span class="n">GridData</span> <span class="n">objects</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
-<span class="o">-------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GridData</span>
+<span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
-<span class="o">-------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GridData</span>
+<span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ReadModelData</span>
-<span class="o">-----------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
+<span class="o">------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;deltaz3d&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity3d&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer3d&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aerh2o&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dryaer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550lt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od870aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2006</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2010</span><span class="p">]</span>
 
-<span class="n">Loaded</span> <span class="n">ModelData</span> <span class="n">objects</span><span class="p">:</span>
+<span class="n">Loaded</span> <span class="n">GridData</span> <span class="n">objects</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
-<span class="o">-------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GridData</span>
+<span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ModelData</span>
-<span class="o">-------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GridData</span>
+<span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
@@ -939,27 +960,27 @@ nice string representation)</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current model: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">model_id</span>)
     <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Current variable: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">var_name</span>)
-        <span class="c1"># data is of type pyaerocom.ModelData which uses an extended representation of the Cube class</span>
+        <span class="c1"># data is of type pyaerocom.GridData which uses an extended representation of the Cube class</span>
         <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">model</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550aer</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">730</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">180</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">360</span><span class="p">)</span><span class="o">&gt;</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550dust</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">730</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">180</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">360</span><span class="p">)</span><span class="o">&gt;</span>
 <span class="n">Current</span> <span class="n">model</span><span class="p">:</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550aer</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">288</span><span class="p">)</span><span class="o">&gt;</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550dust</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">mineral</span> <span class="n">aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">288</span><span class="p">)</span><span class="o">&gt;</span>
 </pre></div>
 </div>
@@ -978,7 +999,7 @@ nice string representation)</p>
         <span class="n">dat_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">ModelData</span> <span class="k">class</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
 
 <span class="nc">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
 
@@ -990,7 +1011,7 @@ nice string representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/03_intro_class_ReadMultiModelData_19_0.png" src="_images/03_intro_class_ReadMultiModelData_19_0.png" />
+<img alt="_images/03_intro_class_ReadMultiGrid_19_0.png" src="_images/03_intro_class_ReadMultiGrid_19_0.png" />
 <div class="section" id="iterate-over-models-and-variables">
 <h3>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h3>
 <p>The following cell iterates over all imported variables and models and
@@ -1000,27 +1021,27 @@ plots the first time stamp of each result file.</p>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/03_intro_class_ReadMultiModelData_21_0.png" src="_images/03_intro_class_ReadMultiModelData_21_0.png" />
-<img alt="_images/03_intro_class_ReadMultiModelData_21_1.png" src="_images/03_intro_class_ReadMultiModelData_21_1.png" />
-<img alt="_images/03_intro_class_ReadMultiModelData_21_2.png" src="_images/03_intro_class_ReadMultiModelData_21_2.png" />
-<img alt="_images/03_intro_class_ReadMultiModelData_21_3.png" src="_images/03_intro_class_ReadMultiModelData_21_3.png" />
+<img alt="_images/03_intro_class_ReadMultiGrid_21_0.png" src="_images/03_intro_class_ReadMultiGrid_21_0.png" />
+<img alt="_images/03_intro_class_ReadMultiGrid_21_1.png" src="_images/03_intro_class_ReadMultiGrid_21_1.png" />
+<img alt="_images/03_intro_class_ReadMultiGrid_21_2.png" src="_images/03_intro_class_ReadMultiGrid_21_2.png" />
+<img alt="_images/03_intro_class_ReadMultiGrid_21_3.png" src="_images/03_intro_class_ReadMultiGrid_21_3.png" />
 </div>
 </div>
-<div class="section" id="introducing-the-modeldata-class">
-<h2>Introducing the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#introducing-the-modeldata-class" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="introducing-the-griddata-class">
+<h2>Introducing the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class<a class="headerlink" href="#introducing-the-griddata-class" title="Permalink to this headline">¶</a></h2>
 <p>This notebook introduces basic features of the
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.modeldata.ModelData">ModelData</a>
-class of pyaerocom. The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is the fundamental base
-class for the analysis of model data. The underlying data type is
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddata.GridData">GridData</a>
+class of pyaerocom. The <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class is the fundamental base class
+for the analysis of model data. The underlying data type is
 <a class="reference external" href="http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube">iris.cube.Cube</a>
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> (i.e. by passing the
+files when creating an instance of <code class="docutils literal notranslate"><span class="pre">GridData</span></code> (i.e. by passing the
 filename and specifying the variable name on initialisation). This
-notebook introduces some of the features of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class.
+notebook introduces some of the features of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class.
 Starting with some imports…</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">ModelData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GridData</span>
 </pre></div>
 </div>
 <p>Let’s get a test file to load</p>
@@ -1042,21 +1063,21 @@ two subirectories for model based test files (<code class="docutils literal notr
 observation based test files (<code class="docutils literal notranslate"><span class="pre">key=observations</span></code>). So far, there is
 not much in there (i.e. only two files).</p>
 <p>Let’s pick out the ECMWF OSUITE test file and load the data directly
-into an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class. The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class
-takes either preloaded instances of the <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> class as
-input, or a valid netCDF file path. The latter requires specification of
-the variable name which is then filtered from the data stored in the
-netCDF file (which may contain multiple variables. The following example
+into an instance of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class. The <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class takes
+either preloaded instances of the <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> class as input, or
+a valid netCDF file path. The latter requires specification of the
+variable name which is then filtered from the data stored in the netCDF
+file (which may contain multiple variables. The following example
 imports the data for the aerosol optical density at 550 nm. The string
-representation of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class (see print at end of following
+representation of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class (see print at end of following
 code cell) was slitghtly adapted from the underlying <code class="docutils literal notranslate"><span class="pre">Cube</span></code> object.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fpath</span> <span class="o">=</span> <span class="n">test_files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">]</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">:</span> <span class="n">ECMWF_OSUITE</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
      <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
           <span class="n">time</span>                                       <span class="n">x</span>              <span class="o">-</span>               <span class="o">-</span>
@@ -1082,19 +1103,19 @@ code cell) was slitghtly adapted from the underlying <code class="docutils liter
 <p>they are converted automatically to</p>
 <div class="math notranslate nohighlight">
 \[-180\leq\,\text{lon}\,\leq180\]</div>
-<p>when an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is created (see print
+<p>when an instance of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class is created (see print
 statment above <em>Rolling longitudes to -180 -&gt; 180 definition</em>). This is,
 for instance, the case for the ECMWF OSUITE data files.</p>
 </div></div>
-<div class="section" id="features-of-the-modeldata-class">
-<h3>Features of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class<a class="headerlink" href="#features-of-the-modeldata-class" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="features-of-the-griddata-class">
+<h3>Features of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class<a class="headerlink" href="#features-of-the-griddata-class" title="Permalink to this headline">¶</a></h3>
 <p>In the following cell, some of the most important attributes are
 introduced. These are mostly reimplementations of the underlying
-<code class="docutils literal notranslate"><span class="pre">Cube</span></code> data which is stored in the <code class="docutils literal notranslate"><span class="pre">ModelData.grid</span></code> attribute. For
-instance the attribute <code class="docutils literal notranslate"><span class="pre">ModelData.longitude</span></code> get’s you
-<code class="docutils literal notranslate"><span class="pre">ModelData.grid.coord(&quot;longitude&quot;)</span></code>, <code class="docutils literal notranslate"><span class="pre">ModelData.latitude</span></code> get’s you
-<code class="docutils literal notranslate"><span class="pre">ModelData.grid.coord(&quot;latitude&quot;)</span></code> and <code class="docutils literal notranslate"><span class="pre">ModelData.time</span></code> get’s you
-<code class="docutils literal notranslate"><span class="pre">ModelData.grid.coord(&quot;time&quot;)</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">Cube</span></code> data which is stored in the <code class="docutils literal notranslate"><span class="pre">GridData.grid</span></code> attribute. For
+instance the attribute <code class="docutils literal notranslate"><span class="pre">GridData.longitude</span></code> get’s you
+<code class="docutils literal notranslate"><span class="pre">GridData.grid.coord(&quot;longitude&quot;)</span></code>, <code class="docutils literal notranslate"><span class="pre">GridData.latitude</span></code> get’s you
+<code class="docutils literal notranslate"><span class="pre">GridData.grid.coord(&quot;latitude&quot;)</span></code> and <code class="docutils literal notranslate"><span class="pre">GridData.time</span></code> get’s you
+<code class="docutils literal notranslate"><span class="pre">GridData.grid.coord(&quot;time&quot;)</span></code>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Longitude attr is pointer to DimCoord instance of underlying Cube: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span> <span class="ow">is</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)))</span>
@@ -1118,17 +1139,17 @@ Longitude attr is pointer to DimCoord instance of underlying Cube: True
 will get you some information about what variables are available in the
 file (if the file is readable using the <code class="docutils literal notranslate"><span class="pre">iris.load</span></code> method).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550oa&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550so4&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550dust&#39;, &#39;od550so4&#39;, &#39;od550oa&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;Blaaa&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;Blaaa&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This also did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
@@ -1145,10 +1166,10 @@ method</p>
                          <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/04_intro_class_ModelData_14_0.png" src="_images/04_intro_class_ModelData_14_0.png" />
+<img alt="_images/04_intro_class_GridData_14_0.png" src="_images/04_intro_class_GridData_14_0.png" />
 <p>Why not load some of the other variables…</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
-<span class="n">data_so4</span> <span class="o">=</span> <span class="n">ModelData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<span class="n">data_so4</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
@@ -1163,19 +1184,19 @@ method</p>
                                                        <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">70</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="_images/04_intro_class_ModelData_18_0.png" src="_images/04_intro_class_ModelData_18_0.png" />
-<img alt="_images/04_intro_class_ModelData_18_1.png" src="_images/04_intro_class_ModelData_18_1.png" />
+<img alt="_images/04_intro_class_GridData_18_0.png" src="_images/04_intro_class_GridData_18_0.png" />
+<img alt="_images/04_intro_class_GridData_18_1.png" src="_images/04_intro_class_GridData_18_1.png" />
 </div>
 <div class="section" id="more-to-come">
 <h3>… more to come<a class="headerlink" href="#more-to-come" title="Permalink to this headline">¶</a></h3>
-<p>This tutorial is not yet completed as the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is
+<p>This tutorial is not yet completed as the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class is
 currently under development.</p>
 </div>
 </div>
 <div class="section" id="handling-of-time-in-pyaerocom">
 <h2>Handling of time in Pyaerocom<a class="headerlink" href="#handling-of-time-in-pyaerocom" title="Permalink to this headline">¶</a></h2>
 <p>The
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.modeldata">ModelData</a>
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddata">GridData</a>
 class of <em>Pyaerocom</em> was introduced in the previous tutorial.</p>
 <p>Here, we want to illustrate one particular feature of <em>Pyaerocom</em>,
 namely the conversion of CF conform numerical time stamps with a defined
@@ -1193,16 +1214,16 @@ timestamps to be datetime-like objects.</p>
 particularly in the
 <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube">Cube</a>
 class, which is the basic data representation object in the <em>Pyaerocom</em>
-<code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class. In particular, it emphazises some peculiarities
-that can lead to complications and finally shows, how <em>Pyaerocom</em>
-circumvents these issues. We shall see, that this does not only reduce
-the risk of conversion Errors, but even results in a quite significant
-performance boost when converting from numerical CF timestamps to
+<code class="docutils literal notranslate"><span class="pre">GridData</span></code> class. In particular, it emphazises some peculiarities that
+can lead to complications and finally shows, how <em>Pyaerocom</em> circumvents
+these issues. We shall see, that this does not only reduce the risk of
+conversion Errors, but even results in a quite significant performance
+boost when converting from numerical CF timestamps to
 <code class="docutils literal notranslate"><span class="pre">numpy.datetime64</span></code> time stamps.</p>
 <div class="section" id="load-and-some-example-data">
 <h3>Load and some example data<a class="headerlink" href="#load-and-some-example-data" title="Permalink to this headline">¶</a></h3>
 <p>Get and load test data file using the new pyaerocom interface (the
-underlying datatype of <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> is <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>.</p>
+underlying datatype of <code class="docutils literal notranslate"><span class="pre">GridData</span></code> is <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
 <span class="n">files</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">testfiles</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 
@@ -1210,8 +1231,8 @@ underlying datatype of <code class="docutils literal notranslate"><span class="p
 <span class="n">fpath_aatsr</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
-<span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
@@ -1222,7 +1243,7 @@ are automatically converted to -180 -&gt; 180 (the case of the ECMWF data).</p>
 </div>
 <div class="section" id="digging-into-the-time-representation-of-the-iris-cube-datatype">
 <h3>Digging into the time representation of the iris Cube datatype<a class="headerlink" href="#digging-into-the-time-representation-of-the-iris-cube-datatype" title="Permalink to this headline">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class is based on the <code class="docutils literal notranslate"><span class="pre">iris.Cube</span></code> object, which can
+<p>The <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class is based on the <code class="docutils literal notranslate"><span class="pre">iris.Cube</span></code> object, which can
 be accessed via the <code class="docutils literal notranslate"><span class="pre">grid</span></code> attribute. In the following, some features
 of the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> class are introduced.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cube_ecmwf</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">grid</span>
@@ -1342,14 +1363,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>135 ms ± 8.88 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>131 ms ± 13 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>107 ms ± 1.87 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 3.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -1360,14 +1381,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 5.59 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 10.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>104 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>99.9 ms ± 609 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -1386,7 +1407,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.73 ms ± 106 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.58 ms ± 7.85 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -1504,7 +1525,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>69.1 µs ± 7.73 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>66.3 µs ± 8.34 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -1522,7 +1543,7 @@ here</a>).</p>
 pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>66.9 µs ± 1.68 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>67.6 µs ± 4.39 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -1531,7 +1552,7 @@ pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.98 ms ± 86.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.83 ms ± 113 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -1540,19 +1561,19 @@ conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.</p>
 <p>The method is also the standard conversion method in the
-<code class="docutils literal notranslate"><span class="pre">ModelData.time_stamps()</span></code> method:</p>
+<code class="docutils literal notranslate"><span class="pre">GridData.time_stamps()</span></code> method:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>88.5 µs ± 3.16 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>110 µs ± 20.6 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.36 ms ± 221 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.93 ms ± 134 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 </div>

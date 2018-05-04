@@ -3,7 +3,7 @@ Handling of time in Pyaerocom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The
-`ModelData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.modeldata>`__
+`GridData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddata>`__
 class of *Pyaerocom* was introduced in the previous tutorial.
 
 Here, we want to illustrate one particular feature of *Pyaerocom*,
@@ -23,18 +23,18 @@ This notebook illustrates how time is handled in the iris module,
 particularly in the
 `Cube <http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube>`__
 class, which is the basic data representation object in the *Pyaerocom*
-``ModelData`` class. In particular, it emphazises some peculiarities
-that can lead to complications and finally shows, how *Pyaerocom*
-circumvents these issues. We shall see, that this does not only reduce
-the risk of conversion Errors, but even results in a quite significant
-performance boost when converting from numerical CF timestamps to
+``GridData`` class. In particular, it emphazises some peculiarities that
+can lead to complications and finally shows, how *Pyaerocom* circumvents
+these issues. We shall see, that this does not only reduce the risk of
+conversion Errors, but even results in a quite significant performance
+boost when converting from numerical CF timestamps to
 ``numpy.datetime64`` time stamps.
 
 Load and some example data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Get and load test data file using the new pyaerocom interface (the
-underlying datatype of ``ModelData`` is ``iris.cube.Cube``.
+underlying datatype of ``GridData`` is ``iris.cube.Cube``.
 
 .. code:: ipython3
 
@@ -46,8 +46,8 @@ underlying datatype of ``ModelData`` is ``iris.cube.Cube``.
 
 .. code:: ipython3
 
-    data_ecmwf = pyaerocom.ModelData(fpath_ecmwf, var_name="od550aer", model_id="ECMWF_OSUITE")
-    data_aatsr = pyaerocom.ModelData(fpath_aatsr, var_name="od550aer", model_id="AATSR")
+    data_ecmwf = pyaerocom.GridData(fpath_ecmwf, var_name="od550aer", model_id="ECMWF_OSUITE")
+    data_aatsr = pyaerocom.GridData(fpath_aatsr, var_name="od550aer", model_id="AATSR")
 
 
 .. parsed-literal::
@@ -61,7 +61,7 @@ are automatically converted to -180 -> 180 (the case of the ECMWF data).
 Digging into the time representation of the iris Cube datatype
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``ModelData`` class is based on the ``iris.Cube`` object, which can
+The ``GridData`` class is based on the ``iris.Cube`` object, which can
 be accessed via the ``grid`` attribute. In the following, some features
 of the ``Cube`` class are introduced.
 
@@ -220,7 +220,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    135 ms ± 8.88 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    131 ms ± 13 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -231,7 +231,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    107 ms ± 1.87 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    103 ms ± 3.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -247,7 +247,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    121 ms ± 5.59 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    121 ms ± 10.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -258,7 +258,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    104 ms ± 2.8 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    99.9 ms ± 609 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -283,7 +283,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.73 ms ± 106 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.58 ms ± 7.85 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -413,7 +413,7 @@ Now let's see how this one performs.
 
 .. parsed-literal::
 
-    69.1 µs ± 7.73 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    66.3 µs ± 8.34 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How Pyaerocom does it
@@ -436,7 +436,7 @@ here <aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64>`
 
 .. parsed-literal::
 
-    66.9 µs ± 1.68 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    67.6 µs ± 4.39 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -450,7 +450,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    1.98 ms ± 86.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.83 ms ± 113 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -460,7 +460,7 @@ microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.
 
 The method is also the standard conversion method in the
-``ModelData.time_stamps()`` method:
+``GridData.time_stamps()`` method:
 
 .. code:: ipython3
 
@@ -470,7 +470,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    88.5 µs ± 3.16 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    110 µs ± 20.6 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 .. code:: ipython3
@@ -481,5 +481,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.36 ms ± 221 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    1.93 ms ± 134 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 

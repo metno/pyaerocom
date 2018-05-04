@@ -9,14 +9,14 @@ from matplotlib.pyplot import close
 import numpy as np
 import iris
 from pyaerocom.io.testfiles import get
-from pyaerocom import ModelData
+from pyaerocom import GridData
 from pyaerocom.plot.mapping import plot_map
 
 if __name__=="__main__":
     close("all")
     
     files = get()
-    data = ModelData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
     
     cube = data.grid
     

@@ -22,7 +22,7 @@
 # MA 02110-1301, USA
 ###############################################################################
 
-from pyaerocom.io.readmodeldata import ReadModelData
+from pyaerocom.io.readgrid import ReadGrid
 from pyaerocom.plot import plotmaps
 from GLOB import OUT_DIR_MAPS # import standard output directory
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     import argparse
     default_model = "AATSR_SU_v4.3"
     
-    parser = argparse.ArgumentParser(description='command line interface to the readmodeldata class')
+    parser = argparse.ArgumentParser(description='command line interface to the readgrid class')
     parser.add_argument("model", help="model to read", nargs="?", 
                         const=default_model, default=default_model, type=str)
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     var = "od550aer"
 
     # Create data import object
-    test = ReadModelData(model, '2010-01-01','2011-12-31', verbose=True)
+    test = ReadGrid(model, '2010-01-01','2011-12-31', verbose=True)
     
     print(test.vars)
     

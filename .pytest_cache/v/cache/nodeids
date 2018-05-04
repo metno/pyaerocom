@@ -1,6 +1,6 @@
 [
   "pyaerocom/test/test_mathutils.py::test_exponent",
-  "pyaerocom/test/test_modeldata.py::test_longitude",
-  "pyaerocom/test/test_modeldata.py::test_latitude",
-  "pyaerocom/test/test_modeldata.py::test_time"
+  "pyaerocom/test/test_griddata.py::test_longitude",
+  "pyaerocom/test/test_griddata.py::test_latitude",
+  "pyaerocom/test/test_griddata.py::test_time"
 ]

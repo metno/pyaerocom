@@ -194,9 +194,10 @@
 <span class="c1"># So far, these mostly comprise default plot settings and units</span>
 
 <span class="p">[</span><span class="n">od550aer</span><span class="p">]</span>
-<span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">unit</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">map_vmin</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">map_vmax</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">map_c_over</span> <span class="o">=</span> <span class="n">r</span>
 <span class="n">map_cbar_levels</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
 <span class="n">map_cbar_ticks</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
 </pre></div>
@@ -404,6 +405,7 @@ AERONET_INV_V2L2_ALL_POINTS = ${BASEDIR}aerocom1/AEROCOM_OBSDATA/
 # other observations
 EBAS_MULTICOLUMN = ${BASEDIR}aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data
 EEA = ${BASEDIR}aerocom1/AEROCOM_OBSDATA/EEA_AQeRep/renamed
+EARLINET = ${BASEDIR}aerocom1/AEROCOM_OBSDATA/Earlinet/data
 
 
 [obsnames]
@@ -434,11 +436,12 @@ AERONET_INV_V2L2_ALL_POINTS = AeronetInvV2Lev2.AP
 # other observations
 EBAS_MULTICOLUMN = EBASMC
 EEA = EEAAQeRep
+EARLINET = EARLINET
 
 
 [parameters]
 #parameters definition
-ObsOnlyModelname=OBSERVATIONS-ONLY
+ObsOnlyModelname = OBSERVATIONS-ONLY
 
 [obsstartyears]
 #because it would be too time consuming determining the start year of 
@@ -466,6 +469,7 @@ AERONET_INV_V2L2_ALL_POINTS = 1992
 # other observations
 EBAS_MULTICOLUMN = 2000
 EEA = 2013
+EARLINET = 2000
 
 
 </pre></div>

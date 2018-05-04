@@ -217,11 +217,11 @@ All default regions are defined in the file
 </div>
 <div class="section" id="load-example-data-and-apply-region-specific-crop">
 <h2>Load example data and apply region specific crop<a class="headerlink" href="#load-example-data-and-apply-region-specific-crop" title="Permalink to this headline">¶</a></h2>
-<p>In the following cell, we create an instance of the <code class="docutils literal notranslate"><span class="pre">ModelData</span></code> class
+<p>In the following cell, we create an instance of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class
 (hich is introduced in more detail in a later tutorial), load some test
 data (from the CAMS ECMWF OSUITE dataset), crop it and plot a map of the
 results over Europe.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">ModelData</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">()</span>
 <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
 <span class="n">crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>

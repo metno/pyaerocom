@@ -14,7 +14,7 @@ Data types and data representation
 Model data
 ^^^^^^^^^^
 
-.. automodule:: pyaerocom.modeldata
+.. automodule:: pyaerocom.griddata
    :members:
    :undoc-members:
    
@@ -35,15 +35,15 @@ observations.
 Reading routines
 ^^^^^^^^^^^^^^^^^^^^
 
-Reading of model data
-"""""""""""""""""""""
+Reading of gridded data
+""""""""""""""""""""""""
 
-.. automodule:: pyaerocom.io.readmodeldata
+.. automodule:: pyaerocom.io.readgrid
    :members:
    :undoc-members:
    
-Reading of observation data
-"""""""""""""""""""""""""""
+Reading of ungridded data
+"""""""""""""""""""""""""
 
 .. automodule:: pyaerocom.io.readobsdata
    :members:
