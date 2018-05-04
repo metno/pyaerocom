@@ -17,7 +17,7 @@ pyaerocom.egg-info/dependency_links.txt
 pyaerocom.egg-info/entry_points.txt
 pyaerocom.egg-info/top_level.txt
 pyaerocom/data/file_conventions.ini
-pyaerocom/data/model_ids.txt
+pyaerocom/data/names.txt
 pyaerocom/data/paths.ini
 pyaerocom/data/regions.ini
 pyaerocom/data/test_files.ini

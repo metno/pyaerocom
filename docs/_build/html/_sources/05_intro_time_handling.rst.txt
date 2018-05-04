@@ -46,8 +46,8 @@ underlying datatype of ``GridData`` is ``iris.cube.Cube``.
 
 .. code:: ipython3
 
-    data_ecmwf = pyaerocom.GridData(fpath_ecmwf, var_name="od550aer", model_id="ECMWF_OSUITE")
-    data_aatsr = pyaerocom.GridData(fpath_aatsr, var_name="od550aer", model_id="AATSR")
+    data_ecmwf = pyaerocom.GridData(fpath_ecmwf, var_name="od550aer", name="ECMWF_OSUITE")
+    data_aatsr = pyaerocom.GridData(fpath_aatsr, var_name="od550aer", name="AATSR")
 
 
 .. parsed-literal::

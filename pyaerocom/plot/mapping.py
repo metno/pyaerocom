@@ -425,7 +425,7 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
     
     # annotate model in lower left corner
     lonr, latr = region.lon_range_plot, region.lat_range_plot
-    ax.annotate(data.model_id, 
+    ax.annotate(data.name,
                 xy=(lonr[0] + (lonr[1] - lonr[0])*.03,
                     latr[0] + (latr[1] - latr[0])*.03), 
                 xycoords='data', 

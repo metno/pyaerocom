@@ -23,7 +23,7 @@ information about what is in there.
 .. code:: ipython3
 
     import pyaerocom
-    read = pyaerocom.io.ReadGrid(model_id="ECMWF_CAMS_REAN",
+    read = pyaerocom.io.ReadGrid(name="ECMWF_CAMS_REAN",
                                       start_time="1-1-2003",
                                       stop_time="31-12-2007", 
                                       verbose=True)
@@ -58,7 +58,7 @@ string representation, as shown in the cell above).
 
 .. code:: ipython3
 
-    print("Detected variables for model %s:\n %s" %(read.model_id, read.vars))
+    print("Detected variables for model %s:\n %s" %(read.name, read.vars))
 
 
 .. parsed-literal::

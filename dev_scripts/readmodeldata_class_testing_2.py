@@ -45,8 +45,8 @@ if __name__ == '__main__':
     read.read(test_vars)
     
     # print some information about the different data objects
-    for model_id, result in read.results.items():
-        print("Current model: %s" %model_id)
+    for name, result in read.results.items():
+        print("Current model: %s" %name)
         for var_name, data in result.data.items():
             print("\nCurrent variable: %s" %var_name)
             # data is of type pyaerocom.GridData which has a nice string representation

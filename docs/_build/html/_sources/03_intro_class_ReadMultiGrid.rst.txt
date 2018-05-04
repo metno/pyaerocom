@@ -73,7 +73,7 @@ Let's have a look into one of the two import classes
     print("Model ID: %s\n"
           "Model dir: %s\n"
           "First detected file: %s"
-          %(read_aatsr.model_id, read_aatsr.model_dir, os.path.basename(read_aatsr.files[0])))
+          %(read_aatsr.name, read_aatsr.model_dir, os.path.basename(read_aatsr.files[0])))
 
 
 .. parsed-literal::
@@ -196,8 +196,8 @@ Print some information about the different data objects
 
 .. code:: ipython3
 
-    for model_id, result in read.results.items():
-        print("Current model: %s" %model_id)
+    for name, result in read.results.items():
+        print("Current model: %s" %name)
         for var_name, data in result.data.items():
             print("\nCurrent variable: %s" %var_name)
             # data is of type pyaerocom.GridData which uses an extended representation of the Cube class
@@ -273,7 +273,7 @@ plots the first time stamp of each result file.
 
 .. code:: ipython3
 
-    for model_id, result in read.results.items():
+    for name, result in read.results.items():
         for var_name, model_data in result.data.items():
             fig = model_data.quickplot_map()
 

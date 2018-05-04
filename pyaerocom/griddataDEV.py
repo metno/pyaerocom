@@ -138,7 +138,7 @@ class GridDataBase(abc.ABC):
     def __str__(self):
         """For now, use string representation of underlying data"""
         return ("pyaerocom.GridData: %s\nGrid data: %s" 
-                %(self.model_id, self.grid.__str__()))
+                %(self.name, self.grid.__str__()))
     
     def __repr__(self):
         """For now, use representation of underlying data"""
@@ -321,9 +321,9 @@ class GridData(GridDataBase, GridDataCF):
         return Variable(self.var_name)
             
     @property 
-    def model_id(self):
+    def name(self):
         """ID of model to which data belongs"""
-        return self.suppl_info["model_id"]
+        return self.suppl_info["name"]
        
     @property
     def has_data(self):
@@ -709,7 +709,7 @@ class GridData(GridDataBase, GridDataCF):
         from pyaerocom.plot.mapping import plot_map
         fig = plot_map(self.grid[time_idx], xlim, ylim, **kwargs)
         fig.axes[0].set_title("Model: %s, var=%s (%s)" 
-                     %(self.model_id, self.var_name, 
+                     %(self.name, self.var_name,
                        self.time.cell(time_idx)))
         return fig
     
@@ -748,7 +748,7 @@ class GridData(GridDataBase, GridDataCF):
     def __str__(self):
         """For now, use string representation of underlying data"""
         return ("pyaerocom.GridData: %s\nGrid data: %s"
-                %(self.model_id, self.grid.__str__()))
+                %(self.name, self.grid.__str__()))
     
     def __repr__(self):
         """For now, use representation of underlying data"""
@@ -769,7 +769,7 @@ if __name__=='__main__':
         close("all")
         files = get()
         data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
-                         model_id='aatsr_su_v4.3')
+                         name='aatsr_su_v4.3')
         print(data.var_name)
         print(type(data.longitude))
         print(data.longitude.points.min(), data.longitude.points.max())
@@ -784,7 +784,7 @@ if __name__=='__main__':
         cropped.quickplot_map()
         
         other = GridData(files["models"]["ecmwf_osuite"],
-                          var_name="od550aer", model_id="ECMWF_OSUITE")
+                          var_name="od550aer", name="ECMWF_OSUITE")
         other.quickplot_map()
         #crop randomly
         ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))

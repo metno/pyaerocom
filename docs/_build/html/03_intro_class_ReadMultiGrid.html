@@ -237,7 +237,7 @@ later process.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model ID: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
       <span class="s2">&quot;Model dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
       <span class="s2">&quot;First detected file: </span><span class="si">%s</span><span class="s2">&quot;</span>
-      <span class="o">%</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">model_id</span><span class="p">,</span> <span class="n">read_aatsr</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+      <span class="o">%</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read_aatsr</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
@@ -343,8 +343,8 @@ representation)</p>
 </pre></div>
 </div>
 <p>Print some information about the different data objects</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current model: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">model_id</span>)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current model: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">name</span>)
     <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Current variable: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">var_name</span>)
         <span class="c1"># data is of type pyaerocom.GridData which uses an extended representation of the Cube class</span>
@@ -403,7 +403,7 @@ representation)</p>
 <h2>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h2>
 <p>The following cell iterates over all imported variables and models and
 plots the first time stamp of each result file.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">model_id</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">model_data</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>

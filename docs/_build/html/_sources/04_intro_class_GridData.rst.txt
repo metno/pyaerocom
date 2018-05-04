@@ -26,7 +26,7 @@ Let's get a test file to load
     from pyaerocom.io.testfiles import get
     
     test_files = get()
-    for model_id, filepath in test_files["models"].items(): print("%s\n%s\n" %(model_id, filepath))
+    for name, filepath in test_files["models"].items(): print("%s\n%s\n" %(name, filepath))
 
 
 .. parsed-literal::
@@ -57,7 +57,7 @@ code cell) was slitghtly adapted from the underlying ``Cube`` object.
 .. code:: ipython3
 
     fpath = test_files["models"]["ecmwf_osuite"]
-    data = GridData(input=fpath, var_name="od550aer", model_id="ECMWF_OSUITE")
+    data = GridData(input=fpath, var_name="od550aer", name="ECMWF_OSUITE")
     print(data)
 
 
@@ -191,8 +191,8 @@ Why not load some of the other variables...
 
 .. code:: ipython3
 
-    data_bc = GridData(fpath, var_name="od550bc", model_id="ECMWF_OSUITE")
-    data_so4 = GridData(fpath, var_name="od550so4", model_id="ECMWF_OSUITE")
+    data_bc = GridData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
+    data_so4 = GridData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
 
 
 .. parsed-literal::

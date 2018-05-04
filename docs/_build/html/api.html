@@ -333,8 +333,8 @@ uses</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.griddata.GridData.model_id">
-<code class="descname">model_id</code><a class="headerlink" href="#pyaerocom.griddata.GridData.model_id" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.griddata.GridData.name">
+<code class="descname">name</code><a class="headerlink" href="#pyaerocom.griddata.GridData.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>ID of model to which data belongs</p>
 </dd></dl>
 
@@ -723,7 +723,7 @@ observations.</p>
 <span id="reading-of-gridded-data"></span><h4>Reading of gridded data<a class="headerlink" href="#module-pyaerocom.io.readgrid" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="pyaerocom.io.readgrid.ReadGrid">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readgrid.</code><code class="descname">ReadGrid</code><span class="sig-paren">(</span><em>model_id=''</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>file_convention='aerocom3'</em>, <em>init=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readgrid.</code><code class="descname">ReadGrid</code><span class="sig-paren">(</span><em>name=''</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>file_convention='aerocom3'</em>, <em>init=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for reading model results from AEROCOM NetCDF files</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -732,8 +732,8 @@ convention. See package data file <a class="reference external" href="http://aer
 keys. You may define your own fileconvention in this file, if you wish.</p>
 </div>
 <dl class="attribute">
-<dt id="pyaerocom.io.readgrid.ReadGrid.model_id">
-<code class="descname">model_id</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.model_id" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgrid.ReadGrid.name">
+<code class="descname">name</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.name" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em> – string ID for model (see Aerocom interface map plots lower left corner)</p>
 </dd></dl>
 
@@ -793,7 +793,7 @@ var_name or time interval).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>model_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID of model (e.g. “AATSR_SU_v4.3”,”CAM5.3-Oslo_CTRL2016”)</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID of model (e.g. “AATSR_SU_v4.3”,”CAM5.3-Oslo_CTRL2016”)</li>
 <li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
 <li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
@@ -810,7 +810,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgrid.ReadGr
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadGrid</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadGrid</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550so4&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550bc&quot;</span><span class="p">)</span>
@@ -982,7 +982,7 @@ Must be in <a class="reference internal" href="#pyaerocom.io.readgrid.ReadGrid.v
 
 <dl class="class">
 <dt id="pyaerocom.io.readgrid.ReadMultiGrid">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readgrid.</code><code class="descname">ReadMultiGrid</code><span class="sig-paren">(</span><em>model_ids</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readgrid.</code><code class="descname">ReadMultiGrid</code><span class="sig-paren">(</span><em>names</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for import of AEROCOM model data from multiple models</p>
 <p>This class provides an interface to import model results from an arbitrary
 number of models and specific for a certain time interval (that can be
@@ -995,8 +995,8 @@ convention. See package data file <a class="reference external" href="http://aer
 keys. You may define your own fileconvention in this file, if you wish.</p>
 </div>
 <dl class="attribute">
-<dt id="pyaerocom.io.readgrid.ReadMultiGrid.model_ids">
-<code class="descname">model_ids</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.model_ids" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgrid.ReadMultiGrid.names">
+<code class="descname">names</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.names" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>list</em> – list containing string IDs of all models that should be imported</p>
 </dd></dl>
 
@@ -1004,7 +1004,7 @@ keys. You may define your own fileconvention in this file, if you wish.</p>
 <dt id="pyaerocom.io.readgrid.ReadMultiGrid.results">
 <code class="descname">results</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.results" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>dict</em> – dictionary containing <a class="reference internal" href="#pyaerocom.io.readgrid.ReadGrid" title="pyaerocom.io.readgrid.ReadGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReadGrid</span></code></a> instances for each
-model_id</p>
+name</p>
 </dd></dl>
 
 <p class="rubric">Examples</p>
@@ -1012,7 +1012,7 @@ model_id</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2012-1-1&quot;</span><span class="p">),</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2012-5-1&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">,</span> <span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadMultiGrid</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">model_ids</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 <span class="go">[&#39;AATSR_SU_v4.3&#39;, &#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read_cam</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">read_cam</span><span class="p">)</span> <span class="o">==</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGrid</span>
@@ -1057,8 +1057,8 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 <code class="descname">init_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid.init_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.init_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiate the import result attributes</p>
 <p>Creates and initiates <code class="xref py py-class docutils literal notranslate"><span class="pre">ModelImportResult</span></code> object for each
-model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.ReadMultiGrid.model_ids" title="pyaerocom.io.readgrid.ReadMultiGrid.model_ids"><code class="xref py py-attr docutils literal notranslate"><span class="pre">model_ids</span></code></a> and stores it in the dictionary
-<a class="reference internal" href="#pyaerocom.io.readgrid.ReadMultiGrid.results" title="pyaerocom.io.readgrid.ReadMultiGrid.results"><code class="xref py py-attr docutils literal notranslate"><span class="pre">results</span></code></a> using the <cite>model_id</cite>.</p>
+model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.ReadMultiGrid.names" title="pyaerocom.io.readgrid.ReadMultiGrid.names"><code class="xref py py-attr docutils literal notranslate"><span class="pre">names</span></code></a> and stores it in the dictionary
+<a class="reference internal" href="#pyaerocom.io.readgrid.ReadMultiGrid.results" title="pyaerocom.io.readgrid.ReadMultiGrid.results"><code class="xref py py-attr docutils literal notranslate"><span class="pre">results</span></code></a> using the <cite>name</cite>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1090,7 +1090,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.Re
 
 <dl class="method">
 <dt id="pyaerocom.io.readgrid.ReadMultiGrid.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>var_ids</em>, <em>model_ids=None</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type='daily'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>var_ids</em>, <em>names=None</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type='daily'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>High level method to import data for multiple variables and models</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1098,7 +1098,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.Re
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – string IDs of all variables that are supposed to be imported</li>
-<li><strong>model_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – string IDs of all models that are supposed to be imported</li>
+<li><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – string IDs of all models that are supposed to be imported</li>
 <li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
 <a class="reference internal" href="#pyaerocom.io.readgrid.ReadMultiGrid.start_time" title="pyaerocom.io.readgrid.ReadMultiGrid.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
 <li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
@@ -1117,7 +1117,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.Re
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadMultiGrid</span><span class="p">(</span><span class="n">model_ids</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadMultiGrid</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
 <span class="gp">... </span>                                     <span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">],</span>
 <span class="gp">... </span>                          <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">([</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="s2">&quot;od550bc&quot;</span><span class="p">])</span>
@@ -1484,15 +1484,15 @@ accessed using <code class="xref py py-class docutils literal notranslate"><span
 </dd></dl>
 
 <dl class="function">
-<dt id="pyaerocom.io.helpers.search_model_ids">
-<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_model_ids</code><span class="sig-paren">(</span><em>update_inifile=True</em>, <em>check_nc_file=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_model_ids" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.helpers.search_names">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_names</code><span class="sig-paren">(</span><em>update_inifile=True</em>, <em>check_nc_file=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search model IDs in database</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>update_inifile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the file <em>model_ids.txt</em> will be updated. The file is located
+<li><strong>update_inifile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the file <em>names.txt</em> will be updated. The file is located
 in the installation <em>data</em> directory.</li>
 <li><strong>check_nc_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, only model IDs are included, for which at least one nc file
 can be detected in the corresponding renamed sub directory</li>
@@ -1504,9 +1504,9 @@ can be detected in the corresponding renamed sub directory</li>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyaerocom.io.helpers.get_all_model_ids">
-<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_all_model_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_all_model_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_all_model_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Try to import all model IDs from file model_ids.txt in data directory</p>
+<dt id="pyaerocom.io.helpers.get_all_names">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_all_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_all_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_all_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to import all model IDs from file names.txt in data directory</p>
 </dd></dl>
 
 </div>
