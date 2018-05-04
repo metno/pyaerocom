@@ -34,9 +34,5 @@ if __name__=="__main__":
         #This returns a dictionary with more elements
         test_list = data.to_timeseries(['AOE_Baotou','Karlsruhe'])
         print(test_list)
-    
-    path = data.infiles[0][0]
-    
-    with open(path) as f:
-        data = f.readlines()
+
         

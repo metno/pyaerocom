@@ -283,7 +283,7 @@ class GridData(object):
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
     
-    def to_time_series(self, sample_points=None, **kwargs):
+    def to_time_series(self, sample_points, **kwargs):
         """Convert this cube to time series
         
         Extract time series for each lon / lat coordinate in this cube or at 
@@ -292,7 +292,7 @@ class GridData(object):
         
         Parameters
         ----------
-        sample_points : :obj:`list`, optional
+        sample_points : list
             coordinates (lon / lat) at which time series is supposed to be 
             retrieved
         **kwargs
@@ -305,22 +305,22 @@ class GridData(object):
             are: ``longitude, latitude, :attr:`var_name```
         """
         result = []
-        if sample_points:
-            data = self.interpolate(sample_points, **kwargs)
-        else:
-            data = self
+        
+        data = self.interpolate(sample_points, **kwargs)
         
         var = self.var_name
         times = data.time_stamps()
-        lats = data.latitude.points
-        lons = data.longitude.points
+        lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
+        lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
         arr = data.grid.data
+        grid_lons = data.longitude.points
         for i, lat in enumerate(lats):
-            for j, lon in enumerate(lons):        
-                result.append({'latitude'   :   lat,
-                               'longitude'  :   lon,
-                               var          :   Series(arr[:, i, j], 
-                                                       index=times)})
+            lon = lons[i]
+            j = np.where(grid_lons == lon)[0][0]
+            result.append({'latitude'   :   lat,
+                           'longitude'  :   lon,
+                           var          :   Series(arr[:, i, j], 
+                                                   index=times)})
                 
         return result
             
@@ -653,6 +653,7 @@ class GridData(object):
         return "pyaerocom.GridData\nGrid data: %s" %self.grid.__repr__()
     
 if __name__=='__main__':
+    import numpy as np
     RUN_OLD_STUFF = False
     
     data = GridData()
@@ -661,11 +662,20 @@ if __name__=='__main__':
     start = Timestamp("2018-1-22")
     stop = Timestamp("2018-2-5")
     
-    cropped = data.crop(lon_range=(0, 20), lat_range=(50, 80), 
+    lons = np.arange(0,20,1)
+    lats = np.arange(50,80)
+    cropped = data.crop(lon_range=(lons[0], lons[-1]), 
+                        lat_range=(lats[0], lats[-1]), 
                         time_range=(start, stop))
-
+    
     cropped.quickplot_map()
-    s = cropped.to_time_series()
+    
+    itp = cropped.interpolate(sample_points=[('longitude', lons),
+                                             ('latitude', lats)])
+    
+    itp.quickplot_map()
+    s = cropped.to_time_series(sample_points=[('longitude', lons),
+                                              ('latitude', lats)])
     
     
     if RUN_OLD_STUFF:

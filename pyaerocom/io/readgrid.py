@@ -175,8 +175,6 @@ class ReadGrid(object):
     def model_dir(self):
         """Model directory"""
         dirloc = self._model_dir
-        if self._USE_SUBDIR_RENAMED:
-            dirloc = join(dirloc, "renamed")
         if not isdir(dirloc):
             raise IOError("Model directory for ID %s not available or does "
                           "not exist" %self.name)
@@ -273,10 +271,18 @@ class ReadGrid(object):
                 subdirs = listdir(search_dir)
                 for subdir in subdirs:
                     if sid == subdir:
-                        self.model_dir = join(search_dir, subdir)
-                        if self.verbose:
-                            print('Found model dir: {}'.format(self.model_dir))    
-                        return True
+                        _dir = join(search_dir, subdir)
+                        if self._USE_SUBDIR_RENAMED:
+                            _dir = join(_dir, "renamed")
+                        if isdir(_dir):
+                            self.model_dir = _dir
+                            if self.verbose:
+                                print('Found model dir: {}'.format(_dir))    
+                            return True
+                        else:
+                            if self.verbose:
+                                print("renamed folder does not exist "
+                                      "in {}".format(join(search_dir, subdir)))
                     elif sid.lower() in subdir.lower():
                         _candidates.append(subdir)
             else:
