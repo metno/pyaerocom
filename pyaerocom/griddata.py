@@ -657,9 +657,14 @@ if __name__=='__main__':
     from time import time
     t0 = time()
     result = []
+    varname=cropped.var_name
+    num = len(lats)
     for i, lat in enumerate(lats):
+        print("At latitude {} ({} / {})".format(lat, i, num))
         for j, lon in enumerate(lons):
-            pandas.Series(arr[:, i, j], index=times)
+            result.append(dict(latitude=lat,
+                               longitude=lon,
+                               varname=pandas.Series(arr[:, i, j], index=times)))
     
     
     

@@ -6,11 +6,14 @@ Global configurations for plotting
 """
 from matplotlib.pyplot import get_cmap
 from warnings import warn
-try:
-    from cmocean.cm import amp
-    _cmap_lighttheme = amp
-except:
-    _cmap_lighttheme = "Blues"
+# =============================================================================
+# try:
+#     from cmocean.cm import amp
+#     _cmap_lighttheme = amp
+# except:
+#     
+# =============================================================================
+_cmap_lighttheme = "Blues"
 
 DEFAULT_THEME = "light"
 _COLOR_THEMES = dict(light = dict(name="light", 
