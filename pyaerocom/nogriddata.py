@@ -48,7 +48,7 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 #from pyaerocom import config as const
 from pyaerocom import const
 
-class ReadObsData():
+class NoGridData():
     """pyaerocom observation data (ungridded data) reading class
     """
 
@@ -83,7 +83,7 @@ class ReadObsData():
         else:
             self.data_sets_to_read = [data_set_to_read]
 
-        self.verboseflag = verbose
+        self.verbose = verbose
         self.vars_to_read = vars_to_read
         self.metadata = {}
         self.data = []
@@ -189,14 +189,14 @@ class ReadObsData():
 
     ###################################################################################
 
-    def read_daily(self):
+    def read(self):
         """Read observations
 
         Example
         -------
-        >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadObsData()
-        >>> obj.read_daily()
+        >>> import pyaerocom.nogriddata
+        >>> obj = pyaerocom.nogriddata.NoGridData()
+        >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
         """
@@ -238,31 +238,31 @@ class ReadObsData():
             # call the different obs data reading classes
             if data_set_to_read == const.AERONET_SUN_V2L2_AOD_DAILY_NAME:
                 # read AERONETSUN V2 L2 daily data set
-                read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, verboseflag=self.verboseflag)
+                read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
-                    if self.verboseflag:
+                    if self.verbose:
                         sys.stdout.write('cache file ' + cache_file + ' read\n')
                     # TODO we might need to adjust self.index_pointer in case we really work with more than one data set!
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read_daily(self.vars_to_read)
+                    read_dummy.read(self.vars_to_read)
 
             elif data_set_to_read == const.AERONET_SUN_V2L2_SDA_DAILY_NAME:
                 print("Not implemented at this point.")
 
             elif data_set_to_read == const.EARLINET_NAME:
-                read_dummy = ReadEarlinet(index_pointer=self.index_pointer, verboseflag=self.verboseflag)
+                read_dummy = ReadEarlinet(index_pointer=self.index_pointer, verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
-                    if self.verboseflag:
+                    if self.verbose:
                         sys.stdout.write('cache file ' + cache_file + ' read\n')
                     # TODO we might need to adjust self.index_pointer in case we really work with more than one data set!
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read_daily(self.vars_to_read)
+                    read_dummy.read(self.vars_to_read)
 
             else:
                 continue
@@ -288,7 +288,7 @@ class ReadObsData():
             # write the cache file
             if not cache_hit_flag:
                 # write cache file in case the data was newly read
-                if self.verboseflag:
+                if self.verbose:
                     sys.stdout.write('Writing cache file ' + cache_file + '\n')
                 # OutHandle = gzip.open(c__cache_file, 'wb') # takes too much time
                 out_handle = open(cache_file, 'wb')
@@ -302,7 +302,7 @@ class ReadObsData():
                 pickle.dump(object_version_saved, out_handle, pickle.HIGHEST_PROTOCOL)
                 pickle.dump(read_dummy, out_handle, pickle.HIGHEST_PROTOCOL)
                 out_handle.close()
-                if self.verboseflag:
+                if self.verbose:
                     sys.stdout.write('done\n')
 
     ###################################################################################
@@ -330,8 +330,8 @@ class ReadObsData():
         Example
         -------
         >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadObsData(verbose=True)
-        >>> obj.read_daily()
+        >>> obj = pyaerocom.io.readobsdata.NoGridData(verbose=True)
+        >>> obj.read()
         >>> pdseries = obj.to_timeseries()
         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
         """

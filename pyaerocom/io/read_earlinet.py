@@ -109,8 +109,8 @@ class ReadEarlinet:
 
 
 
-    def __init__(self, index_pointer = 0, verboseflag = False):
-        self.verboseflag = verboseflag
+    def __init__(self, index_pointer = 0, verbose = False):
+        self.verbose = verbose
         self.metadata = {}
         self.data = []
         self.index = len(self.metadata)
@@ -141,7 +141,7 @@ class ReadEarlinet:
 
     ###################################################################################
 
-    def read_file(self, filename, varstoread = ['zdust'], verboseflag = False):
+    def read_file(self, filename, varstoread = ['zdust'], verbose = False):
         """method to read an EARLINET file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -151,7 +151,7 @@ class ReadEarlinet:
             absolute path to filename to read
         varstoread : list
             list of str with variable names to read; defaults to ['od550aer']
-        verboseflag : Bool
+        verbose : Bool
             set to True to increase verbosity
 
         Example
@@ -196,14 +196,14 @@ Attributes:
 
     ###################################################################################
 
-    def read_daily(self, varstoread = ['zdust'], verboseflag = False):
+    def read(self, varstoread = ['zdust'], verbose = False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
         -------
         >>> import pyaerocom.io.read_earlinet
         >>> obj = pyaerocom.io.read_earlinet.ReadEarlinet()
-        >>> obj.read_daily()
+        >>> obj.read()
         """
 
         # Metadata key is float because the numpy array holding it is float
@@ -217,7 +217,7 @@ Attributes:
         time = []
         start_index = self.index_pointer
         for _file in sorted(self.files):
-            if self.verboseflag:
+            if self.verbose:
                 sys.stdout.write(_file+"\n")
 
             stat_obs_data = self.read_file(_file, varstoread = varstoread)
@@ -352,7 +352,7 @@ Attributes:
         """
 
 
-        if self.verboseflag:
+        if self.verbose:
             print('searching for data files. This might take a while...')
         # files = glob.glob(os.path.join(self.DATASET_PATH,
         #                                self._FILEMASK), recursive=True)

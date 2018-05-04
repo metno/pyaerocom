@@ -30,16 +30,36 @@ import sys
 # import os
 import getpass
 import socket
+#import pdb
 
 def cli():
     """Pyaerocom command line interface (CLI)
     
-    Pyaerocom is a Python package for the Aerocom project 
+    Pyaerocom is a Python package for the Aerocom project
+
+    Example
+    -------
+    >>> import pyaerocom.io as pio
+    >>> import pyaerocom as pa
+    >>> model = 'IASI_MAPIR.v3.x.merged.AN'
+    >>> startdate = '2011-01-01'
+    >>> enddate = '2012-12-31'
+    >>> obsnetwork_to_read = 'EARLINET'
+    >>> var_to_read = 'zdust'
+    >>> model_obj = pio.ReadGrid(model_id = model, start_time = startdate, stop_time = enddate, verbose=True)
+    >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
+    >>> obs_data = pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+    >>> obs_data.read()
+    >>> obs_lats = obs_data.latitude
+    >>> obs_lons = obs_data.longitude
+    >>> model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
+
     """
     user = getpass.getuser()
     from pyaerocom import const
     import pyaerocom.io as pio
-    supported_obs_networks = ",".join(pio.ReadObsData.SUPPORTED_DATASETS)
+    import pyaerocom as pa
+    supported_obs_networks = ",".join(pa.NoGridData.SUPPORTED_DATASETS)
 
     # command line interface using argparse
     Options = {}
@@ -138,14 +158,20 @@ def cli():
         print(Model)
         if Model != const.NOMODELNAME:
             # start model read
-            model_obj.append(pio.ReadGrid(name = Model,
-                                     start_time = args.startdate,
-                                     stop_time = args.enddate,
-                                     verbose=Options['VERBOSE']))
 
-            print(model_obj[0])
-            model_data.append(model_obj[0].read_var(var_name=Options['VariablesToRun'][0], ts_type="daily"))
-            print(model_data[0])
+            model_obj = pio.ReadGrid(model_id=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
+            model_data = model_obj.read_var(var_name=Options['VariablesToRun'][0], ts_type="daily")
+            obs_data = pa.nogriddata.NoGridData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=Options['VariablesToRun'][0],
+                                                     verbose=True)
+            obs_data.read()
+            obs_lats = obs_data.latitude
+            obs_lons = obs_data.longitude
+            model_station_data = model_data.interpolate([("latitude", obs_data.latitude), ("longitude", obs_data.longitude)])
+
+
+            print(model_station_data)
+
+
         else:
             # observations only
             # 1st check if the obs network string is right
@@ -154,7 +180,7 @@ def cli():
                 ObsData = pio.ReadObsData(data_set_to_read = const.EARLINET_NAME,
                                           vars_to_read = Options['VariablesToRun'][0],
                                           verbose= args.verbose)
-                ObsData.read_daily()
+                ObsData.read()
 
                 # print('Latitudes:')
                 # print(ObsData.latitude)
