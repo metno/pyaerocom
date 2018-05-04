@@ -222,9 +222,10 @@ class GridData(object):
     @property
     def stop_time(self):
         """Start time of dataset as datetime64 object"""
-        if self.verbose:
-            print("Stop time could not be accessed in "
-                             "GridData class")
+        if not self.is_cube:
+            if self.verbose:
+                print("Stop time could not be accessed in "
+                                 "GridData class")
             return nan
         return cftime_to_datetime64(self.time[-1])[0]
         
@@ -610,9 +611,16 @@ if __name__=='__main__':
     
     data = GridData()
     data._init_testdata_default()
-    itp = data.interpolate([("longitude", (10)),
-                            ("latitude" , (35))])
+# =============================================================================
+#     itp = data.interpolate([("longitude", (10)),
+#                             ("latitude" , (35))])
+#     
+# =============================================================================
+
+    start = Timestamp("2018-1-22")
+    stop = Timestamp("2018-2-5")
     
+    cropped = data.crop(time_range=(start, stop))
     if RUN_OLD_STUFF:
         from pyaerocom.io.testfiles import get
         from matplotlib.pyplot import close, figure
@@ -665,5 +673,8 @@ if __name__=='__main__':
         except ValueError as e:
             warn(repr(e))
         
-    import doctest
-    doctest.testmod()
+# =============================================================================
+#     import doctest
+#     doctest.testmod()
+# 
+# =============================================================================

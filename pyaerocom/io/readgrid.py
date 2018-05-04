@@ -523,9 +523,13 @@ class ReadGrid(object):
             if self.verbose:
                 print("Applying temporal cropping of result cube")
             try:
-                t_constraint = data.get_time_constraint(self.start_time, 
-                                                        self.stop_time)
-                _data = data.extract(t_constraint)
+# =============================================================================
+#                 t_constraint = data.get_time_constraint(self.start_time, 
+#                                                         self.stop_time)
+#                 _data = data.extract(t_constraint)
+# =============================================================================
+                _data = data.crop(time_range=(self.start_time,
+                                              self.stop_time))
                 data = _data
             except Exception as e:
                 print("Failed to crop data for {} in time.\n"
