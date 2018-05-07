@@ -333,7 +333,10 @@ class GridData(object):
                                       "retrieved for 3-dimensional data "
                                       "with coordinate order "
                                       "[time, latitude, longitude].")
-            
+        lens = [len(x[1]) for x in sample_points]
+        if not all([lens[0]==x for x in lens]):
+            raise ValueError("Arrays for sample coordinates must have the "
+                             "same lengths")
         data = self.interpolate(sample_points, scheme, collapse_scalar)
         
         var = self.var_name
