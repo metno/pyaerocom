@@ -366,6 +366,27 @@ def get_time_constraint(start_time, stop_time):
     
     return Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
+def to_time_series_griesie(data, lats, lons, times, var_name=['zdust'],**kwargs):
+    """small helper routine to convert data from the object
+    pyaerocom.io.ReadGrid.interpolate to the obs data dictionary
+    containing the pandas timeseries
+
+    FOR TESTING ONLY!"""
+
+    import pandas as pd
+
+    result = []
+    for i in range(len(lats)):
+        _dict = {}
+        _dict['latitude']=lats[i]
+        _dict['longitude']=lons[i]
+        for var in var_name:
+            _dict[var] = pd.Series(data[:, i, i],index=times)
+        result.append(_dict)
+    return result
+
+
+
 if __name__=="__main__":
     import doctest
     import warnings
