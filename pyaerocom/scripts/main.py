@@ -34,26 +34,44 @@ import socket
 
 def cli():
     """Pyaerocom command line interface (CLI)
-    
+
     Pyaerocom is a Python package for the Aerocom project
 
     Example
     -------
     >>> import pyaerocom.io as pio
     >>> import pyaerocom as pa
+    >>> import itertools
+    >>> import matplotlib.pyplot as plt
     >>> model = 'IASI_MAPIR.v3.x.merged.AN'
-    >>> startdate = '2011-01-01'
+    >>> startdate = '2007-01-01'
     >>> enddate = '2012-12-31'
     >>> obsnetwork_to_read = 'EARLINET'
+    >>> plot_min = 500
+    >>> plot_max = 5000
     >>> var_to_read = 'zdust'
-    >>> model_obj = pio.ReadGrid(model_id = model, start_time = startdate, stop_time = enddate, verbose=True)
+    >>> model_obj = pio.ReadGrid(name = model, start_time = startdate, stop_time = enddate, verbose=True)
     >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
     >>> obs_data = pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
     >>> obs_data.read()
+    >>> obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
     >>> obs_lats = obs_data.latitude
     >>> obs_lons = obs_data.longitude
+    >>> obs_lats=[obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
+    >>> obs_lons=[obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
+    >>> obs_names=[obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
     >>> model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
-
+    >>> times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
+    >>> model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
+    >>> #model_at_obs_times = model_data_as_series[0]['zdust'][obs_data_as_series[0]['zdust'].index]
+    >>> model_at_obs_times = list(itertools.chain.from_iterable([model_data_as_series[i]['zdust'][obs_data_as_series[i]['zdust'].index]*1E3 for i in range(len(obs_data_as_series))]))
+    >>> obs_as_list = list(itertools.chain.from_iterable([obs_data_as_series[i]['zdust'].values for i in range(len(obs_data_as_series))]))
+    >>> plot = plt.plot(obs_as_list, model_at_obs_times, 'go', linestyle='None')
+    >>> plt.plot([plot_min,plot_max],[plot_min,plot_max], 's-')
+    >>> plt.axes().set_aspect('equal')
+    >>> plt.xlim((plot_min,plot_max))
+    >>> plt.ylim((plot_min,plot_max))
+    >>> plt.show()
     """
     user = getpass.getuser()
     from pyaerocom import const
@@ -159,26 +177,31 @@ def cli():
         if Model != const.NOMODELNAME:
             # start model read
 
-            model_obj = pio.ReadGrid(model_id=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
+            model_obj = pio.ReadGrid(name=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=Options['VariablesToRun'][0], ts_type="daily")
-            obs_data = pa.nogriddata.NoGridData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=Options['VariablesToRun'][0],
+            obs_data = pa.nogriddata.NoGridData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=[Options['VariablesToRun'][0]],
                                                      verbose=True)
             obs_data.read()
             obs_lats = obs_data.latitude
             obs_lons = obs_data.longitude
             model_station_data = model_data.interpolate([("latitude", obs_data.latitude), ("longitude", obs_data.longitude)])
 
+            times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
+            TS = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
 
+            print(TS)
             print(model_station_data)
-
+            # test = pd.DataFrame(
+            #    data={'model': model_data_as_series[0]['zdust'], 'obs': obs_data_as_series[0]['zdust']})
 
         else:
             # observations only
             # 1st check if the obs network string is right
-            if Options['ObsNetworkName'][0] in pio.ReadObsData.SUPPORTED_DATASETS:
+            # pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+            if Options['ObsNetworkName'][0] in pa.nogriddata.NoGridData.SUPPORTED_DATASETS:
                 # start Obs reading
-                ObsData = pio.ReadObsData(data_set_to_read = const.EARLINET_NAME,
-                                          vars_to_read = Options['VariablesToRun'][0],
+                ObsData = pa.nogriddata.NoGridData(data_set_to_read = Options['ObsNetworkName'][0],
+                                          vars_to_read = [Options['VariablesToRun'][0]],
                                           verbose= args.verbose)
                 ObsData.read()
 
