@@ -175,7 +175,12 @@ class GridData(object):
     def name(self):
         """ID of model to which data belongs"""
         return self.suppl_info["name"]
-       
+    
+    @property
+    def is_cube(self):
+        """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
+        return True if isinstance(self.grid, Cube) else False
+    
     @property
     def has_data(self):
         """True if grid data is available (:attr:`grid` =! None)
@@ -189,15 +194,24 @@ class GridData(object):
         return self.is_cube
     
     @property
-    def is_cube(self):
-        """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
-        return True if isinstance(self.grid, Cube) else False
+    def shape(self):
+        if not self.has_data:
+            raise NotImplementedError("No data available...")
+        return self.grid.shape 
     
     @property
-    def shape(self):
-        if not self.is_cube:
-            raise NotImplementedError("Attribute shape is not available...")
-        return self.grid.shape 
+    def ndim(self):
+        """Number of dimensions"""
+        if not self.has_data:
+            raise NotImplementedError("No data available...")
+        return self.grid.ndim
+    
+    @property
+    def coords_order(self):
+        """Array containing the order of coordinates"""
+        if not self.has_data:
+            raise NotImplementedError("No data available...")
+        return [x.name() for x in self.grid.coords()]
     
     @property
     def area_weights(self):
@@ -283,7 +297,8 @@ class GridData(object):
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
     
-    def to_time_series(self, sample_points, **kwargs):
+    def to_time_series(self, sample_points=None, scheme="nearest", 
+                    collapse_scalar=True, **coords):
         """Convert this cube to time series
         
         Extract time series for each lon / lat coordinate in this cube or at 
@@ -293,10 +308,15 @@ class GridData(object):
         Parameters
         ----------
         sample_points : list
-            coordinates (lon / lat) at which time series is supposed to be 
+            coordinates (e.g. lon / lat) at which time series is supposed to be 
             retrieved
-        **kwargs
-            additional keyword args passed to :func:`interpolate`
+        scheme : str or iris interpolator object
+            interpolation scheme (for details, see :func:`interpolate`)
+        collapse_scalar : bool
+            see :func:`interpolate`
+        **coords
+            additional keyword args that may be used to provide the interpolation
+            coordinates (for details, see :func:`interpolate`)
         
         Returns
         -------
@@ -305,8 +325,16 @@ class GridData(object):
             are: ``longitude, latitude, :attr:`var_name```
         """
         result = []
-        
-        data = self.interpolate(sample_points, **kwargs)
+        if not sample_points:
+            sample_points = []
+        sample_points.extend(list(coords.items()))
+        if not self.coords_order == ['time', 'latitude', 'longitude']:
+            raise NotImplementedError("So far, time series can only be "
+                                      "retrieved for 3-dimensional data "
+                                      "with coordinate order "
+                                      "[time, latitude, longitude].")
+            
+        data = self.interpolate(sample_points, scheme, collapse_scalar)
         
         var = self.var_name
         times = data.time_stamps()
@@ -458,13 +486,24 @@ class GridData(object):
     # Cube and return a Cube instance. These may be expanded (e.g. for 
     # instance what they accept as input
     
-    def interpolate(self, sample_points, scheme="nearest", 
-                    collapse_scalar=True):
+    def interpolate(self, sample_points=None, scheme="nearest", 
+                    collapse_scalar=True, **coords):
         """Interpolate cube at certain discrete points
         
         Reimplementation of method :func:`iris.cube.Cube.interpolate`, for 
         details `see here <http://scitools.org.uk/iris/docs/v1.10.0/iris/iris/
         cube.html#iris.cube.Cube.interpolate>`__
+        
+        Note
+        ----
+        The input coordinates may also be provided using the input arg **coords
+        which provides a more intuitive option (e.g. 
+        ``self.interpolate(
+                sample_points=[("longitude", [10, 20]), 
+                               ("latitude", [1, 2])])`` 
+        is the same as 
+        ``self.interpolate(longitude=[10, 20], latitude=[1,2])
+        
         
         Parameters
         ----------
@@ -477,7 +516,11 @@ class GridData(object):
         collapse_scalar : bool
             Whether to collapse the dimension of scalar sample points in the
             resulting cube. Default is True.
-        
+        **coords
+            additional keyword args that may be used to provide the interpolation
+            coordinates in an easier way than using the ``Cube`` argument
+            :arg:`sample_points``. May also be a combination of both.
+         
         Returns
         -------
         GridData
@@ -496,9 +539,123 @@ class GridData(object):
         """
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
+        if not sample_points:
+            sample_points = []
+        sample_points.extend(list(coords.items()))
         itp_cube = self.grid.interpolate(sample_points, scheme, 
                                          collapse_scalar)
         return GridData(itp_cube, **self.suppl_info)
+    
+    def collocate(self, sample_points=None, scheme="nearest", 
+                  collapse_scalar=True, **coords):
+        """Collocate Cube to positions of input coordinates
+        
+        Other than :func:`interpolate`, this method extracts the data values 
+        for a given number of input coordinates (e.g. combination of lon / lat
+        values that belong, e.g. to station coordinates). Thus, this results in
+        a reduction of dimensionality, since the provided coordinate 
+        combinations are not othorgonal anymore. 
+        
+        All other dimensions are preserved (e.g. time), thus, collocating a 3D
+        grid of time / lon / lat dimension and shape ``(265, 360, 180)`` at 
+        50 lon / lat coordinates will result in a 2D numpy array of shape 
+        ``(365, 50)``
+        
+        Parameters
+        ----------
+        sample_points : list
+            sequence of coordinate pairs over which to interpolate
+        scheme : str or iris interpolator object
+            interpolation scheme (for details, see :func:`interpolate`)
+        collapse_scalar : bool
+            see :func:`interpolate`
+        **coords
+            keyword args specifying coordinate name (key, e.g. longitude) and 
+            list of corresponding sample point coordinates (value, 
+            e.g. ``[1,2,3]``)
+        
+        Returns
+        -------
+        ndarray
+            data values at provided input coordinates
+            
+        Raises
+        ------
+        ValueError
+            if length of coordinate arrays are unequal or coord
+        KeyError
+            if one of the provided coordinates does not exist[('a', 1), ('b', 2), ('c', 3)]
+        
+        Example
+        -------
+        
+            >>> from pyaerocom import GridData
+            >>> data = GridData()
+            >>> data._init_testdata_default()
+            >>> lons = [10, 20, 30, 40]
+            >>> lats = [5, 7, 9, 11]
+            >>> pt_data = data.collocate(longitude=lons,
+            ...                          latitude=lats)
+            >>> print(pt_data.shape)
+            (365, 4)
+        
+        """
+        if not sample_points:
+            sample_points = []
+        sample_points.extend(list(coords.items()))
+        if not sample_points:
+            raise IOError("Please provide coordinate either using arg"
+                          "sample_points or via **coords")
+        coords_avail = [coord.name() for coord in self.grid.coords()]
+        _indices = []
+        if not sample_points:
+            sample_points = []
+        sample_points.extend(list(coords.items())) 
+        # get length of sample points array of first coordinate
+        ref_len = len(sample_points[0][1])
+        
+        for name, values in sample_points:
+            if not name in coords_avail:
+                raise KeyError("Coordinate {} does not exist in data, existing "
+                               "coordinates are {}".format(name, coords_avail))
+            elif not len(values) == ref_len:
+                raise ValueError("Length of coordinate arrays must be the "
+                                 "same...")
+            _indices.append(coords_avail.index(name))
+            
+        ### interpolate grid to new coordinates
+        sub = self.interpolate(sample_points, scheme, collapse_scalar)
+        
+        arr = sub.grid.data
+        
+        #total number of points in grid
+        tot_num_grid = np.prod(arr.shape)
+        
+        #get the number of parameters spanned by the subspace
+        sub_num_grid = ref_len**len(sample_points)
+        
+        #put reduced dimension into first index, so we can loop over it
+        arr_dimred = arr.reshape(sub_num_grid, )
+        
+        #remove first item in sample_points (used to iterate over all points)
+        first_coord, values = sample_points.pop(0)
+        
+        lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
+        lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
+        #for val in values:
+# =============================================================================
+#             
+#         grid_lons = data.longitude.points
+#         for i, lat in enumerate(lats):
+#             lon = lons[i]
+#             j = np.where(grid_lons == lon)[0][0]
+#             result.append({'latitude'   :   lat,
+#                            'longitude'  :   lon,
+#                            var          :   Series(arr[:, i, j], 
+#                                                    index=times)})
+#         return ()
+# =============================================================================
+        
     
     def collapsed(self, coords, aggregator, **kwargs):
         """Collapse cube
@@ -654,6 +811,7 @@ class GridData(object):
     
 if __name__=='__main__':
     import numpy as np
+    plt.close("all")
     RUN_OLD_STUFF = False
     
     data = GridData()
@@ -662,18 +820,26 @@ if __name__=='__main__':
     start = Timestamp("2018-1-22")
     stop = Timestamp("2018-2-5")
     
-    lons = np.arange(0,20,1)
-    lats = np.arange(50,80)
+    lons = np.linspace(-10, 30, 20)
+    lats = np.linspace(40, 80, 20)
     cropped = data.crop(lon_range=(lons[0], lons[-1]), 
                         lat_range=(lats[0], lats[-1]), 
                         time_range=(start, stop))
     
-    cropped.quickplot_map()
+    fig = cropped.quickplot_map()
+    fig.suptitle("CROPPED")
     
-    itp = cropped.interpolate(sample_points=[('longitude', lons),
-                                             ('latitude', lats)])
+    itp = cropped.interpolate(longitude=lons, 
+                              latitude=lats)
     
-    itp.quickplot_map()
+    fig = itp.quickplot_map()
+    fig.suptitle("INTERPOLATED")
+    
+# =============================================================================
+#     collo = cropped.collocate(longitude=lons, 
+#                               latitude=lats)
+# =============================================================================
+    
     s = cropped.to_time_series(sample_points=[('longitude', lons),
                                               ('latitude', lats)])
     
