@@ -220,7 +220,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    131 ms ± 13 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    155 ms ± 16.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 
 .. code:: ipython3
@@ -231,7 +231,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    103 ms ± 3.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    116 ms ± 7.06 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -247,7 +247,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    121 ms ± 10.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    148 ms ± 21.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -258,7 +258,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    99.9 ms ± 609 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    105 ms ± 3.74 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -283,7 +283,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.58 ms ± 7.85 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.71 ms ± 77 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -413,7 +413,7 @@ Now let's see how this one performs.
 
 .. parsed-literal::
 
-    66.3 µs ± 8.34 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    73.2 µs ± 16.4 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How Pyaerocom does it
@@ -436,7 +436,7 @@ here <aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64>`
 
 .. parsed-literal::
 
-    67.6 µs ± 4.39 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    66.4 µs ± 4.13 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -450,7 +450,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    1.83 ms ± 113 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.79 ms ± 27.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -470,7 +470,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    110 µs ± 20.6 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    80.2 µs ± 1.22 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 .. code:: ipython3
@@ -481,5 +481,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    1.93 ms ± 134 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.86 ms ± 34.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 

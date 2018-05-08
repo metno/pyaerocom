@@ -339,6 +339,12 @@ uses</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.griddata.GridData.is_cube">
+<code class="descname">is_cube</code><a class="headerlink" href="#pyaerocom.griddata.GridData.is_cube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if underlying data type is of type <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.griddata.GridData.has_data">
 <code class="descname">has_data</code><a class="headerlink" href="#pyaerocom.griddata.GridData.has_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if grid data is available (<a class="reference internal" href="#pyaerocom.griddata.GridData.grid" title="pyaerocom.griddata.GridData.grid"><code class="xref py py-attr docutils literal notranslate"><span class="pre">grid</span></code></a> =! None)</p>
@@ -350,15 +356,21 @@ method simply returns <a class="reference internal" href="#pyaerocom.griddata.Gr
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.griddata.GridData.is_cube">
-<code class="descname">is_cube</code><a class="headerlink" href="#pyaerocom.griddata.GridData.is_cube" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if underlying data type is of type <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code></p>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="pyaerocom.griddata.GridData.shape">
 <code class="descname">shape</code><a class="headerlink" href="#pyaerocom.griddata.GridData.shape" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddata.GridData.ndim">
+<code class="descname">ndim</code><a class="headerlink" href="#pyaerocom.griddata.GridData.ndim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of dimensions</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddata.GridData.coords_order">
+<code class="descname">coords_order</code><a class="headerlink" href="#pyaerocom.griddata.GridData.coords_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array containing the order of coordinates</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.griddata.GridData.area_weights">
@@ -415,7 +427,7 @@ if <cite>input</cite> is preloaded Cube</li>
 
 <dl class="method">
 <dt id="pyaerocom.griddata.GridData.to_time_series">
-<code class="descname">to_time_series</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddata.html#GridData.to_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddata.GridData.to_time_series" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_time_series</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddata.html#GridData.to_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddata.GridData.to_time_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert this cube to time series</p>
 <p>Extract time series for each lon / lat coordinate in this cube or at
 predefined sample points (e.g. station data). If sample points are
@@ -425,9 +437,12 @@ provided, the cube is interpolated first onto the sample points.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – coordinates (lon / lat) at which time series is supposed to be
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – coordinates (e.g. lon / lat) at which time series is supposed to be
 retrieved</li>
-<li><strong>**kwargs</strong> – additional keyword args passed to <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
+coordinates (for details, see <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
 </ul>
 </td>
 </tr>
@@ -530,10 +545,18 @@ the <code class="xref py py-class docutils literal notranslate"><span class="pre
 
 <dl class="method">
 <dt id="pyaerocom.griddata.GridData.interpolate">
-<code class="descname">interpolate</code><span class="sig-paren">(</span><em>sample_points</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddata.html#GridData.interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddata.GridData.interpolate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">interpolate</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddata.html#GridData.interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddata.GridData.interpolate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolate cube at certain discrete points</p>
 <p>Reimplementation of method <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.interpolate()</span></code>, for
 details <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.10.0/iris/iris/cube.html#iris.cube.Cube.interpolate">see here</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The input coordinates may also be provided using the input arg <a href="#id1"><span class="problematic" id="id2">**</span></a>coords
+which provides a more intuitive option (e.g. input
+<code class="docutils literal notranslate"><span class="pre">(sample_points=[(&quot;longitude&quot;,</span> <span class="pre">[10,</span> <span class="pre">20]),</span> <span class="pre">(&quot;latitude&quot;,</span> <span class="pre">[1,</span> <span class="pre">2])])</span></code>
+is the same as input
+<code class="docutils literal notranslate"><span class="pre">(longitude=[10,</span> <span class="pre">20],</span> <span class="pre">latitude=[1,2])</span></code></p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -545,6 +568,9 @@ string, it is converted into the corresponding iris Interpolator
 object, see <code class="xref py py-func docutils literal notranslate"><span class="pre">str_to_iris()</span></code> for valid strings</li>
 <li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether to collapse the dimension of scalar sample points in the
 resulting cube. Default is True.</li>
+<li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
+coordinates in an easier way than using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> argument
+<a href="#id3"><span class="problematic" id="id4">:arg:`sample_points``</span></a>. May also be a combination of both.</li>
 </ul>
 </td>
 </tr>
@@ -564,6 +590,61 @@ resulting cube. Default is True.</li>
 <span class="gp">... </span>                        <span class="p">(</span><span class="s2">&quot;latitude&quot;</span> <span class="p">,</span> <span class="p">(</span><span class="mi">35</span><span class="p">))])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">itp</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="go">(365, 1, 1)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddata.GridData.collocate">
+<code class="descname">collocate</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddata.html#GridData.collocate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddata.GridData.collocate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collocate Cube to positions of input coordinates</p>
+<p>Other than <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>, this method extracts the data values
+for a given number of input coordinates (e.g. combination of lon / lat
+values that belong, e.g. to station coordinates). Thus, this results in
+a reduction of dimensionality, since the provided coordinate
+combinations are not othorgonal anymore.</p>
+<p>All other dimensions are preserved (e.g. time), thus, collocating a 3D
+grid of time / lon / lat dimension and shape <code class="docutils literal notranslate"><span class="pre">(265,</span> <span class="pre">360,</span> <span class="pre">180)</span></code> at
+50 lon / lat coordinates will result in a 2D numpy array of shape
+<code class="docutils literal notranslate"><span class="pre">(365,</span> <span class="pre">50)</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – sequence of coordinate pairs over which to interpolate</li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddata.GridData.interpolate" title="pyaerocom.griddata.GridData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>**coords</strong> – keyword args specifying coordinate name (key, e.g. longitude) and
+list of corresponding sample point coordinates (value,
+e.g. <code class="docutils literal notranslate"><span class="pre">[1,2,3]</span></code>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">data values at provided input coordinates</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if length of coordinate arrays are unequal or coord</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code></a> – if one of the provided coordinates does not exist[(‘a’, 1), (‘b’, 2), (‘c’, 3)]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GridData</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pt_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">collocate</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">lons</span><span class="p">,</span>
+<span class="gp">... </span>                         <span class="n">latitude</span><span class="o">=</span><span class="n">lats</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">pt_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(365, 4)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -795,7 +876,7 @@ observations.</p>
 <span id="reading-of-gridded-data"></span><h4>Reading of gridded data<a class="headerlink" href="#module-pyaerocom.io.readgrid" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="pyaerocom.io.readgrid.ReadGrid">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readgrid.</code><code class="descname">ReadGrid</code><span class="sig-paren">(</span><em>name=''</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>file_convention='aerocom3'</em>, <em>init=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readgrid.</code><code class="descname">ReadGrid</code><span class="sig-paren">(</span><em>name=''</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>file_convention='aerocom3'</em>, <em>io_opts=&lt;pyaerocom.config.Config object&gt;</em>, <em>init=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for reading model results from AEROCOM NetCDF files</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -806,7 +887,8 @@ keys. You may define your own fileconvention in this file, if you wish.</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.readgrid.ReadGrid.name">
 <code class="descname">name</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.name" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> – string ID for model (see Aerocom interface map plots lower left corner)</p>
+<dd><p><em>str</em> – string ID for model (see e.g. Aerocom interface map plots lower left
+corner)</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -816,8 +898,8 @@ keys. You may define your own fileconvention in this file, if you wish.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.readgrid.ReadGrid.model_dir">
-<code class="descname">model_dir</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.model_dir" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgrid.ReadGrid.data_dir">
+<code class="descname">data_dir</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.data_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>str</em> – directory containing result files for this model</p>
 </dd></dl>
 
@@ -872,7 +954,7 @@ var_name or time interval).</p>
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
 <li><strong>file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID specifying the file convention of this model (cf.
 installation file <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini">file_conventions.ini</a>)</li>
-<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readgrid.ReadGrid.search_model_dir" title="pyaerocom.io.readgrid.ReadGrid.search_model_dir"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_model_dir()</span></code></a>) on
+<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readgrid.ReadGrid.search_data_dir" title="pyaerocom.io.readgrid.ReadGrid.search_data_dir"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_data_dir()</span></code></a>) on
 instantiation and if it is found, all valid files for this model are
 searched using <a class="reference internal" href="#pyaerocom.io.readgrid.ReadGrid.search_all_files" title="pyaerocom.io.readgrid.ReadGrid.search_all_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_all_files()</span></code></a>.</li>
 <li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, output is printed</li>
@@ -891,8 +973,20 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgrid.ReadGr
 </div>
 <dl class="attribute">
 <dt>
-<code class="descname">model_dir</code></dt>
+<code class="descname">data_dir</code></dt>
 <dd><p>Model directory</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.readgrid.ReadGrid.file_type">
+<code class="descname">file_type</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.file_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>File type of data files</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.readgrid.ReadGrid.TS_TYPES">
+<code class="descname">TS_TYPES</code><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.TS_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>List with valid filename encryptions specifying temporal resolution</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -934,16 +1028,19 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readgrid.ReadGrid.search_model_dir">
-<code class="descname">search_model_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadGrid.search_model_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.search_model_dir" title="Permalink to this definition">¶</a></dt>
-<dd><p>Search the directory of this model</p>
+<dt id="pyaerocom.io.readgrid.ReadGrid.search_data_dir">
+<code class="descname">search_data_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadGrid.search_data_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadGrid.search_data_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search data directory based on model ID</p>
+<p>Wrapper for method <code class="xref py py-func docutils literal notranslate"><span class="pre">search_data_dir_aerocom()</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True, if directory was found, else False</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">data directory</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if directory cannot be found</td>
 </tr>
 </tbody>
 </table>
@@ -958,7 +1055,7 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update_file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the first file in <cite>model_dir</cite> is used to identify the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update_file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the first file in <cite>data_dir</cite> is used to identify the
 file naming convention (cf. <code class="xref py py-class docutils literal notranslate"><span class="pre">FileConventionRead</span></code>)</td>
 </tr>
 </tbody>
@@ -979,7 +1076,7 @@ valid files for all variables and times for this model.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – keyword args that will be used to update (overwrite) valid class
-attributes such as <cite>data, model_dir, files</cite></td>
+attributes such as <cite>data, data_dir, files</cite></td>
 </tr>
 </tbody>
 </table>
@@ -1001,14 +1098,10 @@ concatenate the individual cubes in time into a single instance of the
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.GridData</span></code> class. In order to ensure that this
 works, several things need to be ensured, which are listed in the
 following and which may be controlled within the global settings for
-NetCDF import using the attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">ON_LOAD</span></code> (instance of
+NetCDF import using the attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">GRID_IO</span></code> (instance of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">OnLoad</span></code>) in the default instance of the
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.config.Config</span></code> object accessible via
 <code class="docutils literal notranslate"><span class="pre">pyaerocom.const</span></code>.</p>
-<p>Required settings:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span>
-</pre></div>
-</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1134,8 +1227,8 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgrid.Re
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readgrid.ReadMultiGrid.search_model_dirs">
-<code class="descname">search_model_dirs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid.search_model_dirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.search_model_dirs" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgrid.ReadMultiGrid.search_data_dirs">
+<code class="descname">search_data_dirs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgrid.html#ReadMultiGrid.search_data_dirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgrid.ReadMultiGrid.search_data_dirs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the directory where model data for a given model resides in</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1773,6 +1866,33 @@ ts_type = “daily”</p>
 <span id="i-o-helper-methods"></span><h3>I / O helper methods<a class="headerlink" href="#module-pyaerocom.io.helpers" title="Permalink to this headline">¶</a></h3>
 <p>I/O helper methods of the pyaerocom package</p>
 <dl class="function">
+<dt id="pyaerocom.io.helpers.search_data_dir_aerocom">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_data_dir_aerocom</code><span class="sig-paren">(</span><em>name</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_data_dir_aerocom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_data_dir_aerocom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search Aerocom data directory based on model / data ID</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of model</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – print output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model directory</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if model directory cannot be found</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.io.helpers.check_time_coord">
 <code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">check_time_coord</code><span class="sig-paren">(</span><em>cube</em>, <em>ts_type</em>, <em>year</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#check_time_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.check_time_coord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that checks the time coordinate of an iris Cube</p>
@@ -2044,7 +2164,7 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 low level, very flexible plot method</p>
 <dl class="function">
 <dt id="pyaerocom.plot.mapping.plot_map">
-<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>add_zero=False</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>figh=8</em>, <em>fix_aspect=False</em>, <em>cbar_levels=None</em>, <em>cbar_ticks=None</em>, <em>xticks=None</em>, <em>yticks=None</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>fig=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>add_zero=False</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>figh=8</em>, <em>fix_aspect=False</em>, <em>cbar_levels=None</em>, <em>cbar_ticks=None</em>, <em>xticks=None</em>, <em>yticks=None</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>projection=&lt;cartopy.crs.PlateCarree object&gt;</em>, <em>fig=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of grid data onto a map</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2077,6 +2197,8 @@ default aspect <code class="docutils literal notranslate"><span class="pre">MAP_
 <li><strong>xticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of x-axis (longitudes)</li>
 <li><strong>yticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of y-axis (latitudes)</li>
 <li><strong>color_theme</strong> (<a class="reference internal" href="#pyaerocom.plot.config.ColorTheme" title="pyaerocom.plot.config.ColorTheme"><em>ColorTheme</em></a>) – pyaerocom color theme</li>
+<li><strong>projection</strong> – projection instance from cartopy.crs module (e.g. PlateCaree). May also
+be string</li>
 <li><strong>fig</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
 input args (<code class="docutils literal notranslate"><span class="pre">figh</span></code> and <code class="docutils literal notranslate"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
 Figure is wiped clean before plotting, so any plotted content will be

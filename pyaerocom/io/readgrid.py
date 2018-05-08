@@ -35,8 +35,7 @@
 
 from glob import glob
 from re import match
-from os.path import join, isdir, basename
-from os import listdir
+from os.path import isdir, basename
 from collections import OrderedDict as od
 from warnings import warn
 from numpy import arange
@@ -51,7 +50,8 @@ from iris._concatenate import concatenate
 from pyaerocom import const
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead
-from pyaerocom.io.helpers import check_time_coord, correct_time_coord
+from pyaerocom.io.helpers import (check_time_coord, correct_time_coord,
+                                  search_data_dir_aerocom)
 from pyaerocom.griddata import GridData
 
 class ReadGrid(object):
@@ -67,10 +67,11 @@ class ReadGrid(object):
     Attributes
     ----------
     name : str
-        string ID for model (see Aerocom interface map plots lower left corner)
+        string ID for model (see e.g. Aerocom interface map plots lower left 
+        corner)
     data : GridData
         imported data object 
-    model_dir : str
+    data_dir : str
         directory containing result files for this model
     start_time : pandas.Timestamp
         start time for data import
@@ -103,7 +104,7 @@ class ReadGrid(object):
         installation file `file_conventions.ini <https://github.com/metno/
         pyaerocom/blob/master/pyaerocom/data/file_conventions.ini>`__)
     init : bool
-        if True, the model directory is searched (:func:`search_model_dir`) on
+        if True, the model directory is searched (:func:`search_data_dir`) on
         instantiation and if it is found, all valid files for this model are 
         searched using :func:`search_all_files`.
     verbose : bool
@@ -119,14 +120,12 @@ class ReadGrid(object):
         >>> print(data.short_str()) for data in read.data
         
     """
-    _MODELDIRS = const.MODELDIRS
     _start_time = None
     _stop_time = None
     # Directory containing model data for this species
-    _model_dir = ""
-    _USE_SUBDIR_RENAMED = True
+    _data_dir = ""
     def __init__(self, name="", start_time=None, stop_time=None,
-                 file_convention="aerocom3", init=True, 
+                 file_convention="aerocom3", io_opts=const, init=True, 
                  verbose=const.VERBOSE):
         # model ID
         if not isinstance(name, str):
@@ -157,6 +156,7 @@ class ReadGrid(object):
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
         # automatically updated in class ReadGrid
+        self.io_opts = io_opts
         self.file_convention = FileConventionRead(file_convention)
         
         # All files that were found for this model (updated, e.g. in class
@@ -167,26 +167,37 @@ class ReadGrid(object):
         self.vars = []
         self.years = []
         
-        if init:
-            if self.search_model_dir():
-                self.search_all_files()
+        if init and name:
+            self.search_data_dir()
+            self.search_all_files()
                 
     @property
-    def model_dir(self):
+    def data_dir(self):
         """Model directory"""
-        dirloc = self._model_dir
+        dirloc = self._data_dir
         if not isdir(dirloc):
             raise IOError("Model directory for ID %s not available or does "
                           "not exist" %self.name)
         return dirloc
     
-    @model_dir.setter
-    def model_dir(self, value):
+    @data_dir.setter
+    def data_dir(self, value):
         if isinstance(value, str) and isdir(value):
-            self._model_dir = value
+            self._data_dir = value
         else:
             raise ValueError("Could not set directory: %s" %value)
-
+            
+    @property
+    def file_type(self):
+        """File type of data files"""
+        return self.io_opts.GRID_IO.FILE_TYPE
+    
+    @property
+    def TS_TYPES(self):
+        """List with valid filename encryptions specifying temporal resolution
+        """
+        return self.io_opts.GRID_IO.TS_TYPES
+    
     @property
     def start_time(self):
         """Start time of the dataset
@@ -219,12 +230,6 @@ class ReadGrid(object):
         
         """
         return self._stop_time
-# =============================================================================
-#         if not isinstance(t, Timestamp):
-#             raise ValueError("Invalid value encountered for stop time "
-#                              "in reading engine: %s" %t)
-#         return t
-# =============================================================================
     
     @stop_time.setter
     def stop_time(self, value):
@@ -252,47 +257,24 @@ class ReadGrid(object):
                                  "search_all_files first")
         return self.years
     
-    def search_model_dir(self):
-        """Search the directory of this model
+    def search_data_dir(self):
+        """Search data directory based on model ID
+        
+        Wrapper for method :func:`search_data_dir_aerocom`
         
         Returns
         -------
-        bool
-            True, if directory was found, else False
+        str
+            data directory
+        
+        Raises
+        ------
+        IOError 
+            if directory cannot be found
         """
-        sid = self.name
-        _candidates = []
-        for search_dir in self._MODELDIRS:
-            if self.verbose:
-                print('Searching dir for ID %s in: %s' 
-                      %(self.name, search_dir))
-            # get the directories
-            if isdir(search_dir):
-                subdirs = listdir(search_dir)
-                for subdir in subdirs:
-                    if sid == subdir:
-                        _dir = join(search_dir, subdir)
-                        if self._USE_SUBDIR_RENAMED:
-                            _dir = join(_dir, "renamed")
-                        if isdir(_dir):
-                            self.model_dir = _dir
-                            if self.verbose:
-                                print('Found model dir: {}'.format(_dir))    
-                            return True
-                        else:
-                            if self.verbose:
-                                print("renamed folder does not exist "
-                                      "in {}".format(join(search_dir, subdir)))
-                    elif sid.lower() in subdir.lower():
-                        _candidates.append(subdir)
-            else:
-                if self.verbose:
-                    print('directory: %s does not exist\n'
-                                     %search_dir)
-        print("Model directory could not be found.")
-        if _candidates:
-            print("Did you mean either of: {} ?".format(_candidates))
-        return False
+        _dir = search_data_dir_aerocom(self.name)
+        self.data_dir = _dir
+        return _dir
     
     # get the model directory (note that the folder "renamed" is used)
     def search_all_files(self, update_file_convention=True):
@@ -304,7 +286,7 @@ class ReadGrid(object):
         Parameters
         ----------
         update_file_convention : bool
-            if True, the first file in `model_dir` is used to identify the 
+            if True, the first file in `data_dir` is used to identify the
             file naming convention (cf. :class:`FileConventionRead`)
             
         Note
@@ -313,7 +295,7 @@ class ReadGrid(object):
         valid files for all variables and times for this model.
         """
         # get all netcdf files in folder
-        nc_files = glob(self.model_dir + '/*.nc')
+        nc_files = glob(self.data_dir + '/*{}'.format(self.file_type))
         if update_file_convention:
             # Check if the found file has a naming according the aerocom conventions
             # and set the convention for all files (maybe this need to be 
@@ -324,8 +306,8 @@ class ReadGrid(object):
         else:
             raise IOError("Failed to identify file naming convention "
                           "from first file in model directory for model "
-                          "%s\nmodel_dir: %s\nFile name: %s"
-                          %(self.name, self.model_dir, first_file_name))
+                          "%s\ndata_dir: %s\nFile name: %s"
+                          %(self.name, self.data_dir, first_file_name))
         _vars_temp = []
         _years_temp = []
         for _file in nc_files:
@@ -338,7 +320,8 @@ class ReadGrid(object):
                 if self.verbose:
                     print("Failed to import file %s\nError: %s" 
                           %(basename(_file), repr(e)))
-
+        if not _vars_temp or not len(_vars_temp) == len(_years_temp):
+            raise IOError("Failed to extract information from filenames")
         # make sorted list of unique vars
         self.vars = sorted(od.fromkeys(_vars_temp))
         self.years = sorted(od.fromkeys(_years_temp))
@@ -350,7 +333,7 @@ class ReadGrid(object):
         ----------
         **kwargs
             keyword args that will be used to update (overwrite) valid class 
-            attributes such as `data, model_dir, files`
+            attributes such as `data, data_dir, files`
         """
         for k, v in kwargs.items():
             if k in self.__dict__:
@@ -377,14 +360,11 @@ class ReadGrid(object):
         :class:`pyaerocom.GridData` class. In order to ensure that this
         works, several things need to be ensured, which are listed in the 
         following and which may be controlled within the global settings for 
-        NetCDF import using the attribute :attr:`ON_LOAD` (instance of 
+        NetCDF import using the attribute :attr:`GRID_IO` (instance of
         :class:`OnLoad`) in the default instance of the 
         :class:`pyaerocom.config.Config` object accessible via 
         ``pyaerocom.const``.
         
-        Required settings::
-            
-            1. 
         
         Parameters
         ----------
@@ -406,10 +386,10 @@ class ReadGrid(object):
         GridData
             t
         """
-        if not ts_type in const.TS_TYPES:
+        if not ts_type in self.TS_TYPES:
             raise ValueError("Invalid input for ts_type, got: {}, "
                              "allowed values: {}".format(ts_type, 
-                                                    const.TS_TYPES))
+                                                         self.TS_TYPES))
         if start_time:
             self.start_time = start_time
         if stop_time:
@@ -418,7 +398,7 @@ class ReadGrid(object):
         if var_name not in self.vars:
             raise ValueError("Error: variable {} not found in files contained "
                              "in model directory: {}".format(var_name, 
-                                                  self.model_dir))
+                                                  self.data_dir))
         
         match_files = []
         for year in self.years_to_load:
@@ -458,7 +438,7 @@ class ReadGrid(object):
             try:
                 finfo = self.file_convention.get_info_from_file(_file)
                 cube = load_cube(_file, var_constraint)
-                if const.ON_LOAD["CHECK_TIME_FILENAME"]:
+                if const.GRID_IO["CHECK_TIME_FILENAME"]:
                     
                     if not check_time_coord(cube, ts_type=finfo["ts_type"], 
                                             year=finfo["year"],
@@ -494,7 +474,7 @@ class ReadGrid(object):
                                                    ts_type, 
                                                    self.start_time,
                                                    self.stop_time))
-        if const.ON_LOAD.EQUALISE_METADATA:
+        if const.GRID_IO.EQUALISE_METADATA:
             meta_init = cubes[0].metadata
             if not all([x.metadata == meta_init for x in cubes]):
                 if self.verbose:
@@ -658,7 +638,7 @@ class ReadMultiGrid(object):
             self.stop_time = stop_time
         
         self.init_results()
-        self.search_model_dirs()
+        self.search_data_dirs()
         self.search_all_files()
         
     @property
@@ -733,7 +713,7 @@ class ReadMultiGrid(object):
                                                    init=False,
                                                    verbose=self.verbose)
     
-    def search_model_dirs(self):
+    def search_data_dirs(self):
         """Get the directory where model data for a given model resides in
         
         Returns
@@ -745,7 +725,7 @@ class ReadMultiGrid(object):
         names_new = []
         for name in self.names:
             # loop through the list of models
-            if self.results[name].search_model_dir():
+            if self.results[name].search_data_dir():
                 names_new.append(name)
         if len(names_new) == 0:
             raise AttributeError("Failed to find model directories for all "
@@ -806,10 +786,6 @@ class ReadMultiGrid(object):
             >>> read.read(["od550aer", "od550so4", "od550bc"])
             
         """
-        if not ts_type in const.TS_TYPES:
-            raise ValueError("Invalid input for ts_type, got: {}, "
-                             "allowed values: {}".format(ts_type, 
-                                                         const.TS_TYPES))
         if start_time:
             self.start_time = start_time
         if stop_time:
@@ -874,11 +850,19 @@ class ReadMultiGrid(object):
         return s
     
 if __name__=="__main__":
-    read = ReadGrid(name="ECMWF_CAMS_REAN",
-                                  start_time="1-1-2003",
-                                  stop_time="31-12-2007", 
-                                  verbose=True)
-    data = read.read_var(var_name="od550aer", ts_type="daily")
+    
+    read = ReadGrid("EMEP_rv48_RBUALL")
+    
+    
+# =============================================================================
+#     read = ReadGrid(name="ECMWF_CAMS_REAN",
+#                                   start_time="1-1-2003",
+#                                   stop_time="31-12-2007", 
+#                                   verbose=True)
+#     data = read.read_var(var_name="od550aer", ts_type="daily")
+#     
+# =============================================================================
+    
 # =============================================================================
 #     read = ReadMultiGrid(names=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
 #     

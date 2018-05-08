@@ -33,7 +33,7 @@ information about what is in there.
 .. parsed-literal::
 
     Searching dir for ID ECMWF_CAMS_REAN in: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-    Found model dir: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
+    Found directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
     Failed to import file od550aer.29feb2004.nc
     Error: OSError('Failed to extract year information from file od550aer.29feb2004.nc using file convention aerocom2',)
     Failed to import file od550aer.29feb2007.nc
@@ -97,8 +97,7 @@ string representation, as shown in the cell above).
     Cubes for variable od550aer have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
     Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
-    Failed to crop data for od550aer in time.
-    Error: AttributeError("'GridData' object has no attribute 'get_time_constraint'",)
+    Cropping along time axis based on Timestamps
 
 
 From the output we can see that based on our specified time range and
@@ -116,7 +115,6 @@ everything worked as expected.
 
 .. parsed-literal::
 
-    Stop time could not be accessed in GridData class
     
     Pyaerocom ReadGrid
     ------------------
@@ -130,7 +128,7 @@ everything worked as expected.
     ------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2003-01-01T00:00:00.000000 - nan
+    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
 
 
 .. code:: ipython3

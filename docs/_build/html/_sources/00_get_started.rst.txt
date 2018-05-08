@@ -66,15 +66,26 @@ via an instance of the ``IOConfig`` class.
 
 .. parsed-literal::
 
-    Current config: Pyaerocom IOConfig
+    Current config: 
+    Pyaerocom Config
+    ----------------
+    
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
-    TS_TYPES (list)
-       [hourly
-        3hourly    daily    monthly]
+    GRID_IO: 
+    Pyaerocom GridIO
+    ----------------
     
+       FILE_TYPE: .nc
+       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       DEL_TIME_BOUNDS: True
+       SHIFT_LONS: True
+       CHECK_TIME_FILENAME: True
+       EQUALISE_METADATA: True
+       USE_RENAMED_DIR: True
+       USE_FILECONVENTION: True
+       INCLUDE_SUBDIRS: False
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -164,15 +175,26 @@ See what's currently in there.
 
 .. parsed-literal::
 
-    Current config: Pyaerocom IOConfig
+    Current config: 
+    Pyaerocom Config
+    ----------------
+    
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
-    TS_TYPES (list)
-       [hourly
-        3hourly    daily    monthly]
+    GRID_IO: 
+    Pyaerocom GridIO
+    ----------------
     
+       FILE_TYPE: .nc
+       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       DEL_TIME_BOUNDS: True
+       SHIFT_LONS: True
+       CHECK_TIME_FILENAME: True
+       EQUALISE_METADATA: True
+       USE_RENAMED_DIR: True
+       USE_FILECONVENTION: True
+       INCLUDE_SUBDIRS: False
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -229,15 +251,26 @@ print.
 
 .. parsed-literal::
 
-    Current config: Pyaerocom IOConfig
+    Current config: 
+    Pyaerocom Config
+    ----------------
+    
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
-    TS_TYPES (list)
-       [hourly
-        3hourly    daily    monthly]
+    GRID_IO: 
+    Pyaerocom GridIO
+    ----------------
     
+       FILE_TYPE: .nc
+       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       DEL_TIME_BOUNDS: True
+       SHIFT_LONS: True
+       CHECK_TIME_FILENAME: True
+       EQUALISE_METADATA: True
+       USE_RENAMED_DIR: True
+       USE_FILECONVENTION: True
+       INCLUDE_SUBDIRS: False
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -298,15 +331,26 @@ work.
 .. parsed-literal::
 
     All paths valid? True
-    Current config: Pyaerocom IOConfig
+    Current config: 
+    Pyaerocom Config
+    ----------------
+    
     VERBOSE: True
     MIN_YEAR: 0
     MAX_YEAR: 3000
-    ON_LOAD: <pyaerocom.config.OnLoad object at 0x7f1236279320>
-    TS_TYPES (list)
-       [hourly
-        3hourly    daily    monthly]
+    GRID_IO: 
+    Pyaerocom GridIO
+    ----------------
     
+       FILE_TYPE: .nc
+       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       DEL_TIME_BOUNDS: True
+       SHIFT_LONS: True
+       CHECK_TIME_FILENAME: True
+       EQUALISE_METADATA: True
+       USE_RENAMED_DIR: True
+       USE_FILECONVENTION: True
+       INCLUDE_SUBDIRS: False
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE

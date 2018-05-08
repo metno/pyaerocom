@@ -15,7 +15,8 @@ from numpy import meshgrid, linspace, ceil
 from pyaerocom import const
 from pyaerocom.plot.config import COLOR_THEME, ColorTheme, MAP_AXES_ASPECT
 from pyaerocom.plot.helpers import (calc_figsize, custom_mpl, 
-                                    calc_pseudolog_cmaplevels)
+                                    calc_pseudolog_cmaplevels,
+                                    projection_from_str)
 from pyaerocom.mathutils import exponent
 from pyaerocom.griddata import GridData
 from pyaerocom.region import Region
@@ -26,7 +27,8 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
              add_zero=False, c_under=None, c_over=None, log_scale=True, 
              discrete_norm=True, figh=8, fix_aspect=False, 
              cbar_levels=None, cbar_ticks=None, xticks=None, yticks=None,
-             color_theme=COLOR_THEME, fig=None, verbose=const.VERBOSE):
+             color_theme=COLOR_THEME, projection=ccrs.PlateCarree(), fig=None,
+             verbose=const.VERBOSE):
     """Make a plot of grid data onto a map
     
     Parameters
@@ -75,6 +77,9 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         ticks of y-axis (latitudes)
     color_theme : ColorTheme
         pyaerocom color theme
+    projection 
+        projection instance from cartopy.crs module (e.g. PlateCaree). May also
+        be string
     fig : :obj:`Figure`, optional
         instance of matplotlib Figure class. If specified, the former to 
         input args (``figh`` and ``fix_aspect``) are ignored. Note that the 
@@ -90,6 +95,11 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         ``fig.axes[0]`` to access the map axes instance (e.g. to modify the 
         title or lon / lat range, etc.)
     """
+    if isinstance(projection, str):
+        projection =projection_from_str(projection)
+    elif not isinstance(projection, ccrs.Projection):
+        raise ValueError("Input for projection needs to be instance of "
+                         "cartopy.crs.Projection")
     if isinstance(data, GridData):
         data = data.grid
     if len(data.coord("time").points) > 1:
@@ -110,8 +120,7 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         fig = figure(figsize=(figw, figh))
     else:
         fig.clf()
-
-    ax = fig.add_axes([0.1, 0.12, 0.8, 0.8], projection=ccrs.PlateCarree())
+    ax = fig.add_axes([0.1, 0.12, 0.8, 0.8], projection=projection)
     if fix_aspect:
         ax.set_aspect(MAP_AXES_ASPECT)
     #ax.set_adjustable("datalim")

@@ -121,12 +121,12 @@ class GridDataBase(abc.ABC):
             self.grid = input #instance of Cube
             self.var_name = input.var_name
         try:
-            if self._ON_LOAD["DEL_TIME_BOUNDS"]:
+            if self._GRID_IO["DEL_TIME_BOUNDS"]:
                 self.grid.coord("time").bounds = None
         except:
             if self.verbose:
                 print("Failed to access time coordinate in GridData class")
-        if self._ON_LOAD["SHIFT_LONS"]:
+        if self._GRID_IO["SHIFT_LONS"]:
             self.check_and_regrid_lons()
     
             
@@ -245,7 +245,7 @@ class GridData(GridDataBase, GridDataCF):
         
     """
     _grid = None
-    _ON_LOAD = const.ON_LOAD
+    _GRID_IO = const.GRID_IO
     def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
                  **suppl_info):
         super(GridData, self).__init__(input, var_name, verbose, **suppl_info)
@@ -410,12 +410,12 @@ class GridData(GridDataBase, GridDataCF):
         elif isinstance(input, Cube):
             self.grid = input #instance of Cube
         try:
-            if self._ON_LOAD["DEL_TIME_BOUNDS"]:
+            if self._GRID_IO["DEL_TIME_BOUNDS"]:
                 self.grid.coord("time").bounds = None
         except:
             if self.verbose:
                 print("Failed to access time coordinate in GridData class")
-        if self._ON_LOAD["SHIFT_LONS"]:
+        if self._GRID_IO["SHIFT_LONS"]:
             self.check_and_regrid_lons()
             
     def time_stamps(self):

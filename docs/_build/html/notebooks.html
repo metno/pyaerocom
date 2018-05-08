@@ -268,15 +268,26 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">Config</span>
+<span class="o">----------------</span>
+
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
-<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-   <span class="p">[</span><span class="n">hourly</span>
-    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+<span class="n">GRID_IO</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">GridIO</span>
+<span class="o">----------------</span>
 
+   <span class="n">FILE_TYPE</span><span class="p">:</span> <span class="o">.</span><span class="n">nc</span>
+   <span class="n">TS_TYPES</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;3hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
+   <span class="n">DEL_TIME_BOUNDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_FILECONVENTION</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
@@ -352,15 +363,26 @@ class, as follows:</li>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">Config</span>
+<span class="o">----------------</span>
+
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
-<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-   <span class="p">[</span><span class="n">hourly</span>
-    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+<span class="n">GRID_IO</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">GridIO</span>
+<span class="o">----------------</span>
 
+   <span class="n">FILE_TYPE</span><span class="p">:</span> <span class="o">.</span><span class="n">nc</span>
+   <span class="n">TS_TYPES</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;3hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
+   <span class="n">DEL_TIME_BOUNDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_FILECONVENTION</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
@@ -412,15 +434,26 @@ print.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">Config</span>
+<span class="o">----------------</span>
+
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
-<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-   <span class="p">[</span><span class="n">hourly</span>
-    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+<span class="n">GRID_IO</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">GridIO</span>
+<span class="o">----------------</span>
 
+   <span class="n">FILE_TYPE</span><span class="p">:</span> <span class="o">.</span><span class="n">nc</span>
+   <span class="n">TS_TYPES</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;3hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
+   <span class="n">DEL_TIME_BOUNDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_FILECONVENTION</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
@@ -476,15 +509,26 @@ work.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? True
-Current config: Pyaerocom IOConfig
+Current config:
+Pyaerocom Config
+----------------
+
 VERBOSE: True
 MIN_YEAR: 0
 MAX_YEAR: 3000
-ON_LOAD: &lt;pyaerocom.config.OnLoad object at 0x7f1236279320&gt;
-TS_TYPES (list)
-   [hourly
-    3hourly    daily    monthly]
+GRID_IO:
+Pyaerocom GridIO
+----------------
 
+   FILE_TYPE: .nc
+   TS_TYPES: [&#39;hourly&#39;, &#39;3hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;]
+   DEL_TIME_BOUNDS: True
+   SHIFT_LONS: True
+   CHECK_TIME_FILENAME: True
+   EQUALISE_METADATA: True
+   USE_RENAMED_DIR: True
+   USE_FILECONVENTION: True
+   INCLUDE_SUBDIRS: False
 GCOSPERCENTCRIT: 0.1
 GCOSABSCRIT: 0.04
 OBSNET_NONE: NONE
@@ -632,7 +676,7 @@ information about what is in there.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
-<span class="n">Found</span> <span class="n">model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
+<span class="n">Found</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2004</span><span class="o">.</span><span class="n">nc</span>
 <span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file od550aer.29feb2004.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2007</span><span class="o">.</span><span class="n">nc</span>
@@ -686,8 +730,7 @@ string representation, as shown in the cell above).</p>
 <span class="n">Cubes</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550aer</span> <span class="n">have</span> <span class="n">different</span> <span class="n">meta</span> <span class="n">data</span> <span class="n">settings</span><span class="o">.</span> <span class="n">These</span> <span class="n">will</span> <span class="n">be</span> <span class="n">unified</span> <span class="n">using</span> <span class="n">the</span> <span class="n">metadata</span> <span class="n">dictionary</span> <span class="n">of</span> <span class="n">the</span> <span class="n">first</span> <span class="n">cube</span> <span class="p">(</span><span class="n">otherwise</span> <span class="n">the</span> <span class="n">method</span> <span class="n">concatenate</span> <span class="n">of</span> <span class="n">the</span> <span class="n">iris</span> <span class="n">package</span> <span class="n">won</span><span class="s1">&#39;t work)</span>
 <span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 <span class="n">Applying</span> <span class="n">temporal</span> <span class="n">cropping</span> <span class="n">of</span> <span class="n">result</span> <span class="n">cube</span>
-<span class="n">Failed</span> <span class="n">to</span> <span class="n">crop</span> <span class="n">data</span> <span class="k">for</span> <span class="n">od550aer</span> <span class="ow">in</span> <span class="n">time</span><span class="o">.</span>
-<span class="n">Error</span><span class="p">:</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;&#39;GridData&#39; object has no attribute &#39;get_time_constraint&#39;&quot;</span><span class="p">,)</span>
+<span class="n">Cropping</span> <span class="n">along</span> <span class="n">time</span> <span class="n">axis</span> <span class="n">based</span> <span class="n">on</span> <span class="n">Timestamps</span>
 </pre></div>
 </div>
 <p>From the output we can see that based on our specified time range and
@@ -699,9 +742,7 @@ everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
-
-<span class="nc">Pyaerocom</span> <span class="n">ReadGrid</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
 <span class="o">------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
@@ -713,7 +754,7 @@ everything worked as expected.</p>
 <span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2007</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -820,7 +861,7 @@ later process.</p>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECLIPSE</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">SATELLITE</span><span class="o">-</span><span class="n">DATA</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span>
-<span class="n">Found</span> <span class="n">model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">renamed</span>
+<span class="n">Found</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span><span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span>
@@ -840,7 +881,7 @@ later process.</p>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">I</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">II</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span>
-<span class="n">Found</span> <span class="n">model</span> <span class="nb">dir</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span>
+<span class="n">Found</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="nb">all</span><span class="o">.</span><span class="n">nc</span>
 <span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file all.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
 </pre></div>
@@ -850,7 +891,7 @@ later process.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model ID: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
       <span class="s2">&quot;Model dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
       <span class="s2">&quot;First detected file: </span><span class="si">%s</span><span class="s2">&quot;</span>
-      <span class="o">%</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read_aatsr</span><span class="o">.</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+      <span class="o">%</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read_aatsr</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
@@ -872,30 +913,26 @@ FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2010.nc
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2011.nc
 Cubes for variable od550aer have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
 Applying temporal cropping of result cube
-Failed to crop data for od550aer in time.
-Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
+Cropping along time axis based on Timestamps
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2010.nc
 FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2011.nc
 Cubes for variable od550dust have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
 Applying temporal cropping of result cube
-Failed to crop data for od550dust in time.
-Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
+Cropping along time axis based on Timestamps
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
 Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
-Failed to crop data for od550aer in time.
-Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
+Cropping along time axis based on Timestamps
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'n '2004-01-11T00:00:00.000000']&quot;,)
 Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
 Rolling longitudes to -180 -&gt; 180 definition
 Applying temporal cropping of result cube
-Failed to crop data for od550dust in time.
-Error: AttributeError(&quot;'GridData' object has no attribute 'get_time_constraint'&quot;,)
+Cropping along time axis based on Timestamps
 </pre>
 <p>Print what is in there (similar to the previously introduced
 <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class has a nice string
@@ -903,12 +940,7 @@ representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
-<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
-<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
-<span class="nc">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
-
-<span class="nc">Pyaerocom</span> <span class="n">ReadMultiGrid</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadMultiGrid</span>
 <span class="o">-----------------------</span>
 <span class="n">Model</span> <span class="n">IDs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AATSR_SU_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
 
@@ -926,13 +958,13 @@ representation)</p>
 <span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
 <span class="n">Pyaerocom</span> <span class="n">GridData</span>
 <span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
 <span class="o">------------------</span>
@@ -946,13 +978,13 @@ representation)</p>
 <span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
 <span class="n">Pyaerocom</span> <span class="n">GridData</span>
 <span class="o">------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 </pre></div>
 </div>
 <p>Print some information about the different data objects</p>
@@ -999,9 +1031,7 @@ representation)</p>
         <span class="n">dat_crop</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Stop</span> <span class="n">time</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">accessed</span> <span class="ow">in</span> <span class="n">GridData</span> <span class="k">class</span>
-
-<span class="nc">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="n">nan</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">before</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
 <span class="n">Cropping</span> <span class="n">along</span> <span class="n">time</span> <span class="n">axis</span> <span class="n">based</span> <span class="n">on</span> <span class="n">Timestamps</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">stop</span> <span class="n">after</span> <span class="n">crop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">15</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">22</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
@@ -1144,7 +1174,7 @@ file (if the file is readable using the <code class="docutils literal notranslat
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550dust&#39;, &#39;od550so4&#39;, &#39;od550oa&#39;]&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550so4&#39;, &#39;od550dust&#39;, &#39;od550bc&#39;, &#39;od550oa&#39;, &#39;od550aer&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
@@ -1363,14 +1393,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>131 ms ± 13 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>155 ms ± 16.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 3.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>116 ms ± 7.06 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -1381,14 +1411,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 10.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>148 ms ± 21.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>99.9 ms ± 609 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 3.74 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -1407,7 +1437,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.58 ms ± 7.85 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.71 ms ± 77 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -1525,7 +1555,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>66.3 µs ± 8.34 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>73.2 µs ± 16.4 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -1543,7 +1573,7 @@ here</a>).</p>
 pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>67.6 µs ± 4.39 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>66.4 µs ± 4.13 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -1552,7 +1582,7 @@ pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.83 ms ± 113 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.79 ms ± 27.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -1566,14 +1596,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>110 µs ± 20.6 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>80.2 µs ± 1.22 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.93 ms ± 134 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.86 ms ± 34.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 </div>

@@ -25,6 +25,64 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
+def search_data_dir_aerocom(name, verbose=const.VERBOSE):
+    """Search Aerocom data directory based on model / data ID
+    
+    Parameters
+    ----------
+    name : str
+        name of model
+    verbose : bool
+        print output
+        
+    Returns
+    -------
+    str
+        Model directory
+        
+    Raises
+    ------
+    IOError
+        if model directory cannot be found
+    """
+    sid = name
+    _candidates = []
+    _msgs = []
+    for search_dir in const.MODELDIRS:
+        if verbose:
+            print('Searching dir for ID %s in: %s' 
+                  %(name, search_dir))
+        # get the directories
+        if isdir(search_dir):
+            #subdirs = listdir(search_dir)
+            subdirs = [x for x in listdir(search_dir) if isdir(join(search_dir, x))]
+            for subdir in subdirs:
+                if sid == subdir:
+                    _dir = join(search_dir, subdir)
+                    if const.GRID_IO.USE_RENAMED_DIR:
+                        _dir = join(_dir, "renamed")
+                    if isdir(_dir):
+                        if verbose:
+                            print('Found directory: {}'.format(_dir))    
+                        return _dir
+                    else:
+                        if verbose:
+                            _msgs.append("renamed folder does not exist "
+                                  "in {}".format(join(search_dir, subdir)))
+                elif (sid.lower() in subdir.lower()):
+                    _candidates.append(subdir)
+        else:
+            if verbose:
+                _msgs.append('directory: %s does not exist\n'
+                             %search_dir)
+    print("Model directory could not be found.")
+    for msg in _msgs:
+        print(msg)
+
+    if _candidates:
+        print("Did you mean either of: {} ?".format(_candidates))
+    raise IOError("Model directory for name {} could not be found".format(name))
+    
 def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
     """Method that checks the time coordinate of an iris Cube
     

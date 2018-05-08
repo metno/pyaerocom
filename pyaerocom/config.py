@@ -43,9 +43,59 @@ try:
 except: 
     from configparser import ConfigParser
 
-class OnLoad(object):
-    """Settings class for default IO settings"""
+class GridIO(object):
+    """Settings class for managing IO settings
+    
+    This class includes options related to the import of grid data. This 
+    includes both options related to file search as well as preprocessing 
+    options.
+    
+    Attributes
+    ----------
+    FILE_TYPE : str
+        file type of data files. Defaults to .nc
+    TS_TYPES : list
+        list of strings specifying temporal resolution options encrypted in
+        file names.
+    DEL_TIME_BOUNDS : bool
+        if True, preexisting bounds on time are deleted when grid data is 
+        loaded. Else, nothing is done. Aerocom default is True
+    SHIFT_LONS : bool
+        if True, longitudes are shifted to 
+        -180 <= lon <= 180 when data is loaded (in case they are defined 
+        0 <= lon <= 360. Aerocom default is True.
+    CHECK_TIME_FILENAME : bool
+        the times stored in NetCDF files may be wrong or not stored according
+        to the CF conventions. If True, the times are checked and, if 
+        applicable, corrected for on data import based what is encrypted in the 
+        file name. In case of Aerocom models, it is ensured that the filename 
+        contains both the year and the temporal resolution in the filenames 
+        (for details see :class:`pyaerocom.io.FileConventionRead`).
+        Aerocom default is True
+    EQUALISE_METADATA : bool
+        if True (and if metadata varies between different NetCDF files that are
+        supposed to be merged in time), the metadata in all loaded objects is 
+        unified based on the metadata of the first grid (otherwise, 
+        concatenating them in time might not work using the Iris interface).
+        This might need to be reviewed and should be used with care if 
+        specific metadata aspects of individual files need to be accessed.
+        Aerocom default is True
+    USE_RENAMED_DIR : bool
+        if True, data files are searched within a subdirectory named "renamed" 
+        that needs to exist withing the data directory of a certain model or
+        obs data type. Aerocom default is True.
+    USE_FILECONVENTION : bool
+        if True, file names are strictly required to follow one of the file
+        naming conventions that can be specified in the file 
+        `file_conventions.ini <https://github.com/metno/pyaerocom/tree/master/
+        pyaerocom/data>`__. Aerocom default is True.
+    INCLUDE_SUBDIRS : bool
+        if True, search for files is expanded to all subdirecories included in
+        data directory. Aerocom default is False.
+    """
     def __init__(self, **kwargs):
+        self.FILE_TYPE = ".nc"
+        self.TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
@@ -55,12 +105,36 @@ class OnLoad(object):
          # check and update metadata dictionary on Cube load since 
          # iris concatenate of Cubes only works if metadata is equal
         self.EQUALISE_METADATA = True
+        
+        self.USE_RENAMED_DIR = True
+        
+        self.USE_FILECONVENTION = True
+        
+        self.INCLUDE_SUBDIRS = False
+        
+    def to_dict(self):
+        """Convert object to dictionary
+        
+        Returns
+        -------
+        dict
+            settings dictionary
+        """
+        return self.__dict__
     
+    def from_dict(self, dictionary=None, **settings):
+        """Import settings from dictionary"""
+        if not dictionary:
+            dictionary = {}
+        dictionary.update(settings)
+        for key, val in dictionary.items():
+            self[key] = val
+
     def __setitem__(self, key, value):
         """Set item
         
-        OnLoad["<key>"] = value <=> OnLoad.<key> = value 
-        <=> OnLoad.__setitem__(<key>, value)
+        GridIO["<key>"] = value <=> GridIO.<key> = value
+        <=> GridIO.__setitem__(<key>, value)
         
         Raises
         ------
@@ -74,7 +148,7 @@ class OnLoad(object):
     def __getitem__(self, key):
         """Get item using curly brackets
         
-        OnLoad["<key>"] => value
+        GridIO["<key>"] => value
         
         Returns
         -------
@@ -83,6 +157,12 @@ class OnLoad(object):
         if not key in self.__dict__.keys():
             raise IOError("Invalid attribute")
         return self.__dict__[key]
+    
+    def __str__(self):
+        head = "Pyaerocom {}".format(type(self).__name__)
+        return ("\n{}\n{}\n{}".format(head, 
+                                      len(head)*"-",
+                                      dict_to_str(self.to_dict())))
         
         
 class Config(object):
@@ -99,9 +179,7 @@ class Config(object):
         
         # If True, pre-existing time bounds in data files are removed on 
         # import
-        self.ON_LOAD = OnLoad()
-        
-        self.TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
+        self.GRID_IO = GridIO()
         
         self.GCOSPERCENTCRIT =   np.float(0.1)
         self.GCOSABSCRIT     =   np.float(0.04)
@@ -361,7 +439,8 @@ class Config(object):
         cr.clear()
     
     def short_str(self):
-        s = 'Pyaerocom IOConfig'
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}\n".format(head, len(head)*"-")
         for k, v in self.__dict__.items():
             if isinstance(v, dict):
                 s += "\n%s (dict)" %k
@@ -373,7 +452,8 @@ class Config(object):
         return s
     
     def __str__(self):
-        s = 'Pyaerocom IOConfig'
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}\n".format(head, len(head)*"-")
         for k, v in self.__dict__.items():
             if isinstance(v, dict):
                 s += "\n%s (dict)" %k
@@ -435,207 +515,13 @@ def dict_to_str(dictionary, s="", indent=3):
 if __name__=="__main__":
     import doctest
     doctest.testmod()
-        
-# =============================================================================
-#         
-# ###############################################################
-# # stat config start
-# #GCOS requirements
-# GCOSPERCENTCRIT =   np.float(0.1)
-# GCOSABSCRIT     =   np.float(0.04)
-# # stat config end
-# ###############################################################
-# 
-# ###############################################################
-# # read config start
-# #obs reading information
-# 
-# #names of the different obs networks
-# OBSNET_NONE = 'NONE'
-# NOMODELNAME = 'OBSERVATIONS-ONLY'
-# 
-# #default names of the different obs networks
-# #might get overwritten from paths.ini
-# #Aeronet V2
-# AERONET_SUN_V2L15_AOD_DAILY_NAME = 'AeronetSunV2Lev1.5.daily'
-# AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = 'AeronetSun_2.0_NRT'
-# AERONET_SUN_V2L2_AOD_DAILY_NAME = 'AeronetSunV2Lev2.daily'
-# AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME = 'AeronetSunV2Lev2.AP'
-# AERONET_SUN_V2L2_SDA_DAILY_NAME = 'AeronetSDAV2Lev2.daily'
-# AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV2Lev2.AP'
-# 
-# #Aeronet V3
-# AERONET_SUN_V3L15_AOD_DAILY_NAME = 'AeronetSunV3Lev1.5.daily'
-# AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev1.5.AP'
-# AERONET_SUN_V3L2_AOD_DAILY_NAME = 'AeronetSunV3Lev2.daily'
-# AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev2.AP'
-# AERONET_SUN_V3L2_SDA_DAILY_NAME = 'AeronetSDAV3Lev2.daily'
-# AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev2.AP'
-# 
-# # inversions
-# AERONET_INV_V2L15_DAILY_NAME = 'AeronetInvV2Lev1.5.daily'
-# AERONET_INV_V2L15_ALL_POINTS_NAME = 'AeronetInvV2Lev1.5.AP'
-# AERONET_INV_V2L2_DAILY_NAME = 'AeronetInvV2Lev2.daily'
-# AERONET_INV_V2L2_ALL_POINTS_NAME = 'AeronetInvV2Lev2.AP'
-# #
-# EBAS_MULTICOLUMN_NAME = 'EBASMC'
-# EEA_NAME = 'EEAAQeRep'
-# 
-# OBSDATACACHEDIR = '/lustre/storeA/users/jang/cache/'
-# 
-# #read paths.ini
-# #IniFileName = os.path.realpath(__file__)),'paths.ini'
-# _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
-# if not os.path.exists(_config_ini):
-#     raise IOError("Configuration file paths.ini could not be found at %s"
-#                   %_config_ini)
-# conf_reader = ConfigParser()
-# 
-# if os.path.isfile(_config_ini):
-#     conf_reader.read(_config_ini)
-#     #Model
-#     #model data paths
-#     MODELBASEDIR = conf_reader['modelfolders']['BASEDIR']
-#     MODELDIRS = conf_reader['modelfolders']['dir'].\
-#         replace('${BASEDIR}',MODELBASEDIR).replace('\n','').split(',')
-# 
-#     # read obs network names from ini file
-#     # Aeronet V2
-#     AERONET_SUN_V2L15_AOD_DAILY_NAME = \
-#         conf_reader['obsnames']['AERONET_SUN_V2L15_AOD_DAILY']
-#     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = \
-#         conf_reader['obsnames']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
-#     AERONET_SUN_V2L2_AOD_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V2L2_AOD_DAILY']
-#     AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
-#     AERONET_SUN_V2L2_SDA_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V2L2_SDA_DAILY']
-#     AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
-#         
-#     # Aeronet V3
-#     AERONET_SUN_V3L15_AOD_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V3L15_AOD_DAILY']
-#     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
-#     AERONET_SUN_V3L2_AOD_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V3L2_AOD_DAILY']
-#     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
-#     AERONET_SUN_V3L2_SDA_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_SUN_V3L2_SDA_DAILY']
-#     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME =\
-#      conf_reader['obsnames']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
-#     
-#     # inversions
-#     AERONET_INV_V2L15_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_INV_V2L15_DAILY']
-#     AERONET_INV_V2L15_ALL_POINTS_NAME =\
-#         conf_reader['obsnames']['AERONET_INV_V2L15_ALL_POINTS']
-#     AERONET_INV_V2L2_DAILY_NAME =\
-#         conf_reader['obsnames']['AERONET_INV_V2L2_DAILY']
-#     AERONET_INV_V2L2_ALL_POINTS_NAME = \
-#         conf_reader['obsnames']['AERONET_INV_V2L2_ALL_POINTS']
-#     #
-#     EBAS_MULTICOLUMN_NAME = conf_reader['obsnames']['EBAS_MULTICOLUMN']
-#     EEA_NAME = conf_reader['obsnames']['EEA']
-# 
-# 
-#     #observations
-#     #Folders
-#     OBSBASEDIR = conf_reader['obsfolders']['BASEDIR']
-#     OBSCONFIG = {}
-#     OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME]['PATH'] =\
-#         conf_reader['obsfolders']['AERONET_SUN_V2L15_AOD_DAILY'].\
-#         replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V2L15_AOD_DAILY_NAME]['START_YEAR'] =\
-#         conf_reader['obsstartyears']['AERONET_SUN_V2L15_AOD_DAILY']
-# 
-#     OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['PATH'] =\
-#         conf_reader['obsfolders']['AERONET_SUN_V2L15_AOD_ALL_POINTS'].\
-#         replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
-#         conf_reader['obsstartyears']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH'] =\
-#         conf_reader['obsfolders']['AERONET_SUN_V2L2_AOD_DAILY'].\
-#         replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V2L2_AOD_DAILY_NAME]['START_YEAR'] =\
-#         conf_reader['obsstartyears']['AERONET_SUN_V2L2_AOD_DAILY']
-# 
-#     OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['PATH'] =\
-#         conf_reader['obsfolders']['AERONET_SUN_V2L2_AOD_ALL_POINTS'].\
-#         replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
-#         conf_reader['obsstartyears']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME]['PATH'] =\
-#         conf_reader['obsfolders']['AERONET_SUN_V2L2_SDA_DAILY'].\
-#         replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V2L2_SDA_DAILY_NAME]['START_YEAR'] =\
-#         conf_reader['obsstartyears']['AERONET_SUN_V2L2_SDA_DAILY']
-# 
-#     OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['PATH'] =\
-#         conf_reader['obsfolders']['AERONET_SUN_V2L2_SDA_ALL_POINTS'].\
-#         replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V3L15_AOD_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L15_AOD_DAILY']
-# 
-#     OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V3L2_AOD_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_AOD_DAILY']
-# 
-#     OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V3L2_SDA_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_SDA_DAILY']
-# 
-#     OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_INV_V2L15_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L15_DAILY']
-# 
-#     OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_INV_V2L15_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L15_ALL_POINTS']
-# 
-#     OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME] = {}
-#     OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_INV_V2L2_DAILY_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L2_DAILY']
-# 
-#     OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME] = {}
-#     OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = conf_reader['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[AERONET_INV_V2L2_ALL_POINTS_NAME]['START_YEAR'] = conf_reader['obsstartyears']['AERONET_INV_V2L2_ALL_POINTS']
-# 
-#     OBSCONFIG[EBAS_MULTICOLUMN_NAME] = {}
-#     OBSCONFIG[EBAS_MULTICOLUMN_NAME]['PATH'] = conf_reader['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[EBAS_MULTICOLUMN_NAME]['START_YEAR'] = conf_reader['obsstartyears']['EBAS_MULTICOLUMN']
-# 
-#     OBSCONFIG[EEA_NAME] = {}
-#     OBSCONFIG[EEA_NAME]['PATH'] = conf_reader['obsfolders']['EEA'].replace('${BASEDIR}',OBSBASEDIR)
-#     OBSCONFIG[EEA_NAME]['START_YEAR'] = conf_reader['obsstartyears']['EEA']
-# 
-# conf_reader.clear()
-# 
-# del conf_reader, _config_ini
-# =============================================================================
+            
+    config = Config()
+    
+    print(config.short_str())
+    io = GridIO()
+    print(dict_to_str(io.to_dict()))
+    
+    io1 = GridIO()
+    io1.from_dict(INCLUDE_SUBDIRS=True)
+    print(io1)

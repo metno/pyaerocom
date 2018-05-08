@@ -5,6 +5,11 @@ Helper methods for plotting sub-package
 """
 from pyaerocom.mathutils import exponent
 import numpy as np
+import cartopy.crs as ccrs
+
+def projection_from_str(projection_str="Stereographic"):
+    """Return instance of cartopy projection class based on string ID"""
+    return ccrs.__dict__[projection_str]()
 
 def custom_mpl(mpl_rcparams=None, default_large=True, **kwargs):
     """Custom matplotlib settings"""

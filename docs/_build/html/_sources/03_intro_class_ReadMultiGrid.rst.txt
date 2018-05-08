@@ -40,7 +40,7 @@ later process.
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/ECLIPSE
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/
-    Found model dir: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
+    Found directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom1/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom2/
@@ -60,7 +60,7 @@ later process.
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-I/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/
-    Found model dir: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
+    Found directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Failed to import file all.nc
     Error: OSError('Failed to extract year information from file all.nc using file convention aerocom2',)
 
@@ -73,7 +73,7 @@ Let's have a look into one of the two import classes
     print("Model ID: %s\n"
           "Model dir: %s\n"
           "First detected file: %s"
-          %(read_aatsr.name, read_aatsr.model_dir, os.path.basename(read_aatsr.files[0])))
+          %(read_aatsr.name, read_aatsr.data_dir, os.path.basename(read_aatsr.files[0])))
 
 
 .. parsed-literal::
@@ -103,30 +103,26 @@ Read all variables for all models
     FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550aer.2011.nc
     Cubes for variable od550aer have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
     Applying temporal cropping of result cube
-    Failed to crop data for od550aer in time.
-    Error: AttributeError("'GridData' object has no attribute 'get_time_constraint'",)
+    Cropping along time axis based on Timestamps
     FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2010.nc
     FOUND MATCH: aerocom.AATSR_SU_v4.3.daily.od550dust.2011.nc
     Cubes for variable od550dust have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
     Applying temporal cropping of result cube
-    Failed to crop data for od550dust in time.
-    Error: AttributeError("'GridData' object has no attribute 'get_time_constraint'",)
+    Cropping along time axis based on Timestamps
     FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']\nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'\n '2004-01-11T00:00:00.000000']",)
     Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc. Attempting to correct.
     Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
-    Failed to crop data for od550aer in time.
-    Error: AttributeError("'GridData' object has no attribute 'get_time_constraint'",)
+    Cropping along time axis based on Timestamps
     FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[ 0  1 10] (unit=day since 2004-01-01 00:00:00.00000000 UTC): ['2010-01-01T00:00:00' '2010-01-02T00:00:00' '2010-01-11T00:00:00']\nReceived values after conversion: ['2004-01-01T00:00:00.000000' '2004-01-02T00:00:00.000000'\n '2004-01-11T00:00:00.000000']",)
     Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc. Attempting to correct.
     Rolling longitudes to -180 -> 180 definition
     Applying temporal cropping of result cube
-    Failed to crop data for od550dust in time.
-    Error: AttributeError("'GridData' object has no attribute 'get_time_constraint'",)
+    Cropping along time axis based on Timestamps
 
 
 Print what is in there (similar to the previously introduced
@@ -140,10 +136,6 @@ representation)
 
 .. parsed-literal::
 
-    Stop time could not be accessed in GridData class
-    Stop time could not be accessed in GridData class
-    Stop time could not be accessed in GridData class
-    Stop time could not be accessed in GridData class
     
     Pyaerocom ReadMultiGrid
     -----------------------
@@ -163,13 +155,13 @@ representation)
     ------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - nan
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-12-31T00:00:00.000000
     
     Pyaerocom GridData
     ------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - nan
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-12-31T00:00:00.000000
     
     Pyaerocom ReadGrid
     ------------------
@@ -183,13 +175,13 @@ representation)
     ------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - nan
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
     
     Pyaerocom GridData
     ------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - nan
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
 
 
 Print some information about the different data objects
@@ -246,9 +238,8 @@ Now arbitrarily crop the last data object.
 
 .. parsed-literal::
 
-    Stop time could not be accessed in GridData class
     
-    Start / stop before crop: 2010-01-01T00:00:00.000000 - nan
+    Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
     
     Cropping along time axis based on Timestamps
     Start / stop after crop: 2010-03-15 00:00:00 - 2010-06-22 00:00:00

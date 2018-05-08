@@ -222,15 +222,26 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">Config</span>
+<span class="o">----------------</span>
+
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
-<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-   <span class="p">[</span><span class="n">hourly</span>
-    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+<span class="n">GRID_IO</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">GridIO</span>
+<span class="o">----------------</span>
 
+   <span class="n">FILE_TYPE</span><span class="p">:</span> <span class="o">.</span><span class="n">nc</span>
+   <span class="n">TS_TYPES</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;3hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
+   <span class="n">DEL_TIME_BOUNDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_FILECONVENTION</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
@@ -306,15 +317,26 @@ class, as follows:</li>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">Config</span>
+<span class="o">----------------</span>
+
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
-<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-   <span class="p">[</span><span class="n">hourly</span>
-    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+<span class="n">GRID_IO</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">GridIO</span>
+<span class="o">----------------</span>
 
+   <span class="n">FILE_TYPE</span><span class="p">:</span> <span class="o">.</span><span class="n">nc</span>
+   <span class="n">TS_TYPES</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;3hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
+   <span class="n">DEL_TIME_BOUNDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_FILECONVENTION</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
@@ -366,15 +388,26 @@ print.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span> <span class="n">Pyaerocom</span> <span class="n">IOConfig</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">config</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">Config</span>
+<span class="o">----------------</span>
+
 <span class="n">VERBOSE</span><span class="p">:</span> <span class="kc">True</span>
 <span class="n">MIN_YEAR</span><span class="p">:</span> <span class="mi">0</span>
 <span class="n">MAX_YEAR</span><span class="p">:</span> <span class="mi">3000</span>
-<span class="n">ON_LOAD</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">OnLoad</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f1236279320</span><span class="o">&gt;</span>
-<span class="n">TS_TYPES</span> <span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-   <span class="p">[</span><span class="n">hourly</span>
-    <span class="mi">3</span><span class="n">hourly</span>    <span class="n">daily</span>    <span class="n">monthly</span><span class="p">]</span>
+<span class="n">GRID_IO</span><span class="p">:</span>
+<span class="n">Pyaerocom</span> <span class="n">GridIO</span>
+<span class="o">----------------</span>
 
+   <span class="n">FILE_TYPE</span><span class="p">:</span> <span class="o">.</span><span class="n">nc</span>
+   <span class="n">TS_TYPES</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;3hourly&#39;</span><span class="p">,</span> <span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
+   <span class="n">DEL_TIME_BOUNDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">USE_FILECONVENTION</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
 <span class="n">GCOSPERCENTCRIT</span><span class="p">:</span> <span class="mf">0.1</span>
 <span class="n">GCOSABSCRIT</span><span class="p">:</span> <span class="mf">0.04</span>
 <span class="n">OBSNET_NONE</span><span class="p">:</span> <span class="n">NONE</span>
@@ -430,15 +463,26 @@ work.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? True
-Current config: Pyaerocom IOConfig
+Current config:
+Pyaerocom Config
+----------------
+
 VERBOSE: True
 MIN_YEAR: 0
 MAX_YEAR: 3000
-ON_LOAD: &lt;pyaerocom.config.OnLoad object at 0x7f1236279320&gt;
-TS_TYPES (list)
-   [hourly
-    3hourly    daily    monthly]
+GRID_IO:
+Pyaerocom GridIO
+----------------
 
+   FILE_TYPE: .nc
+   TS_TYPES: [&#39;hourly&#39;, &#39;3hourly&#39;, &#39;daily&#39;, &#39;monthly&#39;]
+   DEL_TIME_BOUNDS: True
+   SHIFT_LONS: True
+   CHECK_TIME_FILENAME: True
+   EQUALISE_METADATA: True
+   USE_RENAMED_DIR: True
+   USE_FILECONVENTION: True
+   INCLUDE_SUBDIRS: False
 GCOSPERCENTCRIT: 0.1
 GCOSABSCRIT: 0.04
 OBSNET_NONE: NONE

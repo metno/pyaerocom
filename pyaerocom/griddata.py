@@ -86,7 +86,7 @@ class GridData(object):
         
     """
     _grid = None
-    _ON_LOAD = const.ON_LOAD
+    _GRID_IO = const.GRID_IO
     def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
                  **suppl_info):
         #super(GridData, self).__init__(input, var_name, verbose, **suppl_info)
@@ -276,12 +276,12 @@ class GridData(object):
         elif isinstance(input, Cube):
             self.grid = input #instance of Cube
         try:
-            if self._ON_LOAD["DEL_TIME_BOUNDS"]:
+            if self._GRID_IO["DEL_TIME_BOUNDS"]:
                 self.grid.coord("time").bounds = None
         except:
             if self.verbose:
                 print("Failed to access time coordinate in GridData class")
-        if self._ON_LOAD["SHIFT_LONS"]:
+        if self._GRID_IO["SHIFT_LONS"]:
             self.check_and_regrid_lons()
             
     def time_stamps(self):
@@ -500,12 +500,10 @@ class GridData(object):
         Note
         ----
         The input coordinates may also be provided using the input arg **coords
-        which provides a more intuitive option (e.g. 
-        ``self.interpolate(
-                sample_points=[("longitude", [10, 20]), 
-                               ("latitude", [1, 2])])`` 
-        is the same as 
-        ``self.interpolate(longitude=[10, 20], latitude=[1,2])
+        which provides a more intuitive option (e.g. input
+        ``(sample_points=[("longitude", [10, 20]), ("latitude", [1, 2])])`` 
+        is the same as input
+        ``(longitude=[10, 20], latitude=[1,2])``
         
         
         Parameters
@@ -645,6 +643,8 @@ class GridData(object):
         
         lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
         lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
+        
+        raise NotImplementedError("Under construction...")
         #for val in values:
 # =============================================================================
 #             

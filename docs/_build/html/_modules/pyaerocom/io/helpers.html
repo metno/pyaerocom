@@ -186,6 +186,64 @@
               <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">,</span>
               <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">}</span>
 
+<div class="viewcode-block" id="search_data_dir_aerocom"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_data_dir_aerocom">[docs]</a><span class="k">def</span> <span class="nf">search_data_dir_aerocom</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Search Aerocom data directory based on model / data ID</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        name of model</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        print output</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Model directory</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    IOError</span>
+<span class="sd">        if model directory cannot be found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sid</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="n">_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_msgs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">search_dir</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Searching dir for ID </span><span class="si">%s</span><span class="s1"> in: </span><span class="si">%s</span><span class="s1">&#39;</span> 
+                  <span class="o">%</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">search_dir</span><span class="p">))</span>
+        <span class="c1"># get the directories</span>
+        <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">search_dir</span><span class="p">):</span>
+            <span class="c1">#subdirs = listdir(search_dir)</span>
+            <span class="n">subdirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">search_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">x</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">subdir</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sid</span> <span class="o">==</span> <span class="n">subdir</span><span class="p">:</span>
+                    <span class="n">_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">subdir</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">USE_RENAMED_DIR</span><span class="p">:</span>
+                        <span class="n">_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">_dir</span><span class="p">,</span> <span class="s2">&quot;renamed&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">_dir</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found directory: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_dir</span><span class="p">))</span>    
+                        <span class="k">return</span> <span class="n">_dir</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="n">_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;renamed folder does not exist &quot;</span>
+                                  <span class="s2">&quot;in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">subdir</span><span class="p">)))</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">sid</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">subdir</span><span class="o">.</span><span class="n">lower</span><span class="p">()):</span>
+                    <span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;directory: </span><span class="si">%s</span><span class="s1"> does not exist</span><span class="se">\n</span><span class="s1">&#39;</span>
+                             <span class="o">%</span><span class="n">search_dir</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model directory could not be found.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">_msgs</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_candidates</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Did you mean either of: </span><span class="si">{}</span><span class="s2"> ?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_candidates</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Model directory for name </span><span class="si">{}</span><span class="s2"> could not be found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+    
 <div class="viewcode-block" id="check_time_coord"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.check_time_coord">[docs]</a><span class="k">def</span> <span class="nf">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Method that checks the time coordinate of an iris Cube</span>
 <span class="sd">    </span>

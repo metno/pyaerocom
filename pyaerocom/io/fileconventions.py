@@ -30,6 +30,7 @@ class FileConventionRead(object):
         position of information of temporal resolution in filename after 
         splitting using delimiter :attr:`file_sep` 
     """
+    _io_opts = const
     def __init__(self, name="aerocom3", file_sep="", year_pos=-1,
                  var_pos=-1, ts_pos=-1):
        self.name = name
@@ -90,7 +91,7 @@ class FileConventionRead(object):
     def check_validity(self, file):
         info = self.get_info_from_file(file)
         year = info["year"]
-        if not info['ts_type'] in const.TS_TYPES:
+        if not info['ts_type'] in self._io_opts.GRID_IO.TS_TYPES:
             raise IOError("Invalid ts_type %s in filename %s"
                           %(info['ts_type'], basename(file)))
         elif not (0 <= year <= 3000 or year == 9999):
@@ -123,6 +124,8 @@ class FileConventionRead(object):
             elif spl[-3].lower() == 'modellevelatstations':
                 if 'vmr' in spl[-4]:
                     info["var_name"] = spl[-4].replace('vmr', 'vmr3d')
+                else:
+                    raise IOError("Invalid file name for Aerocom3 convention")    
             else:
                 raise IOError("Invalid file name for Aerocom3 convention")
         except Exception as e:
