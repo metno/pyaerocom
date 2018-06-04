@@ -267,6 +267,40 @@ class Config(object):
         self.PLOT_DIR = os.path.join(self.OUT_BASEDIR, "plots")
         if not self.check_dir(self.PLOT_DIR):
             os.mkdir(self.PLOT_DIR)
+
+        # this is a dictionary of plot parameters with the variable name as key
+        # will be moved to const module at some point
+        self.VAR_PARAM = {}
+        self.VAR_PARAM['DEFAULT'] = {}
+        self.VAR_PARAM['DEFAULT']['scale_factor'] = 1.
+        self.VAR_PARAM['DEFAULT']['xlim'] = (0.01, 10.)
+        self.VAR_PARAM['DEFAULT']['ylim'] = (0.01, 10.)
+        self.VAR_PARAM['DEFAULT']['loglog'] = True
+        self.VAR_PARAM['DEFAULT']['lower_limit'] = 0.
+        self.VAR_PARAM['DEFAULT']['aliases'] = []
+        self.VAR_PARAM['DEFAULT']['unit'] = ''
+
+        self.VAR_PARAM['od550aer'] = self.VAR_PARAM['DEFAULT']
+        self.VAR_PARAM['od550aer']['scale_factor'] = 1.
+        self.VAR_PARAM['od550aer']['xlim'] = (0.01, 10.)
+        self.VAR_PARAM['od550aer']['ylim'] = (0.01, 10.)
+        self.VAR_PARAM['od550aer']['loglog'] = True
+        self.VAR_PARAM['od550aer']['lower_limit'] = 0.
+
+        self.VAR_PARAM['od550ltaer'] = self.VAR_PARAM['DEFAULT']
+        self.VAR_PARAM['od550gtaer'] = self.VAR_PARAM['DEFAULT']
+        self.VAR_PARAM['ang4487aer'] = self.VAR_PARAM['DEFAULT']
+        self.VAR_PARAM['abs550aer'] = self.VAR_PARAM['DEFAULT']
+        self.VAR_PARAM['od550dust'] = self.VAR_PARAM['DEFAULT']
+
+        self.VAR_PARAM['zdust'] = self.VAR_PARAM['DEFAULT']
+        self.VAR_PARAM['zdust']['scale_factor'] = 1.E3
+        self.VAR_PARAM['zdust']['xlim'] = (0., 5000.)
+        self.VAR_PARAM['zdust']['ylim'] = (0., 5000.)
+        self.VAR_PARAM['zdust']['loglog'] = False
+        self.VAR_PARAM['zdust']['lower_limit'] = 0.
+        self.VAR_PARAM['zdust']['unit'] = '[m]'
+
         self.READY
         
     @property
