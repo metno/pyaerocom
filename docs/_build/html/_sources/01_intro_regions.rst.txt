@@ -52,14 +52,14 @@ Now load some default regions and print them.
 Load example data and apply region specific crop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the following cell, we create an instance of the ``GridData`` class
-(hich is introduced in more detail in a later tutorial), load some test
-data (from the CAMS ECMWF OSUITE dataset), crop it and plot a map of the
-results over Europe.
+In the following cell, we create an instance of the ``GriddedData``
+class (hich is introduced in more detail in a later tutorial), load some
+test data (from the CAMS ECMWF OSUITE dataset), crop it and plot a map
+of the results over Europe.
 
 .. code:: ipython3
 
-    data = pyaerocom.GridData()
+    data = pyaerocom.GriddedData()
     data._init_testdata_default()
     crop = data.crop(region="EUROPE")
     fig = crop.quickplot_map()

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyaerocom.nogriddata &mdash; pyaerocom  documentation</title>
+  <title>pyaerocom.ungriddeddata &mdash; pyaerocom  documentation</title>
   
 
   
@@ -141,7 +141,7 @@
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
-      <li>pyaerocom.nogriddata</li>
+      <li>pyaerocom.ungriddeddata</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,7 +158,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for pyaerocom.nogriddata</h1><div class="highlight"><pre>
+  <h1>Source code for pyaerocom.ungriddeddata</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="c1">################################################################</span>
@@ -209,7 +209,7 @@
 <span class="c1">#from pyaerocom import config as const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 
-<div class="viewcode-block" id="NoGridData"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData">[docs]</a><span class="k">class</span> <span class="nc">NoGridData</span><span class="p">():</span>
+<div class="viewcode-block" id="UngriddedData"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData">[docs]</a><span class="k">class</span> <span class="nc">UngriddedData</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;pyaerocom observation data (ungridded data) reading class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -282,7 +282,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
 
     <span class="c1">###################################################################################</span>
-<div class="viewcode-block" id="NoGridData.code_lat_lon_in_float"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.code_lat_lon_in_float"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to code lat and lon in a single number so that we can use np.unique to</span>
 <span class="sd">        determine single locations&quot;&quot;&quot;</span>
 
@@ -292,7 +292,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span></div>
 
     <span class="c1">###################################################################################</span>
-<div class="viewcode-block" id="NoGridData.decode_lat_lon_from_float"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.decode_lat_lon_from_float">[docs]</a>    <span class="k">def</span> <span class="nf">decode_lat_lon_from_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.decode_lat_lon_from_float"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.decode_lat_lon_from_float">[docs]</a>    <span class="k">def</span> <span class="nf">decode_lat_lon_from_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to decode lat and lon from a single number calculated by code_lat_lon_in_float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -350,13 +350,13 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="NoGridData.read"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.read"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read observations</span>
 
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
-<span class="sd">        &gt;&gt;&gt; import pyaerocom.nogriddata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.nogriddata.NoGridData()</span>
+<span class="sd">        &gt;&gt;&gt; import pyaerocom.ungriddeddata</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.ungriddeddata.UngriddedData()</span>
 <span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &gt;&gt;&gt; print(obj)</span>
 <span class="sd">        &gt;&gt;&gt; print(obj.metadata[0.][&#39;latitude&#39;])</span>
@@ -468,7 +468,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="NoGridData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to get the ObsData object data as dict using pd.Series for the variables</span>
 
 <span class="sd">        Parameters</span>
@@ -491,7 +491,7 @@
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.NoGridData(verbose=True)</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.UngriddedData(verbose=True)</span>
 <span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &gt;&gt;&gt; pdseries = obj.to_timeseries()</span>
 <span class="sd">        &gt;&gt;&gt; pdseriesmonthly = obj.to_timeseries(station_name=&#39;Avignon&#39;,start_date=&#39;2011-01-01&#39;, end_date=&#39;2012-12-31&#39;, freq=&#39;M&#39;)</span>
@@ -525,7 +525,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="NoGridData.GetDataRevision"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.GetDataRevision">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataRevision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.GetDataRevision"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.GetDataRevision">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataRevision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to read the revision string from the file Revision.txt in the main data directory&quot;&quot;&quot;</span>
 
         <span class="n">revision</span> <span class="o">=</span> <span class="s1">&#39;unset&#39;</span>
@@ -542,7 +542,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="NoGridData.GetDataDir"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.GetDataDir">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.GetDataDir"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.GetDataDir">[docs]</a>    <span class="k">def</span> <span class="nf">GetDataDir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_set_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to return the path of an obs data set&quot;&quot;&quot;</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -586,7 +586,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="NoGridData.CheckObsnetworkName"><a class="viewcode-back" href="../../api.html#pyaerocom.nogriddata.NoGridData.CheckObsnetworkName">[docs]</a>    <span class="k">def</span> <span class="nf">CheckObsnetworkName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_network_name</span><span class="p">):</span>
+<div class="viewcode-block" id="UngriddedData.CheckObsnetworkName"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.CheckObsnetworkName">[docs]</a>    <span class="k">def</span> <span class="nf">CheckObsnetworkName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_network_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to quick check if the user supplied obs network string is right&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">obs_network_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>

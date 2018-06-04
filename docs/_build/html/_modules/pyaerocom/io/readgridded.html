@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyaerocom.io.readgrid &mdash; pyaerocom  documentation</title>
+  <title>pyaerocom.io.readgridded &mdash; pyaerocom  documentation</title>
   
 
   
@@ -141,7 +141,7 @@
         
           <li><a href="../../index.html">Module code</a> &raquo;</li>
         
-      <li>pyaerocom.io.readgrid</li>
+      <li>pyaerocom.io.readgridded</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,11 +158,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for pyaerocom.io.readgrid</h1><div class="highlight"><pre>
+  <h1>Source code for pyaerocom.io.readgridded</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 
 <span class="c1">################################################################</span>
-<span class="c1"># readgrid.py</span>
+<span class="c1"># readgridded.py</span>
 <span class="c1">#</span>
 <span class="c1"># model data reading class</span>
 <span class="c1">#</span>
@@ -213,9 +213,9 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">check_time_coord</span><span class="p">,</span> <span class="n">correct_time_coord</span><span class="p">,</span>
                                   <span class="n">search_data_dir_aerocom</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.griddata</span> <span class="k">import</span> <span class="n">GridData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.griddeddata</span> <span class="k">import</span> <span class="n">GriddedData</span>
 
-<div class="viewcode-block" id="ReadGrid"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid">[docs]</a><span class="k">class</span> <span class="nc">ReadGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGridded"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded">[docs]</a><span class="k">class</span> <span class="nc">ReadGridded</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for reading model results from AEROCOM NetCDF files</span>
 <span class="sd">    </span>
 <span class="sd">    Note</span>
@@ -230,7 +230,7 @@
 <span class="sd">    name : str</span>
 <span class="sd">        string ID for model (see e.g. Aerocom interface map plots lower left </span>
 <span class="sd">        corner)</span>
-<span class="sd">    data : GridData</span>
+<span class="sd">    data : GriddedData</span>
 <span class="sd">        imported data object </span>
 <span class="sd">    data_dir : str</span>
 <span class="sd">        directory containing result files for this model</span>
@@ -242,7 +242,7 @@
 <span class="sd">        class specifying details of the file naming convention for the model</span>
 <span class="sd">    files : list</span>
 <span class="sd">        list containing all filenames that were found.</span>
-<span class="sd">        Filled, e.g. in :func:`ReadGrid.get_model_files`</span>
+<span class="sd">        Filled, e.g. in :func:`ReadGridded.get_model_files`</span>
 <span class="sd">    from_files : list</span>
 <span class="sd">        List of all netCDF files that were used to concatenate the current </span>
 <span class="sd">        data cube (i.e. that can be based on certain matching settings such as</span>
@@ -274,7 +274,7 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    </span>
-<span class="sd">        &gt;&gt;&gt; read = ReadGrid(name=&quot;ECMWF_OSUITE&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; read = ReadGridded(name=&quot;ECMWF_OSUITE&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550aer&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550so4&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; read.read_var(&quot;od550bc&quot;)</span>
@@ -292,7 +292,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Input for name is list. You might want to use &quot;</span>
-                       <span class="s2">&quot;class ReadMultiGrid for import?&quot;</span><span class="p">)</span>
+                       <span class="s2">&quot;class ReadGriddedMulti for import?&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Invalid input for name. Need str, got: </span><span class="si">%s</span><span class="s2">&quot;</span>
                        <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
@@ -316,12 +316,12 @@
         
         <span class="c1"># file naming convention. Default is aerocom3 file convention, change </span>
         <span class="c1"># using self.file_convention.import_default(&quot;aerocom2&quot;). Is </span>
-        <span class="c1"># automatically updated in class ReadGrid</span>
+        <span class="c1"># automatically updated in class ReadGridded</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">io_opts</span> <span class="o">=</span> <span class="n">io_opts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">(</span><span class="n">file_convention</span><span class="p">)</span>
         
         <span class="c1"># All files that were found for this model (updated, e.g. in class</span>
-        <span class="c1"># ReadGrid, method: `get_model_files`</span>
+        <span class="c1"># ReadGridded, method: `get_model_files`</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_match_files</span> <span class="o">=</span> <span class="kc">None</span>
@@ -418,7 +418,7 @@
                                  <span class="s2">&quot;search_all_files first&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span>
     
-<div class="viewcode-block" id="ReadGrid.search_data_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.search_data_dir">[docs]</a>    <span class="k">def</span> <span class="nf">search_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGridded.search_data_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.search_data_dir">[docs]</a>    <span class="k">def</span> <span class="nf">search_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search data directory based on model ID</span>
 <span class="sd">        </span>
 <span class="sd">        Wrapper for method :func:`search_data_dir_aerocom`</span>
@@ -438,7 +438,7 @@
         <span class="k">return</span> <span class="n">_dir</span></div>
     
     <span class="c1"># get the model directory (note that the folder &quot;renamed&quot; is used)</span>
-<div class="viewcode-block" id="ReadGrid.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_file_convention</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGridded.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_file_convention</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search all valid model files for this model</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
@@ -487,7 +487,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">))</span></div>
         
-<div class="viewcode-block" id="ReadGrid.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGridded.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update one or more valid parameters</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -504,7 +504,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring key </span><span class="si">%s</span><span class="s2"> in ModelImportResult.update()&quot;</span>  <span class="o">%</span><span class="n">k</span><span class="p">)</span></div>
                 
-<div class="viewcode-block" id="ReadGrid.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<div class="viewcode-block" id="ReadGridded.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                  <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read model data for a specific variable</span>
 <span class="sd">        </span>
@@ -518,7 +518,7 @@
 <span class="sd">        instances of the :class:`iris.Cube` object and appended to an instance</span>
 <span class="sd">        of the :class:`iris.cube.CubeList` object. The latter is then used to </span>
 <span class="sd">        concatenate the individual cubes in time into a single instance of the</span>
-<span class="sd">        :class:`pyaerocom.GridData` class. In order to ensure that this</span>
+<span class="sd">        :class:`pyaerocom.GriddedData` class. In order to ensure that this</span>
 <span class="sd">        works, several things need to be ensured, which are listed in the </span>
 <span class="sd">        following and which may be controlled within the global settings for </span>
 <span class="sd">        NetCDF import using the attribute :attr:`GRID_IO` (instance of</span>
@@ -544,7 +544,7 @@
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GridData</span>
+<span class="sd">        GriddedData</span>
 <span class="sd">            t</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ts_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">:</span>
@@ -662,8 +662,8 @@
                           <span class="s2">&quot;long_name attributes in source files: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                   <span class="n">var_name</span><span class="p">,</span> <span class="n">long_names</span><span class="p">))</span>
         
-        <span class="c1">#create instance of pyaerocom.GridData</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>
+        <span class="c1">#create instance of pyaerocom.GriddedData</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">from_files</span><span class="o">=</span><span class="n">loaded_files</span><span class="p">,</span>
                          <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
         <span class="c1"># crop cube in time (if applicable)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
@@ -688,7 +688,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
         <span class="k">return</span> <span class="n">data</span></div>
     
-<div class="viewcode-block" id="ReadGrid.read_all_vars"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadGrid.read_all_vars">[docs]</a>    <span class="k">def</span> <span class="nf">read_all_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGridded.read_all_vars"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read_all_vars">[docs]</a>    <span class="k">def</span> <span class="nf">read_all_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read all variables that could be found </span>
 <span class="sd">        </span>
 <span class="sd">        Reads all variables that are available (i.e. in :attr:`vars`)</span>
@@ -718,18 +718,18 @@
                                             <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">,</span> 
                                             <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Loaded GridData objects:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Loaded GriddedData objects:</span><span class="se">\n</span><span class="s2">&quot;</span>
             <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">short_str</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
         
-<div class="viewcode-block" id="ReadMultiGrid"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid">[docs]</a><span class="k">class</span> <span class="nc">ReadMultiGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGriddedMulti"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti">[docs]</a><span class="k">class</span> <span class="nc">ReadGriddedMulti</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for import of AEROCOM model data from multiple models</span>
 <span class="sd">    </span>
 <span class="sd">    This class provides an interface to import model results from an arbitrary</span>
 <span class="sd">    number of models and specific for a certain time interval (that can be </span>
 <span class="sd">    defined, but must not be defined). Largely based on </span>
-<span class="sd">    :class:`ReadGrid`.</span>
+<span class="sd">    :class:`ReadGridded`.</span>
 <span class="sd">    </span>
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -743,7 +743,7 @@
 <span class="sd">    names : list</span>
 <span class="sd">        list containing string IDs of all models that should be imported</span>
 <span class="sd">    results : dict</span>
-<span class="sd">        dictionary containing :class:`ReadGrid` instances for each</span>
+<span class="sd">        dictionary containing :class:`ReadGridded` instances for each</span>
 <span class="sd">        name</span>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
@@ -751,11 +751,11 @@
 <span class="sd">    &gt;&gt;&gt; import pyaerocom, pandas</span>
 <span class="sd">    &gt;&gt;&gt; start, stop = pandas.Timestamp(&quot;2012-1-1&quot;), pandas.Timestamp(&quot;2012-5-1&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; models = [&quot;AATSR_SU_v4.3&quot;, &quot;CAM5.3-Oslo_CTRL2016&quot;]</span>
-<span class="sd">    &gt;&gt;&gt; read = pyaerocom.io.ReadMultiGrid(models, start, stop, verbose=False)</span>
+<span class="sd">    &gt;&gt;&gt; read = pyaerocom.io.ReadGriddedMulti(models, start, stop, verbose=False)</span>
 <span class="sd">    &gt;&gt;&gt; print(read.names)</span>
 <span class="sd">    [&#39;AATSR_SU_v4.3&#39;, &#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; read_cam = read[&#39;CAM5.3-Oslo_CTRL2016&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; assert type(read_cam) == pyaerocom.io.ReadGrid</span>
+<span class="sd">    &gt;&gt;&gt; assert type(read_cam) == pyaerocom.io.ReadGridded</span>
 <span class="sd">    &gt;&gt;&gt; for var in read_cam.vars: print(var)</span>
 <span class="sd">    abs550aer</span>
 <span class="sd">    deltaz3d</span>
@@ -859,7 +859,7 @@
         
     
     
-<div class="viewcode-block" id="ReadMultiGrid.init_results"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.init_results">[docs]</a>    <span class="k">def</span> <span class="nf">init_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGriddedMulti.init_results"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.init_results">[docs]</a>    <span class="k">def</span> <span class="nf">init_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initiate the import result attributes</span>
 <span class="sd">        </span>
 <span class="sd">        Creates and initiates :class:`ModelImportResult` object for each </span>
@@ -868,13 +868,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ReadGrid</span><span class="p">(</span><span class="n">name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="p">,</span>
                                                    <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
                                                    <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span> 
                                                    <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                                    <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="ReadMultiGrid.search_data_dirs"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.search_data_dirs">[docs]</a>    <span class="k">def</span> <span class="nf">search_data_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGriddedMulti.search_data_dirs"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.search_data_dirs">[docs]</a>    <span class="k">def</span> <span class="nf">search_data_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the directory where model data for a given model resides in</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -894,10 +894,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="n">names_new</span>
         <span class="k">return</span> <span class="n">names_new</span></div>
     
-<div class="viewcode-block" id="ReadMultiGrid.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGriddedMulti.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search all valid model files for each model</span>
 <span class="sd">        </span>
-<span class="sd">        See also :func:`ReadGrid.search_all_files`</span>
+<span class="sd">        See also :func:`ReadGridded.search_all_files`</span>
 <span class="sd">        </span>
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -913,7 +913,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span></div>
     
         
-<div class="viewcode-block" id="ReadMultiGrid.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgrid.ReadMultiGrid.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_ids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="ReadGriddedMulti.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_ids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;High level method to import data for multiple variables and models</span>
 <span class="sd">        </span>
@@ -941,7 +941,7 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        </span>
-<span class="sd">            &gt;&gt;&gt; read = ReadMultiGrid(names=[&quot;ECMWF_CAMS_REAN&quot;,</span>
+<span class="sd">            &gt;&gt;&gt; read = ReadGriddedMulti(names=[&quot;ECMWF_CAMS_REAN&quot;,</span>
 <span class="sd">            ...                                      &quot;ECMWF_OSUITE&quot;],</span>
 <span class="sd">            ...                           verbose=False)</span>
 <span class="sd">            &gt;&gt;&gt; read.read([&quot;od550aer&quot;, &quot;od550so4&quot;, &quot;od550bc&quot;])</span>
@@ -988,7 +988,7 @@
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        ReadGrid</span>
+<span class="sd">        ReadGridded</span>
 <span class="sd">            the corresponding read class for this model</span>
 <span class="sd">            </span>
 <span class="sd">        Raises</span>
@@ -1012,11 +1012,11 @@
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     
-    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadGrid</span><span class="p">(</span><span class="s2">&quot;EMEP_rv48_RBUALL&quot;</span><span class="p">)</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;EMEP_rv48_RBUALL&quot;</span><span class="p">)</span>
     
     
 <span class="c1"># =============================================================================</span>
-<span class="c1">#     read = ReadGrid(name=&quot;ECMWF_CAMS_REAN&quot;,</span>
+<span class="c1">#     read = ReadGridded(name=&quot;ECMWF_CAMS_REAN&quot;,</span>
 <span class="c1">#                                   start_time=&quot;1-1-2003&quot;,</span>
 <span class="c1">#                                   stop_time=&quot;31-12-2007&quot;, </span>
 <span class="c1">#                                   verbose=True)</span>
@@ -1025,7 +1025,7 @@
 <span class="c1"># =============================================================================</span>
     
 <span class="c1"># =============================================================================</span>
-<span class="c1">#     read = ReadMultiGrid(names=[&quot;ECMWF_CAMS_REAN&quot;, &quot;ECMWF_OSUITE&quot;])</span>
+<span class="c1">#     read = ReadGriddedMulti(names=[&quot;ECMWF_CAMS_REAN&quot;, &quot;ECMWF_OSUITE&quot;])</span>
 <span class="c1">#     </span>
 <span class="c1">#     read.read([&quot;od550aer&quot;, &quot;od440aer&quot;])</span>
 <span class="c1">#     </span>

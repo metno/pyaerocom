@@ -179,7 +179,7 @@
                                     <span class="n">calc_pseudolog_cmaplevels</span><span class="p">,</span>
                                     <span class="n">projection_from_str</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">exponent</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.griddata</span> <span class="k">import</span> <span class="n">GridData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.griddeddata</span> <span class="k">import</span> <span class="n">GriddedData</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
 
 <span class="n">MPL_PARAMS</span> <span class="o">=</span> <span class="n">custom_mpl</span><span class="p">()</span>
@@ -194,9 +194,9 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : :obj:`GridData` or :obj:`iris.cube.Cube`</span>
+<span class="sd">    data : :obj:`GriddedData` or :obj:`iris.cube.Cube`</span>
 <span class="sd">        input data from one timestamp. May also be of type </span>
-<span class="sd">        :class:`pyaerocom.GridData`. Uses first time stamp if data is has</span>
+<span class="sd">        :class:`pyaerocom.GriddedData`. Uses first time stamp if data is has</span>
 <span class="sd">        more than one time stamp</span>
 <span class="sd">    xlim : tuple</span>
 <span class="sd">        2-element tuple specifying plotted longitude range</span>
@@ -261,7 +261,7 @@
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input for projection needs to be instance of &quot;</span>
                          <span class="s2">&quot;cartopy.crs.Projection&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GridData</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
@@ -382,9 +382,9 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : :obj:`GridData` or :obj:`iris.cube.Cube`</span>
+<span class="sd">    data : :obj:`GriddedData` or :obj:`iris.cube.Cube`</span>
 <span class="sd">        input data from one timestamp. May also be of type </span>
-<span class="sd">        :class:`pyaerocom.GridData`. Uses first time stamp if data is has</span>
+<span class="sd">        :class:`pyaerocom.GriddedData`. Uses first time stamp if data is has</span>
 <span class="sd">        more than one time stamp</span>
 <span class="sd">    xlim : tuple</span>
 <span class="sd">        2-element tuple specifying plotted longitude range</span>
@@ -432,7 +432,7 @@
 <span class="sd">        ``fig.axes[0]`` to access the map axes instance (e.g. to modify the </span>
 <span class="sd">        title or lon / lat range, etc.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GridData</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
@@ -561,7 +561,7 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : :obj:`GridData`</span>
+<span class="sd">    data : :obj:`GriddedData`</span>
 <span class="sd">        input data from one timestamp (if data contains more than one time </span>
 <span class="sd">        stamp, the first index is used)</span>
 <span class="sd">        </span>
@@ -571,9 +571,9 @@
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#kwargs[&quot;fix_aspect&quot;] = 1.6</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GridData</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;This plotting method needs an instance of pyaerocom &quot;</span>
-                         <span class="s2">&quot;GridData on input, got: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+                         <span class="s2">&quot;GriddedData on input, got: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">region</span> <span class="o">=</span> <span class="n">Region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
@@ -625,7 +625,7 @@
     <span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
     <span class="kn">import</span> <span class="nn">pyaerocom</span>
     
-    <span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGrid</span><span class="p">(</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;2010&quot;</span><span class="p">,</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;2010&quot;</span><span class="p">,</span>
                                       <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;2019&quot;</span><span class="p">)</span>
     
     <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>

@@ -1,23 +1,23 @@
 
-Introducing the ``GridData`` class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Introducing the ``GriddedData`` class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This notebook introduces basic features of the
-`GridData <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddata.GridData>`__
-class of pyaerocom. The ``GridData`` class is the fundamental base class
-for the analysis of model data. The underlying data type is
+`GriddedData <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData>`__
+class of pyaerocom. The ``GriddedData`` class is the fundamental base
+class for the analysis of model data. The underlying data type is
 `iris.cube.Cube <http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube>`__
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of ``GridData`` (i.e. by passing the
+files when creating an instance of ``GriddedData`` (i.e. by passing the
 filename and specifying the variable name on initialisation). This
-notebook introduces some of the features of the ``GridData`` class.
+notebook introduces some of the features of the ``GriddedData`` class.
 Starting with some imports...
 
 .. code:: ipython3
 
     import warnings
     warnings.filterwarnings('ignore')
-    from pyaerocom import GridData
+    from pyaerocom import GriddedData
 
 Let's get a test file to load
 
@@ -45,26 +45,27 @@ observation based test files (``key=observations``). So far, there is
 not much in there (i.e. only two files).
 
 Let's pick out the ECMWF OSUITE test file and load the data directly
-into an instance of the ``GridData`` class. The ``GridData`` class takes
-either preloaded instances of the ``iris.cube.Cube`` class as input, or
-a valid netCDF file path. The latter requires specification of the
-variable name which is then filtered from the data stored in the netCDF
-file (which may contain multiple variables. The following example
+into an instance of the ``GriddedData`` class. The ``GriddedData`` class
+takes either preloaded instances of the ``iris.cube.Cube`` class as
+input, or a valid netCDF file path. The latter requires specification of
+the variable name which is then filtered from the data stored in the
+netCDF file (which may contain multiple variables. The following example
 imports the data for the aerosol optical density at 550 nm. The string
-representation of the ``GridData`` class (see print at end of following
-code cell) was slitghtly adapted from the underlying ``Cube`` object.
+representation of the ``GriddedData`` class (see print at end of
+following code cell) was slitghtly adapted from the underlying ``Cube``
+object.
 
 .. code:: ipython3
 
     fpath = test_files["models"]["ecmwf_osuite"]
-    data = GridData(input=fpath, var_name="od550aer", name="ECMWF_OSUITE")
+    data = GriddedData(input=fpath, var_name="od550aer", name="ECMWF_OSUITE")
     print(data)
 
 
 .. parsed-literal::
 
     Rolling longitudes to -180 -> 180 definition
-    pyaerocom.GridData: ECMWF_OSUITE
+    pyaerocom.GriddedData: ECMWF_OSUITE
     Grid data: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
          Dimension coordinates:
               time                                       x              -               -
@@ -97,7 +98,7 @@ they are converted automatically to
 
 .. math:: -180\leq\,\text{lon}\,\leq180
 
-when an instance of the ``GridData`` class is created (see print
+when an instance of the ``GriddedData`` class is created (see print
 statment above *Rolling longitudes to -180 -> 180 definition*). This is,
 for instance, the case for the ECMWF OSUITE data files.
 
@@ -105,16 +106,16 @@ for instance, the case for the ECMWF OSUITE data files.
 
    </div>
 
-Features of the ``GridData`` class
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Features of the ``GriddedData`` class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the following cell, some of the most important attributes are
 introduced. These are mostly reimplementations of the underlying
-``Cube`` data which is stored in the ``GridData.grid`` attribute. For
-instance the attribute ``GridData.longitude`` get's you
-``GridData.grid.coord("longitude")``, ``GridData.latitude`` get's you
-``GridData.grid.coord("latitude")`` and ``GridData.time`` get's you
-``GridData.grid.coord("time")``.
+``Cube`` data which is stored in the ``GriddedData.grid`` attribute. For
+instance the attribute ``GriddedData.longitude`` get's you
+``GriddedData.grid.coord("longitude")``, ``GriddedData.latitude`` get's
+you ``GriddedData.grid.coord("latitude")`` and ``GriddedData.time``
+get's you ``GriddedData.grid.coord("time")``.
 
 .. code:: ipython3
 
@@ -146,14 +147,14 @@ file (if the file is readable using the ``iris.load`` method).
 .. code:: ipython3
 
     try:
-        data = GridData(input=fpath)
+        data = GriddedData(input=fpath)
     except ValueError as e:
         print("This did not work...error message: %s" %repr(e))
 
 
 .. parsed-literal::
 
-    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550so4', 'od550dust', 'od550bc', 'od550oa', 'od550aer']",)
+    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550bc', 'od550aer', 'od550oa', 'od550dust', 'od550so4']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -161,7 +162,7 @@ Also, if you parse an invalid variable name, you will get some hint.
 .. code:: ipython3
 
     try:
-        data = GridData(input=fpath, var_name="Blaaa")
+        data = GriddedData(input=fpath, var_name="Blaaa")
     except Exception as e:
         print("This also did not work...error message: %s" %repr(e))
 
@@ -184,15 +185,15 @@ method
 
 
 
-.. image:: 04_intro_class_GridData/04_intro_class_GridData_14_0.png
+.. image:: 04_intro_class_GriddedData/04_intro_class_GriddedData_14_0.png
 
 
 Why not load some of the other variables...
 
 .. code:: ipython3
 
-    data_bc = GridData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
-    data_so4 = GridData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
+    data_bc = GriddedData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
+    data_so4 = GriddedData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
 
 
 .. parsed-literal::
@@ -213,15 +214,15 @@ Why not load some of the other variables...
 
 
 
-.. image:: 04_intro_class_GridData/04_intro_class_GridData_18_0.png
+.. image:: 04_intro_class_GriddedData/04_intro_class_GriddedData_18_0.png
 
 
 
-.. image:: 04_intro_class_GridData/04_intro_class_GridData_18_1.png
+.. image:: 04_intro_class_GriddedData/04_intro_class_GriddedData_18_1.png
 
 
 ... more to come
 ^^^^^^^^^^^^^^^^
 
-This tutorial is not yet completed as the ``GridData`` class is
+This tutorial is not yet completed as the ``GriddedData`` class is
 currently under development.

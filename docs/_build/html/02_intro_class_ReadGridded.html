@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Reading model data: the ReadGrid class &mdash; pyaerocom  documentation</title>
+  <title>Reading model data: the ReadGridded class &mdash; pyaerocom  documentation</title>
   
 
   
@@ -138,13 +138,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Reading model data: the ReadGrid class</li>
+      <li>Reading model data: the <em>ReadGridded</em> class</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/02_intro_class_ReadGrid.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/02_intro_class_ReadGridded.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -176,25 +176,29 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="reading-model-data-the-readgrid-class">
-<h1>Reading model data: the ReadGrid class<a class="headerlink" href="#reading-model-data-the-readgrid-class" title="Permalink to this headline">¶</a></h1>
-<p>This notebook introduces the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class of Pyaerocom, a flexible
-interface for importing model results from a single model, based on
-variable name (e.g. <em>od550aer</em>, <em>od550bc</em>), start / stop time stamps and
-temporal resolution (e.g. <em>hourly, 3hourly, daily, monthly</em>).</p>
-<p>In the following cells, we create an instance of the the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code>
-class and use this object to find and import data files containing the
-aerosol optical depth at 550 nm (<em>od550aer</em>) from the ECMWF CAMS
-reanalysis model (<em>ECMWF_CAMS_REAN</em>) for the years 2003-2007 in daily
-resolution. The files will be temporally merged and put into an instance
-of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class.</p>
+<div class="section" id="reading-model-data-the-readgridded-class">
+<h1>Reading model data: the <em>ReadGridded</em> class<a class="headerlink" href="#reading-model-data-the-readgridded-class" title="Permalink to this headline">¶</a></h1>
+<p>This notebook introduces the <a class="reference external" href="INSERT_LINK">ReadGridded INSERT_LINK</a>
+class of Pyaerocom, a flexible interface for importing model results
+from a single model, based on variable name (e.g. <em>od550aer</em>,
+<em>od550bc</em>), start / stop time stamps and temporal resolution (e.g.
+<em>hourly, 3hourly, daily, monthly</em>).</p>
+<p>The class is part of the <a class="reference external" href="XXX">readgridded INSERT_LINK</a> module of
+pyaerocom, as well as the class <a class="reference external" href="INSERT%20LINK">ReadGriddedMulti INSERT
+LINK</a></p>
+<p>In the following cells, we create an instance of the
+t:raw-latex:<cite>he ```ReadGridded`</cite> class and use this object to find
+and import data files containing the aerosol optical depth at 550 nm
+(<em>od550aer</em>) from the ECMWF CAMS reanalysis model (<em>ECMWF_CAMS_REAN</em>)
+for the years 2003-2007 in daily resolution. The files will be
+temporally merged and put into an instance of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class.</p>
 <p>We start with creating a reading object, that will take care of finding
 the model directory for us (based on the model ID) and all valid NetCDF
-files on initialisation. The <code class="docutils literal notranslate"><span class="pre">print</span></code> statetment prints the string
-representation of the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> object, which provides useful
+files on initialisation. Use the <code class="docutils literal notranslate"><span class="pre">print</span></code> commant to preview the string
+representation of <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> object, which provides useful
 information about what is in there.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
-<span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGrid</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
+<span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
                                   <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
                                   <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
                                   <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -208,21 +212,21 @@ information about what is in there.</p>
 <span class="n">Failed</span> <span class="n">to</span> <span class="kn">import</span> <span class="nn">file</span> <span class="n">od550aer</span><span class="o">.</span><span class="mi">29</span><span class="n">feb2007</span><span class="o">.</span><span class="n">nc</span>
 <span class="n">Error</span><span class="p">:</span> <span class="ne">OSError</span><span class="p">(</span><span class="s1">&#39;Failed to extract year information from file od550aer.29feb2007.nc using file convention aerocom2&#39;</span><span class="p">,)</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
+<span class="o">---------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
-<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Looking at the output we can see that there were some files that did not
 follow the Aerocom file naming conventions. These were automatically
 ignored.</p>
-<p>Note that at this point, no data is actually imported but only the paths
-are set that contain data for this model. In order to read one variable,
-call the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable name. You can check
-available variables using the <code class="docutils literal notranslate"><span class="pre">vars</span></code> attribute (or by printing the
-string representation, as shown in the cell above).</p>
+<p><strong>Please note</strong> that at this point, no data is actually imported but
+only the paths are set that contain data for this model. In order to
+read one variable, call the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable
+name. You can check available variables using the <code class="docutils literal notranslate"><span class="pre">vars</span></code> attribute (or
+by printing the string representation, as shown in the cell above).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected variables for model </span><span class="si">%s</span><span class="s2">:</span><span class="se">\n</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">.</span><span class="n">vars</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -261,23 +265,24 @@ string representation, as shown in the cell above).</p>
 </div>
 <p>From the output we can see that based on our specified time range and
 temporal resolution, we got 6 netCDF files that were merged all into an
-instance of the <code class="docutils literal notranslate"><span class="pre">pyaerocom.GridData</span></code> class, which will be introduced
-in more detail later.</p>
+instance of the <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html?highlight=readgrid#pyaerocom.griddeddata.GriddedData">GriddedData
+UPDATE_LINK</a>
+class, which will be introduced in more detail later.</p>
 <p>Now that we have actual data imported, we can print again to see if
 everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
-<span class="o">------------------</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
+<span class="o">---------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
-<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
 
-<span class="n">Loaded</span> <span class="n">GridData</span> <span class="n">objects</span><span class="p">:</span>
+<span class="n">Loaded</span> <span class="n">GriddedData</span> <span class="n">objects</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">GridData</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GriddedData</span>
+<span class="o">---------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2007</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
@@ -286,13 +291,14 @@ everything worked as expected.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The data object is of type </span><span class="si">%s</span><span class="s2"> and contains </span><span class="si">%d</span><span class="s2"> time stamps&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>The data object is of type &lt;class &#39;pyaerocom.griddata.GridData&#39;&gt; and contains 1826 time stamps
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>The data object is of type &lt;class &#39;pyaerocom.griddeddata.GriddedData&#39;&gt; and contains 1826 time stamps
 </pre></div>
 </div>
-<p>The returned data object is of type <code class="docutils literal notranslate"><span class="pre">GridData</span></code> (introduced in later
-tutorials) which contains 1826 time stamps. Given that the defined
-period of 5 years includes one leap year, we should expect that we
-imported data for each day of the five years?</p>
+<p>The returned <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html?highlight=readgrid#pyaerocom.griddeddata.GriddedData">GriddedData
+UPDATE</a>
+object contains 1826 time stamps. Given that the defined period of 5
+years includes one leap year, we should expect that we imported data for
+each day of the five years?</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="mi">1826</span> <span class="o">==</span> <span class="mi">5</span><span class="o">*</span><span class="mi">365</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -317,11 +323,11 @@ that the file follows one of the <a class="reference external" href="http://aero
 conventions</a>.</li>
 </ol>
 </div>
-<div class="section" id="a-very-brief-introduction-into-the-griddata-class">
-<h2>A very brief introduction into the GridData class<a class="headerlink" href="#a-very-brief-introduction-into-the-griddata-class" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="a-very-brief-introduction-into-the-griddeddata-class">
+<h2>A very brief introduction into the GriddedData class<a class="headerlink" href="#a-very-brief-introduction-into-the-griddeddata-class" title="Permalink to this headline">¶</a></h2>
 <p>Now as a final step, we briefly introduce some of the features of the
-<code class="docutils literal notranslate"><span class="pre">GridData</span></code> class by computing 1. plotting an overview map of the data
-and plotting a time series of the global weighted average aerosol
+<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class by computing 1. plotting an overview map of the
+data and plotting a time series of the global weighted average aerosol
 optical density as well as the same time series at the coordinates in
 the city of Leipzig, Germany.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
@@ -350,9 +356,9 @@ the city of Leipzig, Germany.</p>
 <span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/02_intro_class_ReadGrid_13_0.png" src="_images/02_intro_class_ReadGrid_13_0.png" />
-<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class is introduced,
-which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class and allows for
+<img alt="_images/02_intro_class_ReadGridded_13_0.png" src="_images/02_intro_class_ReadGridded_13_0.png" />
+<p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class is introduced,
+which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class and allows for
 importing data from multiple models.</p>
 </div>
 </div>

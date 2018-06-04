@@ -14,14 +14,14 @@ Data types and data representation
 Gridded data
 ^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.griddata
+.. automodule:: pyaerocom.griddeddata
    :members:
    :undoc-members:
    
 Ungridded data 
 ^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.nogriddata
+.. automodule:: pyaerocom.ungriddeddata
    :members:
    :undoc-members:
 
@@ -38,7 +38,7 @@ Reading routines
 Reading of gridded data
 """"""""""""""""""""""""
 
-.. automodule:: pyaerocom.io.readgrid
+.. automodule:: pyaerocom.io.readgridded
    :members:
    :undoc-members:
    

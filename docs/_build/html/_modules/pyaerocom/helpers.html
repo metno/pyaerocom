@@ -409,7 +409,7 @@
 <span class="sd">    In this definition, the constraint is combined in case the border of the</span>
 <span class="sd">    longitude array is crossed. Apparently, that does not work properly and </span>
 <span class="sd">    it is therefore recommended to use :func:`iris.cube.Cube.intersection` </span>
-<span class="sd">    instead (which is also reimplemented in :class:`pyaerocom.GridData`).</span>
+<span class="sd">    instead (which is also reimplemented in :class:`pyaerocom.GriddedData`).</span>
 <span class="sd">    If you use :func:`get_lon_constraint` it will detect if there is a border </span>
 <span class="sd">    crossing, and if so, it will raise an error (that suggests to use the</span>
 <span class="sd">    intersection method instead).</span>
@@ -470,9 +470,9 @@
 <span class="sd">    Example</span>
 <span class="sd">    -------</span>
 <span class="sd">    &gt;&gt;&gt; from pyaerocom.io.testfiles import get</span>
-<span class="sd">    &gt;&gt;&gt; from pyaerocom import GridData</span>
+<span class="sd">    &gt;&gt;&gt; from pyaerocom import GriddedData</span>
 <span class="sd">    &gt;&gt;&gt; files = get()</span>
-<span class="sd">    &gt;&gt;&gt; data = GridData(files[&#39;models&#39;][&#39;aatsr_su_v4.3&#39;], var_name=&quot;od550aer&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; data = GriddedData(files[&#39;models&#39;][&#39;aatsr_su_v4.3&#39;], var_name=&quot;od550aer&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; c = get_lon_constraint(lon_range=(170, -160), meridian_centre=True)</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">     ...</span>
@@ -511,7 +511,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    Constraint</span>
 <span class="sd">        iris Constraint instance that can, e.g., be used as input for</span>
-<span class="sd">        :func:`pyaerocom.griddata.GridData.extract`</span>
+<span class="sd">        :func:`pyaerocom.griddeddata.GriddedData.extract`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
@@ -527,15 +527,36 @@
     
     <span class="k">return</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cell</span><span class="p">:</span> <span class="n">t_lower</span> <span class="o">&lt;=</span> <span class="n">cell</span> <span class="o">&lt;=</span> <span class="n">t_upper</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="to_time_series_griesie"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.to_time_series_griesie">[docs]</a><span class="k">def</span> <span class="nf">to_time_series_griesie</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">],</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;small helper routine to convert data from the object</span>
+<span class="sd">    pyaerocom.io.ReadGridded.interpolate to the obs data dictionary</span>
+<span class="sd">    containing the pandas timeseries</span>
+
+<span class="sd">    FOR TESTING ONLY!&quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)):</span>
+        <span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">_dict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">lats</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_name</span><span class="p">:</span>
+            <span class="n">_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span><span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
     <span class="kn">import</span> <span class="nn">warnings</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
     <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
     <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
-    <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GridData</span>
+    <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GriddedData</span>
     <span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">GridData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
     <span class="n">lons</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">get_lon_constraint</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">170</span><span class="p">,</span> <span class="o">-</span><span class="mi">160</span><span class="p">),</span> <span class="n">meridian_centre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

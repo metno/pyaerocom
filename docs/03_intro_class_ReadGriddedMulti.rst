@@ -1,19 +1,19 @@
 
-Reading data from multiple models: the ReadMultiGrid class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Reading data from multiple models: the ReadGriddedMulti class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``pyaerocom.ReadMultiGrid`` class provides an interface to import
+The ``pyaerocom.ReadGriddedMulti`` class provides an interface to import
 multiple variables for an arbitrary number of different models and
-within a specific time interval. It makes large use of the ``ReadGrid``
-class that provides an interface for importing results from a single
-model.
+within a specific time interval. It makes large use of the
+``ReadGridded`` class that provides an interface for importing results
+from a single model.
 
 .. code:: ipython3
 
     import os
     import warnings
     warnings.filterwarnings('ignore')
-    from pyaerocom.io.readgrid import ReadMultiGrid
+    from pyaerocom.io.readgridded import ReadGriddedMulti
 
 Define two models (this list can contain as many models as you like)
 
@@ -21,15 +21,15 @@ Define two models (this list can contain as many models as you like)
 
     models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
 
-Create and initiate ``ReadMultiGrid`` class. The direcory for each model
-as well as all valid files in the model directories are searched on
-initiation of the instance. Valid here means, that the files belong to
-the corresponding model. Subsetting of the time interval is done in a
+Create and initiate ``ReadGriddedMulti`` class. The direcory for each
+model as well as all valid files in the model directories are searched
+on initiation of the instance. Valid here means, that the files belong
+to the corresponding model. Subsetting of the time interval is done in a
 later process.
 
 .. code:: ipython3
 
-    read = ReadMultiGrid(models, '2010-01-01','2011-12-31', verbose=True)
+    read = ReadGriddedMulti(models, '2010-01-01','2011-12-31', verbose=True)
 
 
 .. parsed-literal::
@@ -37,6 +37,7 @@ later process.
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom1/
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom2/
+    Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/C3S-Aerosol
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/ECLIPSE
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/
     Searching dir for ID AATSR_SU_v4.3 in: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/
@@ -44,6 +45,7 @@ later process.
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom1/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom2/
+    Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/C3S-Aerosol
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/ECLIPSE
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/
     Searching dir for ID CAM5.3-Oslo_CTRL2016 in: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/
@@ -70,10 +72,11 @@ Let's have a look into one of the two import classes
 .. code:: ipython3
 
     read_aatsr = read["AATSR_SU_v4.3"]
-    print("Model ID: %s\n"
-          "Model dir: %s\n"
-          "First detected file: %s"
-          %(read_aatsr.name, read_aatsr.data_dir, os.path.basename(read_aatsr.files[0])))
+    print("Model ID: {}\n"
+          "Model dir: {}\n"
+          "First detected file: {}".format(read_aatsr.name, 
+                                           read_aatsr.data_dir, 
+                                           os.path.basename(read_aatsr.files[0])))
 
 
 .. parsed-literal::
@@ -126,8 +129,8 @@ Read all variables for all models
 
 
 Print what is in there (similar to the previously introduced
-``ReadGrid`` class, also the ``ReadMultiGrid`` class has a nice string
-representation)
+``ReadGridded`` class, also the ``ReadGriddedMulti`` class has a nice
+string representation)
 
 .. code:: ipython3
 
@@ -137,48 +140,48 @@ representation)
 .. parsed-literal::
 
     
-    Pyaerocom ReadMultiGrid
-    -----------------------
+    Pyaerocom ReadGriddedMulti
+    --------------------------
     Model IDs: ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
     
     Loaded data:
     
-    Pyaerocom ReadGrid
-    ------------------
+    Pyaerocom ReadGridded
+    ---------------------
     Model ID: AATSR_SU_v4.3
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
     Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
     
-    Loaded GridData objects:
+    Loaded GriddedData objects:
     
-    Pyaerocom GridData
-    ------------------
+    Pyaerocom GriddedData
+    ---------------------
     Variable: od550aer
     Temporal resolution: daily
     Start / Stop: 2010-01-01T00:00:00.000000 - 2011-12-31T00:00:00.000000
     
-    Pyaerocom GridData
-    ------------------
+    Pyaerocom GriddedData
+    ---------------------
     Variable: od550dust
     Temporal resolution: daily
     Start / Stop: 2010-01-01T00:00:00.000000 - 2011-12-31T00:00:00.000000
     
-    Pyaerocom ReadGrid
-    ------------------
+    Pyaerocom ReadGridded
+    ---------------------
     Model ID: CAM5.3-Oslo_CTRL2016
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
     Available years: [2006, 2008, 2010]
     
-    Loaded GridData objects:
+    Loaded GriddedData objects:
     
-    Pyaerocom GridData
-    ------------------
+    Pyaerocom GriddedData
+    ---------------------
     Variable: od550aer
     Temporal resolution: daily
     Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
     
-    Pyaerocom GridData
-    ------------------
+    Pyaerocom GriddedData
+    ---------------------
     Variable: od550dust
     Temporal resolution: daily
     Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
@@ -192,7 +195,7 @@ Print some information about the different data objects
         print("Current model: %s" %name)
         for var_name, data in result.data.items():
             print("\nCurrent variable: %s" %var_name)
-            # data is of type pyaerocom.GridData which uses an extended representation of the Cube class
+            # data is of type pyaerocom.GriddedData which uses an extended representation of the Cube class
             print(repr(data))
 
 
@@ -201,20 +204,20 @@ Print some information about the different data objects
     Current model: AATSR_SU_v4.3
     
     Current variable: od550aer
-    pyaerocom.GridData
+    pyaerocom.GriddedData
     Grid data: <iris 'Cube' of atmosphere_optical_thickness_due_to_ambient_aerosol / (1) (time: 730; latitude: 180; longitude: 360)>
     
     Current variable: od550dust
-    pyaerocom.GridData
+    pyaerocom.GriddedData
     Grid data: <iris 'Cube' of atmosphere_optical_thickness_due_to_ambient_aerosol / (1) (time: 730; latitude: 180; longitude: 360)>
     Current model: CAM5.3-Oslo_CTRL2016
     
     Current variable: od550aer
-    pyaerocom.GridData
+    pyaerocom.GriddedData
     Grid data: <iris 'Cube' of Aerosol optical depth at 550nm / (1) (time: 365; latitude: 192; longitude: 288)>
     
     Current variable: od550dust
-    pyaerocom.GridData
+    pyaerocom.GriddedData
     Grid data: <iris 'Cube' of mineral aerosol optical depth 550nm / (1) (time: 365; latitude: 192; longitude: 288)>
 
 
@@ -253,7 +256,7 @@ Plot a map of the first day.
 
 
 
-.. image:: 03_intro_class_ReadMultiGrid/03_intro_class_ReadMultiGrid_19_0.png
+.. image:: 03_intro_class_ReadGriddedMulti/03_intro_class_ReadGriddedMulti_19_0.png
 
 
 Iterate over models and variables
@@ -270,17 +273,17 @@ plots the first time stamp of each result file.
 
 
 
-.. image:: 03_intro_class_ReadMultiGrid/03_intro_class_ReadMultiGrid_21_0.png
+.. image:: 03_intro_class_ReadGriddedMulti/03_intro_class_ReadGriddedMulti_21_0.png
 
 
 
-.. image:: 03_intro_class_ReadMultiGrid/03_intro_class_ReadMultiGrid_21_1.png
+.. image:: 03_intro_class_ReadGriddedMulti/03_intro_class_ReadGriddedMulti_21_1.png
 
 
 
-.. image:: 03_intro_class_ReadMultiGrid/03_intro_class_ReadMultiGrid_21_2.png
+.. image:: 03_intro_class_ReadGriddedMulti/03_intro_class_ReadGriddedMulti_21_2.png
 
 
 
-.. image:: 03_intro_class_ReadMultiGrid/03_intro_class_ReadMultiGrid_21_3.png
+.. image:: 03_intro_class_ReadGriddedMulti/03_intro_class_ReadGriddedMulti_21_3.png
 

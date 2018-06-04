@@ -17,7 +17,7 @@ if __name__=="__main__":
     except:
         RELOAD = True
     if RELOAD:
-        data = pyaerocom.nogriddata.NoGridData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME)
+        data = pyaerocom.ungriddeddata.UngriddedData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME)
         data.read()
         
         print('Latitudes:')

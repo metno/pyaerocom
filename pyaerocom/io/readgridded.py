@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ################################################################
-# readgrid.py
+# readgridded.py
 #
 # model data reading class
 #
@@ -52,9 +52,9 @@ from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io.helpers import (check_time_coord, correct_time_coord,
                                   search_data_dir_aerocom)
-from pyaerocom.griddata import GridData
+from pyaerocom.griddeddata import GriddedData
 
-class ReadGrid(object):
+class ReadGridded(object):
     """Class for reading model results from AEROCOM NetCDF files
     
     Note
@@ -69,7 +69,7 @@ class ReadGrid(object):
     name : str
         string ID for model (see e.g. Aerocom interface map plots lower left 
         corner)
-    data : GridData
+    data : GriddedData
         imported data object 
     data_dir : str
         directory containing result files for this model
@@ -81,7 +81,7 @@ class ReadGrid(object):
         class specifying details of the file naming convention for the model
     files : list
         list containing all filenames that were found.
-        Filled, e.g. in :func:`ReadGrid.get_model_files`
+        Filled, e.g. in :func:`ReadGridded.get_model_files`
     from_files : list
         List of all netCDF files that were used to concatenate the current 
         data cube (i.e. that can be based on certain matching settings such as
@@ -113,7 +113,7 @@ class ReadGrid(object):
     Examples
     --------
     
-        >>> read = ReadGrid(name="ECMWF_OSUITE")
+        >>> read = ReadGridded(name="ECMWF_OSUITE")
         >>> read.read_var("od550aer")
         >>> read.read_var("od550so4")
         >>> read.read_var("od550bc")
@@ -131,7 +131,7 @@ class ReadGrid(object):
         if not isinstance(name, str):
             if isinstance(name, list):
                 msg = ("Input for name is list. You might want to use "
-                       "class ReadMultiGrid for import?")
+                       "class ReadGriddedMulti for import?")
             else:
                 msg = ("Invalid input for name. Need str, got: %s"
                        %type(name))
@@ -155,12 +155,12 @@ class ReadGrid(object):
         
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
-        # automatically updated in class ReadGrid
+        # automatically updated in class ReadGridded
         self.io_opts = io_opts
         self.file_convention = FileConventionRead(file_convention)
         
         # All files that were found for this model (updated, e.g. in class
-        # ReadGrid, method: `get_model_files`
+        # ReadGridded, method: `get_model_files`
         self.files = []
         
         self._match_files = None
@@ -357,7 +357,7 @@ class ReadGrid(object):
         instances of the :class:`iris.Cube` object and appended to an instance
         of the :class:`iris.cube.CubeList` object. The latter is then used to 
         concatenate the individual cubes in time into a single instance of the
-        :class:`pyaerocom.GridData` class. In order to ensure that this
+        :class:`pyaerocom.GriddedData` class. In order to ensure that this
         works, several things need to be ensured, which are listed in the 
         following and which may be controlled within the global settings for 
         NetCDF import using the attribute :attr:`GRID_IO` (instance of
@@ -383,7 +383,7 @@ class ReadGrid(object):
             
         Returns
         -------
-        GridData
+        GriddedData
             t
         """
         if not ts_type in self.TS_TYPES:
@@ -501,8 +501,8 @@ class ReadGrid(object):
                           "long_name attributes in source files: {}".format(
                                   var_name, long_names))
         
-        #create instance of pyaerocom.GridData
-        data = GridData(input=cubes_concat[0], from_files=loaded_files,
+        #create instance of pyaerocom.GriddedData
+        data = GriddedData(input=cubes_concat[0], from_files=loaded_files,
                          name=self.name, ts_type=ts_type)
         # crop cube in time (if applicable)
         if self.start_time and self.stop_time:
@@ -557,18 +557,18 @@ class ReadGrid(object):
                                             self.vars, 
                                             self.years))
         if self.data:
-            s += "\nLoaded GridData objects:\n"
+            s += "\nLoaded GriddedData objects:\n"
             for var_name, data in self.data.items():
                 s += "{}\n".format(data.short_str())
         return s.rstrip()
         
-class ReadMultiGrid(object):
+class ReadGriddedMulti(object):
     """Class for import of AEROCOM model data from multiple models
     
     This class provides an interface to import model results from an arbitrary
     number of models and specific for a certain time interval (that can be 
     defined, but must not be defined). Largely based on 
-    :class:`ReadGrid`.
+    :class:`ReadGridded`.
     
     Note
     ----
@@ -582,7 +582,7 @@ class ReadMultiGrid(object):
     names : list
         list containing string IDs of all models that should be imported
     results : dict
-        dictionary containing :class:`ReadGrid` instances for each
+        dictionary containing :class:`ReadGridded` instances for each
         name
     
     Examples
@@ -590,11 +590,11 @@ class ReadMultiGrid(object):
     >>> import pyaerocom, pandas
     >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
     >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
-    >>> read = pyaerocom.io.ReadMultiGrid(models, start, stop, verbose=False)
+    >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop, verbose=False)
     >>> print(read.names)
     ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
     >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
-    >>> assert type(read_cam) == pyaerocom.io.ReadGrid
+    >>> assert type(read_cam) == pyaerocom.io.ReadGridded
     >>> for var in read_cam.vars: print(var)
     abs550aer
     deltaz3d
@@ -707,7 +707,7 @@ class ReadMultiGrid(object):
         """
         self.results = od()
         for name in self.names:
-            self.results[name] = ReadGrid(name,
+            self.results[name] = ReadGridded(name,
                                                    self.start_time, 
                                                    self.stop_time, 
                                                    init=False,
@@ -736,7 +736,7 @@ class ReadMultiGrid(object):
     def search_all_files(self):
         """Search all valid model files for each model
         
-        See also :func:`ReadGrid.search_all_files`
+        See also :func:`ReadGridded.search_all_files`
         
         Note
         ----
@@ -780,7 +780,7 @@ class ReadMultiGrid(object):
         Examples
         --------
         
-            >>> read = ReadMultiGrid(names=["ECMWF_CAMS_REAN",
+            >>> read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN",
             ...                                      "ECMWF_OSUITE"],
             ...                           verbose=False)
             >>> read.read(["od550aer", "od550so4", "od550bc"])
@@ -827,7 +827,7 @@ class ReadMultiGrid(object):
         
         Returns
         -------
-        ReadGrid
+        ReadGridded
             the corresponding read class for this model
             
         Raises
@@ -851,11 +851,11 @@ class ReadMultiGrid(object):
     
 if __name__=="__main__":
     
-    read = ReadGrid("EMEP_rv48_RBUALL")
+    read = ReadGridded("EMEP_rv48_RBUALL")
     
     
 # =============================================================================
-#     read = ReadGrid(name="ECMWF_CAMS_REAN",
+#     read = ReadGridded(name="ECMWF_CAMS_REAN",
 #                                   start_time="1-1-2003",
 #                                   stop_time="31-12-2007", 
 #                                   verbose=True)
@@ -864,7 +864,7 @@ if __name__=="__main__":
 # =============================================================================
     
 # =============================================================================
-#     read = ReadMultiGrid(names=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
+#     read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
 #     
 #     read.read(["od550aer", "od440aer"])
 #     

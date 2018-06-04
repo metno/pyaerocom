@@ -399,11 +399,11 @@ will follow soon, as well as tutorials that show how to merge and
 compare model with observational data.
 
 The following notebook introduces how Pyaerocom handles regions and
-where they can be defined. In the subsequent tutorial, the ``ReadGrid``
+where they can be defined. In the subsequent tutorial, the ``ReadGridded``
 class is introduced, that can be used to import model data in a flexible
 way based on variable name, time range and temporal resolution. The
 loaded data for each model and variable is then stored in the analysis
-class ``GridData`` which will be introduced in a later tutorial.
+class ``GriddedData`` which will be introduced in a later tutorial.
 
 Now what is a tutorial without a nice image? Let's summarise in a
 oneliner what will be explained in the following tutorials:
@@ -411,7 +411,7 @@ oneliner what will be explained in the following tutorials:
 .. code:: ipython3
 
     import pyaerocom
-    fig = pyaerocom.GridData()._init_testdata_default().crop(region="SAMERICA").quickplot_map()
+    fig = pyaerocom.GriddedData()._init_testdata_default().crop(region="SAMERICA").quickplot_map()
 
 
 .. parsed-literal::

@@ -179,7 +179,7 @@
 <div class="section" id="handling-of-time-in-pyaerocom">
 <h1>Handling of time in Pyaerocom<a class="headerlink" href="#handling-of-time-in-pyaerocom" title="Permalink to this headline">¶</a></h1>
 <p>The
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddata">GridData</a>
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddeddata">GriddedData</a>
 class of <em>Pyaerocom</em> was introduced in the previous tutorial.</p>
 <p>Here, we want to illustrate one particular feature of <em>Pyaerocom</em>,
 namely the conversion of CF conform numerical time stamps with a defined
@@ -197,16 +197,16 @@ timestamps to be datetime-like objects.</p>
 particularly in the
 <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube">Cube</a>
 class, which is the basic data representation object in the <em>Pyaerocom</em>
-<code class="docutils literal notranslate"><span class="pre">GridData</span></code> class. In particular, it emphazises some peculiarities that
-can lead to complications and finally shows, how <em>Pyaerocom</em> circumvents
-these issues. We shall see, that this does not only reduce the risk of
-conversion Errors, but even results in a quite significant performance
-boost when converting from numerical CF timestamps to
+<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class. In particular, it emphazises some peculiarities
+that can lead to complications and finally shows, how <em>Pyaerocom</em>
+circumvents these issues. We shall see, that this does not only reduce
+the risk of conversion Errors, but even results in a quite significant
+performance boost when converting from numerical CF timestamps to
 <code class="docutils literal notranslate"><span class="pre">numpy.datetime64</span></code> time stamps.</p>
 <div class="section" id="load-and-some-example-data">
 <h2>Load and some example data<a class="headerlink" href="#load-and-some-example-data" title="Permalink to this headline">¶</a></h2>
 <p>Get and load test data file using the new pyaerocom interface (the
-underlying datatype of <code class="docutils literal notranslate"><span class="pre">GridData</span></code> is <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>.</p>
+underlying datatype of <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> is <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
 <span class="n">files</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">testfiles</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 
@@ -214,8 +214,8 @@ underlying datatype of <code class="docutils literal notranslate"><span class="p
 <span class="n">fpath_aatsr</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
-<span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+<span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
@@ -226,9 +226,9 @@ are automatically converted to -180 -&gt; 180 (the case of the ECMWF data).</p>
 </div>
 <div class="section" id="digging-into-the-time-representation-of-the-iris-cube-datatype">
 <h2>Digging into the time representation of the iris Cube datatype<a class="headerlink" href="#digging-into-the-time-representation-of-the-iris-cube-datatype" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class is based on the <code class="docutils literal notranslate"><span class="pre">iris.Cube</span></code> object, which can
-be accessed via the <code class="docutils literal notranslate"><span class="pre">grid</span></code> attribute. In the following, some features
-of the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> class are introduced.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class is based on the <code class="docutils literal notranslate"><span class="pre">iris.Cube</span></code> object, which
+can be accessed via the <code class="docutils literal notranslate"><span class="pre">grid</span></code> attribute. In the following, some
+features of the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> class are introduced.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cube_ecmwf</span> <span class="o">=</span> <span class="n">data_ecmwf</span><span class="o">.</span><span class="n">grid</span>
 <span class="n">cube_aatsr</span> <span class="o">=</span> <span class="n">data_aatsr</span><span class="o">.</span><span class="n">grid</span>
 </pre></div>
@@ -346,14 +346,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>155 ms ± 16.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>124 ms ± 6.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>116 ms ± 7.06 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 2.72 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -364,14 +364,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>148 ms ± 21.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>120 ms ± 1.92 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 3.74 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>106 ms ± 4.26 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -390,7 +390,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.71 ms ± 77 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.69 ms ± 31.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -508,16 +508,16 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>73.2 µs ± 16.4 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>61.5 µs ± 1.08 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="how-pyaerocom-does-it">
 <h2>How Pyaerocom does it<a class="headerlink" href="#how-pyaerocom-does-it" title="Permalink to this headline">¶</a></h2>
-<p>Actually, due to this significant increase in performance for standard
-calendars (compared to the methods used in netCDF4), the above method
-was implemented in the pyaerocom package (<a class="reference external" href="aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64">see
+<p>Due to this significant increase in performance for standard calendars
+(compared to the methods used in netCDF4), the above method was
+implemented in the pyaerocom package (<a class="reference external" href="aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64">see
 here</a>).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pyaerocom_tconversion</span>
 </pre></div>
@@ -526,7 +526,7 @@ here</a>).</p>
 pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>66.4 µs ± 4.13 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>65.9 µs ± 3.11 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -535,7 +535,7 @@ pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
 pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.79 ms ± 27.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.16 ms ± 144 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -544,19 +544,19 @@ conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.</p>
 <p>The method is also the standard conversion method in the
-<code class="docutils literal notranslate"><span class="pre">GridData.time_stamps()</span></code> method:</p>
+<code class="docutils literal notranslate"><span class="pre">GriddedData.time_stamps()</span></code> method:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>80.2 µs ± 1.22 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>91.2 µs ± 3.23 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.86 ms ± 34.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.94 ms ± 76.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 </div>

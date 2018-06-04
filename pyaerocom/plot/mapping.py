@@ -18,7 +18,7 @@ from pyaerocom.plot.helpers import (calc_figsize, custom_mpl,
                                     calc_pseudolog_cmaplevels,
                                     projection_from_str)
 from pyaerocom.mathutils import exponent
-from pyaerocom.griddata import GridData
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.region import Region
 
 MPL_PARAMS = custom_mpl()
@@ -33,9 +33,9 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     
     Parameters
     ----------
-    data : :obj:`GridData` or :obj:`iris.cube.Cube`
+    data : :obj:`GriddedData` or :obj:`iris.cube.Cube`
         input data from one timestamp. May also be of type 
-        :class:`pyaerocom.GridData`. Uses first time stamp if data is has
+        :class:`pyaerocom.GriddedData`. Uses first time stamp if data is has
         more than one time stamp
     xlim : tuple
         2-element tuple specifying plotted longitude range
@@ -100,7 +100,7 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     elif not isinstance(projection, ccrs.Projection):
         raise ValueError("Input for projection needs to be instance of "
                          "cartopy.crs.Projection")
-    if isinstance(data, GridData):
+    if isinstance(data, GriddedData):
         data = data.grid
     if len(data.coord("time").points) > 1:
         if verbose:
@@ -221,9 +221,9 @@ def plot_map_OLD(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     
     Parameters
     ----------
-    data : :obj:`GridData` or :obj:`iris.cube.Cube`
+    data : :obj:`GriddedData` or :obj:`iris.cube.Cube`
         input data from one timestamp. May also be of type 
-        :class:`pyaerocom.GridData`. Uses first time stamp if data is has
+        :class:`pyaerocom.GriddedData`. Uses first time stamp if data is has
         more than one time stamp
     xlim : tuple
         2-element tuple specifying plotted longitude range
@@ -271,7 +271,7 @@ def plot_map_OLD(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         ``fig.axes[0]`` to access the map axes instance (e.g. to modify the 
         title or lon / lat range, etc.)
     """
-    if isinstance(data, GridData):
+    if isinstance(data, GriddedData):
         data = data.grid
     if len(data.coord("time").points) > 1:
         if verbose:
@@ -400,7 +400,7 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
     
     Parameters
     ----------
-    data : :obj:`GridData`
+    data : :obj:`GriddedData`
         input data from one timestamp (if data contains more than one time 
         stamp, the first index is used)
         
@@ -410,9 +410,9 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
         
     """
     #kwargs["fix_aspect"] = 1.6
-    if not isinstance(data, GridData):
+    if not isinstance(data, GriddedData):
         raise TypeError("This plotting method needs an instance of pyaerocom "
-                         "GridData on input, got: %s" %type(data))
+                         "GriddedData on input, got: %s" %type(data))
     if region:
         if isinstance(region, str):
             region = Region(region)
@@ -464,7 +464,7 @@ if __name__ == "__main__":
     close("all")
     import pyaerocom
     
-    read = pyaerocom.io.ReadGrid("ECMWF_OSUITE", start_time="2010",
+    read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start_time="2010",
                                       stop_time="2019")
     
     data = read.read_var("od550aer")

@@ -48,7 +48,7 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 #from pyaerocom import config as const
 from pyaerocom import const
 
-class NoGridData():
+class UngriddedData():
     """pyaerocom observation data (ungridded data) reading class
     """
 
@@ -194,8 +194,8 @@ class NoGridData():
 
         Example
         -------
-        >>> import pyaerocom.nogriddata
-        >>> obj = pyaerocom.nogriddata.NoGridData()
+        >>> import pyaerocom.ungriddeddata
+        >>> obj = pyaerocom.ungriddeddata.UngriddedData()
         >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
@@ -330,7 +330,7 @@ class NoGridData():
         Example
         -------
         >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.NoGridData(verbose=True)
+        >>> obj = pyaerocom.io.readobsdata.UngriddedData(verbose=True)
         >>> obj.read()
         >>> pdseries = obj.to_timeseries()
         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')

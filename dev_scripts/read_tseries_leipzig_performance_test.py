@@ -20,7 +20,7 @@ def run():
 
     ts = []
     ts.append(time())
-    read = pyaerocom.io.ReadGrid(name="ECMWF_CAMS_REAN",
+    read = pyaerocom.io.ReadGridded(name="ECMWF_CAMS_REAN",
                                       start_time="1-1-2003",
                                       stop_time="31-12-2007", 
                                       verbose=True)

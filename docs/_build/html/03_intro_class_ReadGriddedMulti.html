@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Reading data from multiple models: the ReadMultiGrid class &mdash; pyaerocom  documentation</title>
+  <title>Reading data from multiple models: the ReadGriddedMulti class &mdash; pyaerocom  documentation</title>
   
 
   
@@ -138,13 +138,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Reading data from multiple models: the ReadMultiGrid class</li>
+      <li>Reading data from multiple models: the ReadGriddedMulti class</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/03_intro_class_ReadMultiGrid.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/03_intro_class_ReadGriddedMulti.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -176,34 +176,35 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="reading-data-from-multiple-models-the-readmultigrid-class">
-<h1>Reading data from multiple models: the ReadMultiGrid class<a class="headerlink" href="#reading-data-from-multiple-models-the-readmultigrid-class" title="Permalink to this headline">¶</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadMultiGrid</span></code> class provides an interface to import
+<div class="section" id="reading-data-from-multiple-models-the-readgriddedmulti-class">
+<h1>Reading data from multiple models: the ReadGriddedMulti class<a class="headerlink" href="#reading-data-from-multiple-models-the-readgriddedmulti-class" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadGriddedMulti</span></code> class provides an interface to import
 multiple variables for an arbitrary number of different models and
-within a specific time interval. It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code>
-class that provides an interface for importing results from a single
-model.</p>
+within a specific time interval. It makes large use of the
+<code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides an interface for importing results
+from a single model.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.io.readgrid</span> <span class="k">import</span> <span class="n">ReadMultiGrid</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readgridded</span> <span class="k">import</span> <span class="n">ReadGriddedMulti</span>
 </pre></div>
 </div>
 <p>Define two models (this list can contain as many models as you like)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">,</span> <span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Create and initiate <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class. The direcory for each model
-as well as all valid files in the model directories are searched on
-initiation of the instance. Valid here means, that the files belong to
-the corresponding model. Subsetting of the time interval is done in a
+<p>Create and initiate <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class. The direcory for each
+model as well as all valid files in the model directories are searched
+on initiation of the instance. Valid here means, that the files belong
+to the corresponding model. Subsetting of the time interval is done in a
 later process.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadMultiGrid</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2011-12-31&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">ReadGriddedMulti</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="s1">&#39;2010-01-01&#39;</span><span class="p">,</span><span class="s1">&#39;2011-12-31&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">C3S</span><span class="o">-</span><span class="n">Aerosol</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECLIPSE</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">SATELLITE</span><span class="o">-</span><span class="n">DATA</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span>
@@ -211,6 +212,7 @@ later process.</p>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom2</span><span class="o">/</span>
+<span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">C3S</span><span class="o">-</span><span class="n">Aerosol</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECLIPSE</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">SATELLITE</span><span class="o">-</span><span class="n">DATA</span><span class="o">/</span>
 <span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">CCI</span><span class="o">-</span><span class="n">Aerosol</span><span class="o">/</span><span class="n">CCI_AEROSOL_Phase2</span><span class="o">/</span>
@@ -234,10 +236,11 @@ later process.</p>
 </div>
 <p>Let’s have a look into one of the two import classes</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read_aatsr</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;AATSR_SU_v4.3&quot;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model ID: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
-      <span class="s2">&quot;Model dir: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span>
-      <span class="s2">&quot;First detected file: </span><span class="si">%s</span><span class="s2">&quot;</span>
-      <span class="o">%</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read_aatsr</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model ID: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="s2">&quot;Model dir: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+      <span class="s2">&quot;First detected file: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                       <span class="n">read_aatsr</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span>
+                                       <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">read_aatsr</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
@@ -281,53 +284,53 @@ Applying temporal cropping of result cube
 Cropping along time axis based on Timestamps
 </pre>
 <p>Print what is in there (similar to the previously introduced
-<code class="docutils literal notranslate"><span class="pre">ReadGrid</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadMultiGrid</span></code> class has a nice string
-representation)</p>
+<code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class has a nice
+string representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadMultiGrid</span>
-<span class="o">-----------------------</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGriddedMulti</span>
+<span class="o">--------------------------</span>
 <span class="n">Model</span> <span class="n">IDs</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AATSR_SU_v4.3&#39;</span><span class="p">,</span> <span class="s1">&#39;CAM5.3-Oslo_CTRL2016&#39;</span><span class="p">]</span>
 
 <span class="n">Loaded</span> <span class="n">data</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
+<span class="o">---------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550erraer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2002</span><span class="p">,</span> <span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">]</span>
 
-<span class="n">Loaded</span> <span class="n">GridData</span> <span class="n">objects</span><span class="p">:</span>
+<span class="n">Loaded</span> <span class="n">GriddedData</span> <span class="n">objects</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">GridData</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GriddedData</span>
+<span class="o">---------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
-<span class="n">Pyaerocom</span> <span class="n">GridData</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GriddedData</span>
+<span class="o">---------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
-<span class="n">Pyaerocom</span> <span class="n">ReadGrid</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
+<span class="o">---------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;deltaz3d&#39;</span><span class="p">,</span> <span class="s1">&#39;humidity3d&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer3d&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aerh2o&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dryaer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550lt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od870aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2006</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2010</span><span class="p">]</span>
 
-<span class="n">Loaded</span> <span class="n">GridData</span> <span class="n">objects</span><span class="p">:</span>
+<span class="n">Loaded</span> <span class="n">GriddedData</span> <span class="n">objects</span><span class="p">:</span>
 
-<span class="n">Pyaerocom</span> <span class="n">GridData</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GriddedData</span>
+<span class="o">---------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
 
-<span class="n">Pyaerocom</span> <span class="n">GridData</span>
-<span class="o">------------------</span>
+<span class="n">Pyaerocom</span> <span class="n">GriddedData</span>
+<span class="o">---------------------</span>
 <span class="n">Variable</span><span class="p">:</span> <span class="n">od550dust</span>
 <span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
 <span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
@@ -338,27 +341,27 @@ representation)</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current model: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">name</span>)
     <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Current variable: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">var_name</span>)
-        <span class="c1"># data is of type pyaerocom.GridData which uses an extended representation of the Cube class</span>
+        <span class="c1"># data is of type pyaerocom.GriddedData which uses an extended representation of the Cube class</span>
         <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Current</span> <span class="n">model</span><span class="p">:</span> <span class="n">AATSR_SU_v4</span><span class="o">.</span><span class="mi">3</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550aer</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">730</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">180</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">360</span><span class="p">)</span><span class="o">&gt;</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550dust</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">730</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">180</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">360</span><span class="p">)</span><span class="o">&gt;</span>
 <span class="n">Current</span> <span class="n">model</span><span class="p">:</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550aer</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">288</span><span class="p">)</span><span class="o">&gt;</span>
 
 <span class="n">Current</span> <span class="n">variable</span><span class="p">:</span> <span class="n">od550dust</span>
-<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GridData</span>
+<span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">mineral</span> <span class="n">aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">288</span><span class="p">)</span><span class="o">&gt;</span>
 </pre></div>
 </div>
@@ -387,7 +390,7 @@ representation)</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/03_intro_class_ReadMultiGrid_19_0.png" src="_images/03_intro_class_ReadMultiGrid_19_0.png" />
+<img alt="_images/03_intro_class_ReadGriddedMulti_19_0.png" src="_images/03_intro_class_ReadGriddedMulti_19_0.png" />
 <div class="section" id="iterate-over-models-and-variables">
 <h2>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h2>
 <p>The following cell iterates over all imported variables and models and
@@ -397,10 +400,10 @@ plots the first time stamp of each result file.</p>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/03_intro_class_ReadMultiGrid_21_0.png" src="_images/03_intro_class_ReadMultiGrid_21_0.png" />
-<img alt="_images/03_intro_class_ReadMultiGrid_21_1.png" src="_images/03_intro_class_ReadMultiGrid_21_1.png" />
-<img alt="_images/03_intro_class_ReadMultiGrid_21_2.png" src="_images/03_intro_class_ReadMultiGrid_21_2.png" />
-<img alt="_images/03_intro_class_ReadMultiGrid_21_3.png" src="_images/03_intro_class_ReadMultiGrid_21_3.png" />
+<img alt="_images/03_intro_class_ReadGriddedMulti_21_0.png" src="_images/03_intro_class_ReadGriddedMulti_21_0.png" />
+<img alt="_images/03_intro_class_ReadGriddedMulti_21_1.png" src="_images/03_intro_class_ReadGriddedMulti_21_1.png" />
+<img alt="_images/03_intro_class_ReadGriddedMulti_21_2.png" src="_images/03_intro_class_ReadGriddedMulti_21_2.png" />
+<img alt="_images/03_intro_class_ReadGriddedMulti_21_3.png" src="_images/03_intro_class_ReadGriddedMulti_21_3.png" />
 </div>
 </div>
 

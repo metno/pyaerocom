@@ -29,8 +29,8 @@ from . import plot
 
 from .variable import Variable
 from .region import Region
-from .griddata import GridData
+from .griddeddata import GriddedData
 #from .obsdata import ObsData, ProfileData, StationData
-from .nogriddata import NoGridData
+from .ungriddeddata import UngriddedData
 
  

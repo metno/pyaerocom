@@ -50,9 +50,9 @@ def cli():
     >>> plot_min = 500
     >>> plot_max = 5000
     >>> var_to_read = 'zdust'
-    >>> model_obj = pio.ReadGrid(name = model, start_time = startdate, stop_time = enddate, verbose=True)
+    >>> model_obj = pio.ReadGridded(name = model, start_time = startdate, stop_time = enddate, verbose=True)
     >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
-    >>> obs_data = pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+    >>> obs_data = pa.ungriddeddata.UngriddedData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
     >>> obs_data.read()
     >>> obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
     >>> obs_lats = obs_data.latitude
@@ -77,7 +77,7 @@ def cli():
     from pyaerocom import const
     import pyaerocom.io as pio
     import pyaerocom as pa
-    supported_obs_networks = ",".join(pa.NoGridData.SUPPORTED_DATASETS)
+    supported_obs_networks = ",".join(pa.UngriddedData.SUPPORTED_DATASETS)
 
     # command line interface using argparse
     Options = {}
@@ -177,10 +177,10 @@ def cli():
         if Model != const.NOMODELNAME:
             # start model read
 
-            model_obj = pio.ReadGrid(name=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
+            model_obj = pio.ReadGridded(name=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=Options['VariablesToRun'][0], ts_type="daily")
-            obs_data = pa.nogriddata.NoGridData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=[Options['VariablesToRun'][0]],
-                                                     verbose=True)
+            obs_data = pa.ungriddeddata.UngriddedData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=[Options['VariablesToRun'][0]],
+                                                      verbose=True)
             obs_data.read()
             obs_lats = obs_data.latitude
             obs_lons = obs_data.longitude
@@ -197,12 +197,12 @@ def cli():
         else:
             # observations only
             # 1st check if the obs network string is right
-            # pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
-            if Options['ObsNetworkName'][0] in pa.nogriddata.NoGridData.SUPPORTED_DATASETS:
+            # pa.ungriddeddata.UngriddedData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+            if Options['ObsNetworkName'][0] in pa.ungriddeddata.UngriddedData.SUPPORTED_DATASETS:
                 # start Obs reading
-                ObsData = pa.nogriddata.NoGridData(data_set_to_read = Options['ObsNetworkName'][0],
-                                          vars_to_read = [Options['VariablesToRun'][0]],
-                                          verbose= args.verbose)
+                ObsData = pa.ungriddeddata.UngriddedData(data_set_to_read = Options['ObsNetworkName'][0],
+                                                         vars_to_read = [Options['VariablesToRun'][0]],
+                                                         verbose= args.verbose)
                 ObsData.read()
 
                 # print('Latitudes:')
