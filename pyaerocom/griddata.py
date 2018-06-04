@@ -299,16 +299,17 @@ class GridData(object):
     
     def to_time_series(self, sample_points=None, scheme="nearest", 
                     collapse_scalar=True, **coords):
+
         """Convert this cube to time series
-        
-        Extract time series for each lon / lat coordinate in this cube or at 
+
+        Extract time series for each lon / lat coordinate in this cube or at
         predefined sample points (e.g. station data). If sample points are
         provided, the cube is interpolated first onto the sample points.
-        
+
         Parameters
         ----------
         sample_points : list
-            coordinates (e.g. lon / lat) at which time series is supposed to be 
+            coordinates (e.g. lon / lat) at which time series is supposed to be
             retrieved
         scheme : str or iris interpolator object
             interpolation scheme (for details, see :func:`interpolate`)
@@ -317,13 +318,15 @@ class GridData(object):
         **coords
             additional keyword args that may be used to provide the interpolation
             coordinates (for details, see :func:`interpolate`)
-        
+
         Returns
         -------
         list
-            list of result dictionaries for each coordinate. Dictionary keys 
+            list of result dictionaries for each coordinate. Dictionary keys
             are: ``longitude, latitude, :attr:`var_name```
         """
+        import numpy as np
+
         result = []
         if not sample_points:
             sample_points = []

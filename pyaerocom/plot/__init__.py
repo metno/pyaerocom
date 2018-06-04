@@ -36,3 +36,4 @@
 # near future
 from .plotmaps import plotmaps, annotate_aerocom, plot_ts_map
 from .mapping import plot_map
+from .plotscatter import plotscatter
