@@ -60,12 +60,12 @@ class ReadAeronetSunV2:
 
     Parameters
     ----------
-    verboseflag : Bool
+    verbose : Bool
         if True some running information is printed
 
     """
     _FILEMASK = '*.lev20'
-    __version__ = "0.05"
+    __version__ = "0.06"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH']
     # Flag if the dataset contains all years or not
@@ -85,7 +85,7 @@ class ReadAeronetSunV2:
     PROVIDES_VARIABLES = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
 
     def __init__(self, index_pointer = 0, verbose = False):
-        self.verboseflag = verbose
+        self.verbose = verbose
         self.metadata = {}
         self.data = []
         self.index = len(self.metadata)
@@ -226,12 +226,16 @@ Length: 223, dtype: float64}
                 data_out['ang4487aer'].append(
                     -1.0 * np.log(data_out['od440aer'][-1] / data_out['od870aer'][-1]) / np.log(0.44 / .870))
                 data_out['od550aer'].append(
-                    data_out['od500aer'][-1] * (0.55 / 0.50) ** np.float_(-1.) * data_out['ang4487aer'][-1])
+                    data_out['od500aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
                 # ;fill up time steps of the now calculated od550_aer that are nans with values calculated from the
                 # ;440nm wavelength to minimise gaps in the time series
                 if np.isnan(data_out['od550aer'][-1]):
-                    data_out['od550aer'][-1] = data_out['od440aer'][-1] * (0.55 / 0.44) ** np.float_(-1.) * \
-                                                data_out['ang4487aer'][-1]
+                    temp = data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
+                    if not np.isnan(temp) and temp > 0.:
+                        data_out['od550aer'][-1] = (data_out['od440aer'][-1] * (0.55 / 0.44) **
+                                                    (np.float_(-1.) * data_out['ang4487aer'][-1]))
+                if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
+                   data_out['od550aer'][-1] = np.nan
 
         # convert  the vars in varstoread to pandas time series
         # and delete the other ones
