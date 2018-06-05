@@ -7,6 +7,43 @@ Documentation of the pyaerocom programming interface.
 
 	1. The code documentation is far from complete 
 	2. For developers: please use the `NumPy docstring standard <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html>`__. 
+
+.. _reading: 
+
+Data import (Reading routines)
+------------------------------
+
+.. note::
+
+	All reading routines are part of the :mod:`pyaerocom.io` sub-package (cf. :ref:`io`)
+
+Reading of gridded data
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.readgridded
+   :members:
+   :undoc-members:
+   
+Reading of ungridded data
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+High-level
+""""""""""
+
+.. automodule:: pyaerocom.io.readungridded
+   :members:
+   :undoc-members:
+  
+Low-level
+"""""""""
+
+.. automodule:: pyaerocom.io.read_aeronet_sunv2
+   :members:
+   :undoc-members:
+     
+.. automodule:: pyaerocom.io.read_earlinet
+   :members:
+   :undoc-members:	
   
 Data types and data representation
 ----------------------------------
@@ -21,42 +58,18 @@ Gridded data
 Ungridded data 
 ^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.ungriddeddata
-   :members:
-   :undoc-members:
+So far, no class for ungridded data objects has been defined. Coming soon...
 
-Input / Output
---------------
+.. _io: 
 
-The `:mod:pyaerocom.io` sub-package contains I/O routines of the module.
-Most importantly, these include reading routines for different models and
-observations.
-
-Reading routines
-^^^^^^^^^^^^^^^^^^^^
-
-Reading of gridded data
-""""""""""""""""""""""""
-
-.. automodule:: pyaerocom.io.readgridded
-   :members:
-   :undoc-members:
-   
-Reading of ungridded data
-"""""""""""""""""""""""""
-
-.. automodule:: pyaerocom.io.read_aeronet_sdav2
-   :members:
-   :undoc-members:
+Further I/O features
+--------------------
   
-.. automodule:: pyaerocom.io.read_aeronet_sunv2
-   :members:
-   :undoc-members:
-     
-.. automodule:: pyaerocom.io.read_earlinet
-   :members:
-   :undoc-members:
-   
+.. note::
+
+	The	:mod:`pyaerocom.io` package also includes data import and reading routines. These are introduced
+	above, in Section :ref:`reading`.
+
 File naming conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -64,7 +77,7 @@ File naming conventions
    :members:
    :undoc-members:
    
-I / O helper methods
+I/O helper methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.helpers
@@ -95,6 +108,13 @@ Plotting maps
 ^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.plot.mapping
+   :members:
+   :undoc-members:
+   
+Scatter plots
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.plotscatter
    :members:
    :undoc-members:
 

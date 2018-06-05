@@ -12,7 +12,7 @@ from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
 from pandas import Timestamp, Series
 from warnings import warn
-from numpy import nan
+from numpy import nan, where
 
 from pyaerocom import const
 from pyaerocom.exceptions import DataExtractionError
@@ -297,10 +297,73 @@ class GriddedData(object):
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
     
+    
+    def lonlat_resolution(self):
+        """Longitude / latitude resolution of grid
+        
+        Returns
+        -------
+        tuple
+            2-element tuple containing
+            
+            - average longitude resolution in decimal degrees
+            - average latitude resolution in decimal degrees
+        """
+        raise NotImplementedError
+        
+    def crop_around_coord(self, lon, lat, step_deg=2):
+        """Crop cube around a single lon / lat coordinate
+        
+        Parameters
+        -----------
+        lon : float
+            longitude of coordinate
+        lat: float
+            latitude of coordinate
+        step_deg : :obj:`float` or :obj:`int`
+            
+        """
+        raise NotImplementedError
+        
+    def to_timeseries_iter_coords(self, sample_points, scheme, collapse_scalar,
+                                  **coords):
+        """Extract time-series for provided input coordinates (lon, lat)
+        
+        Other than :func:`to_time_series`, this method extracts the time-series
+        at all input coordinates by iterating over the coordinate locations, 
+        cropping the grid around the coordinate and then interpolating it using
+        the provided interpolation scheme.
+        
+        This method may be faster for a small number of coordinates (compared 
+        to :func:`to_timeseries`). It may also be the better choice in case the
+        number of coordinates is too large in which case :func:`to_time_series`
+        may fail due to a MemoryError (i.e. the case where the final 
+        interpolated object is too large to fit into memory).
+        
+        Parameters
+        ----------
+        sample_points : list
+            coordinates (e.g. lon / lat) at which time series is supposed to be
+            retrieved
+        scheme : str or iris interpolator object
+            interpolation scheme (for details, see :func:`interpolate`)
+        collapse_scalar : bool
+            see :func:`interpolate`
+        **coords
+            additional keyword args that may be used to provide the interpolation
+            coordinates (for details, see :func:`interpolate`)
+
+        Returns
+        -------
+        list
+            list of result dictionaries for each coordinate. Dictionary keys
+            are: ``longitude, latitude, var_name``
+            
+        """
     def to_time_series(self, sample_points=None, scheme="nearest", 
                     collapse_scalar=True, **coords):
 
-        """Convert this cube to time series
+        """Extract time-series for provided input coordinates (lon, lat)
 
         Extract time series for each lon / lat coordinate in this cube or at
         predefined sample points (e.g. station data). If sample points are
@@ -323,9 +386,8 @@ class GriddedData(object):
         -------
         list
             list of result dictionaries for each coordinate. Dictionary keys
-            are: ``longitude, latitude, :attr:`var_name```
+            are: ``longitude, latitude, var_name``
         """
-        import numpy as np
 
         result = []
         if not sample_points:
@@ -340,28 +402,26 @@ class GriddedData(object):
         if not all([lens[0]==x for x in lens]):
             raise ValueError("Arrays for sample coordinates must have the "
                              "same lengths")
-        data = self.interpolate(sample_points, scheme, collapse_scalar)
-        
-        var = self.var_name
-        times = data.time_stamps()
-        lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
-        lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
-        arr = data.grid.data
-        grid_lons = data.longitude.points
-        for i, lat in enumerate(lats):
-            lon = lons[i]
-            j = np.where(grid_lons == lon)[0][0]
-            result.append({'latitude'   :   lat,
-                           'longitude'  :   lon,
-                           var          :   Series(arr[:, i, j], 
-                                                   index=times)})
+        try:
+            data = self.interpolate(sample_points, scheme, collapse_scalar)
+            var = self.var_name
+            times = data.time_stamps()
+            lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
+            lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
+            arr = data.grid.data
+            grid_lons = data.longitude.points
+            for i, lat in enumerate(lats):
+                lon = lons[i]
+                j = where(grid_lons == lon)[0][0]
+                result.append({'latitude'   :   lat,
+                               'longitude'  :   lon,
+                               var          :   Series(arr[:, i, j], 
+                                                       index=times)})
+        except MemoryError:
+            self._to_timeseries_slow(sample_points, scheme, collapse_scalar)
                 
         return result
             
-    
-            
-            
-        
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         self._check_lonlat_bounds()
@@ -546,8 +606,12 @@ class GriddedData(object):
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))
-        itp_cube = self.grid.interpolate(sample_points, scheme, 
-                                         collapse_scalar)
+        try:
+            itp_cube = self.grid.interpolate(sample_points, scheme, 
+                                             collapse_scalar)
+        except MemoryError as e:
+            raise MemoryError("Interpolation failed since grid of interpolated "
+                              "Cube is too large")
         return GriddedData(itp_cube, **self.suppl_info)
     
     def collocate(self, sample_points=None, scheme="nearest", 
@@ -604,6 +668,7 @@ class GriddedData(object):
             (365, 4)
         
         """
+        raise NotImplementedError
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))
@@ -817,6 +882,7 @@ class GriddedData(object):
     
 if __name__=='__main__':
     import numpy as np
+    import matplotlib.pyplot as plt
     plt.close("all")
     RUN_OLD_STUFF = False
     
@@ -854,7 +920,6 @@ if __name__=='__main__':
         from pyaerocom.io.testfiles import get
         from matplotlib.pyplot import close, figure
         import numpy as np
-        close("all")
         files = get()
         data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
                          name='aatsr_su_v4.3')

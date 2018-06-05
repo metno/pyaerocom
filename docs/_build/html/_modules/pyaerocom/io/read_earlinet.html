@@ -302,7 +302,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadEarlinet.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadEarlinet.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to read an EARLINET file and return it in a dictionary</span>
 <span class="sd">        with the data variables as pandas time series</span>
 
@@ -310,7 +310,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
 <span class="sd">            absolute path to filename to read</span>
-<span class="sd">        varstoread : list</span>
+<span class="sd">        vars_to_read : list</span>
 <span class="sd">            list of str with variable names to read; defaults to [&#39;od550aer&#39;]</span>
 <span class="sd">        verbose : Bool</span>
 <span class="sd">            set to True to increase verbosity</span>
@@ -357,7 +357,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadEarlinet.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadEarlinet.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to read all files in self.files into self.data and self.metadata</span>
 
 <span class="sd">        Example</span>
@@ -381,7 +381,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_file</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="n">stat_obs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="n">varstoread</span><span class="p">)</span>
+            <span class="n">stat_obs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="n">vars_to_read</span><span class="p">)</span>
             <span class="c1"># Fill the metatdata dict</span>
             <span class="n">stat_code</span> <span class="o">=</span> <span class="n">_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">stat_code</span> <span class="o">!=</span> <span class="n">last_stat_code</span><span class="p">:</span>
@@ -423,7 +423,7 @@
             <span class="n">obs_var_index</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">varstoread</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">vars_to_read</span><span class="p">):</span>
                 <span class="n">netcdf_var_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">VAR_INFO</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;netcdf_var_name&#39;</span><span class="p">]</span>
                 <span class="c1"># check if the desired variable is in the file</span>
                 <span class="k">if</span> <span class="n">netcdf_var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stat_obs_data</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
@@ -502,7 +502,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadEarlinet.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">]):</span>
+<div class="viewcode-block" id="ReadEarlinet.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;search for files to read</span>
 
 <span class="sd">        Example</span>
@@ -518,7 +518,7 @@
         <span class="c1"># files = glob.glob(os.path.join(self.DATASET_PATH,</span>
         <span class="c1">#                                self._FILEMASK), recursive=True)</span>
         <span class="c1">#files = []</span>
-        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">varstoread</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
             <span class="n">files</span> <span class="o">=</span> <span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span>
                                             <span class="bp">self</span><span class="o">.</span><span class="n">VAR_INFO</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]),</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">files</span></div>
@@ -531,9 +531,9 @@
         <span class="n">revision_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span><span class="p">)</span>
         <span class="n">revision</span> <span class="o">=</span> <span class="s1">&#39;unset&#39;</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">revision_file</span><span class="p">):</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">revision_file</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">InFile</span><span class="p">:</span>
-                <span class="n">revision</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="n">InFile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">revision_file</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+                <span class="n">revision</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">in_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">revision</span></div></div>
 <span class="c1">###################################################################################</span>

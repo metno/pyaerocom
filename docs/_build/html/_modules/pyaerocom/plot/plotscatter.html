@@ -1,0 +1,399 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.plot.plotscatter &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.plot.plotscatter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.plot.plotscatter</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains scatter plot routines for Aerocom data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">import</span> <span class="nn">pyaerocom.io</span> <span class="k">as</span> <span class="nn">pio</span>
+<span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pa</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<span class="c1"># text positions for the annotations</span>
+<span class="n">xypos</span><span class="o">=</span><span class="p">[]</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="o">.</span><span class="mi">01</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.90</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.90</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.86</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.86</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.82</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.82</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.78</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.78</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
+<span class="n">xypos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="plotscatter"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.plotscatter.plotscatter">[docs]</a><span class="k">def</span> <span class="nf">plotscatter</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">obs_data</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Options</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Method to plot scatterplots</span>
+
+<span class="sd">    Todo</span>
+<span class="sd">    ----</span>
+
+<span class="sd">    Complete docstring, review code</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plt_name</span> <span class="o">=</span> <span class="s1">&#39;SCATTERLOG&#39;</span>
+    <span class="n">var_to_run</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s1">&#39;VariablesToRun&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">obs_network_name</span> <span class="o">=</span> <span class="n">Options</span><span class="p">[</span><span class="s1">&#39;ObsNetworkName&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">obs_data_as_series</span> <span class="o">=</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">start_date</span><span class="o">=</span><span class="n">Options</span><span class="p">[</span><span class="s1">&#39;StartDate&#39;</span><span class="p">],</span> <span class="n">end_date</span><span class="o">=</span><span class="n">Options</span><span class="p">[</span><span class="s1">&#39;EndDate&#39;</span><span class="p">],</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="n">obs_lats</span> <span class="o">=</span> <span class="p">[</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">))]</span>
+    <span class="n">obs_lons</span> <span class="o">=</span> <span class="p">[</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">))]</span>
+    <span class="n">obs_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">))]</span>
+    <span class="c1"># model_station_data = model_data.interpolate([(&quot;latitude&quot;, obs_lats), (&quot;longitude&quot;, obs_lons)])</span>
+    <span class="c1"># times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)</span>
+    <span class="c1"># model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons,</span>
+    <span class="c1">#                                                          times_as_dt64, var_name = [var_to_run])</span>
+
+    <span class="n">model_data_as_series</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">to_time_series</span><span class="p">([(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">obs_lats</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">obs_lons</span><span class="p">)])</span>
+
+    <span class="n">df_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">df_points</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">station_no</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">)):</span>
+        <span class="n">_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">var_to_run</span><span class="p">])</span>
+        <span class="c1"># print(&#39;{} length: {}&#39;.format(obs_names[i],_len))</span>
+        <span class="k">if</span> <span class="n">_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">_nansum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">var_to_run</span><span class="p">])</span>
+            <span class="c1"># _isnan = np.isnan(_nansum)</span>
+            <span class="c1"># print(&#39;{} nansum: {:.3f}&#39;.format(obs_names[i],np.nansum(obs_data_as_series[i][var_to_run])))</span>
+            <span class="c1"># print(&#39;{} isnan: {}&#39;.format(obs_names[i],_isnan))</span>
+            <span class="k">if</span> <span class="n">_nansum</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="mf">0.</span><span class="p">):</span>
+                <span class="n">station_no</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="c1"># print(&#39;{} station_no: {}&#39;.format(obs_names[i],station_no))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> removed due to NaNs only&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obs_names</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># put obs and model in DataFrame to make them use the same time index</span>
+        <span class="n">df_time_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">var_to_run</span><span class="p">],</span>
+                                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">obs_network_name</span><span class="p">])</span>
+        <span class="n">df_points</span> <span class="o">=</span> <span class="n">df_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_time_temp</span><span class="p">)</span>
+        <span class="c1"># df_time_temp[model_name] = model_data_as_series[i][var_to_run]*1.E3</span>
+        <span class="n">df_time_temp</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span> <span class="n">model_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">var_to_run</span><span class="p">]</span> <span class="o">*</span>
+                                <span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">])</span>
+        <span class="c1"># df_time has now all time steps where either one of the obs or model data have data</span>
+        <span class="c1">#</span>
+        <span class="c1"># df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))</span>
+        <span class="n">df_time</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df_time_temp</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">df_time_temp</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+    <span class="c1"># remove all indexes where either one of the data pairs is NaN</span>
+    <span class="c1"># mainly done to get the number of days right.</span>
+    <span class="c1"># df_time.corr() gets it right without</span>
+    <span class="n">df_time</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;any&#39;</span><span class="p">)</span>
+    <span class="n">df_points</span> <span class="o">=</span> <span class="n">df_points</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;# of measurements: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_points</span><span class="p">)))</span>
+
+    <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span>
+    <span class="n">time_step_name</span> <span class="o">=</span> <span class="s1">&#39;mALLYEARdaily&#39;</span>
+    <span class="c1"># OD550_AER_an2008_YEARLY_WORLD_SCATTERLOG_AeronetSunV3Lev2.0.daily.ps.png</span>
+    <span class="c1"># if df_time[model_name].index[0].year != df_time[model_name].index[-1].year:</span>
+    <span class="n">years_covered</span> <span class="o">=</span> <span class="n">df_time</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">[:]</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">years_covered</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">figname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_an</span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span>
+                                                         <span class="n">var_to_run</span><span class="p">,</span><span class="n">years_covered</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                      <span class="n">years_covered</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                      <span class="n">time_step_name</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">,</span> <span class="n">plt_name</span><span class="p">,</span>
+                                                      <span class="n">obs_network_name</span><span class="p">)</span>
+        <span class="n">plotname</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">years_covered</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">years_covered</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;daily&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">figname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_an</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span>
+                                                      <span class="n">var_to_run</span><span class="p">,</span><span class="n">years_covered</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                      <span class="n">time_step_name</span><span class="p">,</span> <span class="n">filter_name</span><span class="p">,</span> <span class="n">plt_name</span><span class="p">,</span>
+                                                      <span class="n">obs_network_name</span><span class="p">)</span>
+        <span class="n">plotname</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">years_covered</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;daily&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">figname</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">correlation_coeff</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+    <span class="c1"># IDL: rms=sqrt(total((f_YData-f_Xdata)^2)/n_elements(f_YData))</span>
+    <span class="c1">#sum = df_time.sum()</span>
+    <span class="c1"># nmb=total(f_YData-f_Xdata)/total(f_Xdata)*100.</span>
+    <span class="c1"># c=n_elements(f_YData)</span>
+    <span class="c1"># f_temp=(f_YData-f_Xdata)/(f_YData+f_Xdata)</span>
+    <span class="c1"># mnmb=2./c*total(f_temp)*100.</span>
+    <span class="c1"># fge=2./c*total(abs(f_temp))*100.</span>
+    <span class="c1"># f_YDatabc=f_YData*(total(f_Xdata,/nan)/total(f_YData,/nan)) ; bias corrected model data</span>
+    <span class="c1"># rmsbc=sqrt(total((f_YDatabc-f_Xdata)^2)/n_elements(f_YDatabc))</span>
+    <span class="n">difference</span> <span class="o">=</span> <span class="n">df_time</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_time</span><span class="p">[</span><span class="n">obs_network_name</span><span class="p">]</span>
+    <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_time</span><span class="p">)</span>
+    <span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">difference</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">num_points</span><span class="p">)</span>
+    <span class="n">nmb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">difference</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">df_time</span><span class="p">[</span><span class="n">obs_network_name</span><span class="p">])</span><span class="o">*</span><span class="mf">100.</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_time</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_time</span><span class="p">[</span><span class="n">obs_network_name</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">df_time</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">+</span> <span class="n">df_time</span><span class="p">[</span><span class="n">obs_network_name</span><span class="p">])</span>
+    <span class="n">mnmb</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">/</span><span class="n">num_points</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.</span>
+    <span class="n">fge</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span> <span class="o">*</span> <span class="mf">100.</span>
+
+    <span class="n">plot</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">obs_network_name</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span>
+                                <span class="n">loglog</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;loglog&#39;</span><span class="p">],</span>
+                                <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span>
+                                <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="c1"># plot the 1 by 1 line</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;xlim&#39;</span><span class="p">],</span> <span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;ylim&#39;</span><span class="p">],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;xlim&#39;</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;ylim&#39;</span><span class="p">])</span>
+    <span class="n">xypos_index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> #: </span><span class="si">{}</span><span class="s2"> # st: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_to_run</span><span class="o">+</span><span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_to_run</span><span class="p">][</span><span class="s1">&#39;unit&#39;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_time</span><span class="p">),</span> <span class="n">station_no</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;Obs: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="n">obs_network_name</span><span class="p">]),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;Mod: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="n">model_name</span><span class="p">]),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;NMB: </span><span class="si">{:.1f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nmb</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;MNMB: </span><span class="si">{:.1f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mnmb</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;R: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">correlation_coeff</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;RMS: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rms</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">xypos_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;FGE: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fge</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="n">xypos_index</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="c1"># right lower part</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotname</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filter_name</span><span class="p">),</span>
+                        <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

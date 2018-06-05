@@ -141,7 +141,7 @@ class ReadEarlinet:
 
     ###################################################################################
 
-    def read_file(self, filename, varstoread = ['zdust'], verbose = False):
+    def read_file(self, filename, vars_to_read = ['zdust'], verbose = False):
         """method to read an EARLINET file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -149,7 +149,7 @@ class ReadEarlinet:
         ----------
         filename : str
             absolute path to filename to read
-        varstoread : list
+        vars_to_read : list
             list of str with variable names to read; defaults to ['od550aer']
         verbose : Bool
             set to True to increase verbosity
@@ -196,7 +196,7 @@ Attributes:
 
     ###################################################################################
 
-    def read(self, varstoread = ['zdust'], verbose = False):
+    def read(self, vars_to_read = ['zdust'], verbose = False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
@@ -220,7 +220,7 @@ Attributes:
             if self.verbose:
                 sys.stdout.write(_file+"\n")
 
-            stat_obs_data = self.read_file(_file, varstoread = varstoread)
+            stat_obs_data = self.read_file(_file, vars_to_read = vars_to_read)
             # Fill the metatdata dict
             stat_code = _file.split('/')[-3]
             if stat_code != last_stat_code:
@@ -262,7 +262,7 @@ Attributes:
             obs_var_index = 0
 
 
-            for var in sorted(varstoread):
+            for var in sorted(vars_to_read):
                 netcdf_var_name = self.VAR_INFO[var]['netcdf_var_name']
                 # check if the desired variable is in the file
                 if netcdf_var_name not in stat_obs_data.variables:
@@ -341,7 +341,7 @@ Attributes:
 
     ###################################################################################
 
-    def get_file_list(self, varstoread = ['zdust']):
+    def get_file_list(self, vars_to_read = ['zdust']):
         """search for files to read
 
         Example
@@ -357,7 +357,7 @@ Attributes:
         # files = glob.glob(os.path.join(self.DATASET_PATH,
         #                                self._FILEMASK), recursive=True)
         #files = []
-        for var in varstoread:
+        for var in vars_to_read:
             files = (glob.glob(os.path.join(self.DATASET_PATH,
                                             self.VAR_INFO[var]['file_mask']), recursive=True))
         return files
@@ -370,9 +370,9 @@ Attributes:
         revision_file = os.path.join(self.DATASET_PATH, const.REVISION_FILE)
         revision = 'unset'
         if os.path.isfile(revision_file):
-            with open(revision_file, 'rt') as InFile:
-                revision = InFile.readline().strip()
-                InFile.close()
+            with open(revision_file, 'rt') as in_file:
+                revision = in_file.readline().strip()
+                in_file.close()
 
         return revision
 ###################################################################################

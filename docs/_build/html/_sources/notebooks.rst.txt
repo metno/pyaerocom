@@ -18,3 +18,5 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 .. include:: 04_intro_class_GriddedData.rst
 
 .. include:: 05_intro_time_handling.rst
+
+.. include:: 06_collocation.rst

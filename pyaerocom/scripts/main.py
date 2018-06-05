@@ -52,7 +52,7 @@ def cli():
     >>> var_to_read = 'zdust'
     >>> model_obj = pio.ReadGridded(name = model, start_time = startdate, stop_time = enddate, verbose=True)
     >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
-    >>> obs_data = pa.ungriddeddata.UngriddedData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+    >>> obs_data = pyaerocom.io.readungridded.ReadUngridded(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
     >>> obs_data.read()
     >>> obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
     >>> obs_lats = obs_data.latitude
@@ -77,7 +77,7 @@ def cli():
     from pyaerocom import const
     import pyaerocom.io as pio
     import pyaerocom as pa
-    supported_obs_networks = ",".join(pa.UngriddedData.SUPPORTED_DATASETS)
+    supported_obs_networks = ",".join(pa.ReadUngridded.SUPPORTED_DATASETS)
 
     # command line interface using argparse
     Options = {}
@@ -179,8 +179,8 @@ def cli():
 
             model_obj = pio.ReadGridded(name=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=Options['VariablesToRun'][0], ts_type="daily")
-            obs_data = pa.ungriddeddata.UngriddedData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=[Options['VariablesToRun'][0]],
-                                                      verbose=True)
+            obs_data = pyaerocom.io.readungridded.ReadUngridded(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=[Options['VariablesToRun'][0]],
+                                                                verbose=True)
             obs_data.read()
             obs_lats = obs_data.latitude
             obs_lons = obs_data.longitude
@@ -197,12 +197,12 @@ def cli():
         else:
             # observations only
             # 1st check if the obs network string is right
-            # pa.ungriddeddata.UngriddedData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
-            if Options['ObsNetworkName'][0] in pa.ungriddeddata.UngriddedData.SUPPORTED_DATASETS:
+            # pa.readungridded.ReadUngridded(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+            if Options['ObsNetworkName'][0] in pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS:
                 # start Obs reading
-                ObsData = pa.ungriddeddata.UngriddedData(data_set_to_read = Options['ObsNetworkName'][0],
-                                                         vars_to_read = [Options['VariablesToRun'][0]],
-                                                         verbose= args.verbose)
+                ObsData = pyaerocom.io.readungridded.ReadUngridded(data_set_to_read = Options['ObsNetworkName'][0],
+                                                                   vars_to_read = [Options['VariablesToRun'][0]],
+                                                                   verbose= args.verbose)
                 ObsData.read()
 
                 # print('Latitudes:')

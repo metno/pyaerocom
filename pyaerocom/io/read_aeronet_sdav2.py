@@ -40,17 +40,14 @@ Note
 
 import os
 import glob
-from collections import OrderedDict
 
 import numpy as np
-from datetime import datetime
 import pandas as pd
 import re
 from pyaerocom import const as const
 
-class ReadAeronetSDAV2:
-	"""Read Aeronet SDA data class
-	"""
+class ReadAeronetSDAV2(object):
+	"""Read Aeronet SDA data class"""
 	#FILEMASK = '*_A*.ONEILL_20'
 	FILEMASK = '*.ONEILL_20'
 	version__='0.02'
@@ -61,14 +58,16 @@ class ReadAeronetSDAV2:
 
 	###################################################################################
 
-	def __init__(self, VerboseFlag=False):
-		self.VerboseFlag = VerboseFlag
+	def __init__(self, verbose=False):
+		self.verbose = verbose
 		self.data = {}
 		self.index = len(self.data)
-		self.GetFileList()
+		self.get_file_list()
 		#read revision data from 1st data file name
 		#example: 920801_160312_Minsk.ONEILL_20
-		self.Revision=os.path.basename(self.files[0]).split('_')[1]
+		self.revision = os.path.basename(self.files[0]).split('_')[1]
+
+		raise NotImplementedError("Currently under development...")
 
 
 
@@ -90,7 +89,7 @@ class ReadAeronetSDAV2:
 
 	###################################################################################
 
-	def ReadDailyFile(InFile, VarsToReturn=None):
+	def read_daily_file(in_file, vars_to_return=None):
 
 		#This how the beginning of data file lookes like
 
@@ -136,114 +135,114 @@ class ReadAeronetSDAV2:
 
 
 
-		f_NanVal=np.float_(-9999.)
+		f_nan_val=np.float_(-9999.)
 
-		d_DataOut={}
+		d_data_out={}
 		#Iterate over the lines of the file
-		with open(InFile, 'rt') as InFile:
-			c_HeadLine=InFile.readline()
-			c_Algorithm=InFile.readline()
-			c_Dummy=InFile.readline()
-			#re.split(r'=|\,',c_Dummy)
-			i_Dummy=iter(re.split(r'=|\,',c_Dummy.rstrip())) 
-			dict_Loc=dict(zip(i_Dummy, i_Dummy))
+		with open(in_file, 'rt') as in_file:
+			c_head_line=in_file.readline()
+			c_algorithm=in_file.readline()
+			c_dummy=in_file.readline()
+			#re.split(r'=|\,',c_dummy)
+			i_dummy=iter(re.split(r'=|\,',c_dummy.rstrip()))
+			dict_loc=dict(zip(i_dummy, i_dummy))
 
 			#pdb.set_trace()
-			d_DataOut['latitude']=float(dict_Loc['Latitude'])
-			d_DataOut['longitude']=float(dict_Loc['Longitude'])
-			d_DataOut['altitude']=float(dict_Loc['Elevation[m]'])
-			d_DataOut['station name']=dict_Loc['Location']
-			d_DataOut['PI']=dict_Loc['PI']
-			c_Dummy=InFile.readline()
-			c_Header=InFile.readline()
+			d_data_out['latitude']=float(dict_loc['Latitude'])
+			d_data_out['longitude']=float(dict_loc['Longitude'])
+			d_data_out['altitude']=float(dict_loc['Elevation[m]'])
+			d_data_out['station name']=dict_loc['Location']
+			d_data_out['PI']=dict_loc['PI']
+			c_dummy=in_file.readline()
+			c_Header=in_file.readline()
 
 
 			DataArr={}
-			#d_DataOut['time']=[]
-			d_DataOut['od500aer']=[]
-			d_DataOut['od500gt1aer']=[]
-			d_DataOut['od500lt1aer']=[]
-			d_DataOut['od440aer']=[]
-			d_DataOut['od870aer']=[]
-			d_DataOut['ang4487aer']=[]
-			d_DataOut['od550aer']=[]
-			d_DataOut['od550gt1aer']=[]
-			d_DataOut['od550lt1aer']=[]
+			#d_data_out['time']=[]
+			d_data_out['od500aer']=[]
+			d_data_out['od500gt1aer']=[]
+			d_data_out['od500lt1aer']=[]
+			d_data_out['od440aer']=[]
+			d_data_out['od870aer']=[]
+			d_data_out['ang4487aer']=[]
+			d_data_out['od550aer']=[]
+			d_data_out['od550gt1aer']=[]
+			d_data_out['od550lt1aer']=[]
 			d_Time=[]
 
 
-			for line in InFile:
+			for line in in_file:
 				# process line
-				c_DummyArr=line.split(',')
+				c_dummy_arr=line.split(',')
 				#the following uses the standatd python datetime functions
-				day, month, year = c_DummyArr[DATE_INDEX].split(':')
-				hour, minute, second = c_DummyArr[TIME_INDEX].split(':')
+				day, month, year = c_dummy_arr[DATE_INDEX].split(':')
+				hour, minute, second = c_dummy_arr[TIME_INDEX].split(':')
 
 				#This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
 				#Build a proper ISO 8601 UTC date string
-				day, month, year = c_DummyArr[DATE_INDEX].split(':')
+				day, month, year = c_dummy_arr[DATE_INDEX].split(':')
 				#pdb.set_trace()
 				datestring='-'.join([year, month, day])
-				datestring='T'.join([datestring,  c_DummyArr[TIME_INDEX]])
+				datestring='T'.join([datestring,  c_dummy_arr[TIME_INDEX]])
 				datestring='+'.join([datestring, '00:00'])
 				d_Time.append(np.datetime64(datestring))
 
-				d_DataOut['od500aer'].append(np.float_(c_DummyArr[TOTAL_AOD_500NM_TAU_A_INDEX]))
-				if d_DataOut['od500aer'][-1] == f_NanVal: d_DataOut['od500aer'][-1]=np.nan
-				d_DataOut['od440aer'].append(np.float_(c_DummyArr[I440NM_INPUT_AOD_INDEX]))
-				if d_DataOut['od440aer'][-1] == f_NanVal: d_DataOut['od440aer'][-1]=np.nan
-				d_DataOut['od870aer'].append(np.float_(c_DummyArr[I870NM_INPUT_AOD_INDEX]))
-				if d_DataOut['od870aer'][-1] == f_NanVal: d_DataOut['od870aer'][-1]=np.nan
+				d_data_out['od500aer'].append(np.float_(c_dummy_arr[TOTAL_AOD_500NM_TAU_A_INDEX]))
+				if d_data_out['od500aer'][-1] == f_nan_val: d_data_out['od500aer'][-1]=np.nan
+				d_data_out['od440aer'].append(np.float_(c_dummy_arr[I440NM_INPUT_AOD_INDEX]))
+				if d_data_out['od440aer'][-1] == f_nan_val: d_data_out['od440aer'][-1]=np.nan
+				d_data_out['od870aer'].append(np.float_(c_dummy_arr[I870NM_INPUT_AOD_INDEX]))
+				if d_data_out['od870aer'][-1] == f_nan_val: d_data_out['od870aer'][-1]=np.nan
 
-				d_DataOut['od500gt1aer'].append(np.float_(c_DummyArr[COARSE_MODE_AOD_500NM_TAU_C_INDEX]))
-				if d_DataOut['od500gt1aer'][-1] == f_NanVal: d_DataOut['od500gt1aer'][-1]=np.nan
-				d_DataOut['od500lt1aer'].append(np.float_(c_DummyArr[FINE_MODE_AOD_500NM_TAU_F_INDEX]))
-				if d_DataOut['od500lt1aer'][-1] == f_NanVal: d_DataOut['od500lt1aer'][-1]=np.nan
+				d_data_out['od500gt1aer'].append(np.float_(c_dummy_arr[COARSE_MODE_AOD_500NM_TAU_C_INDEX]))
+				if d_data_out['od500gt1aer'][-1] == f_nan_val: d_data_out['od500gt1aer'][-1]=np.nan
+				d_data_out['od500lt1aer'].append(np.float_(c_dummy_arr[FINE_MODE_AOD_500NM_TAU_F_INDEX]))
+				if d_data_out['od500lt1aer'][-1] == f_nan_val: d_data_out['od500lt1aer'][-1]=np.nan
 
 				
-				d_DataOut['ang4487aer'].append(-1.0*np.log(d_DataOut['od440aer'][-1]/d_DataOut['od870aer'][-1])/np.log(0.44/.870))
-				d_DataOut['od550aer'].append(d_DataOut['od500aer'][-1]*(0.55/0.50)**np.float_(-1.)*d_DataOut['ang4487aer'][-1])
-				d_DataOut['od550gt1aer'].append(d_DataOut['od500gt1aer'][-1]*(0.55/0.50)**np.float_(-1.)*d_DataOut['ang4487aer'][-1])
-				d_DataOut['od550lt1aer'].append(d_DataOut['od500lt1aer'][-1]*(0.55/0.50)**np.float_(-1.)*d_DataOut['ang4487aer'][-1])
+				d_data_out['ang4487aer'].append(-1.0*np.log(d_data_out['od440aer'][-1]/d_data_out['od870aer'][-1])/np.log(0.44/.870))
+				d_data_out['od550aer'].append(d_data_out['od500aer'][-1]*(0.55/0.50)**np.float_(-1.)*d_data_out['ang4487aer'][-1])
+				d_data_out['od550gt1aer'].append(d_data_out['od500gt1aer'][-1]*(0.55/0.50)**np.float_(-1.)*d_data_out['ang4487aer'][-1])
+				d_data_out['od550lt1aer'].append(d_data_out['od500lt1aer'][-1]*(0.55/0.50)**np.float_(-1.)*d_data_out['ang4487aer'][-1])
 				#;fill up time steps of the now calculated od550_aer that are nans with values calculated from the
 				#;440nm wavelength to minimise gaps in the time series
-				#if np.isnan(d_DataOut['od550aer'][-1]): 
-					#d_DataOut['od550aer'][-1]=d_DataOut['od440aer'][-1]*(0.55/0.44)**np.float_(-1.)*d_DataOut['ang4487aer'][-1]
+				#if np.isnan(d_data_out['od550aer'][-1]):
+					#d_data_out['od550aer'][-1]=d_data_out['od440aer'][-1]*(0.55/0.44)**np.float_(-1.)*d_data_out['ang4487aer'][-1]
 
 		#convert to pandas series
-		d_DataOut['od500aer']=pd.Series(d_DataOut['od500aer'],index=d_Time)
-		d_DataOut['od500gt1aer']=pd.Series(d_DataOut['od500gt1aer'],index=d_Time)
-		d_DataOut['od500lt1aer']=pd.Series(d_DataOut['od500lt1aer'],index=d_Time)
-		d_DataOut['od440aer']=pd.Series(d_DataOut['od440aer'],index=d_Time)
-		d_DataOut['od870aer']=pd.Series(d_DataOut['od870aer'],index=d_Time)
-		d_DataOut['ang4487aer']=pd.Series(d_DataOut['ang4487aer'],index=d_Time)
-		d_DataOut['od550aer']=pd.Series(d_DataOut['od550aer'],index=d_Time)
-		d_DataOut['od550gt1aer']=pd.Series(d_DataOut['od550gt1aer'],index=d_Time)
-		d_DataOut['od550lt1aer']=pd.Series(d_DataOut['od550lt1aer'],index=d_Time)
+		d_data_out['od500aer']=pd.Series(d_data_out['od500aer'],index=d_Time)
+		d_data_out['od500gt1aer']=pd.Series(d_data_out['od500gt1aer'],index=d_Time)
+		d_data_out['od500lt1aer']=pd.Series(d_data_out['od500lt1aer'],index=d_Time)
+		d_data_out['od440aer']=pd.Series(d_data_out['od440aer'],index=d_Time)
+		d_data_out['od870aer']=pd.Series(d_data_out['od870aer'],index=d_Time)
+		d_data_out['ang4487aer']=pd.Series(d_data_out['ang4487aer'],index=d_Time)
+		d_data_out['od550aer']=pd.Series(d_data_out['od550aer'],index=d_Time)
+		d_data_out['od550gt1aer']=pd.Series(d_data_out['od550gt1aer'],index=d_Time)
+		d_data_out['od550lt1aer']=pd.Series(d_data_out['od550lt1aer'],index=d_Time)
 
-		return d_DataOut
+		return d_data_out
 		#pdb.set_trace()
 
 
 	###################################################################################
 
-	def ReadDaily(self):
+	def read_daily(self):
 		"""create a dictionary with all the stations using the station name as key"""
 
 		for File in self.files:
-			if self.VerboseFlag:
+			if self.verbose:
 				print(File)
 
-			TempData=ReadAeronetSDAV2.ReadDailyFile(File)
+			TempData=ReadAeronetSDAV2.read_daily_file(File)
 			self.data[TempData['station name']]=TempData
 
 
 	###################################################################################
 
-	def GetFileList(self):
+	def get_file_list(self):
 		"""search for files to read """
 
-		if self.VerboseFlag:
+		if self.verbose:
 			print('searching for data files. This might take a while...')
 		self.files=glob.glob(os.path.join(ReadAeronetSDAV2.DATASET_PATH,ReadAeronetSDAV2.FILEMASK))
 

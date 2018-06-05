@@ -49,7 +49,7 @@ import re
 from pyaerocom import const
 
 class ReadAeronetSunV2:
-    """class to read Aeronet direct sun version 2 Level 2.0 data
+    """Interface for reading Aeronet direct sun version 2 Level 2.0 data
 
     Attributes
     ----------
@@ -84,7 +84,7 @@ class ReadAeronetSunV2:
     _CHUNKSIZE = 1000
     PROVIDES_VARIABLES = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
 
-    def __init__(self, index_pointer = 0, verbose = False):
+    def __init__(self, index_pointer=0, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -116,7 +116,7 @@ class ReadAeronetSunV2:
 
     ###################################################################################
 
-    def read_daily_file(self, filename, varstoread = ['od550aer'], verbose = False):
+    def read_daily_file(self, filename, vars_to_read=['od550aer'], verbose=False):
         """method to read an Aeronet Sun V2 level 2 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -124,7 +124,7 @@ class ReadAeronetSunV2:
         ----------
         filename : str
             absolute path to filename to read
-        varstoread : list
+        vars_to_read : list
             list of str with variable names to read; defaults to ['od550aer']
         verbose : Bool
             set to True to increase verbosity
@@ -178,29 +178,29 @@ Length: 223, dtype: float64}
         # Iterate over the lines of the file
         if verbose:
             sys.stderr.write(filename + '\n')
-        with open(filename, 'rt') as InFile:
-            c_HeadLine = InFile.readline()
-            c_Algorithm = InFile.readline()
-            c_Dummy = InFile.readline()
-            # re.split(r'=|\,',c_Dummy)
-            i_Dummy = iter(re.split(r'=|\,', c_Dummy.rstrip()))
-            dict_Loc = dict(zip(i_Dummy, i_Dummy))
+        with open(filename, 'rt') as in_file:
+            c_head_line = in_file.readline()
+            c_algorithm = in_file.readline()
+            c_dummy = in_file.readline()
+            # re.split(r'=|\,',c_dummy)
+            i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
+            dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['latitude'] = float(dict_Loc['lat'])
-            data_out['longitude'] = float(dict_Loc['long'])
-            data_out['altitude'] = float(dict_Loc['elev'])
-            data_out['station name'] = dict_Loc['Location']
-            data_out['PI'] = dict_Loc['PI']
-            c_Dummy = InFile.readline()
-            c_Header = InFile.readline()
+            data_out['latitude'] = float(dict_loc['lat'])
+            data_out['longitude'] = float(dict_loc['long'])
+            data_out['altitude'] = float(dict_loc['elev'])
+            data_out['station name'] = dict_loc['Location']
+            data_out['PI'] = dict_loc['PI']
+            c_dummy = in_file.readline()
+            c_Header = in_file.readline()
 
             #
             #DataArr = {}
             dtime = []
-            for Var in self.PROVIDES_VARIABLES:
-                data_out[Var] = []
+            for var in self.PROVIDES_VARIABLES:
+                data_out[var] = []
 
-            for line in InFile:
+            for line in in_file:
                 # process line
                 dummy_arr = line.split(',')
                 # the following uses the standatd python datetime functions
@@ -237,26 +237,26 @@ Length: 223, dtype: float64}
                 if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
                    data_out['od550aer'][-1] = np.nan
 
-        # convert  the vars in varstoread to pandas time series
+        # convert  the vars in vars_to_read to pandas time series
         # and delete the other ones
         for var in self.PROVIDES_VARIABLES:
-            if var in varstoread:
-                data_out[var] = pd.Series(data_out[var], index = dtime)
+            if var in vars_to_read:
+                data_out[var] = pd.Series(data_out[var], index=dtime)
             else:
                 del data_out[var]
 
-        return (data_out)
+        return data_out
 
     ###################################################################################
 
-    def read(self, varstoread = ['od550aer'], verbose = False):
+    def read(self, vars_to_read = ['od550aer'], verbose = False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
         -------
         >>> import pyaerocom.io.read_aeronet_sunv2
         >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
-        >>> obj.read(verbose = True)
+        >>> obj.read(verbose=True)
         """
 
         # Metadata key is float because the numpy array holding it is float
@@ -268,7 +268,7 @@ Length: 223, dtype: float64}
         for _file in sorted(self.files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
-            stat_obs_data = self.read_daily_file(_file, varstoread = varstoread)
+            stat_obs_data = self.read_daily_file(_file, vars_to_read = vars_to_read)
             # Fill the metatdata dict
             self.metadata[met_data_key] = {}
             self.metadata[met_data_key]['station name'] = stat_obs_data['station name']
@@ -284,7 +284,7 @@ Length: 223, dtype: float64}
             start_index = self.index_pointer
             # variable index
             obs_var_index = 0
-            for var in sorted(varstoread):
+            for var in sorted(vars_to_read):
                 for time, val in stat_obs_data[var].iteritems():
                     self.data[self.index_pointer, self._DATAINDEX] = val
                     # pd.TimeStamp.value is nano seconds since the epoch!
@@ -330,9 +330,9 @@ Length: 223, dtype: float64}
         revision_file = os.path.join(self.DATASET_PATH, const.REVISION_FILE)
         revision = 'unset'
         if os.path.isfile(revision_file):
-            with open(revision_file, 'rt') as InFile:
-                revision = InFile.readline().strip()
-                InFile.close()
+            with open(revision_file, 'rt') as in_file:
+                revision = in_file.readline().strip()
+                in_file.close()
 
             self.revision = revision
 ###################################################################################

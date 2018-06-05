@@ -37,6 +37,7 @@ from .read_aeronet_sunv2 import ReadAeronetSunV2
 # =============================================================================
 
 from .readgridded import ReadGridded, ReadGriddedMulti
+from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
 
 from . import testfiles

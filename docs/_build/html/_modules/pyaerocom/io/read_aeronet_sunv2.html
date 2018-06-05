@@ -210,7 +210,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 
 <div class="viewcode-block" id="ReadAeronetSunV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetSunV2</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;class to read Aeronet direct sun version 2 Level 2.0 data</span>
+    <span class="sd">&quot;&quot;&quot;Interface for reading Aeronet direct sun version 2 Level 2.0 data</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -245,7 +245,7 @@
     <span class="n">_CHUNKSIZE</span> <span class="o">=</span> <span class="mi">1000</span>
     <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od870aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_pointer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_pointer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -277,7 +277,7 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadAeronetSunV2.read_daily_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_daily_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_daily_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadAeronetSunV2.read_daily_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_daily_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_daily_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_read</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to read an Aeronet Sun V2 level 2 file and return it in a dictionary</span>
 <span class="sd">        with the data variables as pandas time series</span>
 
@@ -285,7 +285,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str</span>
 <span class="sd">            absolute path to filename to read</span>
-<span class="sd">        varstoread : list</span>
+<span class="sd">        vars_to_read : list</span>
 <span class="sd">            list of str with variable names to read; defaults to [&#39;od550aer&#39;]</span>
 <span class="sd">        verbose : Bool</span>
 <span class="sd">            set to True to increase verbosity</span>
@@ -339,29 +339,29 @@
         <span class="c1"># Iterate over the lines of the file</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">InFile</span><span class="p">:</span>
-            <span class="n">c_HeadLine</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">c_Algorithm</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">c_Dummy</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="c1"># re.split(r&#39;=|\,&#39;,c_Dummy)</span>
-            <span class="n">i_Dummy</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=|\,&#39;</span><span class="p">,</span> <span class="n">c_Dummy</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span>
-            <span class="n">dict_Loc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">i_Dummy</span><span class="p">,</span> <span class="n">i_Dummy</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+            <span class="n">c_head_line</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">c_algorithm</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">c_dummy</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="c1"># re.split(r&#39;=|\,&#39;,c_dummy)</span>
+            <span class="n">i_dummy</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=|\,&#39;</span><span class="p">,</span> <span class="n">c_dummy</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span>
+            <span class="n">dict_loc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">i_dummy</span><span class="p">,</span> <span class="n">i_dummy</span><span class="p">))</span>
 
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;long&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;elev&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">]</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_Loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
-            <span class="n">c_Dummy</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">c_Header</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;long&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;elev&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">]</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
+            <span class="n">c_dummy</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">c_Header</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
 
             <span class="c1">#</span>
             <span class="c1">#DataArr = {}</span>
             <span class="n">dtime</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">Var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">:</span>
-                <span class="n">data_out</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">:</span>
+                <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">InFile</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">in_file</span><span class="p">:</span>
                 <span class="c1"># process line</span>
                 <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
                 <span class="c1"># the following uses the standatd python datetime functions</span>
@@ -398,26 +398,26 @@
                 <span class="k">if</span> <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">][</span><span class="s1">&#39;lower_limit&#39;</span><span class="p">]:</span>
                    <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-        <span class="c1"># convert  the vars in varstoread to pandas time series</span>
+        <span class="c1"># convert  the vars in vars_to_read to pandas time series</span>
         <span class="c1"># and delete the other ones</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">varstoread</span><span class="p">:</span>
-                <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">index</span> <span class="o">=</span> <span class="n">dtime</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
+                <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">dtime</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">del</span> <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">data_out</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">data_out</span></div>
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadAeronetSunV2.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadAeronetSunV2.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">],</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to read all files in self.files into self.data and self.metadata</span>
 
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.read_aeronet_sunv2</span>
 <span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()</span>
-<span class="sd">        &gt;&gt;&gt; obj.read(verbose = True)</span>
+<span class="sd">        &gt;&gt;&gt; obj.read(verbose=True)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Metadata key is float because the numpy array holding it is float</span>
@@ -429,7 +429,7 @@
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_file</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">stat_obs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_daily_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">varstoread</span> <span class="o">=</span> <span class="n">varstoread</span><span class="p">)</span>
+            <span class="n">stat_obs_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_daily_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="n">vars_to_read</span><span class="p">)</span>
             <span class="c1"># Fill the metatdata dict</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">met_data_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">met_data_key</span><span class="p">][</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stat_obs_data</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span>
@@ -445,7 +445,7 @@
             <span class="n">start_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span>
             <span class="c1"># variable index</span>
             <span class="n">obs_var_index</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">varstoread</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">vars_to_read</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">stat_obs_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
                     <span class="c1"># pd.TimeStamp.value is nano seconds since the epoch!</span>
@@ -491,9 +491,9 @@
         <span class="n">revision_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span><span class="p">)</span>
         <span class="n">revision</span> <span class="o">=</span> <span class="s1">&#39;unset&#39;</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">revision_file</span><span class="p">):</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">revision_file</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">InFile</span><span class="p">:</span>
-                <span class="n">revision</span> <span class="o">=</span> <span class="n">InFile</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="n">InFile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">revision_file</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
+                <span class="n">revision</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">in_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">revision</span> <span class="o">=</span> <span class="n">revision</span></div></div>
 <span class="c1">###################################################################################</span>

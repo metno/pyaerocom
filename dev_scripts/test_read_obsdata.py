@@ -9,7 +9,7 @@ Created on Wed May  2 12:43:26 2018
 
 from pyaerocom import const
 import pyaerocom
-import numpy as np
+
 RELOAD = False
 if __name__=="__main__":
     try:
@@ -17,7 +17,7 @@ if __name__=="__main__":
     except:
         RELOAD = True
     if RELOAD:
-        data = pyaerocom.ungriddeddata.UngriddedData(const.AERONET_SUN_V2L2_AOD_DAILY_NAME)
+        data = pyaerocom.io.readungridded.ReadUngridded(const.AERONET_SUN_V2L2_AOD_DAILY_NAME)
         data.read()
         
         print('Latitudes:')

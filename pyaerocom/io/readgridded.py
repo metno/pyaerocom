@@ -55,7 +55,7 @@ from pyaerocom.io.helpers import (check_time_coord, correct_time_coord,
 from pyaerocom.griddeddata import GriddedData
 
 class ReadGridded(object):
-    """Class for reading model results from AEROCOM NetCDF files
+    """Class for reading gridded files based on network or model ID
     
     Note
     ----
@@ -67,8 +67,8 @@ class ReadGridded(object):
     Attributes
     ----------
     name : str
-        string ID for model (see e.g. Aerocom interface map plots lower left 
-        corner)
+        string ID for model or obsdata network (see e.g. Aerocom interface map
+        plots lower left corner)
     data : GriddedData
         imported data object 
     data_dir : str
@@ -211,6 +211,12 @@ class ReadGridded(object):
 
     @start_time.setter
     def start_time(self, value):
+        if not isinstance(value, str):
+            try:
+                value = str(value)
+            except:
+                raise ValueError("Failed to convert non-string input for "
+                                 "time stamp into string")
         if not isinstance(value, Timestamp):    
             try:
                 value = Timestamp(value)
@@ -233,6 +239,12 @@ class ReadGridded(object):
     
     @stop_time.setter
     def stop_time(self, value):
+        if not isinstance(value, str):
+            try:
+                value = str(value)
+            except:
+                raise ValueError("Failed to convert non-string input for "
+                                 "time stamp into string")
         if not isinstance(value, Timestamp):  
             try:
                 value = Timestamp(value)
@@ -545,7 +557,29 @@ class ReadGridded(object):
             except:
                 warn("Failed to read variable %s" %var)
         self.vars = _vars_read
+    
+    def __getitem__(self, var_name):
+        """Try access import result for one of the models
         
+        Parameters
+        ----------
+        var_name : str
+            string specifying variable that is supposed to be extracted
+        
+        Returns
+        -------
+        GriddedData
+            the corresponding read class for this model
+            
+        Raises
+        -------
+        ValueError
+            if results for ``var_name`` are not available
+        """
+        if not var_name in self.data:
+            raise ValueError("No data found for variable %s" %var_name)
+        return self.data[var_name]
+    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = ("\n{}\n{}\n"
@@ -569,6 +603,11 @@ class ReadGriddedMulti(object):
     number of models and specific for a certain time interval (that can be 
     defined, but must not be defined). Largely based on 
     :class:`ReadGridded`.
+    
+    ToDo
+    ----
+    
+    Sub-class from ReadGridded
     
     Note
     ----
@@ -660,6 +699,12 @@ class ReadGriddedMulti(object):
     
     @start_time.setter
     def start_time(self, value):
+        if not isinstance(value, str):
+            try:
+                value = str(value)
+            except:
+                raise ValueError("Failed to convert non-string input for "
+                                 "time stamp into string")
         if not isinstance(value, Timestamp):    
             try:
                 value = Timestamp(value)
@@ -688,6 +733,12 @@ class ReadGriddedMulti(object):
     
     @stop_time.setter
     def stop_time(self, value):
+        if not isinstance(value, str):
+            try:
+                value = str(value)
+            except:
+                raise ValueError("Failed to convert non-string input for "
+                                 "time stamp into string")
         if not isinstance(value, Timestamp):  
             try:
                 value = Timestamp(value)

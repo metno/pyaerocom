@@ -48,8 +48,8 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 #from pyaerocom import config as const
 from pyaerocom import const
 
-class UngriddedData():
-    """pyaerocom observation data (ungridded data) reading class
+class ReadUngridded():
+    """Class for reading ungridded files based on obsnetwork ID
     """
 
     #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
@@ -194,8 +194,8 @@ class UngriddedData():
 
         Example
         -------
-        >>> import pyaerocom.ungriddeddata
-        >>> obj = pyaerocom.ungriddeddata.UngriddedData()
+        >>> import pyaerocom.io.readungridded
+        >>> obj = pyaerocom.io.readungridded.ReadUngridded()
         >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
@@ -208,7 +208,7 @@ class UngriddedData():
             cache_hit_flag = False
 
             data_dir = const.OBSCONFIG[data_set_to_read]['PATH']
-            revision = self.GetDataRevision(data_set_to_read)
+            revision = self.get_data_revision(data_set_to_read)
             newest_file_in_read_dir = max(glob.iglob(os.path.join(data_dir, '*')), key=os.path.getctime)
             newest_file_date_in_read_dir = os.path.getctime(newest_file_in_read_dir)
 
@@ -218,6 +218,9 @@ class UngriddedData():
             # TODO check for yearly data sets as well and single variables as well
             if os.path.isfile(cache_file):
                 # CACHE HIT
+                if self.verbose:
+                    print("Importing from cache file: {}".format(cache_file))
+                    
                 cache_hit_flag = True
                 # read cache file
                 in_handle = open(cache_file, 'rb')
@@ -238,7 +241,8 @@ class UngriddedData():
             # call the different obs data reading classes
             if data_set_to_read == const.AERONET_SUN_V2L2_AOD_DAILY_NAME:
                 # read AERONETSUN V2 L2 daily data set
-                read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, verbose=self.verbose)
+                read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, 
+                                              verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
                     if self.verbose:
@@ -330,7 +334,7 @@ class UngriddedData():
         Example
         -------
         >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.UngriddedData(verbose=True)
+        >>> obj = pyaerocom.io.readobsdata.ReadUngridded(verbose=True)
         >>> obj.read()
         >>> pdseries = obj.to_timeseries()
         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
@@ -364,16 +368,16 @@ class UngriddedData():
 
     ###################################################################################
 
-    def GetDataRevision(self, data_set_name):
+    def get_data_revision(self, data_set_name):
         """method to read the revision string from the file Revision.txt in the main data directory"""
 
         revision = 'unset'
         try:
             revision_file = os.path.join(const.OBSCONFIG[data_set_name]['PATH'], const.REVISION_FILE)
             if os.path.isfile(revision_file):
-                with open(revision_file, 'rt') as InFile:
-                    revision = InFile.readline().strip()
-                    InFile.close()
+                with open(revision_file, 'rt') as in_file:
+                    revision = in_file.readline().strip()
+                    in_file.close()
         except:
             pass
 
@@ -381,7 +385,7 @@ class UngriddedData():
 
     ###################################################################################
 
-    def GetDataDir(self, data_set_name):
+    def get_data_dir(self, data_set_name):
         """method to return the path of an obs data set"""
 
         try:

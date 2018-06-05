@@ -216,7 +216,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.griddeddata</span> <span class="k">import</span> <span class="n">GriddedData</span>
 
 <div class="viewcode-block" id="ReadGridded"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded">[docs]</a><span class="k">class</span> <span class="nc">ReadGridded</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Class for reading model results from AEROCOM NetCDF files</span>
+    <span class="sd">&quot;&quot;&quot;Class for reading gridded files based on network or model ID</span>
 <span class="sd">    </span>
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -228,8 +228,8 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
-<span class="sd">        string ID for model (see e.g. Aerocom interface map plots lower left </span>
-<span class="sd">        corner)</span>
+<span class="sd">        string ID for model or obsdata network (see e.g. Aerocom interface map</span>
+<span class="sd">        plots lower left corner)</span>
 <span class="sd">    data : GriddedData</span>
 <span class="sd">        imported data object </span>
 <span class="sd">    data_dir : str</span>
@@ -372,6 +372,12 @@
 
     <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert non-string input for &quot;</span>
+                                 <span class="s2">&quot;time stamp into string&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>    
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -394,6 +400,12 @@
     
     <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert non-string input for &quot;</span>
+                                 <span class="s2">&quot;time stamp into string&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>  
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -706,7 +718,29 @@
             <span class="k">except</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to read variable </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">var</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="n">_vars_read</span></div>
-        
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Try access import result for one of the models</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : str</span>
+<span class="sd">            string specifying variable that is supposed to be extracted</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            the corresponding read class for this model</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if results for ``var_name`` are not available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data found for variable </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+    
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -730,6 +764,11 @@
 <span class="sd">    number of models and specific for a certain time interval (that can be </span>
 <span class="sd">    defined, but must not be defined). Largely based on </span>
 <span class="sd">    :class:`ReadGridded`.</span>
+<span class="sd">    </span>
+<span class="sd">    ToDo</span>
+<span class="sd">    ----</span>
+<span class="sd">    </span>
+<span class="sd">    Sub-class from ReadGridded</span>
 <span class="sd">    </span>
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -821,6 +860,12 @@
     
     <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert non-string input for &quot;</span>
+                                 <span class="s2">&quot;time stamp into string&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>    
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -849,6 +894,12 @@
     
     <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert non-string input for &quot;</span>
+                                 <span class="s2">&quot;time stamp into string&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>  
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>

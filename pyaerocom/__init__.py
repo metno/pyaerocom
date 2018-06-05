@@ -7,7 +7,7 @@ def _init_supplemental():
 def _init_config(package_dir):
     from .config import Config
     from socket import gethostname
-    from os.path import join, exists
+    from os.path import join
     if gethostname() == 'aerocom-users-ng':
         print("Initiating global PATHS for Aerocom users server")
         cfg = join(package_dir, 'data', 'paths_user_server.ini')
@@ -31,6 +31,5 @@ from .variable import Variable
 from .region import Region
 from .griddeddata import GriddedData
 #from .obsdata import ObsData, ProfileData, StationData
-from .ungriddeddata import UngriddedData
 
  
