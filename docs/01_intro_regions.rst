@@ -2,17 +2,17 @@
 AEROCOM default regions
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-This notebook introduces how pyaerocom handles information related to
-default regions (e.g. Europe, Asia, ...) as used in the `AEROCOM
+This notebook introduces how pya handles information related to default
+regions (e.g. Europe, Asia, ...) as used in the `AEROCOM
 interface <http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl>`__.
 All default regions are defined in the file
-`regions.ini <http://aerocom.met.no/pyaerocom/config_files.html#default-regions>`__.
+`regions.ini <http://aerocom.met.no/pya/config_files.html#default-regions>`__.
 
 .. code:: ipython3
 
-    import pyaerocom
+    import pyaerocom as pya
     
-    print(pyaerocom.region.get_all_default_region_ids())
+    print(pya.region.get_all_default_region_ids())
 
 
 .. parsed-literal::
@@ -24,8 +24,8 @@ Now load some default regions and print them.
 
 .. code:: ipython3
 
-    europe = pyaerocom.Region("EUROPE")
-    asia = pyaerocom.Region("ASIA")
+    europe = pya.Region("EUROPE")
+    asia = pya.Region("ASIA")
     
     print(europe)
     print()
@@ -59,7 +59,7 @@ of the results over Europe.
 
 .. code:: ipython3
 
-    data = pyaerocom.GriddedData()
+    data = pya.GriddedData()
     data._init_testdata_default()
     crop = data.crop(region="EUROPE")
     fig = crop.quickplot_map()

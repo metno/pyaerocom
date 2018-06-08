@@ -160,7 +160,7 @@ class FileConventionRead(object):
             
         Raises
         ------
-        NameError
+        IOError
             if convention cannot be identified
             
         Example

@@ -218,7 +218,7 @@ pyaerocom from within a Python3 console.</p>
 <div class="section" id="setting-global-environment-variables">
 <h2>Setting global environment variables<a class="headerlink" href="#setting-global-environment-variables" title="Permalink to this headline">¶</a></h2>
 <p>The import of data from the AEROCOM database in Pyaerocom is controlled
-via an instance of the <code class="docutils literal notranslate"><span class="pre">IOConfig</span></code> class.</p>
+via an instance of the <code class="docutils literal notranslate"><span class="pre">Config</span></code> class.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current config: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pyaerocom</span>.const.short_str())
 </pre></div>
 </div>
@@ -300,8 +300,8 @@ options to do this:</p>
 file of your installation.</li>
 <li>Create a new config file &lt;myconfig.ini&gt; and iniate your configuration
 in your Python console by calling
-<code class="docutils literal notranslate"><span class="pre">pyaerocom.config</span> <span class="pre">=</span> <span class="pre">pyaerocom.IOConfig(config_file=&lt;myconfig.ini&gt;)</span></code></li>
-<li>Change the settings directly within the instance of the <code class="docutils literal notranslate"><span class="pre">IOConfig</span></code>
+<code class="docutils literal notranslate"><span class="pre">pyaerocom.config</span> <span class="pre">=</span> <span class="pre">pyaerocom.Config(config_file=&lt;myconfig.ini&gt;)</span></code></li>
+<li>Change the settings directly within the instance of the <code class="docutils literal notranslate"><span class="pre">Config</span></code>
 class, as follows:</li>
 </ol>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">const</span>

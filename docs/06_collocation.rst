@@ -4,8 +4,13 @@ Collocating gridded data with discrete observations
 
 This notebook gives an introduction into collocation of gridded data
 with observations. Here, AODs of the ECMWF CAMS reanalysis model are
-compared with global daily observations from the AeroNet V2 for the
-years of XXX-XXX.
+compared with global daily observations from the AeroNet V2 (Level 2)
+for the years of 2010-2018.
+
+NOTE
+^^^^
+
+ This notebook is currently under development
 
 Import setup and imports
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -45,8 +50,9 @@ Import of model data
 
 .. parsed-literal::
 
-    Searching dir for ID ECMWF_CAMS_REAN in: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-    Found directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
+    Found match for ID ECMWF_CAMS_REAN
+    Checking if renamed directory exists
+    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
     
     Pyaerocom ReadGridded
     ---------------------
@@ -59,13 +65,6 @@ Import of model data
 
     for var in variables:
         model_io.read_var(var)
-
-
-.. parsed-literal::
-
-    Rolling longitudes to -180 -> 180 definition
-    Cropping along time axis based on Timestamps
-
 
 .. code:: ipython3
 

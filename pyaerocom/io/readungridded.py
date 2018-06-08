@@ -49,11 +49,12 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom import const
 
 class ReadUngridded():
-    """Class for reading ungridded files based on obsnetwork ID
+    """High-level reading class for ungridded files based on obsnetwork ID
     """
 
     #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
-    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.EARLINET_NAME]
+    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, 
+                          const.EARLINET_NAME]
     #
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1

@@ -180,8 +180,13 @@
 <h1>Collocating gridded data with discrete observations<a class="headerlink" href="#collocating-gridded-data-with-discrete-observations" title="Permalink to this headline">¶</a></h1>
 <p>This notebook gives an introduction into collocation of gridded data
 with observations. Here, AODs of the ECMWF CAMS reanalysis model are
-compared with global daily observations from the AeroNet V2 for the
-years of XXX-XXX.</p>
+compared with global daily observations from the AeroNet V2 (Level 2)
+for the years of 2010-2018.</p>
+<div class="section" id="note">
+<h2>NOTE<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>This notebook is currently under development</div></blockquote>
+</div>
 <div class="section" id="import-setup-and-imports">
 <h2>Import setup and imports<a class="headerlink" href="#import-setup-and-imports" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
@@ -208,8 +213,9 @@ years of XXX-XXX.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">model_io</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Searching</span> <span class="nb">dir</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span> <span class="ow">in</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span>
-<span class="n">Found</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Found</span> <span class="n">match</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">ECMWF_CAMS_REAN</span>
+<span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
+<span class="n">Found</span> <span class="n">directory</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
 
 <span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
 <span class="o">---------------------</span>
@@ -220,10 +226,6 @@ years of XXX-XXX.</p>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
     <span class="n">model_io</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
-<span class="n">Cropping</span> <span class="n">along</span> <span class="n">time</span> <span class="n">axis</span> <span class="n">based</span> <span class="n">on</span> <span class="n">Timestamps</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">model_io</span><span class="p">)</span>

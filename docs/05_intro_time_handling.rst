@@ -1,14 +1,14 @@
 
-Handling of time in Pyaerocom
+Handling of time in pyaerocom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The
-`GriddedData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddeddata>`__
-class of *Pyaerocom* was introduced in the previous tutorial.
+`GriddedData <http://aerocom.met.no/pya/api.html#module-pya.griddeddata>`__
+class of *pyaerocom* was introduced in the previous tutorial.
 
-Here, we want to illustrate one particular feature of *Pyaerocom*,
-namely the conversion of CF conform numerical time stamps with a defined
-unit (i.e. basedate and calendar, see e.g.
+Here, we want to illustrate one particular feature of *pya*, namely the
+conversion of CF conform numerical time stamps with a defined unit (i.e.
+basedate and calendar, see e.g.
 `here <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate>`__
 for details) into datetime-like objects that can be interpreted by tools
 such as `Pandas <https://pandas.pydata.org/>`__. The easiest way to work
@@ -22,32 +22,32 @@ timestamps to be datetime-like objects.
 This notebook illustrates how time is handled in the iris module,
 particularly in the
 `Cube <http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube>`__
-class, which is the basic data representation object in the *Pyaerocom*
+class, which is the basic data representation object in the *pya*
 ``GriddedData`` class. In particular, it emphazises some peculiarities
-that can lead to complications and finally shows, how *Pyaerocom*
-circumvents these issues. We shall see, that this does not only reduce
-the risk of conversion Errors, but even results in a quite significant
-performance boost when converting from numerical CF timestamps to
+that can lead to complications and finally shows, how *pya* circumvents
+these issues. We shall see, that this does not only reduce the risk of
+conversion Errors, but even results in a quite significant performance
+boost when converting from numerical CF timestamps to
 ``numpy.datetime64`` time stamps.
 
 Load and some example data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Get and load test data file using the new pyaerocom interface (the
-underlying datatype of ``GriddedData`` is ``iris.cube.Cube``.
+Get and load test data file using the new pya interface (the underlying
+datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. code:: ipython3
 
-    import pyaerocom
-    files = pyaerocom.io.testfiles.get()
+    import pyaerocom as pya
+    files = pya.io.testfiles.get()
     
     fpath_ecmwf = files['models']['ecmwf_osuite']
     fpath_aatsr = files['models']['aatsr_su_v4.3']
 
 .. code:: ipython3
 
-    data_ecmwf = pyaerocom.GriddedData(fpath_ecmwf, var_name="od550aer", name="ECMWF_OSUITE")
-    data_aatsr = pyaerocom.GriddedData(fpath_aatsr, var_name="od550aer", name="AATSR")
+    data_ecmwf = pya.GriddedData(fpath_ecmwf, var_name="od550aer", name="ECMWF_OSUITE")
+    data_aatsr = pya.GriddedData(fpath_aatsr, var_name="od550aer", name="AATSR")
 
 
 .. parsed-literal::
@@ -220,7 +220,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    123 ms ± 12.3 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    130 ms ± 10 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -231,7 +231,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    104 ms ± 4.46 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    104 ms ± 3.77 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -247,7 +247,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    133 ms ± 9.66 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    115 ms ± 1.98 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -258,7 +258,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    109 ms ± 8.64 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    102 ms ± 3.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -283,7 +283,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.63 ms ± 61.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.63 ms ± 59.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -413,31 +413,40 @@ Now let's see how this one performs.
 
 .. parsed-literal::
 
-    56 µs ± 293 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    61.5 µs ± 1.83 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
-How Pyaerocom does it
-^^^^^^^^^^^^^^^^^^^^^
+How pya does it
+^^^^^^^^^^^^^^^
 
 Due to this significant increase in performance for standard calendars
 (compared to the methods used in netCDF4), the above method was
-implemented in the pyaerocom package (`see
-here <aerocom.met.no/pyaerocom/api.html#pyaerocom.helpers.cftime_to_datetime64>`__).
+implemented in the pya package (`see
+here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. code:: ipython3
 
-    from pyaerocom.helpers import cftime_to_datetime64 as pyaerocom_tconversion
+    from pya.helpers import cftime_to_datetime64 as pya_tconversion
+
+
+::
+
+
+    ---------------------------------------------------------------------------
+
+    ModuleNotFoundError                       Traceback (most recent call last)
+
+    <ipython-input-18-e285e83b9969> in <module>()
+    ----> 1 from pya.helpers import cftime_to_datetime64 as pya_tconversion
+    
+
+    ModuleNotFoundError: No module named 'pya'
+
 
 .. code:: ipython3
 
     %%timeit
-    pyaerocom_tconversion(times_ecmwf.points, times_ecmwf.units)
-
-
-.. parsed-literal::
-
-    60 µs ± 326 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
-
+    pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 
 For the AATSR data, the method is slower, since here, the slower
 ``num2date`` method is used.
@@ -445,13 +454,7 @@ For the AATSR data, the method is slower, since here, the slower
 .. code:: ipython3
 
     %%timeit
-    pyaerocom_tconversion(times_aatsr.points, times_aatsr.units)
-
-
-.. parsed-literal::
-
-    1.77 ms ± 14.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-
+    pya_tconversion(times_aatsr.points, times_aatsr.units)
 
 Now this is an improvement. Starting with around 100ms when using the
 iris interface (i.e. iterating over ``cells`` of the ``DimCoord``), for
@@ -467,19 +470,7 @@ The method is also the standard conversion method in the
     %%timeit
     data_ecmwf.time_stamps()
 
-
-.. parsed-literal::
-
-    78.6 µs ± 372 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
-
-
 .. code:: ipython3
 
     %%timeit
     data_aatsr.time_stamps()
-
-
-.. parsed-literal::
-
-    1.79 ms ± 17.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-

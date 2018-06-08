@@ -474,7 +474,7 @@ Must be in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGri
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">t</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">loaded data object</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData">GriddedData</a></p>
@@ -485,8 +485,8 @@ Must be in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGri
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.io.readgridded.ReadGridded.read_all_vars">
-<code class="descname">read_all_vars</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read_all_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read_all_vars" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgridded.ReadGridded.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type='daily'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all variables that could be found</p>
 <p>Reads all variables that are available (i.e. in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.vars" title="pyaerocom.io.readgridded.ReadGridded.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a>)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -494,6 +494,10 @@ Must be in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGri
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – see <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="pyaerocom.io.readgridded.ReadGridded.read_var"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_var()</span></code></a> for valid input arguments.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">loaded data objects (type GriddedData)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a></td>
 </tr>
 </tbody>
 </table>
@@ -660,7 +664,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgridded
 <dl class="class">
 <dt id="pyaerocom.io.readungridded.ReadUngridded">
 <em class="property">class </em><code class="descclassname">pyaerocom.io.readungridded.</code><code class="descname">ReadUngridded</code><span class="sig-paren">(</span><em>data_set_to_read=['AeronetSunV2Lev2.daily'], vars_to_read=['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer'], verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungridded.html#ReadUngridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for reading ungridded files based on obsnetwork ID</p>
+<dd><p>High-level reading class for ungridded files based on obsnetwork ID</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS">
 <code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSunV2Lev2.daily', 'EARLINET']</em><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
@@ -1830,7 +1834,7 @@ corresponding variables, extracted from the filename</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">OrderedDict</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if convention cannot be identified</td>
 </tr>
 </tbody>
 </table>
@@ -1913,7 +1917,34 @@ ts_type = “daily”</p>
 <p>I/O helper methods of the pyaerocom package</p>
 <dl class="function">
 <dt id="pyaerocom.io.helpers.search_data_dir_aerocom">
-<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_data_dir_aerocom</code><span class="sig-paren">(</span><em>name</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_data_dir_aerocom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_data_dir_aerocom" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_data_dir_aerocom</code><span class="sig-paren">(</span><em>name_or_pattern</em>, <em>ignorecase=True</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_data_dir_aerocom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_data_dir_aerocom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search Aerocom data directory based on model / data ID</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name_or_pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of model</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – print output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model directory</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if model directory cannot be found</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.helpers.search_data_dir_aerocom_old">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">search_data_dir_aerocom_old</code><span class="sig-paren">(</span><em>name</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#search_data_dir_aerocom_old"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.search_data_dir_aerocom_old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search Aerocom data directory based on model / data ID</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

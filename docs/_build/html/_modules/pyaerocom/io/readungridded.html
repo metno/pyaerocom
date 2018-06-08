@@ -210,11 +210,12 @@
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 
 <div class="viewcode-block" id="ReadUngridded"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded">[docs]</a><span class="k">class</span> <span class="nc">ReadUngridded</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Class for reading ungridded files based on obsnetwork ID</span>
+    <span class="sd">&quot;&quot;&quot;High-level reading class for ungridded files based on obsnetwork ID</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]</span>
-    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">]</span>
+    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span> 
+                          <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">]</span>
     <span class="c1">#</span>
     <span class="n">_METADATAKEYINDEX</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">_TIMEINDEX</span> <span class="o">=</span> <span class="mi">1</span>

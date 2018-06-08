@@ -461,20 +461,26 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
     
 if __name__ == "__main__":
     from matplotlib.pyplot import close
-    close("all")
     import pyaerocom
+    close("all")
     
-    read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start_time="2010",
-                                      stop_time="2019")
-    
+    read = pyaerocom.io.ReadGridded("AATSR_SU_v1.0")    
     data = read.read_var("od550aer")
-    fig0 = data.quickplot_map(fix_aspect=False)
-    fig1 = data.quickplot_map(fix_aspect=True, color_theme="light")
+    data.quickplot_map()
     
-    figs = []
-    for region in pyaerocom.region.get_all_default_regions():
-        crp = data.crop(region=region)
-        figs.append(plot_map_aerocom(crp[0]))
+    run_old=False
+    if run_old:
+        read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start_time="2010",
+                                          stop_time="2019")
+        
+        data = read.read_var("od550aer")
+        fig0 = data.quickplot_map(fix_aspect=False)
+        fig1 = data.quickplot_map(fix_aspect=True, color_theme="light")
+        
+        figs = []
+        for region in pyaerocom.region.get_all_default_regions():
+            crp = data.crop(region=region)
+            figs.append(plot_map_aerocom(crp[0]))
+        
+        
     
-    
-

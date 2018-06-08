@@ -1,3 +1,5 @@
+from .config import Config
+
 def _init_supplemental():
     from pkg_resources import get_distribution
     from os.path import abspath, dirname
@@ -5,7 +7,6 @@ def _init_supplemental():
 
 
 def _init_config(package_dir):
-    from .config import Config
     from socket import gethostname
     from os.path import join
     if gethostname() == 'aerocom-users-ng':
@@ -27,9 +28,11 @@ from . import multiproc
 from . import io
 from . import plot
 
+# custom toplevel class and method im
 from .variable import Variable
 from .region import Region
-from .griddeddata import GriddedData
-#from .obsdata import ObsData, ProfileData, StationData
 
- 
+from .griddeddata import GriddedData
+#from .ungriddeddata import UngriddedData
+from .io.helpers import search_data_dir_aerocom
+#from .obsdata import ObsData, ProfileData, StationData

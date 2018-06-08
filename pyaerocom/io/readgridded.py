@@ -313,13 +313,19 @@ class ReadGridded(object):
             # and set the convention for all files (maybe this need to be 
             # updated in case there can be more than one file naming convention
             # within one model directory)
-            first_file_name = basename(nc_files[0])
-            self.file_convention.from_file(first_file_name)
-        else:
-            raise IOError("Failed to identify file naming convention "
-                          "from first file in model directory for model "
-                          "%s\ndata_dir: %s\nFile name: %s"
-                          %(self.name, self.data_dir, first_file_name))
+            ok = False
+            for file in nc_files:
+                try:
+                    self.file_convention.from_file(basename(file))
+                    ok = True
+                    break
+                except:
+                    pass
+            if not ok:
+                raise IOError("Failed to identify file naming convention "
+                              "from files in model directory for model "
+                              "%s\ndata_dir: %s"
+                              %(self.name, self.data_dir))
         _vars_temp = []
         _years_temp = []
         for _file in nc_files:
@@ -396,7 +402,7 @@ class ReadGridded(object):
         Returns
         -------
         GriddedData
-            t
+            loaded data object
         """
         if not ts_type in self.TS_TYPES:
             raise ValueError("Invalid input for ts_type, got: {}, "
@@ -434,10 +440,24 @@ class ReadGridded(object):
                                             const.MAX_YEAR))
            
         if len(match_files) == 0:
-            raise IOError("No files could be found for variable %s, and %s "
-                          "data in specified time interval\n%s-%s"
-                          %(self.name, ts_type, self.start_time,
+            raise IOError("No files could be found for dataset %s, variable %s "
+                          "and %s data in specified time interval %s-%s"
+                          %(self.name, var_name, ts_type, self.start_time,
                             self.stop_time))
+# =============================================================================
+#             try:
+#                 freqs = list(self.TS_TYPES)
+#                 ts_type = freqs[freqs.index(ts_type)+1]
+#                 print("No files could be found for variable %s, and %s "
+#                       "data in specified time interval\n%s-%s. Trying "
+#                       "ts_type {}".format(ts_type)
+#                       %(self.name, ts_type, self.start_time,
+#                         self.stop_time))
+#                 return self.read(var_name, start_time, stop_time, ts_type)
+#             except:
+# =============================================================================
+                
+                
         self._match_files = match_files
         # Define Iris var_constraint -> ensures that only the current 
         # variable is extracted from the netcdf file 
@@ -515,7 +535,8 @@ class ReadGridded(object):
         
         #create instance of pyaerocom.GriddedData
         data = GriddedData(input=cubes_concat[0], from_files=loaded_files,
-                         name=self.name, ts_type=ts_type)
+                         name=self.name, ts_type=ts_type, 
+                         verbose=self.verbose)
         # crop cube in time (if applicable)
         if self.start_time and self.stop_time:
             if self.verbose:
@@ -539,7 +560,8 @@ class ReadGridded(object):
         self.data[var_name] = data
         return data
     
-    def read_all_vars(self, **kwargs):
+    def read(self, var_names=None, start_time=None, stop_time=None, 
+                 ts_type='daily'):
         """Read all variables that could be found 
         
         Reads all variables that are available (i.e. in :attr:`vars`)
@@ -548,15 +570,34 @@ class ReadGridded(object):
         ----------
         **kwargs
             see :func:`read_var` for valid input arguments.
+        
+        Returns
+        -------
+        tuple
+            loaded data objects (type GriddedData)
         """
         _vars_read = []
-        for var in self.vars:
+        _loaded = []
+        if var_names is None:
+            var_names = self.vars
+        elif isinstance(var_names, str):
+            var_names = [var_names]
+        elif not isinstance(var_names, list):
+            raise IOError("Invalid input for var_names {}. Need string or list "
+                          "of strings specifying var_names to load. You may "
+                          "also leave it empty (None) in which case all "
+                          "available variables are loaded".format(var_names))
+        for var in var_names:
             try:
-                self.read_var(var, **kwargs)
+                dat = self.read_var(var, start_time, stop_time, ts_type)
                 _vars_read.append(var)
-            except:
-                warn("Failed to read variable %s" %var)
+                _loaded.append(dat)
+            except Exception as e:
+                print("Failed to read variable {}."
+                      "Error msg: {}".format(var, repr(e)))
+                _loaded.append(None)
         self.vars = _vars_read
+        return tuple(_loaded)
     
     def __getitem__(self, var_name):
         """Try access import result for one of the models
@@ -855,7 +896,11 @@ class ReadGriddedMulti(object):
                 read = self.results[name]
                 for var in var_ids:
                     if var in read.vars:
-                        read.read_var(var, start_time, stop_time, ts_type)
+                        try:
+                            read.read_var(var, start_time, stop_time, ts_type)
+                        except Exception as e:
+                            print(repr(e))
+                            
                     else:
                         warnings.append("Variable {} not available for model "
                                         "{}".format(var, name))
@@ -902,7 +947,16 @@ class ReadGriddedMulti(object):
     
 if __name__=="__main__":
     
-    read = ReadGridded("EMEP_rv48_RBUALL")
+    import iris
+    
+    read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015", verbose=True)
+    
+    cube = iris.load_cube(read.files[0])
+    
+    data = read.read_var("od550aer", "2009", "2011", ts_type="monthly")
+    
+    
+    
     
     
 # =============================================================================

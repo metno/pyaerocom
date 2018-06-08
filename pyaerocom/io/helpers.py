@@ -13,11 +13,17 @@ from iris.coords import DimCoord
 from datetime import datetime
 from numpy import datetime64, asarray, arange
 import cf_units
+import fnmatch, re
 
-TSTR_TO_NP = {"hourly"  :  "timedelta64[h]",
-              "3hourly" :  "timedelta64[3h]",
-              "daily"   :  "timedelta64[D]",
-              "monthly" :  "timedelta64[M]"}
+TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
+                 "3hourly" :  "datetime64[3h]",
+                 "daily"   :  "datetime64[D]",
+                 "monthly" :  "datetime64[M]"}
+
+TSTR_TO_NP_TD = {"hourly"  :  "timedelta64[h]",
+                 "3hourly" :  "timedelta64[3h]",
+                 "daily"   :  "timedelta64[D]",
+                 "monthly" :  "timedelta64[M]"}
 
 
 TSTR_TO_CF = {"hourly"  :  "hours",
@@ -25,7 +31,108 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
-def search_data_dir_aerocom(name, verbose=const.VERBOSE):
+
+def search_data_dir_aerocom(name_or_pattern, ignorecase=True, 
+                            verbose=const.VERBOSE):
+    """Search Aerocom data directory based on model / data ID
+    
+    Parameters
+    ----------
+    name_or_pattern : str
+        name of model
+    verbose : bool
+        print output
+        
+    Returns
+    -------
+    str
+        Model directory
+        
+    Raises
+    ------
+    IOError
+        if model directory cannot be found
+    """
+    pattern = fnmatch.translate(name_or_pattern)
+    _candidates = []
+    _msgs = []
+    #
+    for obs_id in const.OBS_IDS:
+        if ignorecase:
+            match = name_or_pattern.lower() == obs_id.lower()
+        else:
+            match = name_or_pattern == obs_id
+        if match:
+            if verbose:
+                print("Found match for search pattern in obs network "
+                      "directories {}".format(obs_id))
+            return const.OBSCONFIG[obs_id]["PATH"]
+        else:
+            if ignorecase:
+                match = bool(re.search(pattern, obs_id, re.IGNORECASE))
+            else:
+                match = bool(re.search(pattern, obs_id))
+        if match:
+            _candidates.append(obs_id)
+        
+    for search_dir in const.MODELDIRS:
+        # get the directories
+        if isdir(search_dir):
+            #subdirs = listdir(search_dir)
+            subdirs = [x for x in listdir(search_dir) if isdir(join(search_dir, x))]
+            for subdir in subdirs:
+                
+                if ignorecase:
+                    match = bool(re.search(pattern, subdir,re.IGNORECASE))
+                else:
+                    match = bool(re.search(pattern, subdir))
+                if match:
+                    ok = True
+                    if ignorecase:
+                        match = name_or_pattern.lower() == subdir.lower()
+                    else:
+                        match = name_or_pattern == subdir
+                    if match:
+                        ok = True
+                        if verbose:
+                            print("Found match for ID {}".format(name_or_pattern))
+                        _dir = join(search_dir, subdir)
+                        if const.GRID_IO.USE_RENAMED_DIR:
+                            if verbose:
+                                print("Checking if renamed directory exists")
+                            _dir = join(_dir, "renamed")
+                        if isdir(_dir):
+                            if verbose:
+                                print('Found directory {}'.format(_dir))    
+                            return _dir
+                        else:
+                            ok = False
+                            if verbose:
+                                _msgs.append("Renamed folder does not exist "
+                                      "in {}".format(join(search_dir, subdir)))
+                    if ok:
+                        _candidates.append(subdir)
+        else:
+            if verbose:
+                _msgs.append('directory %s does not exist\n'
+                             %search_dir)
+    for msg in _msgs:
+        print(msg)
+    msg=""
+    if _candidates:
+        if len(_candidates) == 1:
+            if verbose:
+                print("Found exactly one match for search pattern "
+                      "{}: {}".format(name_or_pattern, _candidates[0]))
+                return _candidates[0]
+        else:
+            msg = ("Found multiple matches. Please choose from the "
+                  "following list: {}".format(_candidates))
+        
+    raise IOError("No unique match found for ID ot pattern {}. "
+                  "{}".format(name_or_pattern, msg))
+
+def search_data_dir_aerocom_old(name, verbose=const.VERBOSE):
     """Search Aerocom data directory based on model / data ID
     
     Parameters
@@ -108,6 +215,7 @@ def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
     """
     
     ok = True
+    test_idx = [0,1,2,7] #7, since last accessible index in a 3hourly dataset of one day is 7
     try:
         try:
             t = cube.coord("time")
@@ -119,17 +227,26 @@ def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
             cftime_to_datetime64(0, cfunit=t.units)
         except:
             raise ValueError("Could not convert time unit string")
-        tres_np = TSTR_TO_NP[ts_type]
-        base = datetime64("%s-01-01 00:00:00" %year) 
-        test_datenums = asarray([0, 1, 10])
+        tres_np = TSTR_TO_NP_TD[ts_type]
+        conv = TSTR_TO_NP_DT[ts_type]
+        base = datetime64("%s-01-01 00:00:00" %year).astype(conv)
+        test_datenums = asarray(test_idx)
         ts_nominal = base + test_datenums.astype(tres_np)
-        ts_values = cftime_to_datetime64(test_datenums, cfunit=t.units)
+        dts_nominal = ts_nominal[1:] - ts_nominal[:-1]
+        ts_values = cftime_to_datetime64(t[test_idx].points, cfunit=t.units).astype(conv)
+        dts_values = ts_values[1:] - ts_values[:-1]
         if not all(ts_values == ts_nominal):
             raise ValueError("Time match error, nominal dates for test array"
                              "%s (unit=%s): %s\nReceived values after "
                              "conversion: %s"
                              %(test_datenums, t.units.name,
                                ts_nominal, ts_values))
+        elif not all(dts_values == dts_nominal):
+            raise ValueError("Time match error, time steps for test array"
+                             "%s (unit=%s): %s\nReceived values after "
+                             "conversion: %s"
+                             %(test_datenums, t.units.name,
+                               dts_nominal, dts_values))
     except Exception as e:
         if verbose:
             print("Invalid time dimension.\n"
@@ -160,17 +277,18 @@ def correct_time_coord(cube, ts_type, year, tindex_cube=0):
         
     """
     tres_str = TSTR_TO_CF[ts_type]
+    conv = TSTR_TO_NP_DT[ts_type]
     tunit_str = '%s since %s-01-01 00:00:00' %(tres_str, year)
     num = cube.shape[tindex_cube]
 
     tunit = cf_units.Unit(tunit_str, calendar=cf_units.CALENDAR_STANDARD)
-    tres_np = TSTR_TO_NP[ts_type]
-    base = datetime64("%s-01-01 00:00:00" %year) 
+    tres_np = TSTR_TO_NP_TD[ts_type]
+    base = datetime64("%s-01-01 00:00:00" %year).astype(conv)
     times = base + arange(0, num, 1).astype(tres_np)
     # see this thread https://github.com/matplotlib/matplotlib/issues/2259/
-    times = times.astype(datetime)
+    times_dt = times.astype("datetime64[s]").astype(datetime)
 #    timestamps = datetime64(str(year)) + 
-    time_nums = [tunit.date2num(t) for t in times]
+    time_nums = [tunit.date2num(t) for t in times_dt]
     tcoord = DimCoord(time_nums, standard_name='time', units=tunit)
         
     #tcoord_dim = cube.coord_dims('time')

@@ -2,22 +2,24 @@
 Reading model data: the *ReadGridded* class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This notebook introduces the `ReadGridded INSERT\_LINK <INSERT_LINK>`__
-class of Pyaerocom, a flexible interface for importing model results
-from a single model, based on variable name (e.g. *od550aer*,
-*od550bc*), start / stop time stamps and temporal resolution (e.g.
-*hourly, 3hourly, daily, monthly*).
+This notebook introduces the
+`ReadGridded <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGridded>`__
+class of pya, a flexible interface for importing model results from a
+single model, based on variable name (e.g. *od550aer*, *od550bc*), start
+/ stop time stamps and temporal resolution (e.g. *hourly, 3hourly,
+daily, monthly*).
 
-The class is part of the `readgridded INSERT\_LINK <XXX>`__ module of
-pyaerocom, as well as the class `ReadGriddedMulti INSERT
-LINK <INSERT%20LINK>`__
+The class is part of the
+`readgridded <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.io.readgridded>`__
+module of pya, as well as the class
+`ReadGriddedMulti <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti>`__.
 
-In the following cells, we create an instance of the
-t:raw-latex:`\he `\ ``ReadGridded`` class and use this object to find
-and import data files containing the aerosol optical depth at 550 nm
-(*od550aer*) from the ECMWF CAMS reanalysis model (*ECMWF\_CAMS\_REAN*)
-for the years 2003-2007 in daily resolution. The files will be
-temporally merged and put into an instance of the ``GriddedData`` class.
+In the following cells, we create an instance of the the ``ReadGridded``
+class and use this object to find and import data files containing the
+aerosol optical depth at 550 nm (*od550aer*) from the ECMWF CAMS
+reanalysis model (*ECMWF\_CAMS\_REAN*) for the years 2003-2007 in daily
+resolution. The files will be temporally merged and put into an instance
+of the ``GriddedData`` class.
 
 We start with creating a reading object, that will take care of finding
 the model directory for us (based on the model ID) and all valid NetCDF
@@ -27,22 +29,19 @@ information about what is in there.
 
 .. code:: ipython3
 
-    import pyaerocom
-    read = pyaerocom.io.ReadGridded(name="ECMWF_CAMS_REAN",
+    import pyaerocom as pya
+    read = pya.io.ReadGridded(name="ECMWF_CAMS_REAN",
                                       start_time="1-1-2003",
                                       stop_time="31-12-2007", 
-                                      verbose=True)
+                                      verbose=False)
     print(read)
 
 
 .. parsed-literal::
 
-    Searching dir for ID ECMWF_CAMS_REAN in: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-    Found directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Failed to import file od550aer.29feb2004.nc
-    Error: OSError('Failed to extract year information from file od550aer.29feb2004.nc using file convention aerocom2',)
-    Failed to import file od550aer.29feb2007.nc
-    Error: OSError('Failed to extract year information from file od550aer.29feb2007.nc using file convention aerocom2',)
+    Found match for ID ECMWF_CAMS_REAN
+    Checking if renamed directory exists
+    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
     
     Pyaerocom ReadGridded
     ---------------------
@@ -76,43 +75,53 @@ by printing the string representation, as shown in the cell above).
 
     data = read.read_var(var_name="od550aer", ts_type="daily")
 
+From the output we can see that based on our specified time range and
+temporal resolution, we got 6 netCDF files that were merged all into an
+instance of the
+`GriddedData <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData>`__
+class, which will be introduced in more detail later. This data object
+is returned by the ``read_var`` method and can also be accessed from the
+instance of the reading class using:
+
+.. code:: ipython3
+
+    read.data["od550aer"]
+
+
+
 
 .. parsed-literal::
 
-    FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2003.nc
-    FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2004.nc
-    FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2005.nc
-    FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2006.nc
-    FOUND MATCH: ECMWF_CAMS_REAN.daily.od550aer.2007.nc
-    Invalid time dimension.
-    Error message: AttributeError('Cube does not contain time dimension',)
-    Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2003.nc. Attempting to correct.
-    Invalid time dimension.
-    Error message: AttributeError('Cube does not contain time dimension',)
-    Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2004.nc. Attempting to correct.
-    Invalid time dimension.
-    Error message: AttributeError('Cube does not contain time dimension',)
-    Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2005.nc. Attempting to correct.
-    Invalid time dimension.
-    Error message: AttributeError('Cube does not contain time dimension',)
-    Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2006.nc. Attempting to correct.
-    Invalid time dimension.
-    Error message: AttributeError('Cube does not contain time dimension',)
-    Invalid time axis in file ECMWF_CAMS_REAN.daily.od550aer.2007.nc. Attempting to correct.
-    Cubes for variable od550aer have different meta data settings. These will be unified using the metadata dictionary of the first cube (otherwise the method concatenate of the iris package won't work)
-    Rolling longitudes to -180 -> 180 definition
-    Applying temporal cropping of result cube
-    Cropping along time axis based on Timestamps
+    pyaerocom.GriddedData
+    Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 1826; latitude: 161; longitude: 320)>
 
 
-From the output we can see that based on our specified time range and
-temporal resolution, we got 6 netCDF files that were merged all into an
-instance of the `GriddedData
-UPDATE\_LINK <http://aerocom.met.no/pyaerocom/api.html?highlight=readgrid#pyaerocom.griddeddata.GriddedData>`__
-class, which will be introduced in more detail later.
 
-Now that we have actual data imported, we can print again to see if
-everything worked as expected.
+We may also import other variables using either the above used method
+``read_var`` or the more general ``read`` method which can read single
+or multiple variables on the run.
+
+.. code:: ipython3
+
+    read.read(['od550bc', 'od550dust', 'od550oa', 'od550so4'])
+
+
+
+
+.. parsed-literal::
+
+    (pyaerocom.GriddedData
+     Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 1826; latitude: 161; longitude: 320)>,
+     pyaerocom.GriddedData
+     Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 1826; latitude: 161; longitude: 320)>,
+     pyaerocom.GriddedData
+     Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 1826; latitude: 161; longitude: 320)>,
+     pyaerocom.GriddedData
+     Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 1826; latitude: 161; longitude: 320)>)
+
+
+
+Now let's double check if all variables have been imported.
 
 .. code:: ipython3
 
@@ -125,7 +134,7 @@ everything worked as expected.
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECMWF_CAMS_REAN
-    Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+    Available variables: ['od550bc', 'od550dust', 'od550oa', 'od550so4']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 9999]
     
     Loaded GriddedData objects:
@@ -135,7 +144,34 @@ everything worked as expected.
     Variable: od550aer
     Temporal resolution: daily
     Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
+    
+    Pyaerocom GriddedData
+    ---------------------
+    Variable: od550bc
+    Temporal resolution: daily
+    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
+    
+    Pyaerocom GriddedData
+    ---------------------
+    Variable: od550dust
+    Temporal resolution: daily
+    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
+    
+    Pyaerocom GriddedData
+    ---------------------
+    Variable: od550oa
+    Temporal resolution: daily
+    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
+    
+    Pyaerocom GriddedData
+    ---------------------
+    Variable: od550so4
+    Temporal resolution: daily
+    Start / Stop: 2003-01-01T00:00:00.000000 - 2007-12-31T00:00:00.000000
 
+
+In the following we continue with the ``od550aer`` data object that was
+loaded first and that was assigned the name ``data`` above.
 
 .. code:: ipython3
 
@@ -148,8 +184,8 @@ everything worked as expected.
     The data object is of type <class 'pyaerocom.griddeddata.GriddedData'> and contains 1826 time stamps
 
 
-The returned `GriddedData
-UPDATE <http://aerocom.met.no/pyaerocom/api.html?highlight=readgrid#pyaerocom.griddeddata.GriddedData>`__
+The returned
+`GriddedData <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData>`__
 object contains 1826 time stamps. Given that the defined period of 5
 years includes one leap year, we should expect that we imported data for
 each day of the five years?
@@ -177,12 +213,12 @@ correct for this on data import by
 
 1. First checking if the time dimension in the NetCDF file is correct
    according to CF convention (`see here for details on the
-   implementation <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.helpers.check_time_coord>`__
+   implementation <http://aerocom.met.no/pya/api.html#pya.io.helpers.check_time_coord>`__
    and if a problem is detected, then ...
 2. the time axis is redefined based on the year and time resolution
    (*ts\_type*) that is encrypted in the filename. The latter requires
-   that the file follows one of the `Pyaerocom file
-   conventions <http://aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__.
+   that the file follows one of the `pya file
+   conventions <http://aerocom.met.no/pya/config_files.html#file-conventions>`__.
 
 A very brief introduction into the GriddedData class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -222,7 +258,7 @@ the city of Leipzig, Germany.
 
 
 
-.. image:: 02_intro_class_ReadGridded/02_intro_class_ReadGridded_13_0.png
+.. image:: 02_intro_class_ReadGridded/02_intro_class_ReadGridded_17_0.png
 
 
 In the following section, the ``ReadGriddedMulti`` class is introduced,

@@ -57,7 +57,7 @@ Setting global environment variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The import of data from the AEROCOM database in Pyaerocom is controlled
-via an instance of the ``IOConfig`` class.
+via an instance of the ``Config`` class.
 
 .. code:: ipython3
 
@@ -149,8 +149,8 @@ options to do this:
    file of your installation.
 2. Create a new config file <myconfig.ini> and iniate your configuration
    in your Python console by calling
-   ``pyaerocom.config = pyaerocom.IOConfig(config_file=<myconfig.ini>)``
-3. Change the settings directly within the instance of the ``IOConfig``
+   ``pyaerocom.config = pyaerocom.Config(config_file=<myconfig.ini>)``
+3. Change the settings directly within the instance of the ``Config``
    class, as follows:
 
 .. code:: ipython3

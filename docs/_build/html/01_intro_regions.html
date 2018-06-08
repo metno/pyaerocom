@@ -178,22 +178,22 @@
 </style>
 <div class="section" id="aerocom-default-regions">
 <h1>AEROCOM default regions<a class="headerlink" href="#aerocom-default-regions" title="Permalink to this headline">¶</a></h1>
-<p>This notebook introduces how pyaerocom handles information related to
-default regions (e.g. Europe, Asia, …) as used in the <a class="reference external" href="http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl">AEROCOM
+<p>This notebook introduces how pya handles information related to default
+regions (e.g. Europe, Asia, …) as used in the <a class="reference external" href="http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl">AEROCOM
 interface</a>.
 All default regions are defined in the file
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/config_files.html#default-regions">regions.ini</a>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<a class="reference external" href="http://aerocom.met.no/pya/config_files.html#default-regions">regions.ini</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">get_all_default_region_ids</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pya</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">get_all_default_region_ids</span><span class="p">())</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;WORLD&#39;</span><span class="p">,</span> <span class="s1">&#39;EUROPE&#39;</span><span class="p">,</span> <span class="s1">&#39;ASIA&#39;</span><span class="p">,</span> <span class="s1">&#39;AUSTRALIA&#39;</span><span class="p">,</span> <span class="s1">&#39;CHINA&#39;</span><span class="p">,</span> <span class="s1">&#39;INDIA&#39;</span><span class="p">,</span> <span class="s1">&#39;NAFRICA&#39;</span><span class="p">,</span> <span class="s1">&#39;SAFRICA&#39;</span><span class="p">,</span> <span class="s1">&#39;SAMERICA&#39;</span><span class="p">,</span> <span class="s1">&#39;NAMERICA&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Now load some default regions and print them.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">europe</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
-<span class="n">asia</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;ASIA&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">europe</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
+<span class="n">asia</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;ASIA&quot;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">europe</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">()</span>
@@ -221,7 +221,7 @@ All default regions are defined in the file
 class (hich is introduced in more detail in a later tutorial), load some
 test data (from the CAMS ECMWF OSUITE dataset), crop it and plot a map
 of the results over Europe.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">()</span>
 <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
 <span class="n">crop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>

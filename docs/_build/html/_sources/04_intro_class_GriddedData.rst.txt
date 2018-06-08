@@ -3,9 +3,9 @@ Introducing the ``GriddedData`` class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This notebook introduces basic features of the
-`GriddedData <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData>`__
-class of pyaerocom. The ``GriddedData`` class is the fundamental base
-class for the analysis of model data. The underlying data type is
+`GriddedData <http://aerocom.met.no/pya/api.html#pya.griddeddata.GriddedData>`__
+class of pya. The ``GriddedData`` class is the fundamental base class
+for the analysis of model data. The underlying data type is
 `iris.cube.Cube <http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube>`__
 which was extended, for instance by allowing direct imports of netCDF
 files when creating an instance of ``GriddedData`` (i.e. by passing the
@@ -15,17 +15,13 @@ Starting with some imports...
 
 .. code:: ipython3
 
-    import warnings
-    warnings.filterwarnings('ignore')
-    from pyaerocom import GriddedData
+    import pyaerocom as pya
 
 Let's get a test file to load
 
 .. code:: ipython3
 
-    from pyaerocom.io.testfiles import get
-    
-    test_files = get()
+    test_files = pya.io.testfiles.get()
     for name, filepath in test_files["models"].items(): print("%s\n%s\n" %(name, filepath))
 
 
@@ -58,7 +54,7 @@ object.
 .. code:: ipython3
 
     fpath = test_files["models"]["ecmwf_osuite"]
-    data = GriddedData(input=fpath, var_name="od550aer", name="ECMWF_OSUITE")
+    data = pya.GriddedData(input=fpath, var_name="od550aer", name="ECMWF_OSUITE")
     print(data)
 
 
@@ -147,14 +143,14 @@ file (if the file is readable using the ``iris.load`` method).
 .. code:: ipython3
 
     try:
-        data = GriddedData(input=fpath)
+        data = pya.GriddedData(input=fpath)
     except ValueError as e:
         print("This did not work...error message: %s" %repr(e))
 
 
 .. parsed-literal::
 
-    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550aer', 'od550so4', 'od550bc', 'od550oa', 'od550dust']",)
+    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550aer', 'od550oa', 'od550dust', 'od550so4', 'od550bc']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -169,7 +165,7 @@ Also, if you parse an invalid variable name, you will get some hint.
 
 .. parsed-literal::
 
-    This also did not work...error message: ConstraintMismatchError('no cubes found',)
+    This also did not work...error message: NameError("name 'GriddedData' is not defined",)
 
 
 You can have a quick look at the data using the class-own quickplot
@@ -192,8 +188,8 @@ Why not load some of the other variables...
 
 .. code:: ipython3
 
-    data_bc = GriddedData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
-    data_so4 = GriddedData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
+    data_bc = pya.GriddedData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
+    data_so4 = pya.GriddedData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
 
 
 .. parsed-literal::
