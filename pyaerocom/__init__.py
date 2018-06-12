@@ -27,6 +27,7 @@ from . import multiproc
 
 from . import io
 from . import plot
+from . import utils
 
 # custom toplevel class and method im
 from .variable import Variable

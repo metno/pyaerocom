@@ -46,11 +46,13 @@ if __name__=="__main__":
 
     for file in files:
         try:
-            if int(os.path.basename(file)[:2]) > 0:
+            name = os.path.basename(file)
+            if int(name[:2]) >= 0:
                 resources = init_single_notebook_resources(file)
                 (body, resources) = converter.from_file(file, resources=resources)
         
                 writer.write(body, resources, os.path.splitext(file)[0])
+            print("Converted notebook {}".format(name))
         except:
             print("Ignoring {}".format(file))
     

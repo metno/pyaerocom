@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import pyaerocom
 import os
 
+### COMMENT JGLISS: This was just a test from NILU which ended up too slow,
+# DON'T USE
 ### Online access using OpenDAP
 
 mercury_ds = open_dods('http://dev-ebas-pydap.nilu.no/NO0042G.Hg_mon.IMG.air.mercury.1h.NO01L_tekran_42_dup.NO01L_afs..dods')
