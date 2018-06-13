@@ -762,7 +762,7 @@ the dataset.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/00_get_started_28_0.png" src="_images/00_get_started_28_0.png" />
+<img alt="_images/tut00_get_started_28_0.png" src="_images/tut00_get_started_28_0.png" />
 <p>We might also be interested in the weighted area average for the month
 that we extracted.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">weighted_mean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
@@ -796,10 +796,10 @@ that we extracted.</p>
 <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weighted_mean</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f16a77f07f0</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe6885975f8</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/00_get_started_31_1.png" src="_images/00_get_started_31_1.png" />
+<img alt="_images/tut00_get_started_31_1.png" src="_images/tut00_get_started_31_1.png" />
 <p>That should be enough for an introduction. The following notebook
 introduces in more detail how pyaerocom handles regions and where they
 can be defined. In the subsequent tutorial, the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class is
@@ -864,7 +864,7 @@ of the results over Europe.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rolling</span> <span class="n">longitudes</span> <span class="n">to</span> <span class="o">-</span><span class="mi">180</span> <span class="o">-&gt;</span> <span class="mi">180</span> <span class="n">definition</span>
 </pre></div>
 </div>
-<img alt="_images/01_intro_regions_5_1.png" src="_images/01_intro_regions_5_1.png" />
+<img alt="_images/tut01_intro_regions_5_1.png" src="_images/tut01_intro_regions_5_1.png" />
 </div>
 </div>
 <div class="section" id="reading-model-data-the-readgridded-class">
@@ -1070,7 +1070,7 @@ the city of Leipzig, Germany.</p>
 <span class="n">tit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;AOD @ 550nm&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/02_intro_class_ReadGridded_17_0.png" src="_images/02_intro_class_ReadGridded_17_0.png" />
+<img alt="_images/tut02_intro_class_ReadGridded_17_0.png" src="_images/tut02_intro_class_ReadGridded_17_0.png" />
 <p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class is introduced,
 which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class and allows for
 importing data from multiple models.</p>
@@ -1321,7 +1321,7 @@ containing the od550aer values and draw a map.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/03_intro_class_ReadGriddedMulti_23_0.png" src="_images/03_intro_class_ReadGriddedMulti_23_0.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_23_0.png" src="_images/tut03_intro_class_ReadGriddedMulti_23_0.png" />
 <div class="section" id="iterate-over-models-and-variables">
 <h3>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h3>
 <p>The following cell iterates over all imported variables and models and
@@ -1331,11 +1331,11 @@ plots the first time stamp of each result file.</p>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/03_intro_class_ReadGriddedMulti_25_0.png" src="_images/03_intro_class_ReadGriddedMulti_25_0.png" />
-<img alt="_images/03_intro_class_ReadGriddedMulti_25_1.png" src="_images/03_intro_class_ReadGriddedMulti_25_1.png" />
-<img alt="_images/03_intro_class_ReadGriddedMulti_25_2.png" src="_images/03_intro_class_ReadGriddedMulti_25_2.png" />
-<img alt="_images/03_intro_class_ReadGriddedMulti_25_3.png" src="_images/03_intro_class_ReadGriddedMulti_25_3.png" />
-<img alt="_images/03_intro_class_ReadGriddedMulti_25_4.png" src="_images/03_intro_class_ReadGriddedMulti_25_4.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_0.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_0.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_1.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_1.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_2.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_2.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_3.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_3.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_4.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_4.png" />
 </div>
 </div>
 <div class="section" id="introducing-the-griddeddata-class">
@@ -1452,7 +1452,7 @@ file (if the file is readable using the <code class="docutils literal notranslat
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550aer&#39;, &#39;od550oa&#39;, &#39;od550dust&#39;, &#39;od550so4&#39;, &#39;od550bc&#39;]&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550dust&#39;, &#39;od550aer&#39;, &#39;od550oa&#39;, &#39;od550bc&#39;, &#39;od550so4&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
@@ -1474,7 +1474,7 @@ method</p>
                          <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/04_intro_class_GriddedData_14_0.png" src="_images/04_intro_class_GriddedData_14_0.png" />
+<img alt="_images/tut04_intro_class_GriddedData_14_0.png" src="_images/tut04_intro_class_GriddedData_14_0.png" />
 <p>Why not load some of the other variables…</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_bc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550bc&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_so4</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
@@ -1492,8 +1492,8 @@ method</p>
                                                        <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">70</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="_images/04_intro_class_GriddedData_18_0.png" src="_images/04_intro_class_GriddedData_18_0.png" />
-<img alt="_images/04_intro_class_GriddedData_18_1.png" src="_images/04_intro_class_GriddedData_18_1.png" />
+<img alt="_images/tut04_intro_class_GriddedData_18_0.png" src="_images/tut04_intro_class_GriddedData_18_0.png" />
+<img alt="_images/tut04_intro_class_GriddedData_18_1.png" src="_images/tut04_intro_class_GriddedData_18_1.png" />
 </div>
 <div class="section" id="more-to-come">
 <h3>… more to come<a class="headerlink" href="#more-to-come" title="Permalink to this headline">¶</a></h3>
@@ -1671,14 +1671,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>130 ms ± 10 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>140 ms ± 10.9 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>104 ms ± 3.77 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 12 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -1689,14 +1689,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>115 ms ± 1.98 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>142 ms ± 3.15 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>102 ms ± 3.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>110 ms ± 739 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -1715,7 +1715,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.63 ms ± 59.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.85 ms ± 51.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -1833,7 +1833,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>61.5 µs ± 1.83 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>64.1 µs ± 294 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -1844,28 +1844,23 @@ cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 (compared to the methods used in netCDF4), the above method was
 implemented in the pya package (<a class="reference external" href="aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64">see
 here</a>).</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pya.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pya_tconversion</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">---------------------------------------------------------------------------</span>
-
-<span class="n">ModuleNotFoundError</span>                       <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">)</span>
-
-<span class="o">&lt;</span><span class="n">ipython</span><span class="o">-</span><span class="nb">input</span><span class="o">-</span><span class="mi">18</span><span class="o">-</span><span class="n">e285e83b9969</span><span class="o">&gt;</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span><span class="p">()</span>
-<span class="o">----&gt;</span> <span class="mi">1</span> <span class="kn">from</span> <span class="nn">pya.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pya_tconversion</span>
-
-
-<span class="n">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;pya&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pya_tconversion</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>67.5 µs ± 290 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+</pre></div>
+</div>
 <p>For the AATSR data, the method is slower, since here, the slower
 <code class="docutils literal notranslate"><span class="pre">num2date</span></code> method is used.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 pya_tconversion(times_aatsr.points, times_aatsr.units)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.98 ms ± 34.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -1879,8 +1874,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>88.9 µs ± 492 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+</pre></div>
+</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.16 ms ± 164 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 </div>
@@ -1961,7 +1962,7 @@ for the years of 2010-2018.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/06_collocation_8_0.png" src="_images/06_collocation_8_0.png" />
+<img alt="_images/tut06_collocation_8_0.png" src="_images/tut06_collocation_8_0.png" />
 </div>
 <div class="section" id="import-of-aeronet-v2-data-level-2">
 <h3>Import of AeroNet V2 data (Level 2)<a class="headerlink" href="#import-of-aeronet-v2-data-level-2" title="Permalink to this headline">¶</a></h3>

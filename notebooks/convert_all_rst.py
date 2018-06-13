@@ -5,7 +5,11 @@ Script used to convert all notebooks into restructured text
 """
 
 #import nbformat
-import nbconvert
+import argparse
+import nbconvert, nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
+import fnmatch
+import shutil
 import os
 
 def init_single_notebook_resources(notebook_filename):
@@ -37,24 +41,74 @@ def init_single_notebook_resources(notebook_filename):
 
     return resources
 
+def execute_and_save_notebook(file):
+    print("Executing notebook: {}".format(file))
+    with open(file) as f:
+        nb = nbformat.read(f, as_version=4)
+        
+    ep = ExecutePreprocessor(kernel_name="python3")
+    ep.preprocess(nb, {'metadata': {'path': '.'}})
+    print("Success!")
+    
+    with open(file, 'wt') as f:
+        nbformat.write(nb, f)
+    
+
 if __name__=="__main__":
-    files = sorted([p for p in os.listdir(".") if p.endswith("ipynb")])
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--execute_all', '-exec', type=bool, default=True,
+                        help=("Boolean: execute all notebooks before conversion " 
+                              "to rst format"))
+    
+    parser.add_argument('--output_dir', default="../docs/", type=str,
+                        help="Output directory for converted notebooks")
+    
+    parser.add_argument('--clear_old', '-cls', default=True, type=bool,
+                        help=("Delete all existing converted notebooks "
+                              "in output direcory (i.e. all files and folders "
+                              "with trailing number)"))
+    
+    args = parser.parse_args()
+    
+    out_dir = args.output_dir
+    
+    if not os.path.exists(out_dir):
+        raise IOError("Specified output directory {} does not exist".format(out_dir))
+    
+    if args.clear_old:
+        matches = fnmatch.filter(os.listdir(out_dir), "tut[0-9][0-9]_*")
+        old = [os.path.join(out_dir, x) for x in matches]
+        for item in old:
+            try:
+                os.remove(item)
+            except:
+                shutil.rmtree(item)
+            print("Deleted: {}".format(item))
+    
+    
+    files = sorted(fnmatch.filter(os.listdir("."), "tut[0-9][0-9]*.ipynb"))
+    
+    if args.execute_all:
+        for f in files:    
+            execute_and_save_notebook(f)
+            
     converter = nbconvert.RSTExporter()
     
     writer = nbconvert.writers.FilesWriter()
-    writer.build_directory = "../docs/"
-
+    writer.build_directory = out_dir
+    
+    
     for file in files:
+        name = os.path.basename(file)
         try:
-            name = os.path.basename(file)
-            if int(name[:2]) >= 0:
-                resources = init_single_notebook_resources(file)
-                (body, resources) = converter.from_file(file, resources=resources)
-        
-                writer.write(body, resources, os.path.splitext(file)[0])
+            resources = init_single_notebook_resources(file)
+            (body, resources) = converter.from_file(file, resources=resources)
+    
+            writer.write(body, resources, os.path.splitext(file)[0])
             print("Converted notebook {}".format(name))
         except:
-            print("Ignoring {}".format(file))
+            print("Failed to convert {}".format(name))
     
     
     

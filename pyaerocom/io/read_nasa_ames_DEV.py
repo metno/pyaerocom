@@ -5,19 +5,12 @@ Script for development of EBAS single column files read from server
 """
 import os
 import numpy as np
+import pandas as pd
 from collections import OrderedDict as od
+from datetime import datetime
 from pyaerocom.utils import str_underline
+from pyaerocom.exceptions import TimeZoneError
 from pyaerocom import const 
-
-VERBOSE = const.VERBOSE
-
-#conversion methods for first 13 header lines of
-conv_str = lambda l : str(l.strip())
-conv_multiint = lambda l : [int(x) for x in l.strip().split()]
-conv_multifloat = lambda l : [float(x) for x in l.strip().split()]
-conv_int = lambda l : int(l.strip())
-conv_float = lambda l : float(l.strip())
-
 
 class NasaAmesReadError(IOError):
     pass
@@ -39,10 +32,18 @@ class EbasVarDef(dict):
     
 class NasaAmesHeader(object):
     _NUM_FIXLINES = 13
-    _verbose = False
-    _head_rows_mandatory = [0,5,7,9,10,11]
+    _VERBOSE = False
+    _HEAD_ROWS_MANDATORY = [0,5,8,9,10,11]
+    
+    #conversion methods for first 13 header lines of
+    CONV_STR = lambda l : str(l.strip())
+    CONV_MULTIINT = lambda l : [int(x) for x in l.strip().split()]
+    CONV_MULTIFLOAT = lambda l : [float(x) for x in l.strip().split()]
+    CONV_INT = lambda l : int(l.strip())
+    CONV_FLOAT = lambda l : float(l.strip())
+    _STARTDATE_FMT = "%Y%m%d%H%M%S"
 
-    h_fixlines_yield = [["num_head_lines", "num_head_fmt"], #line 1
+    _H_FIXLINES_YIELD = [["num_head_lines", "num_head_fmt"], #line 1
                     "data_originator", #line 2
                     "sponsor_organisation", #3
                     "submitter", #4
@@ -57,21 +58,21 @@ class NasaAmesHeader(object):
                     "descr_first_col", #13
                     ]
     
-    h_fixlines_conv = [conv_multiint, #1 -> yields 2
-                   conv_str, #2
-                   conv_str, #3
-                   conv_str, #4
-                   conv_str, #5
-                   conv_multiint, #6
-                   lambda l : [x.strip() for x in l.strip().split("     ")], #7
-                   conv_float, #8
-                   conv_str, #9
-                   conv_int, #10
-                   conv_multifloat, #11
-                   conv_multifloat, #12
-                   conv_str] #13
+    _H_FIXLINES_CONV = [CONV_MULTIINT, #1 -> yields 2
+                        CONV_STR, #2
+                        CONV_STR, #3
+                        CONV_STR, #4
+                        CONV_STR, #5
+                        CONV_MULTIINT, #6
+                        lambda l : [x.strip() for x in l.strip().split("     ")], #7
+                        CONV_FLOAT, #8
+                        CONV_STR, #9
+                        CONV_INT, #10
+                        CONV_MULTIFLOAT, #11
+                        CONV_MULTIFLOAT, #12
+                        CONV_STR] #13
     
-    def __init__(self, verbose=VERBOSE, **kwargs):
+    def __init__(self, verbose=const.VERBOSE, **kwargs):
         self._head_fix = od(num_head_lines = np.nan,
                             num_head_fmt = np.nan,
                             data_originator = "",
@@ -95,11 +96,11 @@ class NasaAmesHeader(object):
     
     @property
     def verbose(self):
-        return self._verbose
+        return self._VERBOSE
     
     @verbose.setter
     def verbose(self, val):
-        self._verbose = val
+        self._VERBOSE = val
         
     @property
     def head_fix(self):
@@ -152,9 +153,18 @@ class NasaAmesHeader(object):
         return s
 
 class NasaAmesFile(NasaAmesHeader):
-    _data_header = [] #Header line of data block
-    _data = [] #data block
+    """EBAS NASA Ames file interface
     
+    Class interface for EBAS NASA Ames file containing reading
+    """
+    TIMEUNIT2SECFAC = dict(days = 3600*24)
+    def __init__(self, verbose=const.VERBOSE, **kwargs):
+        super(NasaAmesFile, self).__init__(verbose, **kwargs)
+        self._data_header = [] #Header line of data block
+        self._data = [] #data block
+        
+        self.time_stamps = None
+        
     @property
     def data(self):
         return self._data
@@ -179,17 +189,59 @@ class NasaAmesFile(NasaAmesHeader):
     @property
     def col_names_vars(self):
         return [x.var_name for x in self.var_defs if not x.is_flag]
+    
+    @property
+    def col_nums_vars(self):
+        idx = []
+        for i, var in enumerate(self.var_defs):
+            if not var.is_flag:
+                idx.append(i+2)
+        return idx
 
     @property
     def base_date(self):
        return self._base_date()
-       
+    
     @property
-    def time_stamps(self):
-        raise NotImplementedError
+    def time_unit(self):
+        return mc.descr_time_unit.split()[0].strip()
+    
+    @staticmethod
+    def numarr_to_datetime64(basedate, num_arr, mulfac_to_sec):
+        totnum = len(num_arr)
+        if totnum == 0:
+            raise AttributeError("No data available in file")
+        elif totnum == 1:
+            num_arr = np.asarray([num_arr])
+        return basedate + (num_arr * mulfac_to_sec).astype("timedelta64[s]")
+        
+    def to_dataframe(self):
+        """Convert to dataframe"""
+        return pd.DataFrame(data=self.data[:,self.col_nums_vars],
+                            index=self.time_stamps,
+                            columns=self.col_names_vars)
+        
+    def compute_time_stamps(self):
+        offs = self.base_date
+        unit = self.time_unit
+        if not unit in self.TIMEUNIT2SECFAC:
+            raise ValueError("Invalid unit for temporal resolution: {}".format(unit))
+        mulfac = self.TIMEUNIT2SECFAC[unit]
+        
+        start = self.numarr_to_datetime64(offs, self.data[:,0], mulfac)
+        stop = self.numarr_to_datetime64(offs, self.data[:,1], mulfac)
+        
+        self.time_stamps = start + (stop - start)*.5
+        return (start, stop)
     
     def _base_date(self):
-        raise NotImplementedError
+        if not "timezone" in self.meta:
+            raise AttributeError("Fatal: could not infer base date. Timezone "
+                                 "is not available in file header")
+        if not self.timezone.lower() == "utc":
+            raise TimeZoneError("Timezones other than UTC are not yet supported")
+        return np.datetime64(datetime.strptime(mc.startdate, "%Y%m%d%H%M%S"))
+        
        
     def _quality_check(self):
         msgs = ""
@@ -201,12 +253,10 @@ class NasaAmesFile(NasaAmesHeader):
         if msgs:
             raise AttributeError("Quality check failed. Messages: {}".format(msgs))
         
-    def read_header(self, nasa_ames_file, quality_check=True,
-                    verbose=VERBOSE):
-        self.read_file(nasa_ames_file, True, quality_check, verbose)
+    def read_header(self, nasa_ames_file, quality_check=True):
+        self.read_file(nasa_ames_file, True, quality_check)
         
-    def read_file(self, nasa_ames_file, only_head=False, 
-                  quality_check=True, verbose=VERBOSE):
+    def read_file(self, nasa_ames_file, only_head=False, quality_check=True):
         """Read NASA Ames file
         
         Parameters
@@ -218,6 +268,7 @@ class NasaAmesFile(NasaAmesHeader):
         quality_check : bool
             if True, a quality check is performed after reading
         """
+        verbose = self.verbose
         if verbose:
             print("Reading NASA Ames file:\n{}".format(nasa_ames_file))
         lc = 0 #line counter
@@ -243,8 +294,8 @@ class NasaAmesFile(NasaAmesHeader):
                 dc += 1
             elif lc < self._NUM_FIXLINES:
                 try:
-                    val = self.h_fixlines_conv[lc](line)
-                    attr = self.h_fixlines_yield[lc]
+                    val = self._H_FIXLINES_CONV[lc](line)
+                    attr = self._H_FIXLINES_YIELD[lc]
                     if isinstance(attr, list):    
                         for i, attr_id in enumerate(attr):
                             self[attr_id] = val[i]
@@ -253,7 +304,7 @@ class NasaAmesFile(NasaAmesHeader):
                 except Exception as e:
                     msg = ("Failed to read header row {}.\n{}\n" 
                            "Error msg: {}".format(lc, line, repr(e)))
-                    if lc in self._head_rows_mandatory:
+                    if lc in self._HEAD_ROWS_MANDATORY:
                         raise NasaAmesReadError("Fatal: {}".format(msg))
                     else:
                         if self.verbose:
@@ -310,6 +361,12 @@ class NasaAmesFile(NasaAmesHeader):
             lc += 1
         
         self._data = np.asarray(data)
+        try:
+            self.compute_time_stamps()
+        except Exception as e:
+            if self.verbose:
+                print("Failed to compute time stamps.\n"
+                      "Error message: {}".format(repr(e)))
         if quality_check:
             self._quality_check()
             
@@ -337,10 +394,20 @@ class NasaAmesFile(NasaAmesHeader):
         data.flag_id = None
         return data
     
+    def _data_short_str(self):
+        if len(self.data) == 0:
+            s = "No data available"
+        else:
+            s =  str(self.data)
+            shape = self.data.shape
+            s += "\nColnum: {}".format(shape[1])
+            s += "\nTimestamps: {}".format(shape[0])
+        return s            
+            
     def __str__(self):
         s = super(NasaAmesFile, self).__str__()
         s += str_underline("Data")
-        
+        s += self._data_short_str()
         return s
     
 if __name__=="__main__":
@@ -353,3 +420,5 @@ if __name__=="__main__":
     
     mc.read_file(file_mc, quality_check=False)
     print(mc)
+    
+    mc.to_dataframe().plot()

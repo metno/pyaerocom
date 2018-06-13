@@ -29,3 +29,6 @@ class LongitudeConstraintError(ValueError):
 
 class DataExtractionError(ValueError):
     pass
+
+class TimeZoneError(AttributeError):
+    pass
