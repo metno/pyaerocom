@@ -44,7 +44,6 @@ import numpy as np
 import xarray
 
 import pandas as pd
-import re
 
 from pyaerocom import const
 
@@ -62,7 +61,20 @@ class ReadEarlinet:
     ----------
     verboseflag : Bool
         if True some running information is printed
+    
+    Todo
+    ----
 
+        - Review file search routine: iterates currently over all variables \
+        thus, iterates over all files N-times if N is the number of req. \
+        variables. Should iterate over all files only once and check match \
+        of either variable. 
+        - Check mask for dust layer height: e.g. first file found when \
+        calling :func:`get_file_list` is: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/ev/f2010/ev1008192050.e532 \
+        and does not contain dust layer height..
+        
+        
+        
     """
     _FILEMASK = '*.e*'
     __version__ = "0.03"
@@ -94,13 +106,13 @@ class ReadEarlinet:
     VAR_INFO = {}
     VAR_INFO['ec5503daer'] = {}
     VAR_INFO['ec5503daer']['file_mask'] = '*/f*/*.e5*'
-    VAR_INFO['ec5503daer']['netcdf_nar_name'] = 'Extinction'
+    VAR_INFO['ec5503daer']['netcdf_var_name'] = 'Extinction'
     VAR_INFO['ec5323daer'] = {}
     VAR_INFO['ec5323daer']['file_mask'] = '*/f*/*.e5*'
-    VAR_INFO['ec5323daer']['netcdf_nar_name'] = 'Extinction'
+    VAR_INFO['ec5323daer']['netcdf_var_name'] = 'Extinction'
     VAR_INFO['ec3553daer'] = {}
     VAR_INFO['ec3553daer']['file_mask'] = '*/f*/*.e3*'
-    VAR_INFO['ec3553daer']['netcdf_nar_name'] = 'Extinction'
+    VAR_INFO['ec3553daer']['netcdf_var_name'] = 'Extinction'
     VAR_INFO['zdust'] = {}
     VAR_INFO['zdust']['file_mask'] = '*/f*/*.e*'
     VAR_INFO['zdust']['netcdf_var_name'] = 'DustLayerHeight'
@@ -109,7 +121,7 @@ class ReadEarlinet:
 
 
 
-    def __init__(self, index_pointer = 0, verbose = False):
+    def __init__(self, index_pointer=0, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -209,14 +221,14 @@ Attributes:
         # Metadata key is float because the numpy array holding it is float
 
         met_data_key = -1. # we want to start at key 0.
-        self.files = self.get_file_list()
+        files = self.get_file_list()
         # self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
         self.data = np.zeros([self._ROWNO, self._COLNO], dtype=np.float64)
 
         last_stat_code = ''
         time = []
         start_index = self.index_pointer
-        for _file in sorted(self.files):
+        for _file in sorted(files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
 
@@ -341,9 +353,19 @@ Attributes:
 
     ###################################################################################
 
-    def get_file_list(self, vars_to_read = ['zdust']):
+    def get_file_list(self, vars_to_read=['zdust']):
         """search for files to read
 
+        Parameters
+        ----------
+        vars_to_read : list
+            list of variables that are supposed to be read
+        
+        Returns
+        -------
+        list
+            file list
+            
         Example
         -------
         >>> import pyaerocom.io.read_earlinet
@@ -359,7 +381,9 @@ Attributes:
         #files = []
         for var in vars_to_read:
             files = (glob.glob(os.path.join(self.DATASET_PATH,
-                                            self.VAR_INFO[var]['file_mask']), recursive=True))
+                                            self.VAR_INFO[var]['file_mask']), 
+                     recursive=True))
+        self.files = files
         return files
 
     ###################################################################################

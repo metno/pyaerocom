@@ -116,9 +116,12 @@ def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     """
     
     if vmin < 0:
-        raise ValueError("Invalid value vmin = %.3f for log space cmap levels "
-                         "Please choose a number exceeding 0." %vmin)
-    elif vmin == 0:
+        vmin = 0
+# =============================================================================
+#         raise ValueError("Invalid value vmin = %.3f for log space cmap levels "
+#                          "Please choose a number exceeding 0." %vmin)
+# =============================================================================
+    if vmin == 0:
         vmin = 1*10.0**(exponent(vmax) - 2)
         if not add_zero:
             add_zero = True

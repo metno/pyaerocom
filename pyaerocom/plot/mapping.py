@@ -33,9 +33,8 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     
     Parameters
     ----------
-    data : :obj:`GriddedData` or :obj:`iris.cube.Cube`
-        input data from one timestamp. May also be of type 
-        :class:`pyaerocom.GriddedData`. Uses first time stamp if data is has
+    data : :obj:`GriddedData`
+        input grid data object. Uses first time stamp if data is has
         more than one time stamp
     xlim : tuple
         2-element tuple specifying plotted longitude range
@@ -100,9 +99,11 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     elif not isinstance(projection, ccrs.Projection):
         raise ValueError("Input for projection needs to be instance of "
                          "cartopy.crs.Projection")
-    if isinstance(data, GriddedData):
-        data = data.grid
-    if len(data.coord("time").points) > 1:
+    if not isinstance(data, GriddedData):
+        raise IOError("Need instance of pyaerocom.GriddedData object")
+    
+    cube = data.grid
+    if len(cube.coord("time").points) > 1:
         if verbose:
             print("Input data contains more than one time stamp, using first "
                   "time stamp")
@@ -112,9 +113,9 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
             color_theme = ColorTheme(color_theme)  
         else:
             color_theme = COLOR_THEME
-    tstr = str(data.coord("time").cell(0))
+    tstr = str(cube.coord("time").cell(0))
 
-    lons, lats = data.coord("longitude").points, data.coord("latitude").points
+    lons, lats = cube.coord("longitude").points, cube.coord("latitude").points
     if fig is None:
         figw = figh*2
         fig = figure(figsize=(figw, figh))
@@ -129,9 +130,9 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     X, Y = meshgrid(lons, lats)
     cmap = copy(color_theme.cmap_map)
     if vmin is None:
-        vmin = data.data.min()
+        vmin = data.min()
     if vmax is None:
-        vmax = data.data.max()
+        vmax = data.max()
             
     bounds = None
     if cbar_levels: #user provided levels of colorbar explicitely
@@ -164,7 +165,7 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         else:
             cbar_extend = "max"
       
-    disp = ax.pcolormesh(X, Y, data.data, cmap=cmap, norm=norm)
+    disp = ax.pcolormesh(X, Y, data.grid.data, cmap=cmap, norm=norm)
     
     min_mag = -exponent(bounds[1])
     min_mag = 0 if min_mag < 0 else min_mag
@@ -464,11 +465,17 @@ if __name__ == "__main__":
     import pyaerocom
     close("all")
     
+    read = pyaerocom.io.ReadGridded('MODIS6.aqua')
+
+    data = read.read_var("od550aer")
+    
+    
+    data.quickplot_map(800)
+    
     read = pyaerocom.io.ReadGridded("AATSR_SU_v1.0")    
     data = read.read_var("od550aer")
-    data.quickplot_map()
     
-    run_old=False
+    run_old=True
     if run_old:
         read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start_time="2010",
                                           stop_time="2019")

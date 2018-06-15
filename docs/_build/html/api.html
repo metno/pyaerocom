@@ -913,6 +913,13 @@ Length: 223, dtype: float64}</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<ul class="last simple">
+<li>Review file search routine: iterates currently over all variables         thus, iterates over all files N-times if N is the number of req.         variables. Should iterate over all files only once and check match         of either variable.</li>
+<li>Check mask for dust layer height: e.g. first file found when         calling <a class="reference internal" href="#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list" title="pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a> is: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/ev/f2010/ev1008192050.e532         and does not contain dust layer height..</li>
+</ul>
+</div>
 <dl class="attribute">
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_NAME">
 <code class="descname">DATASET_NAME</code><em class="property"> = 'EARLINET'</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_NAME" title="Permalink to this definition">¶</a></dt>
@@ -940,7 +947,7 @@ Length: 223, dtype: float64}</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.VAR_INFO">
-<code class="descname">VAR_INFO</code><em class="property"> = {'ec3553daer': {'file_mask': '*/f*/*.e3*', 'netcdf_nar_name': 'Extinction'}, 'ec5323daer': {'file_mask': '*/f*/*.e5*', 'netcdf_nar_name': 'Extinction'}, 'ec5503daer': {'file_mask': '*/f*/*.e5*', 'netcdf_nar_name': 'Extinction'}, 'zdust': {'file_mask': '*/f*/*.e*', 'netcdf_var_name': 'DustLayerHeight', 'min_val': 0.0, 'max_val': 10000.0}}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_INFO" title="Permalink to this definition">¶</a></dt>
+<code class="descname">VAR_INFO</code><em class="property"> = {'ec3553daer': {'file_mask': '*/f*/*.e3*', 'netcdf_var_name': 'Extinction'}, 'ec5323daer': {'file_mask': '*/f*/*.e5*', 'netcdf_var_name': 'Extinction'}, 'ec5503daer': {'file_mask': '*/f*/*.e5*', 'netcdf_var_name': 'Extinction'}, 'zdust': {'file_mask': '*/f*/*.e*', 'netcdf_var_name': 'DustLayerHeight', 'min_val': 0.0, 'max_val': 10000.0}}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_INFO" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1102,6 +1109,18 @@ DustLayerHeight   float32 3200.0</div></blockquote>
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">
 <code class="descname">get_file_list</code><span class="sig-paren">(</span><em>vars_to_read=['zdust']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_earlinet.html#ReadEarlinet.get_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>search for files to read</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vars_to_read</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – list of variables that are supposed to be read</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">file list</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.read_earlinet</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_earlinet</span><span class="o">.</span><span class="n">ReadEarlinet</span><span class="p">()</span>
@@ -1193,6 +1212,16 @@ if <cite>input</cite> is preloaded Cube</li>
 <dd><p><em>dict</em> – dictionary containing supplementary information about this data
 object (these may be attributes that are not already stored within
 the metadata representation of the underlying data object)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.is_masked">
+<code class="descname">is_masked</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.is_masked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag specifying whether data is masked or not</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method only works if the data is loaded.</p>
+</div>
 </dd></dl>
 
 <dl class="attribute">
@@ -1715,6 +1744,35 @@ related to method and input parameters.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.min">
+<code class="descname">min</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.max">
+<code class="descname">max</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.mean">
+<code class="descname">mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.mean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean value of data array</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Corresponds to numerical mean of underlying N-dimensional numpy array.
+Does not consider area-weights or any other advanced averaging.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.std">
+<code class="descname">std</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard deviation of values</p>
 </dd></dl>
 
 <dl class="method">
@@ -2248,8 +2306,7 @@ low level, very flexible plot method</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">GriddedData</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>) – input data from one timestamp. May also be of type
-<code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.GriddedData</span></code>. Uses first time stamp if data is has
+<li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">GriddedData</span></code>) – input grid data object. Uses first time stamp if data is has
 more than one time stamp</li>
 <li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
@@ -2385,7 +2442,7 @@ stamp, the first index is used)</li>
 <dt id="pyaerocom.plot.plotscatter.plotscatter">
 <code class="descclassname">pyaerocom.plot.plotscatter.</code><code class="descname">plotscatter</code><span class="sig-paren">(</span><em>model_name</em>, <em>model_data=None</em>, <em>obs_data=None</em>, <em>Options=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/plotscatter.html#plotscatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.plotscatter.plotscatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot scatterplots</p>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">Complete docstring, review code</p>
 </div>

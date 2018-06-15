@@ -13,6 +13,7 @@ from iris.analysis import MEAN
 from pandas import Timestamp, Series
 from warnings import warn
 from numpy import nan, where
+from numpy.ma import MaskedArray
 
 from pyaerocom import const
 from pyaerocom.exceptions import DataExtractionError
@@ -92,7 +93,7 @@ class GriddedData(object):
         #super(GriddedData, self).__init__(input, var_name, verbose, **suppl_info)
         self.verbose = verbose
         self.suppl_info = od(from_files     = [],
-                             name       = "Unknown",
+                             name           = "Unknown",
                              ts_type        = "Unknown",
                              region         = None)
         #attribute used to store area weights (if applicable, see method
@@ -103,7 +104,20 @@ class GriddedData(object):
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
-       
+    
+    @property
+    def is_masked(self):
+        """Flag specifying whether data is masked or not
+        
+        Note
+        ----
+        This method only works if the data is loaded.
+        """
+        if self.grid.has_lazy_data():
+            raise AttributeError("Information cannot be accessed. Data is not "
+                                 "available in memory (lazy loading)")
+        return isinstance(self.grid.data, MaskedArray)
+    
     @property
     def longitude(self):
         """Longitudes of data"""
@@ -283,6 +297,7 @@ class GriddedData(object):
                 print("Failed to access time coordinate in GriddedData class")
         if self._GRID_IO["SHIFT_LONS"]:
             self.check_and_regrid_lons()
+        #if isinstance(sel)
             
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -833,11 +848,49 @@ class GriddedData(object):
             matplotlib figure instance containing plot
         """
         from pyaerocom.plot.mapping import plot_map
-        fig = plot_map(self.grid[time_idx], xlim, ylim, **kwargs)
+        fig = plot_map(self[time_idx], xlim, ylim, **kwargs)
         fig.axes[0].set_title("Model: %s, var=%s (%s)" 
                      %(self.name, self.var_name,
                        self.time.cell(time_idx)))
         return fig
+    
+    def min(self):
+        """Minimum value"""
+        #make sure data is in memory
+        data = self.grid.data
+        if self.is_masked:
+            return data.data[~data.mask].min()
+        return data.min()
+        
+    def max(self):
+        """Maximum value"""
+        #make sure data is in memory
+        data = self.grid.data
+        if self.is_masked:
+            return data.data[~data.mask].max()
+        return data.max()
+    
+    def mean(self):
+        """Mean value of data array
+        
+        Note
+        ----
+        Corresponds to numerical mean of underlying N-dimensional numpy array.
+        Does not consider area-weights or any other advanced averaging.
+        """
+        #make sure data is in memory
+        data = self.grid.data
+        if self.is_masked:
+            return data.data[~data.mask].mean()
+        return data.mean()
+    
+    def std(self):
+        """Standard deviation of values"""
+        #make sure data is in memory
+        data = self.grid.data
+        if self.is_masked:
+            return data.data[~data.mask].std()
+        return data.std()
     
     def short_str(self):
         """Short string representation"""

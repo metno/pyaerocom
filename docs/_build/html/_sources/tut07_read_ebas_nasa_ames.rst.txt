@@ -316,7 +316,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7fce3b5fb518>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f0602d94ac8>)])
 
 
 
@@ -1174,7 +1174,7 @@ Read only header
 
 .. parsed-literal::
 
-    4.41 ms ± 594 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    3.85 ms ± 98.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Read raw:
@@ -1192,7 +1192,7 @@ Read raw:
 
 .. parsed-literal::
 
-    67.1 ms ± 7.01 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    65.3 ms ± 11.3 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 Perform all operations:
@@ -1210,5 +1210,5 @@ Perform all operations:
 
 .. parsed-literal::
 
-    85.9 ms ± 16.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    68.9 ms ± 9.25 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 

@@ -37,7 +37,6 @@ from glob import glob
 from re import match
 from os.path import isdir, basename
 from collections import OrderedDict as od
-from warnings import warn
 from numpy import arange
 from pandas import Timestamp
 
@@ -528,7 +527,7 @@ class ReadGridded(object):
         cubes_concat = concatenate(cubes, error_on_mismatch=True)
         if len(cubes_concat) > 1:
             long_names = [x.long_name for x in cubes_concat]
-            raise IOError("Could not concatenate all individual Cubes for in "
+            raise IOError("Could not concatenate individual Cubes for in "
                           "var_name {} in time: likely due to multiple "
                           "long_name attributes in source files: {}".format(
                                   var_name, long_names))
@@ -551,8 +550,9 @@ class ReadGridded(object):
                                               self.stop_time))
                 data = _data
             except Exception as e:
-                print("Failed to crop data for {} in time.\n"
-                                 "Error: {}".format(var_name, repr(e)))
+                if self.verbose:
+                    print("Failed to crop data for {} in time.\n"
+                          "Error: {}".format(var_name, repr(e)))
         
         if var_name in self.data and self.verbose:
             print("Warning: Data for variable {} already exists "

@@ -174,6 +174,7 @@
 <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span><span class="p">,</span> <span class="n">Series</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">nan</span><span class="p">,</span> <span class="n">where</span>
+<span class="kn">from</span> <span class="nn">numpy.ma</span> <span class="k">import</span> <span class="n">MaskedArray</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">DataExtractionError</span>
@@ -253,7 +254,7 @@
         <span class="c1">#super(GriddedData, self).__init__(input, var_name, verbose, **suppl_info)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">from_files</span>     <span class="o">=</span> <span class="p">[],</span>
-                             <span class="n">name</span>       <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
+                             <span class="n">name</span>           <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
                              <span class="n">ts_type</span>        <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
                              <span class="n">region</span>         <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
         <span class="c1">#attribute used to store area weights (if applicable, see method</span>
@@ -264,7 +265,20 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">suppl_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-       
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_masked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flag specifying whether data is masked or not</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This method only works if the data is loaded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">has_lazy_data</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Information cannot be accessed. Data is not &quot;</span>
+                                 <span class="s2">&quot;available in memory (lazy loading)&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">MaskedArray</span><span class="p">)</span>
+    
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Longitudes of data&quot;&quot;&quot;</span>
@@ -444,6 +458,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to access time coordinate in GriddedData class&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GRID_IO</span><span class="p">[</span><span class="s2">&quot;SHIFT_LONS&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_and_regrid_lons</span><span class="p">()</span></div>
+        <span class="c1">#if isinstance(sel)</span>
             
 <div class="viewcode-block" id="GriddedData.time_stamps"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.time_stamps">[docs]</a>    <span class="k">def</span> <span class="nf">time_stamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert time stamps into list of numpy datetime64 objects</span>
@@ -994,11 +1009,49 @@
 <span class="sd">            matplotlib figure instance containing plot</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">pyaerocom.plot.mapping</span> <span class="k">import</span> <span class="n">plot_map</span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">time_idx</span><span class="p">],</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_map</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">time_idx</span><span class="p">],</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Model: </span><span class="si">%s</span><span class="s2">, var=</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> 
                      <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span>
                        <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">time_idx</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">fig</span></div>
+    
+<div class="viewcode-block" id="GriddedData.min"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Minimum value&quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="GriddedData.max"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.max">[docs]</a>    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Maximum value&quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GriddedData.mean"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mean value of data array</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Corresponds to numerical mean of underlying N-dimensional numpy array.</span>
+<span class="sd">        Does not consider area-weights or any other advanced averaging.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GriddedData.std"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Standard deviation of values&quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div>
     
 <div class="viewcode-block" id="GriddedData.short_str"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.short_str">[docs]</a>    <span class="k">def</span> <span class="nf">short_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Short string representation&quot;&quot;&quot;</span>

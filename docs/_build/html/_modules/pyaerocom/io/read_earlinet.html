@@ -205,7 +205,6 @@
 <span class="kn">import</span> <span class="nn">xarray</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 
@@ -223,7 +222,20 @@
 <span class="sd">    ----------</span>
 <span class="sd">    verboseflag : Bool</span>
 <span class="sd">        if True some running information is printed</span>
+<span class="sd">    </span>
+<span class="sd">    Todo</span>
+<span class="sd">    ----</span>
 
+<span class="sd">        - Review file search routine: iterates currently over all variables \</span>
+<span class="sd">        thus, iterates over all files N-times if N is the number of req. \</span>
+<span class="sd">        variables. Should iterate over all files only once and check match \</span>
+<span class="sd">        of either variable. </span>
+<span class="sd">        - Check mask for dust layer height: e.g. first file found when \</span>
+<span class="sd">        calling :func:`get_file_list` is: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/ev/f2010/ev1008192050.e532 \</span>
+<span class="sd">        and does not contain dust layer height..</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.e*&#39;</span>
     <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.03&quot;</span>
@@ -255,13 +267,13 @@
     <span class="n">VAR_INFO</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5503daer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5503daer&#39;</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;*/f*/*.e5*&#39;</span>
-    <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5503daer&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_nar_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Extinction&#39;</span>
+    <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5503daer&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Extinction&#39;</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5323daer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5323daer&#39;</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;*/f*/*.e5*&#39;</span>
-    <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5323daer&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_nar_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Extinction&#39;</span>
+    <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec5323daer&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Extinction&#39;</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec3553daer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec3553daer&#39;</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;*/f*/*.e3*&#39;</span>
-    <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec3553daer&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_nar_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Extinction&#39;</span>
+    <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;ec3553daer&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Extinction&#39;</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;*/f*/*.e*&#39;</span>
     <span class="n">VAR_INFO</span><span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">][</span><span class="s1">&#39;netcdf_var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DustLayerHeight&#39;</span>
@@ -270,7 +282,7 @@
 
 
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_pointer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_pointer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -370,14 +382,14 @@
         <span class="c1"># Metadata key is float because the numpy array holding it is float</span>
 
         <span class="n">met_data_key</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="c1"># we want to start at key 0.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
         <span class="c1"># self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
         <span class="n">last_stat_code</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="n">time</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">start_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span>
-        <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_file</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -502,9 +514,19 @@
 
     <span class="c1">###################################################################################</span>
 
-<div class="viewcode-block" id="ReadEarlinet.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">]):</span>
+<div class="viewcode-block" id="ReadEarlinet.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_read</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;zdust&#39;</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;search for files to read</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vars_to_read : list</span>
+<span class="sd">            list of variables that are supposed to be read</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            file list</span>
+<span class="sd">            </span>
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.read_earlinet</span>
@@ -520,7 +542,9 @@
         <span class="c1">#files = []</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
             <span class="n">files</span> <span class="o">=</span> <span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span>
-                                            <span class="bp">self</span><span class="o">.</span><span class="n">VAR_INFO</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]),</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">VAR_INFO</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;file_mask&#39;</span><span class="p">]),</span> 
+                     <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="n">files</span>
         <span class="k">return</span> <span class="n">files</span></div>
 
     <span class="c1">###################################################################################</span>
