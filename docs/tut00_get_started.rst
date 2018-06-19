@@ -661,7 +661,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f81306b5cc0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f61a0589470>
 
 
 

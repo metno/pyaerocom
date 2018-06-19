@@ -61,8 +61,10 @@ class EbasColDef(dict):
         
     def __getattr__(self, key):
         return self[key]
+    
     def __setattr__(self, key, val):
         self[key] = val
+    
     def __str__(self):
         s=""
         for k, v in self.items():

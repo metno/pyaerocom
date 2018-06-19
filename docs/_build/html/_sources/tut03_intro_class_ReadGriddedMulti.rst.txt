@@ -58,15 +58,6 @@ done in a later process.
 
 .. parsed-literal::
 
-    Found match for ID AATSR_SU_v4.3
-    Checking if renamed directory exists
-    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
-    Found match for ID CAM5.3-Oslo_CTRL2016
-    Checking if renamed directory exists
-    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
-    Found match for ID ECHAM6-SALSA_AP3-CTRL2015
-    Checking if renamed directory exists
-    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/ECHAM6-SALSA_AP3-CTRL2015/renamed
     
     Pyaerocom ReadGriddedMulti
     --------------------------

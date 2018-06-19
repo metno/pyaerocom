@@ -39,9 +39,6 @@ information about what is in there.
 
 .. parsed-literal::
 
-    Found match for ID ECMWF_CAMS_REAN
-    Checking if renamed directory exists
-    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
     
     Pyaerocom ReadGridded
     ---------------------

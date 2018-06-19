@@ -319,6 +319,11 @@ class Config(object):
         return ok
     
     @property
+    def EBAS_SQLITE_DATABASE(self):
+        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 
+                                'ebas_file_index.sqlite3')
+                            
+    @property
     def OBSDIRS(self):
         return [x["PATH"] for x in self.OBSCONFIG.values()]
     

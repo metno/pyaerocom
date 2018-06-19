@@ -22,3 +22,5 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 .. include:: tut06_collocation.rst
 
 .. include:: tut07_read_ebas_nasa_ames.rst
+
+.. include:: tut08_ebas_database_browser.rst

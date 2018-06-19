@@ -283,7 +283,7 @@ class ReadGridded(object):
         IOError 
             if directory cannot be found
         """
-        _dir = search_data_dir_aerocom(self.name)
+        _dir = search_data_dir_aerocom(self.name, verbose=self.verbose)
         self.data_dir = _dir
         return _dir
     
