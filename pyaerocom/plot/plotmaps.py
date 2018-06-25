@@ -49,7 +49,7 @@ import os
 
 from pyaerocom.griddata import GridData
 
-def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer", 
+def plotmaps(data, verbose = False, filter ="WORLD", var="od550aer",
              plotdir="./"):
     """plot aerocom standard maps
 
@@ -110,7 +110,7 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer",
                 #ABS550_AER_an2012_mALLYEAR_WORLD_ZONALOBS_AERONETSky.ps.png
                 #OD550_AER_an2017_d20171125_WORLD_MAP.ps.png
                 plotfilename = os.path.join(plotdir, '_'.join([var, "an" + Year, TsStr, filter, PlotType]) + ".png")
-                if VerboseFlag:
+                if verbose:
                     print(plotfilename)
                 plot = iplt.pcolormesh(time_sub_cube[:, :], cmap = colormap, vmin=0., vmax=max(colorbar_levels))
                 # pdb.set_trace()
@@ -178,7 +178,7 @@ def plotmaps(data, VerboseFlag = False, filter ="WORLD", var="od550aer",
                 # ABS550_AER_an2012_mALLYEAR_WORLD_ZONALOBS_AERONETSky.ps.png
                 # OD550_AER_an2017_d20171125_WORLD_MAP.ps.png
                 plotfilename = os.path.join(plotdir, '_'.join([var, "an" + Year, TsStr, filter, PlotType]) + ".png")
-                if VerboseFlag:
+                if verbose:
                     print(plotfilename)
                 LatsToPlot = time_sub_cube.coord(axis='X').points
                 LonsToPlot = time_sub_cube.coord(axis='Y').points
