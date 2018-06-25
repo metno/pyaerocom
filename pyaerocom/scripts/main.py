@@ -31,6 +31,9 @@ import sys
 import getpass
 import socket
 #import pdb
+import pandas as pd
+import numpy as np
+from pyaerocom import const
 
 def cli():
     """Pyaerocom command line interface (CLI)
@@ -43,6 +46,7 @@ def cli():
     >>> import pyaerocom as pa
     >>> import itertools
     >>> import matplotlib.pyplot as plt
+    >>> import pandas as pd
     >>> model = 'IASI_MAPIR.v3.x.merged.AN'
     >>> startdate = '2007-01-01'
     >>> enddate = '2012-12-31'
@@ -54,6 +58,9 @@ def cli():
     >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
     >>> obs_data = pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
     >>> obs_data.read()
+    >>> pa.helpers.griesie_dataframe_testing(model_data, obs_data, startdate, enddate)
+
+
     >>> obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
     >>> obs_lats = obs_data.latitude
     >>> obs_lons = obs_data.longitude
@@ -63,7 +70,29 @@ def cli():
     >>> model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
     >>> times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
     >>> model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
-    >>> #model_at_obs_times = model_data_as_series[0]['zdust'][obs_data_as_series[0]['zdust'].index]
+    >>> # single station
+    >>> df = pd.DataFrame(obs_data_as_series[1]['zdust'], columns=['obs'])
+    >>> df['model'] = model_data_as_series[1]['zdust']
+    >>> # remove points where any of the df is NaN
+    >>> #df = df.dropna(axis=0, how='any')
+    >>> correlation = df.corr(method='pearson')
+    >>> plot = df.plot.scatter('obs','model')
+    >>> df.show()
+
+    >>> # all stations
+    >>> df_all=pd.DataFrame(columns=['obs', 'model'])
+    >>>
+
+
+
+
+    >>> # model time series at obs times with NaNs removed
+    >>> model_series_at_obs_times = [model_data_as_series[i]['zdust'][obs_data_as_series[i]['zdust'].index].dropna()*1E3 for i in range(len(obs_data_as_series))]
+    >>> #obs data at non NaN model data times
+    >>> obs_series_at_model_times = [obs_data_as_series[i]['zdust'][model_series_at_obs_times[i].index] for i in range(len(model_series_at_obs_times))]
+
+
+    >>> # model_at_obs_times = model_data_as_series[0]['zdust'][obs_data_as_series[0]['zdust'].index]
     >>> model_at_obs_times = list(itertools.chain.from_iterable([model_data_as_series[i]['zdust'][obs_data_as_series[i]['zdust'].index]*1E3 for i in range(len(obs_data_as_series))]))
     >>> obs_as_list = list(itertools.chain.from_iterable([obs_data_as_series[i]['zdust'].values for i in range(len(obs_data_as_series))]))
     >>> plot = plt.plot(obs_as_list, model_at_obs_times, 'go', linestyle='None')
@@ -77,10 +106,11 @@ def cli():
     from pyaerocom import const
     import pyaerocom.io as pio
     import pyaerocom as pa
+    import pyaerocom.plot
     supported_obs_networks = ",".join(pa.NoGridData.SUPPORTED_DATASETS)
 
     # command line interface using argparse
-    Options = {}
+    options = {}
     parser = argparse.ArgumentParser(
         description='pyaerocom.py\n\n\n')
     parser.add_argument("model",
@@ -93,8 +123,8 @@ def cli():
                         help="model years to run; use 9999 for climatology, leave out for all years; comma separated list; Use this to limit the plotting of the OBSERVATION-ONLY model to certain years.")
     parser.add_argument("--obsyear",
                         help="observation years to run; use 9999 for climatology, leave out for same as model year")
-    parser.add_argument("--startdate", help="startdate as YYYY-MM-DD e.g. 2012-01-01", default='2011-01-01')
-    parser.add_argument("--enddate", help="enddate  as YYYY-MM-DD e.g. 2012-12-31", default='2012-12-31')
+    parser.add_argument("--startdate", help="startdate as YYYY-MM-DD e.g. 2012-01-01", default='2007-01-01')
+    parser.add_argument("--enddate", help="enddate  as YYYY-MM-DD e.g. 2012-12-31", default='2015-12-31')
 
     parser.add_argument("--nosend", help="switch off webserver upload", action='store_false')
     parser.add_argument("--debug", help="switch on debug mode: Do NOT start idl, just print what would be done",
@@ -111,15 +141,17 @@ def cli():
     parser.add_argument("--aodtrends", help="run the AODTREND filters AODTREND95TO12,AODTREND,AODTREND95",
                         action='store_true')
     parser.add_argument("--plotdailyts", help="also plot daily time series", action='store_true')
+    parser.add_argument("--plotscatter", help="plot scatter plot", action='store_true')
+    parser.add_argument("--plotsitelocation", help="plot sirelocation plot", action='store_true')
     # parser.add_argument("--", help="")
 
     args = parser.parse_args()
 
     if args.numcpu:
-        Options['NumCPU'] = args.numcpu
+        options['NumCPU'] = args.numcpu
 
     if args.variable:
-        Options['VariablesToRun'] = args.variable.split(',')
+        options['VariablesToRun'] = args.variable.split(',')
         # now build a dict with var as key, and the 'real var name as value
         # used to make special variable model possible
         # e.g. od550aer_Forecast
@@ -131,77 +163,185 @@ def cli():
         #         dict_Vars[Var] = Var
 
     if args.model:
-        Options['ModelName'] = args.model
+        options['ModelName'] = args.model
+
+    if args.startdate:
+        options['StartDate'] = args.startdate
+
+    if args.enddate:
+        options['EndDate'] = args.enddate
 
     if args.htapfilters:
-        Options['HTAPFILTERS'] = args.htapfilters
+        options['HTAPFILTERS'] = args.htapfilters
 
     if args.aodtrends:
-        Options['AODTRENDS'] = args.aodtrends
+        options['AODTRENDS'] = args.aodtrends
 
     if args.debug:
-        Options['DEBUG'] = args.debug
+        options['DEBUG'] = args.debug
 
     if args.nosend:
-        Options['NOSEND'] = args.nosend
+        options['NOSEND'] = args.nosend
 
     if args.verbose:
-        Options['VERBOSE'] = args.verbose
+        options['VERBOSE'] = args.verbose
 
     if args.modelyear:
-        Options['ModelYear'] = args.modelyear.split(',')
+        options['ModelYear'] = args.modelyear.split(',')
     else:
-        Options['ModelYear'] = 'all'
+        options['ModelYear'] = 'all'
 
     if args.obsyear:
-        Options['ObsYear'] = args.obsyear
+        options['ObsYear'] = args.obsyear
     else:
-        Options['ObsYear'] = '0000'
+        options['ObsYear'] = '0000'
 
     if args.obsnetwork:
-        Options['ObsnetworksToRun'] = args.obsnetwork.split(',')
+        options['ObsnetworksToRun'] = args.obsnetwork.split(',')
         # use the 1st for model plotting for now
-        Options['ObsNetworkName'] = args.obsnetwork.split(',')
+        options['ObsNetworkName'] = args.obsnetwork.split(',')
 
     if args.forecast:
-        Options['FORECAST'] = args.forecast
+        options['FORECAST'] = args.forecast
 
     if args.plotdailyts:
-        Options['PLOTDAILYTIMESERIES'] = args.plotdailyts
+        options['PLOTDAILYTIMESERIES'] = args.plotdailyts
+
+    if args.plotscatter:
+        options['PLOTSCATTER'] = args.plotscatter
+    else:
+        options['PLOTSCATTER'] = False
+
+
+    if args.plotsitelocation:
+        options['PLOTSITELOCATION'] = args.plotsitelocation
+    else:
+        options['PLOTSITELOCATION'] = False
 
     hostname = socket.gethostname()
     model_obj = []
     model_data = []
-    for Model in args.model:
-        print(Model)
-        if Model != const.NOMODELNAME:
+    for model_name in args.model:
+        print(model_name)
+        if model_name != const.NOMODELNAME:
             # start model read
 
-            model_obj = pio.ReadGrid(name=Model, start_time=args.startdate, stop_time=args.enddate, verbose=True)
-            model_data = model_obj.read_var(var_name=Options['VariablesToRun'][0], ts_type="daily")
-            obs_data = pa.nogriddata.NoGridData(data_set_to_read=Options['ObsNetworkName'][0], vars_to_read=[Options['VariablesToRun'][0]],
-                                                     verbose=True)
+            model_obj = pio.ReadGrid(name=model_name, start_time=args.startdate, stop_time=args.enddate, verbose=True)
+            model_data = model_obj.read_var(var_name=options['VariablesToRun'][0], ts_type="daily")
+            obs_data = pa.nogriddata.NoGridData(
+                data_set_to_read=options['ObsNetworkName'][0],
+                vars_to_read=[options['VariablesToRun'][0]],
+                verbose=True)
             obs_data.read()
-            obs_lats = obs_data.latitude
-            obs_lons = obs_data.longitude
-            model_station_data = model_data.interpolate([("latitude", obs_data.latitude), ("longitude", obs_data.longitude)])
 
-            times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
-            TS = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
+            # obs_lats = obs_data.latitude
+            # obs_lons = obs_data.longitude
 
-            print(TS)
-            print(model_station_data)
-            # test = pd.DataFrame(
-            #    data={'model': model_data_as_series[0]['zdust'], 'obs': obs_data_as_series[0]['zdust']})
+            # obs_data_as_series = obs_data.to_timeseries(start_date=args.startdate, end_date=args.enddate, freq='D')
+            # obs_lats = [obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
+            # obs_lons = [obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
+            if options['PLOTSCATTER']:
+                pyaerocom.plot.plotscatter(model_name, model_data, obs_data, options)
+
+            if options['PLOTSITELOCATION']:
+                pyaerocom.plot.plotsitelocation(model_name, model_data, obs_data, options)
+
+            # print('xarray...')
+            # # xarray
+            # import xarray
+            # filename = '/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed/aerocom.AATSR_SU_v4.3.daily.od550aer.2008.nc'
+            # xarray_ds = xarray.open_dataset(filename, decode_times=True)
+            # model_station_data_xarray_single = xarray_ds.sel(latitude=obs_lats[0], longitude=obs_lons[0], method='nearest')
+            #
+            # model_station_data_xarray_all = pa.helpers.griesie_xarray_to_timeseries(xarray_ds, obs_lats, obs_lons,
+            #                                                                         vars_to_read=[
+            #                                                                             Options['VariablesToRun'][0]])
+            #
+            #
+            # print('pyaerocom...')
+            # # obs_names = [obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
+            # # model_station_data = model_data.interpolate([("latitude", obs_data.latitude), ("longitude", obs_data.longitude)])
+            # model_station_data = model_data.interpolate([("latitude", obs_lats), ("longitude", obs_lons)])
+            # model_data_as_series = model_data.to_time_series([("latitude", obs_lats), ("longitude", obs_lons)])
+            #
+            # sample_points = [('latitude', obs_lats), ('longitude', obs_lons)]
+            # sample_points_single = [('latitude', obs_lats[0]), ('longitude', obs_lons[0])]
+            # # read and colocate with iris directly
+            # print('iris...')
+            # import iris
+            # cube = iris.load(filename)
+            # model_station_data_cube_all = cube[0].interpolate(sample_points, iris.analysis.Nearest())
+            # model_station_data_cube_single = cube[0].interpolate(sample_points_single, iris.analysis.Nearest())
+            # print('Summary:')
+            # print("pyaerocom griddata:")
+            # print(model_station_data.grid.data[50:60,0,0])
+            # print("cube all:")
+            # print(model_station_data_cube_all.data[50:60,0,0])
+            # print("cube single:")
+            # print(model_station_data_cube_single.data[50:60])
+            #
+            # print("xarray single:")
+            # print(np.float_(model_station_data_xarray_single[Options['VariablesToRun'][0]][50:60]))
+            # print("xarray all:")
+            # print(np.float_(model_station_data_xarray_all[0][Options['VariablesToRun'][0]][50:60]))
+            #
+            # var_to_run = Options['VariablesToRun'][0]
+            # obs_network_name = Options['ObsNetworkName'][0]
+            # #Model = Options['ModelName']
+            # # times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
+            # # model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons,
+            # #                                                          times_as_dt64, var_name=[var_to_run])
+            #
+            #
+            # df_points = pd.DataFrame()
+            # df_time = pd.DataFrame()
+            # df_xarray_time = pd.DataFrame()
+            # station_no = 0
+            # # for i in range(len(obs_data_as_series)):
+            # for i in range(len(model_station_data_xarray_all)):
+            #     if len(obs_data_as_series[i][var_to_run]) > 0:
+            #         station_no += 1
+            #         print('non NaN station:',i)
+            #     else:
+            #         continue
+            #
+            #     # station_no += 1
+            #     # put obs and model in DataFrame to make them use the same time index
+            #     df_time_temp = pd.DataFrame(obs_data_as_series[i][var_to_run],
+            #                                 columns=[obs_network_name])
+            #
+            #     # df_time_temp[model_name] = model_data_as_series[i][var_to_run]*1.E3
+            #     df_time_temp[model_name] = (model_data_as_series[i][var_to_run] *
+            #                                 const.PLT_PARAM[var_to_run]['scale_factor'])
+            #     df_time_temp['xarray_'+model_name] = (model_station_data_xarray_all[i][var_to_run] *
+            #                                 const.PLT_PARAM[var_to_run]['scale_factor'])
+            #     # df_time has now all time steps where either one of the obs or model data have data
+            #     #
+            #     df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))
+            #     df_time = df_time.append(pd.DataFrame(df_time_temp, columns=df_time_temp.columns))
+            #
+            # # remove all indexes where either one of the data pairs is NaN
+            # # df_time = df_time.dropna(axis=0, how='any')
+            #
+            # filter_name = 'WORLD'
+            # correlation_coeff = df_time.corr()
+            # print('R: ', correlation_coeff.values[0, 1])
+            #
+            # df_xarray_all = model_station_data_xarray_all.to_dataframe()
+            # df_xarray_single = model_station_data_xarray_single.to_dataframe()
+            #
+            #
+            #
+            #
 
         else:
             # observations only
             # 1st check if the obs network string is right
             # pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
-            if Options['ObsNetworkName'][0] in pa.nogriddata.NoGridData.SUPPORTED_DATASETS:
+            if options['ObsNetworkName'][0] in pa.nogriddata.NoGridData.SUPPORTED_DATASETS:
                 # start Obs reading
-                ObsData = pa.nogriddata.NoGridData(data_set_to_read = Options['ObsNetworkName'][0],
-                                          vars_to_read = [Options['VariablesToRun'][0]],
+                ObsData = pa.nogriddata.NoGridData(data_set_to_read = options['ObsNetworkName'][0],
+                                          vars_to_read = [options['VariablesToRun'][0]],
                                           verbose= args.verbose)
                 ObsData.read()
 
@@ -216,7 +356,7 @@ def cli():
                 TimeSeries = ObsData.to_timeseries(start_date = args.startdate, end_date=args.enddate)
                 for series in TimeSeries:
                     print(series['station name'])
-                    print(series[Options['VariablesToRun'][0]])
+                    print(series[options['VariablesToRun'][0]])
 
                 # this returns a single station in a dictionary using the station name as key
                 # test = ObsData.to_timeseries('AOE_Baotou')
@@ -229,7 +369,7 @@ def cli():
 
             else:
                 sys.stdout.write(
-                    "ERROR: {0} is not a supported observation network name.\n".format(Options['ObsNetworkName'][0]))
+                    "ERROR: {0} is not a supported observation network name.\n".format(options['ObsNetworkName'][0]))
                 sys.stdout.write("Supported are: {0}".format(supported_obs_networks))
 ###########################################################################################################################
 if __name__ == '__main__':
