@@ -8,7 +8,7 @@ Test ABC meta and multiple inheritance
 import abc
 import numpy as np
 
-class GridDataBase(abc.ABC):
+class GriddedDataBase(abc.ABC):
     def __init__(self, input, var_name, **kwargs):
         
         self._grid = None
@@ -18,7 +18,7 @@ class GridDataBase(abc.ABC):
         self.load_input(input, var_name)
         self.metadata.update(**kwargs)
         
-        super(GridDataBase, self).__init__()
+        super(GriddedDataBase, self).__init__()
     
     @abc.abstractproperty
     def grid(self):
@@ -31,7 +31,7 @@ class GridDataBase(abc.ABC):
     
     
 
-class GridDataCF(abc.ABC):
+class GriddedDataCF(abc.ABC):
     
     @abc.abstractclassmethod
     def longitude(self):
@@ -45,7 +45,7 @@ class GridDataCF(abc.ABC):
     def time(self):
         pass
 
-class GridData(GridDataBase, GridDataCF):
+class GriddedData(GriddedDataBase, GriddedDataCF):
     
     def load_input(self, input, var_name):
         try:
@@ -76,8 +76,8 @@ class GridData(GridDataBase, GridDataCF):
         return cls(input=array, var_name="from_scratch")
             
 
-class GridDataUncomplete(GridDataBase, GridDataCF):
-    """Same as GridData but missing implementations of longitude and time
+class GriddedDataUncomplete(GriddedDataBase, GriddedDataCF):
+    """Same as GriddedData but missing implementations of longitude and time
     methods"""
     
     
@@ -98,13 +98,13 @@ if __name__ == "__main__":
     
     test_data = np.zeros((10,10))
     
-    d = GridData(input = test_data, var_name="Bla")
+    d = GriddedData(input = test_data, var_name="Bla")
     print(d.grid.shape, "\n",  d.var_name)
     print(d.latitude, d.longitude, d.time)
     
-    d1 = GridData.from_scratch(test_data)
+    d1 = GriddedData.from_scratch(test_data)
     print(d1.grid.shape, "\n",  d1.var_name)
     
     
     
-    d1 = GridDataUncomplete(input=test_data, var_name="Bla")
+    d1 = GriddedDataUncomplete(input=test_data, var_name="Bla")

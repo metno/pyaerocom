@@ -22,7 +22,7 @@
 # MA 02110-1301, USA
 ###############################################################################
 
-from pyaerocom.io.readgrid import ReadGrid
+from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom.plot import plotmaps
 from GLOB import OUT_DIR_MAPS # import standard output directory
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     var = "od550aer"
 
     # Create data import object
-    test = ReadGrid(model, '2010-01-01','2011-12-31', verbose=True)
+    test = ReadGridded(model, '2010-01-01','2011-12-31', verbose=True)
     
     print(test.vars)
     

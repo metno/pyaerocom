@@ -1,0 +1,1386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial showing how to read EBAS NASA Ames files &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Tutorial showing how to read EBAS NASA Ames files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tut07_read_ebas_nasa_ames.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="tutorial-showing-how-to-read-ebas-nasa-ames-files">
+<h1>Tutorial showing how to read EBAS NASA Ames files<a class="headerlink" href="#tutorial-showing-how-to-read-ebas-nasa-ames-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Note</strong>: this notebook is currently under development</p>
+<p>Please see
+<a class="reference external" href="https://ebas-submit.nilu.no/Submit-Data/Getting-started">here</a> for
+information related to the EBAS NASA Ames file format.</p>
+<p><strong>Further links</strong>: - <a class="reference external" href="http://aerocom.met.no/pyaerocom/">Pyaerocom
+website</a> - <a class="reference external" href="http://aerocom.met.no/pyaerocom/readme.html#installation">Pyaerocom installation
+instructions</a>
+- <a class="reference external" href="http://aerocom.met.no/pyaerocom/notebooks.html#getting-started">Getting
+started</a></p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">EbasNasaAmesFile</span>
+
+<span class="n">ebasdir</span> <span class="o">=</span> <span class="s2">&quot;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/&quot;</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas&quot;</span>
+
+<span class="n">mc</span> <span class="o">=</span> <span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">ebasdir</span><span class="o">+</span><span class="n">filename</span><span class="p">,</span>
+                      <span class="n">only_head</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>          <span class="c1">#set True if you only want to import header</span>
+                      <span class="n">replace_invalid_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1">#replace invalid values with NaNs</span>
+                      <span class="n">convert_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1">#compute datetime64 timestamps from numerical values</span>
+                      <span class="n">decode_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>        <span class="c1">#decode all flags (e.g. 0.111222333 -&gt; 111 222 333)</span>
+                      <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">EbasNasaAmesFile</span>
+<span class="o">--------------------------</span>
+<span class="n">num_head_lines</span><span class="p">:</span> <span class="mi">60</span>
+<span class="n">num_head_fmt</span><span class="p">:</span> <span class="mi">1001</span>
+<span class="n">data_originator</span><span class="p">:</span> <span class="n">Flentje</span><span class="p">,</span> <span class="n">Harald</span>
+<span class="n">sponsor_organisation</span><span class="p">:</span> <span class="n">DE09L</span><span class="p">,</span> <span class="n">Deutscher</span> <span class="n">Wetterdienst</span><span class="p">,</span> <span class="n">DWD</span><span class="p">,</span> <span class="n">Met</span><span class="o">.</span> <span class="n">Obs</span><span class="o">.</span><span class="p">,</span> <span class="n">Hohenspeissenberg</span><span class="p">,</span> <span class="p">,</span> <span class="mi">82283</span><span class="p">,</span> <span class="n">Hohenspeissenberg</span><span class="p">,</span> <span class="n">Germany</span>
+<span class="n">submitter</span><span class="p">:</span> <span class="n">Flentje</span><span class="p">,</span> <span class="n">Harald</span>
+<span class="n">project_association</span><span class="p">:</span> <span class="n">EUSAAR</span> <span class="n">GAW</span><span class="o">-</span><span class="n">WDCA</span>
+<span class="n">vol_num</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">vol_totnum</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">ref_date</span><span class="p">:</span> <span class="mi">2008</span> <span class="mi">01</span> <span class="mi">01</span> <span class="mi">2016</span> <span class="mi">07</span> <span class="mi">08</span>
+<span class="n">revision_date</span><span class="p">:</span> <span class="n">nan</span>
+<span class="n">freq</span><span class="p">:</span> <span class="mf">0.041667</span>
+<span class="n">descr_time_unit</span><span class="p">:</span> <span class="n">days</span> <span class="kn">from</span> <span class="nn">file</span> <span class="n">reference</span> <span class="n">point</span>
+<span class="n">num_cols_dependent</span><span class="p">:</span> <span class="mi">11</span>
+<span class="n">mul_factors</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="n">vals_invalid</span><span class="p">:</span> <span class="p">[</span><span class="mf">999.999999</span><span class="p">,</span> <span class="mf">999.999</span><span class="p">,</span> <span class="mf">999.999</span><span class="p">,</span> <span class="mf">999.999</span><span class="p">,</span> <span class="mf">9999.999</span><span class="p">,</span> <span class="mf">9999.999</span><span class="p">,</span> <span class="mf">9999.999</span><span class="p">,</span> <span class="mf">9999.0</span><span class="p">,</span> <span class="mf">999.9</span><span class="p">,</span> <span class="mf">9999.9</span><span class="p">,</span> <span class="mf">9.999999999</span><span class="p">]</span>
+<span class="n">descr_first_col</span><span class="p">:</span> <span class="n">end_time</span> <span class="n">of</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">days</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">file</span> <span class="n">reference</span> <span class="n">point</span>
+
+<span class="n">Column</span> <span class="n">variable</span> <span class="n">definitions</span>
+<span class="o">---------------------------</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">starttime</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">days</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">endtime</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">days</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_backscattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">450.0</span> <span class="n">nm</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_backscattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">550.0</span> <span class="n">nm</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_backscattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">700.0</span> <span class="n">nm</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_scattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">450.0</span> <span class="n">nm</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_scattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">550.0</span> <span class="n">nm</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_scattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">700.0</span> <span class="n">nm</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">pressure</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">hPa</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">location</span><span class="p">:</span> <span class="n">instrument</span> <span class="n">internal</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">relative_humidity</span>
+<span class="n">unit</span><span class="p">:</span> <span class="o">%</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">location</span><span class="p">:</span> <span class="n">instrument</span> <span class="n">internal</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">temperature</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">K</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">location</span><span class="p">:</span> <span class="n">instrument</span> <span class="n">internal</span>
+
+<span class="n">name</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">no</span> <span class="n">unit</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">flag_id</span><span class="p">:</span>
+
+
+<span class="n">EBAS</span> <span class="n">meta</span> <span class="n">data</span>
+<span class="o">--------------</span>
+    <span class="n">data_definition</span><span class="p">:</span> <span class="n">EBAS_1</span><span class="o">.</span><span class="mi">1</span>
+    <span class="n">set_type_code</span><span class="p">:</span> <span class="n">TU</span>
+    <span class="n">timezone</span><span class="p">:</span> <span class="n">UTC</span>
+    <span class="n">file_name</span><span class="p">:</span> <span class="n">DE0043G</span><span class="o">.</span><span class="mf">20080101000000.20160708144500</span><span class="o">.</span><span class="n">nephelometer</span><span class="o">..</span><span class="n">aerosol</span><span class="o">.</span><span class="mi">1</span><span class="n">y</span><span class="o">.</span><span class="mi">1</span><span class="n">h</span><span class="o">.</span><span class="n">DE09L_tsi_neph_3563</span><span class="o">.</span><span class="n">DE09L_nephelometer</span><span class="o">.</span><span class="n">lev2</span><span class="o">.</span><span class="n">nas</span>
+    <span class="n">file_creation</span><span class="p">:</span> <span class="mi">20180101031050</span>
+    <span class="n">startdate</span><span class="p">:</span> <span class="mi">20080101000000</span>
+    <span class="n">revision_date</span><span class="p">:</span> <span class="mi">20160708144500</span>
+    <span class="n">statistics</span><span class="p">:</span> <span class="n">arithmetic</span> <span class="n">mean</span>
+    <span class="n">data_level</span><span class="p">:</span> <span class="mi">2</span>
+    <span class="n">period_code</span><span class="p">:</span> <span class="mi">1</span><span class="n">y</span>
+    <span class="n">resolution_code</span><span class="p">:</span> <span class="mi">1</span><span class="n">h</span>
+    <span class="n">station_code</span><span class="p">:</span> <span class="n">DE0043G</span>
+    <span class="n">platform_code</span><span class="p">:</span> <span class="n">DE0043S</span>
+    <span class="n">station_name</span><span class="p">:</span> <span class="n">Hohenpeissenberg</span>
+    <span class="n">station_wdca</span><span class="o">-</span><span class="nb">id</span><span class="p">:</span> <span class="n">GAWADE__HPB</span>
+    <span class="n">station_gaw</span><span class="o">-</span><span class="nb">id</span><span class="p">:</span> <span class="n">HPB</span>
+    <span class="n">station_gaw</span><span class="o">-</span><span class="n">name</span><span class="p">:</span> <span class="n">Hohenpeissenberg</span>
+    <span class="n">station_land_use</span><span class="p">:</span> <span class="n">Grassland</span>
+    <span class="n">station_setting</span><span class="p">:</span> <span class="n">Mountain</span>
+    <span class="n">station_gaw_type</span><span class="p">:</span> <span class="n">G</span>
+    <span class="n">station_wmo_region</span><span class="p">:</span> <span class="mi">6</span>
+    <span class="n">station_latitude</span><span class="p">:</span> <span class="mf">47.8014984131</span>
+    <span class="n">station_longitude</span><span class="p">:</span> <span class="mf">11.0096197128</span>
+    <span class="n">station_altitude</span><span class="p">:</span> <span class="mf">985.0</span> <span class="n">m</span>
+    <span class="n">regime</span><span class="p">:</span> <span class="n">IMG</span>
+    <span class="n">component</span><span class="p">:</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+    <span class="n">matrix</span><span class="p">:</span> <span class="n">aerosol</span>
+    <span class="n">laboratory_code</span><span class="p">:</span> <span class="n">DE09L</span>
+    <span class="n">instrument_type</span><span class="p">:</span> <span class="n">nephelometer</span>
+    <span class="n">instrument_name</span><span class="p">:</span> <span class="n">tsi_neph_3563</span>
+    <span class="n">method_ref</span><span class="p">:</span> <span class="n">DE09L_nephelometer</span>
+    <span class="n">originator</span><span class="p">:</span> <span class="n">Flentje</span><span class="p">,</span> <span class="n">Harald</span><span class="p">,</span> <span class="n">Harald</span><span class="o">.</span><span class="n">Flentje</span><span class="nd">@dwd</span><span class="o">.</span><span class="n">de</span><span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span>
+    <span class="n">submitter</span><span class="p">:</span> <span class="n">Flentje</span><span class="p">,</span> <span class="n">Harald</span><span class="p">,</span> <span class="n">Harald</span><span class="o">.</span><span class="n">Flentje</span><span class="nd">@dwd</span><span class="o">.</span><span class="n">de</span><span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span> <span class="p">,</span>
+<span class="n">Data</span>
+<span class="o">----</span>
+<span class="p">[[</span><span class="mf">0.00000000e+00</span> <span class="mf">4.16670000e-02</span>            <span class="n">nan</span> <span class="o">...</span>            <span class="n">nan</span>
+             <span class="n">nan</span> <span class="mf">3.94999000e-01</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">4.16670000e-02</span> <span class="mf">8.33330000e-02</span>            <span class="n">nan</span> <span class="o">...</span>            <span class="n">nan</span>
+             <span class="n">nan</span> <span class="mf">3.94999000e-01</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">8.33330000e-02</span> <span class="mf">1.25000000e-01</span>            <span class="n">nan</span> <span class="o">...</span>            <span class="n">nan</span>
+             <span class="n">nan</span> <span class="mf">3.94999000e-01</span><span class="p">]</span>
+ <span class="o">...</span>
+ <span class="p">[</span><span class="mf">3.65875000e+02</span> <span class="mf">3.65916667e+02</span> <span class="mf">4.75900000e+00</span> <span class="o">...</span> <span class="mf">8.50000000e+00</span>
+  <span class="mf">2.99900000e+02</span> <span class="mf">2.47000000e-01</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">3.65916667e+02</span> <span class="mf">3.65958310e+02</span> <span class="mf">5.16200000e+00</span> <span class="o">...</span> <span class="mf">8.70000000e+00</span>
+  <span class="mf">2.99900000e+02</span> <span class="mf">2.47000000e-01</span><span class="p">]</span>
+ <span class="p">[</span><span class="mf">3.65958333e+02</span> <span class="mf">3.66000000e+02</span> <span class="mf">5.31800000e+00</span> <span class="o">...</span> <span class="mf">9.30000000e+00</span>
+  <span class="mf">2.99700000e+02</span> <span class="mf">0.00000000e+00</span><span class="p">]]</span>
+<span class="n">Colnum</span><span class="p">:</span> <span class="mi">12</span>
+<span class="n">Timestamps</span><span class="p">:</span> <span class="mi">8784</span>
+</pre></div>
+</div>
+<div class="section" id="column-information">
+<h2>Column information<a class="headerlink" href="#column-information" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mc</span><span class="o">.</span><span class="n">print_col_info</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Column</span> <span class="mi">0</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">starttime</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">days</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span>
+
+<span class="n">Column</span> <span class="mi">1</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">endtime</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">days</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span>
+
+<span class="n">Column</span> <span class="mi">2</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_backscattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">450.0</span> <span class="n">nm</span>
+
+<span class="n">Column</span> <span class="mi">3</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_backscattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">550.0</span> <span class="n">nm</span>
+
+<span class="n">Column</span> <span class="mi">4</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_backscattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">700.0</span> <span class="n">nm</span>
+
+<span class="n">Column</span> <span class="mi">5</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_scattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">450.0</span> <span class="n">nm</span>
+
+<span class="n">Column</span> <span class="mi">6</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_scattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">550.0</span> <span class="n">nm</span>
+
+<span class="n">Column</span> <span class="mi">7</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">aerosol_light_scattering_coefficient</span>
+<span class="n">unit</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">Mm</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">wavelength</span><span class="p">:</span> <span class="mf">700.0</span> <span class="n">nm</span>
+
+<span class="n">Column</span> <span class="mi">8</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">pressure</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">hPa</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">location</span><span class="p">:</span> <span class="n">instrument</span> <span class="n">internal</span>
+
+<span class="n">Column</span> <span class="mi">9</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">relative_humidity</span>
+<span class="n">unit</span><span class="p">:</span> <span class="o">%</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">location</span><span class="p">:</span> <span class="n">instrument</span> <span class="n">internal</span>
+
+<span class="n">Column</span> <span class="mi">10</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">temperature</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">K</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">flag_id</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">location</span><span class="p">:</span> <span class="n">instrument</span> <span class="n">internal</span>
+
+<span class="n">Column</span> <span class="mi">11</span>
+<span class="n">name</span><span class="p">:</span> <span class="n">numflag</span>
+<span class="n">unit</span><span class="p">:</span> <span class="n">no</span> <span class="n">unit</span>
+<span class="n">is_var</span><span class="p">:</span> <span class="kc">False</span>
+<span class="n">is_flag</span><span class="p">:</span> <span class="kc">True</span>
+<span class="n">flag_id</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>You can see that all variable columns were assigned the same flag
+column, since there is only one. This would be different if there were
+multiple flag columns (e.g. one for each variable).</p>
+</div>
+<div class="section" id="access-flag-information">
+<h2>Access flag information<a class="headerlink" href="#access-flag-information" title="Permalink to this headline">¶</a></h2>
+<p>You can access the flags for each column using the <code class="docutils literal notranslate"><span class="pre">flags</span></code> attribute
+of the file.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mc</span><span class="o">.</span><span class="n">flags</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;numflag&#39;</span><span class="p">,</span>
+              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7f71cd7d5f60</span><span class="o">&gt;</span><span class="p">)])</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s2">&quot;numflag&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The raw flags can be accessed via:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span><span class="o">.</span><span class="n">raw_data</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([</span><span class="mf">0.394999</span><span class="p">,</span> <span class="mf">0.394999</span><span class="p">,</span> <span class="mf">0.394999</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.247</span>   <span class="p">,</span> <span class="mf">0.247</span>   <span class="p">,</span> <span class="mf">0.</span>      <span class="p">])</span>
+</pre></div>
+</div>
+<p>And the processed flags are in stored in a (Nx3) numpy array where N is
+the total number of timestamps.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span><span class="o">.</span><span class="n">flags</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([[</span><span class="mi">394</span><span class="p">,</span> <span class="mi">999</span><span class="p">,</span>   <span class="mi">0</span><span class="p">],</span>
+       <span class="p">[</span><span class="mi">394</span><span class="p">,</span> <span class="mi">999</span><span class="p">,</span>   <span class="mi">0</span><span class="p">],</span>
+       <span class="p">[</span><span class="mi">394</span><span class="p">,</span> <span class="mi">999</span><span class="p">,</span>   <span class="mi">0</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span><span class="mi">247</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">0</span><span class="p">],</span>
+       <span class="p">[</span><span class="mi">247</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">0</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mi">0</span><span class="p">,</span>   <span class="mi">0</span><span class="p">,</span>   <span class="mi">0</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>For instance, access the flags of the 5 timestamp:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([</span><span class="mi">394</span><span class="p">,</span> <span class="mi">999</span><span class="p">,</span>   <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="convert-object-to-pandas-dataframe">
+<h2>Convert object to pandas Dataframe<a class="headerlink" href="#convert-object-to-pandas-dataframe" title="Permalink to this headline">¶</a></h2>
+<p>The conversion does currently exclude all flag columns</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>aerosol_light_backscattering_coefficient</th>
+      <th>aerosol_light_backscattering_coefficient</th>
+      <th>aerosol_light_backscattering_coefficient</th>
+      <th>aerosol_light_scattering_coefficient</th>
+      <th>aerosol_light_scattering_coefficient</th>
+      <th>aerosol_light_scattering_coefficient</th>
+      <th>pressure</th>
+      <th>relative_humidity</th>
+      <th>temperature</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2008-01-01 00:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 01:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 02:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 03:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 04:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 05:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 06:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 07:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 08:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 09:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 10:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 11:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 12:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 13:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 14:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 15:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 16:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 17:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 18:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 19:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 20:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 21:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 22:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-01 23:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-02 00:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-02 01:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-02 02:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-02 03:30:00.000</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-02 04:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2008-01-02 05:29:59.500</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2008-12-30 18:30:00.000</th>
+      <td>0.547</td>
+      <td>0.409</td>
+      <td>0.303</td>
+      <td>5.250</td>
+      <td>3.716</td>
+      <td>2.264</td>
+      <td>909.0</td>
+      <td>4.5</td>
+      <td>300.4</td>
+    </tr>
+    <tr>
+      <th>2008-12-30 19:29:58.500</th>
+      <td>1.045</td>
+      <td>0.688</td>
+      <td>0.558</td>
+      <td>7.934</td>
+      <td>5.414</td>
+      <td>3.308</td>
+      <td>909.0</td>
+      <td>5.7</td>
+      <td>300.2</td>
+    </tr>
+    <tr>
+      <th>2008-12-30 20:29:59.500</th>
+      <td>7.862</td>
+      <td>5.979</td>
+      <td>4.602</td>
+      <td>70.955</td>
+      <td>50.095</td>
+      <td>30.940</td>
+      <td>909.0</td>
+      <td>8.9</td>
+      <td>300.4</td>
+    </tr>
+    <tr>
+      <th>2008-12-30 21:30:00.000</th>
+      <td>11.044</td>
+      <td>8.777</td>
+      <td>6.770</td>
+      <td>103.578</td>
+      <td>73.434</td>
+      <td>45.628</td>
+      <td>909.0</td>
+      <td>9.2</td>
+      <td>300.3</td>
+    </tr>
+    <tr>
+      <th>2008-12-30 22:29:58.500</th>
+      <td>6.420</td>
+      <td>5.011</td>
+      <td>3.801</td>
+      <td>57.828</td>
+      <td>40.803</td>
+      <td>25.309</td>
+      <td>909.0</td>
+      <td>8.7</td>
+      <td>300.1</td>
+    </tr>
+    <tr>
+      <th>2008-12-30 23:29:59.500</th>
+      <td>3.947</td>
+      <td>3.107</td>
+      <td>2.509</td>
+      <td>41.293</td>
+      <td>30.195</td>
+      <td>19.253</td>
+      <td>909.0</td>
+      <td>8.1</td>
+      <td>300.4</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 00:30:00.000</th>
+      <td>2.950</td>
+      <td>2.492</td>
+      <td>1.939</td>
+      <td>32.975</td>
+      <td>24.133</td>
+      <td>15.449</td>
+      <td>908.0</td>
+      <td>7.9</td>
+      <td>299.8</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 01:29:58.500</th>
+      <td>2.024</td>
+      <td>1.660</td>
+      <td>1.362</td>
+      <td>22.381</td>
+      <td>16.227</td>
+      <td>10.269</td>
+      <td>908.0</td>
+      <td>7.5</td>
+      <td>300.2</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 02:29:59.500</th>
+      <td>0.731</td>
+      <td>0.569</td>
+      <td>0.508</td>
+      <td>6.382</td>
+      <td>4.487</td>
+      <td>2.890</td>
+      <td>907.0</td>
+      <td>6.6</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 03:30:00.000</th>
+      <td>0.733</td>
+      <td>0.659</td>
+      <td>0.506</td>
+      <td>6.934</td>
+      <td>4.876</td>
+      <td>3.026</td>
+      <td>907.0</td>
+      <td>6.7</td>
+      <td>299.8</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 04:29:58.500</th>
+      <td>0.994</td>
+      <td>0.779</td>
+      <td>0.714</td>
+      <td>9.422</td>
+      <td>6.621</td>
+      <td>4.073</td>
+      <td>907.0</td>
+      <td>7.0</td>
+      <td>300.2</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 05:29:59.500</th>
+      <td>1.842</td>
+      <td>1.514</td>
+      <td>1.198</td>
+      <td>18.791</td>
+      <td>13.431</td>
+      <td>8.296</td>
+      <td>906.0</td>
+      <td>7.5</td>
+      <td>300.2</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 06:30:00.000</th>
+      <td>4.045</td>
+      <td>3.247</td>
+      <td>2.608</td>
+      <td>42.560</td>
+      <td>31.077</td>
+      <td>19.972</td>
+      <td>906.0</td>
+      <td>8.2</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 07:29:58.500</th>
+      <td>3.753</td>
+      <td>2.974</td>
+      <td>2.371</td>
+      <td>40.905</td>
+      <td>29.963</td>
+      <td>19.293</td>
+      <td>906.0</td>
+      <td>8.0</td>
+      <td>299.8</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 08:29:59.500</th>
+      <td>2.799</td>
+      <td>2.189</td>
+      <td>1.745</td>
+      <td>29.099</td>
+      <td>21.226</td>
+      <td>13.575</td>
+      <td>906.0</td>
+      <td>7.7</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 09:30:00.000</th>
+      <td>1.760</td>
+      <td>1.427</td>
+      <td>1.077</td>
+      <td>16.988</td>
+      <td>12.135</td>
+      <td>7.623</td>
+      <td>906.0</td>
+      <td>7.1</td>
+      <td>300.3</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 10:29:58.500</th>
+      <td>2.548</td>
+      <td>1.917</td>
+      <td>1.455</td>
+      <td>24.601</td>
+      <td>17.758</td>
+      <td>11.318</td>
+      <td>905.0</td>
+      <td>7.1</td>
+      <td>300.7</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 11:29:59.500</th>
+      <td>2.486</td>
+      <td>1.909</td>
+      <td>1.442</td>
+      <td>24.114</td>
+      <td>17.331</td>
+      <td>11.010</td>
+      <td>905.0</td>
+      <td>7.0</td>
+      <td>301.2</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 12:30:00.000</th>
+      <td>2.660</td>
+      <td>2.172</td>
+      <td>1.623</td>
+      <td>27.016</td>
+      <td>19.509</td>
+      <td>12.520</td>
+      <td>905.0</td>
+      <td>7.4</td>
+      <td>300.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 13:29:58.500</th>
+      <td>6.408</td>
+      <td>5.162</td>
+      <td>4.016</td>
+      <td>62.217</td>
+      <td>44.872</td>
+      <td>28.652</td>
+      <td>905.0</td>
+      <td>8.7</td>
+      <td>300.6</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 14:29:59.500</th>
+      <td>8.818</td>
+      <td>7.038</td>
+      <td>5.385</td>
+      <td>80.137</td>
+      <td>56.764</td>
+      <td>35.320</td>
+      <td>905.0</td>
+      <td>9.3</td>
+      <td>301.0</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 15:30:00.000</th>
+      <td>7.646</td>
+      <td>6.019</td>
+      <td>4.688</td>
+      <td>69.304</td>
+      <td>49.066</td>
+      <td>30.776</td>
+      <td>905.0</td>
+      <td>9.5</td>
+      <td>301.0</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 16:29:58.500</th>
+      <td>6.733</td>
+      <td>5.320</td>
+      <td>4.010</td>
+      <td>61.384</td>
+      <td>43.327</td>
+      <td>26.987</td>
+      <td>904.0</td>
+      <td>9.8</td>
+      <td>300.3</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 17:29:59.500</th>
+      <td>5.989</td>
+      <td>4.690</td>
+      <td>3.628</td>
+      <td>57.607</td>
+      <td>41.258</td>
+      <td>25.973</td>
+      <td>904.0</td>
+      <td>9.2</td>
+      <td>300.1</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 18:30:00.000</th>
+      <td>7.768</td>
+      <td>6.130</td>
+      <td>4.776</td>
+      <td>76.904</td>
+      <td>55.401</td>
+      <td>35.085</td>
+      <td>904.0</td>
+      <td>9.3</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 19:29:58.500</th>
+      <td>6.265</td>
+      <td>4.834</td>
+      <td>3.827</td>
+      <td>61.421</td>
+      <td>44.224</td>
+      <td>28.044</td>
+      <td>904.0</td>
+      <td>8.7</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 20:29:59.500</th>
+      <td>4.425</td>
+      <td>3.433</td>
+      <td>2.663</td>
+      <td>43.144</td>
+      <td>30.726</td>
+      <td>19.240</td>
+      <td>903.0</td>
+      <td>8.5</td>
+      <td>299.8</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 21:30:00.000</th>
+      <td>4.759</td>
+      <td>3.665</td>
+      <td>2.840</td>
+      <td>44.719</td>
+      <td>31.694</td>
+      <td>19.885</td>
+      <td>903.0</td>
+      <td>8.5</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 22:29:58.500</th>
+      <td>5.162</td>
+      <td>3.929</td>
+      <td>3.217</td>
+      <td>48.623</td>
+      <td>34.503</td>
+      <td>21.719</td>
+      <td>903.0</td>
+      <td>8.7</td>
+      <td>299.9</td>
+    </tr>
+    <tr>
+      <th>2008-12-31 23:29:59.500</th>
+      <td>5.318</td>
+      <td>4.307</td>
+      <td>3.349</td>
+      <td>54.983</td>
+      <td>39.390</td>
+      <td>24.721</td>
+      <td>903.0</td>
+      <td>9.3</td>
+      <td>299.7</td>
+    </tr>
+  </tbody>
+</table>
+<p>8784 rows × 9 columns</p>
+</div></div>
+<div class="section" id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<p>Read only header</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+EbasNasaAmesFile(file=ebasdir+filename,
+                 only_head=True, verbose=False)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>5.16 ms ± 125 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+</pre></div>
+</div>
+<p>Read raw:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+EbasNasaAmesFile(file=ebasdir+filename,
+                      only_head=False,          #set True if you only want to import header
+                      replace_invalid_nan=False, #replace invalid values with NaNs
+                      convert_timestamps=False,  #compute datetime64 timestamps from numerical values
+                      decode_flags=False,        #decode all flags (e.g. 0.111222333 -&gt; 111 222 333)
+                      verbose=False)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>53.8 ms ± 2.09 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+</pre></div>
+</div>
+<p>Perform all operations:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
+EbasNasaAmesFile(file=ebasdir+filename,
+                      only_head=False,          #set True if you only want to import header
+                      replace_invalid_nan=True, #replace invalid values with NaNs
+                      convert_timestamps=True,  #compute datetime64 timestamps from numerical values
+                      decode_flags=True,        #decode all flags (e.g. 0.111222333 -&gt; 111 222 333)
+                      verbose=False)
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>60.7 ms ± 1.79 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

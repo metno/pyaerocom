@@ -38,6 +38,7 @@ Provides access to pyaerocom specific configuration values
 import numpy as np
 import os
 from warnings import warn
+from collections import OrderedDict as od
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -223,7 +224,7 @@ class Config(object):
         self.EARLINET_NAME = 'EARLINET'
         
         # Attributes that are used to store import results
-        self.OBSCONFIG = {}
+        self.OBSCONFIG = od()
         self.MODELDIRS = []
         
         # Directories
@@ -317,16 +318,33 @@ class Config(object):
             warn("Observations cache directory %s does not exist")
         return ok
     
+    @property
+    def EBAS_SQLITE_DATABASE(self):
+        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 
+                                'ebas_file_index.sqlite3')
+                            
+    @property
+    def OBSDIRS(self):
+        return [x["PATH"] for x in self.OBSCONFIG.values()]
+    
+    @property 
+    def OBS_START_YEARS(self):
+        return [x["START_YEAR"] for x in self.OBSCONFIG.values()]
+    
+    @property
+    def OBS_IDS(self):
+        return [x for x in self.OBSCONFIG.keys()]
+    
     def check_dir(self, path):
         """Checks if directory exists"""
         if isinstance(path, str) and os.path.isdir(path):
             return True
         return False
     
-    def reload(self):
-        self.read_config(self._config_ini)
+    def reload(self, keep_basedirs=True):
+        self.read_config(self._config_ini, keep_basedirs)
         
-    def read_config(self, config_file):
+    def read_config(self, config_file, keep_basedirs=True):
         """Read and import form paths.ini"""
         _config_ini = self._config_ini
         if not os.path.isfile(_config_ini):
@@ -336,7 +354,7 @@ class Config(object):
         cr = ConfigParser()
         cr.read(_config_ini)
         #init base directories for Model data
-        if not self.check_dir(self.MODELBASEDIR):
+        if not keep_basedirs or not self.check_dir(self.MODELBASEDIR):
             self.MODELBASEDIR = cr['modelfolders']['BASEDIR']
         
         self.MODELDIRS = (cr['modelfolders']['dir'].
@@ -372,7 +390,7 @@ class Config(object):
     
     
         #Read directories for observation location
-        if not self.check_dir(self.OBSBASEDIR):
+        if not keep_basedirs or not self.check_dir(self.OBSBASEDIR):
             self.OBSBASEDIR = cr['obsfolders']['BASEDIR']
             
         OBSCONFIG = self.OBSCONFIG

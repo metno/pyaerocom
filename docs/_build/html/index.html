@@ -180,7 +180,7 @@
 <div class="section" id="the-pyaerocom-website">
 <h1>The Pyaerocom website<a class="headerlink" href="#the-pyaerocom-website" title="Permalink to this headline">¶</a></h1>
 <p>Official website of Pyaerocom, a Python package containing reading, post analysis and visualisation tools for the <a class="reference external" href="http://aerocom.met.no/protocol.html">AEROCOM project</a>.</p>
-<a class="reference internal image-reference" href="_images/03_intro_class_ReadMultiGrid_21_3.png"><img alt="_images/03_intro_class_ReadMultiGrid_21_3.png" class="align-center" src="_images/03_intro_class_ReadMultiGrid_21_3.png" style="width: 600px;" /></a>
+<a class="reference internal image-reference" href="_images/tut03_intro_class_ReadGriddedMulti_25_3.png"><img alt="_images/tut03_intro_class_ReadGriddedMulti_25_3.png" class="align-center" src="_images/tut03_intro_class_ReadGriddedMulti_25_3.png" style="width: 600px;" /></a>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
@@ -193,51 +193,81 @@
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#requirements">Requirements</a></li>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#installation">Installation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#setting-global-environment-variables">Setting global environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#finding-data-directories-of-model-or-observation-data">Finding data directories of model or observation data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#reading-the-aerosol-optical-detph-at-550nm-using-a-specified-model-id">Reading the aerosol optical detph at 550nm using a specified model ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#accessing-the-data-and-plotting-a-map">Accessing the data and plotting a map</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="notebooks.html#aerocom-default-regions">AEROCOM default regions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#load-example-data-and-apply-region-specific-crop">Load example data and apply region specific crop</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks.html#reading-model-data-the-readgrid-class">Reading model data: the ReadGrid class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#reading-model-data-the-readgridded-class">Reading model data: the <em>ReadGridded</em> class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#remark-on-time-definition">Remark on time definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="notebooks.html#a-very-brief-introduction-into-the-griddata-class">A very brief introduction into the GridData class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#a-very-brief-introduction-into-the-griddeddata-class">A very brief introduction into the GriddedData class</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks.html#reading-data-from-multiple-models-the-readmultigrid-class">Reading data from multiple models: the ReadMultiGrid class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#reading-data-from-multiple-models-the-readgriddedmulti-class">Reading data from multiple models: the ReadGriddedMulti class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#iterate-over-models-and-variables">Iterate over models and variables</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks.html#introducing-the-griddata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#introducing-the-griddeddata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#remark-on-longitude-definition">Remark on longitude definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="notebooks.html#features-of-the-griddata-class">Features of the <code class="docutils literal notranslate"><span class="pre">GridData</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#features-of-the-griddeddata-class">Features of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class</a></li>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#more-to-come">… more to come</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="notebooks.html#handling-of-time-in-pyaerocom">Handling of time in Pyaerocom</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#handling-of-time-in-pyaerocom">Handling of time in pyaerocom</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#load-and-some-example-data">Load and some example data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="notebooks.html#digging-into-the-time-representation-of-the-iris-cube-datatype">Digging into the time representation of the iris Cube datatype</a></li>
-<li class="toctree-l3"><a class="reference internal" href="notebooks.html#how-pyaerocom-does-it">How Pyaerocom does it</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#how-pya-does-it">How pya does it</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#collocating-gridded-data-with-discrete-observations">Collocating gridded data with discrete observations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#note">NOTE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#import-setup-and-imports">Import setup and imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#import-of-model-data">Import of model data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#import-of-aeronet-v2-data-level-2">Import of AeroNet V2 data (Level 2)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#tutorial-showing-how-to-read-ebas-nasa-ames-files">Tutorial showing how to read EBAS NASA Ames files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#column-information">Column information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#access-flag-information">Access flag information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#convert-object-to-pandas-dataframe">Convert object to pandas Dataframe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#performance">Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks.html#ebas-file-query-and-database-browser">EBAS file query and database browser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#specifying-a-request">Specifying a request</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#execution-of-file-request-query">Execution of file request query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#browsing-the-database">Browsing the database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#custom-browsing">Custom browsing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="notebooks.html#read-all-files">Read all files</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#data-types-and-data-representation">Data types and data representation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.griddata">Gridded data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.nogriddata">Ungridded data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#data-import-reading-routines">Data import (Reading routines)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.io.readgridded">Reading of gridded data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#reading-of-ungridded-data">Reading of ungridded data</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#input-output">Input / Output</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api.html#reading-routines">Reading routines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#data-types-and-data-representation">Data types and data representation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.griddeddata">Gridded data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#ungridded-data">Ungridded data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#further-i-o-features">Further I/O features</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.io.fileconventions">File naming conventions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.io.helpers">I / O helper methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.io.helpers">I/O helper methods</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.io.testfiles">Test file access</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-pyaerocom.region">Regions / Domains</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#plotting-visualisation">Plotting / Visualisation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.plot.mapping">Plotting maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.plot.plotscatter">Scatter plots</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api.html#module-pyaerocom.plot.config">Colors etc.</a></li>
 </ul>
 </li>

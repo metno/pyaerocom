@@ -189,9 +189,9 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.area_weighted_mean">area_weighted_mean() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.area_weighted_mean">area_weighted_mean() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.area_weights">area_weights (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.area_weights">area_weights (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -199,27 +199,27 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.calc_area_weights">calc_area_weights() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.calc_area_weights">calc_area_weights() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.helpers.cftime_to_datetime64">cftime_to_datetime64() (in module pyaerocom.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.check_and_regrid_lons">check_and_regrid_lons() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.check_and_regrid_lons">check_and_regrid_lons() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.helpers.check_time_coord">check_time_coord() (in module pyaerocom.io.helpers)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.check_validity">check_validity() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.CheckObsnetworkName">CheckObsnetworkName() (pyaerocom.nogriddata.NoGridData method)</a>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.CheckObsnetworkName">CheckObsnetworkName() (pyaerocom.io.readungridded.ReadUngridded method)</a>
 </li>
       <li><a href="api.html#pyaerocom.plot.config.ColorTheme.cmap_map">cmap_map (pyaerocom.plot.config.ColorTheme attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.code_lat_lon_in_float">code_lat_lon_in_float() (pyaerocom.nogriddata.NoGridData method)</a>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.code_lat_lon_in_float">code_lat_lon_in_float() (pyaerocom.io.readungridded.ReadUngridded method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.collapsed">collapsed() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.collapsed">collapsed() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.collocate">collocate() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.collocate">collocate() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.plot.config.ColorTheme.color_coastline">color_coastline (pyaerocom.plot.config.ColorTheme attribute)</a>
 </li>
@@ -227,11 +227,13 @@
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.Comments">Comments (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.coords_order">coords_order (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.coords_order">coords_order (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.helpers.correct_time_coord">correct_time_coord() (in module pyaerocom.io.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.crop">crop() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.crop">crop() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.crop_around_coord">crop_around_coord() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -244,38 +246,32 @@
       <ul>
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.data">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.data">(pyaerocom.io.readgrid.ReadGrid attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.data">(pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.data_dir">data_dir (pyaerocom.io.readgrid.ReadGrid attribute)</a>, <a href="api.html#pyaerocom.io.readgrid.ReadGrid.data_dir">[1]</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.data_dir">data_dir (pyaerocom.io.readgridded.ReadGridded attribute)</a>, <a href="api.html#pyaerocom.io.readgridded.ReadGridded.data_dir">[1]</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_IS_YEARLY">DATASET_IS_YEARLY (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 attribute)</a>
+      <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_IS_YEARLY">DATASET_IS_YEARLY (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_IS_YEARLY">(pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
-</li>
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_IS_YEARLY">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_NAME">DATASET_NAME (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 attribute)</a>
-
-      <ul>
-        <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_NAME">(pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
-</li>
-        <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_NAME">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.DATASET_PATH">DATASET_PATH (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 attribute)</a>
+      <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_NAME">DATASET_NAME (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_PATH">(pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
+        <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_NAME">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
+      </ul></li>
+      <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.DATASET_PATH">DATASET_PATH (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
+
+      <ul>
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.DATASET_PATH">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.decode_lat_lon_from_float">decode_lat_lon_from_float() (pyaerocom.nogriddata.NoGridData method)</a>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.decode_lat_lon_from_float">decode_lat_lon_from_float() (pyaerocom.io.readungridded.ReadUngridded method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.DetectionMode">DetectionMode (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
@@ -301,19 +297,17 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.file_convention">file_convention (pyaerocom.io.readgrid.ReadGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.file_convention">file_convention (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.file_sep">file_sep (pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.file_type">file_type (pyaerocom.io.readgrid.ReadGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.file_type">file_type (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead">FileConventionRead (class in pyaerocom.io.fileconventions)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.FILEMASK">FILEMASK (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.files">files (pyaerocom.io.readgrid.ReadGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.files">files (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.from_dict">from_dict() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 
@@ -323,7 +317,7 @@
       </ul></li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.from_file">from_file() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.from_files">from_files (pyaerocom.io.readgrid.ReadGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.from_files">from_files (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -343,20 +337,24 @@
 </li>
       <li><a href="api.html#pyaerocom.helpers.get_constraint">get_constraint() (in module pyaerocom.helpers)</a>
 </li>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.get_data_dir">get_data_dir() (pyaerocom.io.readungridded.ReadUngridded method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_data_revision">get_data_revision() (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 method)</a>
 
       <ul>
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.get_data_revision">(pyaerocom.io.read_earlinet.ReadEarlinet method)</a>
 </li>
+        <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.get_data_revision">(pyaerocom.io.readungridded.ReadUngridded method)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_file_list">get_file_list() (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 method)</a>
 
       <ul>
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list">(pyaerocom.io.read_earlinet.ReadEarlinet method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.get_info_from_file">get_info_from_file() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
       <li><a href="api.html#pyaerocom.helpers.get_lat_constraint">get_lat_constraint() (in module pyaerocom.helpers)</a>
@@ -367,15 +365,9 @@
 </li>
       <li><a href="api.html#pyaerocom.helpers.get_time_constraint">get_time_constraint() (in module pyaerocom.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.GetDataDir">GetDataDir() (pyaerocom.nogriddata.NoGridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.grid">grid (pyaerocom.griddeddata.GriddedData attribute)</a>, <a href="api.html#pyaerocom.griddeddata.GriddedData.grid">[1]</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.GetDataRevision">GetDataRevision() (pyaerocom.nogriddata.NoGridData method)</a>
-</li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.GetFileList">GetFileList() (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 method)</a>
-</li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.grid">grid (pyaerocom.griddata.GridData attribute)</a>, <a href="api.html#pyaerocom.griddata.GridData.grid">[1]</a>
-</li>
-      <li><a href="api.html#pyaerocom.griddata.GridData">GridData (class in pyaerocom.griddata)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData">GriddedData (class in pyaerocom.griddeddata)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -383,7 +375,7 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.has_data">has_data (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.has_data">has_data (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -397,17 +389,19 @@
         <li><a href="api.html#pyaerocom.region.Region.import_default">(pyaerocom.region.Region method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.init_results">init_results() (pyaerocom.io.readgrid.ReadMultiGrid method)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.init_results">init_results() (pyaerocom.io.readgridded.ReadGriddedMulti method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.InputParameters">InputParameters (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.InputParameters">InputParameters (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.interpolate">interpolate() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.interpolate">interpolate() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.intersection">intersection() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.intersection">intersection() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.is_cube">is_cube (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.is_cube">is_cube (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.is_masked">is_masked (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -419,17 +413,17 @@
 </li>
       <li><a href="api.html#pyaerocom.region.Region.lat_range_plot">lat_range_plot (pyaerocom.region.Region attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.latitude">latitude (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.latitude">latitude (pyaerocom.griddeddata.GriddedData attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.nogriddata.NoGridData.latitude">(pyaerocom.nogriddata.NoGridData attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.latitude">(pyaerocom.io.readungridded.ReadUngridded attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.Latitude_degrees_north">Latitude_degrees_north (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.plot.config.ColorTheme.load_default">load_default() (pyaerocom.plot.config.ColorTheme method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.load_input">load_input() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.load_input">load_input() (pyaerocom.griddeddata.GriddedData method)</a>
 
       <ul>
         <li><a href="api.html#pyaerocom.plot.config.MapPlotSettings.load_input">(pyaerocom.plot.config.MapPlotSettings method)</a>
@@ -443,13 +437,15 @@
 </li>
       <li><a href="api.html#pyaerocom.region.Region.lon_range_plot">lon_range_plot (pyaerocom.region.Region attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.longitude">longitude (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.longitude">longitude (pyaerocom.griddeddata.GriddedData attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.nogriddata.NoGridData.longitude">(pyaerocom.nogriddata.NoGridData attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.longitude">(pyaerocom.io.readungridded.ReadUngridded attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.Longitude_degrees_east">Longitude_degrees_east (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.lonlat_resolution">lonlat_resolution() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -459,6 +455,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.plot.config.MapPlotSettings">MapPlotSettings (class in pyaerocom.plot.config)</a>
 </li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.max">max() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.mean">mean() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.metadata">metadata (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
@@ -467,18 +467,20 @@
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.metadata">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.min">min() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.name">name (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.name">name (pyaerocom.griddeddata.GriddedData attribute)</a>
 
       <ul>
         <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.name">(pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
 </li>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.name">(pyaerocom.io.readgrid.ReadGrid attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.name">(pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
         <li><a href="api.html#pyaerocom.plot.config.ColorTheme.name">(pyaerocom.plot.config.ColorTheme attribute)</a>
 </li>
@@ -487,11 +489,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.names">names (pyaerocom.io.readgrid.ReadMultiGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.names">names (pyaerocom.io.readgridded.ReadGriddedMulti attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.ndim">ndim (pyaerocom.griddata.GridData attribute)</a>
-</li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData">NoGridData (class in pyaerocom.nogriddata)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.ndim">ndim (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -505,7 +505,9 @@
 </li>
       <li><a href="api.html#pyaerocom.plot.mapping.plot_map_OLD">plot_map_OLD() (in module pyaerocom.plot.mapping)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.plot_settings">plot_settings (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.plot_settings">plot_settings (pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.plot.plotscatter.plotscatter">plotscatter() (in module pyaerocom.plot.plotscatter)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.PROVIDES_VARIABLES">PROVIDES_VARIABLES (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
 
@@ -513,7 +515,7 @@
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.PROVIDES_VARIABLES">(pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#module-pyaerocom.griddata">pyaerocom.griddata (module)</a>
+      <li><a href="api.html#module-pyaerocom.griddeddata">pyaerocom.griddeddata (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.helpers">pyaerocom.helpers (module)</a>
 </li>
@@ -523,23 +525,23 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#module-pyaerocom.io.read_aeronet_sdav2">pyaerocom.io.read_aeronet_sdav2 (module)</a>
-</li>
       <li><a href="api.html#module-pyaerocom.io.read_aeronet_sunv2">pyaerocom.io.read_aeronet_sunv2 (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.read_earlinet">pyaerocom.io.read_earlinet (module)</a>
 </li>
-      <li><a href="api.html#module-pyaerocom.io.readgrid">pyaerocom.io.readgrid (module)</a>
+      <li><a href="api.html#module-pyaerocom.io.readgridded">pyaerocom.io.readgridded (module)</a>
+</li>
+      <li><a href="api.html#module-pyaerocom.io.readungridded">pyaerocom.io.readungridded (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.testfiles">pyaerocom.io.testfiles (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.mathutils">pyaerocom.mathutils (module)</a>
 </li>
-      <li><a href="api.html#module-pyaerocom.nogriddata">pyaerocom.nogriddata (module)</a>
-</li>
       <li><a href="api.html#module-pyaerocom.plot.config">pyaerocom.plot.config (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.plot.mapping">pyaerocom.plot.mapping (module)</a>
+</li>
+      <li><a href="api.html#module-pyaerocom.plot.plotscatter">pyaerocom.plot.plotscatter (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.region">pyaerocom.region (module)</a>
 </li>
@@ -551,7 +553,7 @@
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.quickplot_map">quickplot_map() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.quickplot_map">quickplot_map() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -566,34 +568,30 @@
       <ul>
         <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.read">(pyaerocom.io.read_earlinet.ReadEarlinet method)</a>
 </li>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.read">(pyaerocom.io.readgrid.ReadMultiGrid method)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.read">(pyaerocom.io.readgridded.ReadGridded method)</a>
 </li>
-        <li><a href="api.html#pyaerocom.nogriddata.NoGridData.read">(pyaerocom.nogriddata.NoGridData method)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.read">(pyaerocom.io.readgridded.ReadGriddedMulti method)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.read">(pyaerocom.io.readungridded.ReadUngridded method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.read_all_vars">read_all_vars() (pyaerocom.io.readgrid.ReadGrid method)</a>
-</li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_daily_file">read_daily_file() (pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.read_file">read_file() (pyaerocom.io.read_earlinet.ReadEarlinet method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.read_var">read_var() (pyaerocom.io.readgrid.ReadGrid method)</a>
-</li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2">ReadAeronetSDAV2 (class in pyaerocom.io.read_aeronet_sdav2)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.read_var">read_var() (pyaerocom.io.readgridded.ReadGridded method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2">ReadAeronetSunV2 (class in pyaerocom.io.read_aeronet_sunv2)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDaily">ReadDaily() (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 method)</a>
-</li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.ReadDailyFile">ReadDailyFile() (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 method)</a>
-</li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet">ReadEarlinet (class in pyaerocom.io.read_earlinet)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid">ReadGrid (class in pyaerocom.io.readgrid)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded">ReadGridded (class in pyaerocom.io.readgridded)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid">ReadMultiGrid (class in pyaerocom.io.readgrid)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti">ReadGriddedMulti (class in pyaerocom.io.readgridded)</a>
+</li>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded">ReadUngridded (class in pyaerocom.io.readungridded)</a>
 </li>
       <li><a href="api.html#pyaerocom.region.Region">Region (class in pyaerocom.region)</a>
 </li>
@@ -601,7 +599,7 @@
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.ResolutionRaw_meter">ResolutionRaw_meter (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.results">results (pyaerocom.io.readgrid.ReadMultiGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.results">results (pyaerocom.io.readgridded.ReadGriddedMulti attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -609,32 +607,34 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.search_all_files">search_all_files() (pyaerocom.io.readgrid.ReadGrid method)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.search_all_files">search_all_files() (pyaerocom.io.readgridded.ReadGridded method)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.search_all_files">(pyaerocom.io.readgrid.ReadMultiGrid method)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.search_all_files">(pyaerocom.io.readgridded.ReadGriddedMulti method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.search_data_dir">search_data_dir() (pyaerocom.io.readgrid.ReadGrid method)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.search_data_dir">search_data_dir() (pyaerocom.io.readgridded.ReadGridded method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.helpers.search_data_dir_aerocom">search_data_dir_aerocom() (in module pyaerocom.io.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.search_data_dirs">search_data_dirs() (pyaerocom.io.readgrid.ReadMultiGrid method)</a>
+      <li><a href="api.html#pyaerocom.io.helpers.search_data_dir_aerocom_old">search_data_dir_aerocom_old() (in module pyaerocom.io.helpers)</a>
+</li>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.search_data_dirs">search_data_dirs() (pyaerocom.io.readgridded.ReadGriddedMulti method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.helpers.search_names">search_names() (in module pyaerocom.io.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.shape">shape (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.shape">shape (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.short_str">short_str() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.short_str">short_str() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.ShotsAveraged">ShotsAveraged (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.start_time">start_time (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.start_time">start_time (pyaerocom.griddeddata.GriddedData attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.start_time">(pyaerocom.io.readgrid.ReadGrid attribute)</a>, <a href="api.html#pyaerocom.io.readgrid.ReadGrid.start_time">[1]</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.start_time">(pyaerocom.io.readgridded.ReadGridded attribute)</a>, <a href="api.html#pyaerocom.io.readgridded.ReadGridded.start_time">[1]</a>
 </li>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.start_time">(pyaerocom.io.readgrid.ReadMultiGrid attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.start_time">(pyaerocom.io.readgridded.ReadGriddedMulti attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -643,14 +643,16 @@
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.StartTime_UT">StartTime_UT (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.station_name">station_name (pyaerocom.nogriddata.NoGridData attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.station_name">station_name (pyaerocom.io.readungridded.ReadUngridded attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.stop_time">stop_time (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.std">std() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.stop_time">stop_time (pyaerocom.griddeddata.GriddedData attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.stop_time">(pyaerocom.io.readgrid.ReadGrid attribute)</a>, <a href="api.html#pyaerocom.io.readgrid.ReadGrid.stop_time">[1]</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.stop_time">(pyaerocom.io.readgridded.ReadGridded attribute)</a>, <a href="api.html#pyaerocom.io.readgridded.ReadGridded.stop_time">[1]</a>
 </li>
-        <li><a href="api.html#pyaerocom.io.readgrid.ReadMultiGrid.stop_time">(pyaerocom.io.readgrid.ReadMultiGrid attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.stop_time">(pyaerocom.io.readgridded.ReadGriddedMulti attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.StopTime_UT">StopTime_UT (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
@@ -659,9 +661,9 @@
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.string_mask">string_mask() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.suppl_info">suppl_info (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.suppl_info">suppl_info (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.SUPPORTED_DATASETS">SUPPORTED_DATASETS (pyaerocom.nogriddata.NoGridData attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS">SUPPORTED_DATASETS (pyaerocom.io.readungridded.ReadUngridded attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.System">System (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
@@ -673,13 +675,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api_testsuite.html#pyaerocom.test.test_mathutils.test_exponent">test_exponent() (in module pyaerocom.test.test_mathutils)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.time">time (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.time">time (pyaerocom.griddeddata.GriddedData attribute)</a>
 
       <ul>
-        <li><a href="api.html#pyaerocom.nogriddata.NoGridData.time">(pyaerocom.nogriddata.NoGridData attribute)</a>
+        <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.time">(pyaerocom.io.readungridded.ReadUngridded attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.time_stamps">time_stamps() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.time_stamps">time_stamps() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.to_dict">to_dict() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 
@@ -689,13 +691,17 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddata.GridData.to_time_series">to_time_series() (pyaerocom.griddata.GridData method)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.to_time_series">to_time_series() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.nogriddata.NoGridData.to_timeseries">to_timeseries() (pyaerocom.nogriddata.NoGridData method)</a>
+      <li><a href="api.html#pyaerocom.helpers.to_time_series_griesie">to_time_series_griesie() (in module pyaerocom.helpers)</a>
+</li>
+      <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.to_timeseries">to_timeseries() (pyaerocom.io.readungridded.ReadUngridded method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.to_timeseries_iter_coords">to_timeseries_iter_coords() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.ts_pos">ts_pos (pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.TS_TYPES">TS_TYPES (pyaerocom.io.readgrid.ReadGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.TS_TYPES">TS_TYPES (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -703,7 +709,7 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.update">update() (pyaerocom.io.readgrid.ReadGrid method)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.update">update() (pyaerocom.io.readgridded.ReadGridded method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -713,15 +719,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_INFO">VAR_INFO (pyaerocom.io.read_earlinet.ReadEarlinet attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddata.GridData.var_name">var_name (pyaerocom.griddata.GridData attribute)</a>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.var_name">var_name (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.var_pos">var_pos (pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.vars">vars (pyaerocom.io.readgrid.ReadGrid attribute)</a>
-</li>
-      <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.version__">version__ (pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2 attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.vars">vars (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -733,7 +737,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.readgrid.ReadGrid.years_to_load">years_to_load (pyaerocom.io.readgrid.ReadGrid attribute)</a>
+      <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.years_to_load">years_to_load (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
   </ul></td>
 </tr></table>

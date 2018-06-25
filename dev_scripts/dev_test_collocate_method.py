@@ -10,7 +10,7 @@ from pandas import Timestamp
 import numpy as np
 if __name__ == "__main__":
 
-    data = pyaerocom.GridData()
+    data = pyaerocom.GriddedData()
     data._init_testdata_default()
     
     start = Timestamp("2018-1-22")

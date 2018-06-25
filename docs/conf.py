@@ -41,7 +41,8 @@ compat.make_admonition = BaseAdmonition
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = ['sphinx.ext.todo',
+			  'sphinx.ext.autodoc',
               'sphinx.ext.doctest',
 			  'sphinx.ext.napoleon',
         	  'sphinx.ext.intersphinx',
@@ -95,7 +96,7 @@ exclude_patterns = ['_build', 'build', 'Thumbs.db', '.DS_Store', '**.ipynb_check
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = False
+todo_include_todos = True
 
 
 # -- Options for HTML output ----------------------------------------------

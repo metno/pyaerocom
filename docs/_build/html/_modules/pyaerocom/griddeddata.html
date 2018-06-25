@@ -1,0 +1,1254 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.griddeddata &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.griddeddata</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.griddeddata</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Pyaerocom GriddedData class</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">Constraint</span><span class="p">,</span> <span class="n">load</span><span class="p">,</span> <span class="n">load_cube</span>
+<span class="kn">from</span> <span class="nn">iris.cube</span> <span class="k">import</span> <span class="n">Cube</span><span class="p">,</span> <span class="n">CubeList</span>
+<span class="kn">from</span> <span class="nn">iris.analysis.cartography</span> <span class="k">import</span> <span class="n">area_weights</span>
+<span class="kn">from</span> <span class="nn">iris.analysis</span> <span class="k">import</span> <span class="n">MEAN</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span><span class="p">,</span> <span class="n">Series</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">nan</span><span class="p">,</span> <span class="n">where</span>
+<span class="kn">from</span> <span class="nn">numpy.ma</span> <span class="k">import</span> <span class="n">MaskedArray</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">DataExtractionError</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">get_time_constraint</span><span class="p">,</span> 
+                               <span class="n">cftime_to_datetime64</span><span class="p">,</span>
+                               <span class="n">str_to_iris</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
+
+<div class="viewcode-block" id="GriddedData"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData">[docs]</a><span class="k">class</span> <span class="nc">GriddedData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class representing model data</span>
+<span class="sd">    </span>
+<span class="sd">    This class is largely based on the :class:`iris.Cube` object. However, this</span>
+<span class="sd">    object comes with an expanded functionality for convenience, for instance, </span>
+<span class="sd">    netCDF files can directly be loaded in the :class:`GriddedData` object,</span>
+<span class="sd">    whereas :class:`iris.cube.Cube` instances are typically created using</span>
+<span class="sd">    helper methods such as</span>
+<span class="sd">    </span>
+<span class="sd">    1. :func:`iris.load` (returns </span>
+<span class="sd">    :class:`iris.cube.CubeList`, i.e. a list-like iterable object that contains </span>
+<span class="sd">    instances of :class:`Cube` objects, one for each variable) or </span>
+<span class="sd">    </span>
+<span class="sd">    2. :func:`iris.load_cube` which directly returns a :class:`iris.cube.Cube` </span>
+<span class="sd">    instance and typically requires specification of a variable constraint.</span>
+<span class="sd">    </span>
+<span class="sd">    The :class:`GriddedData` object represents one variable in space and time, as</span>
+<span class="sd">    well as corresponding meta information. Since it is based on the </span>
+<span class="sd">    :class:`iris.cube.Cube` it is optimised for netCDF files that follow the</span>
+<span class="sd">    CF conventions and may not work for files that do not follow this standard.</span>
+<span class="sd">       </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input : :obj:`str:` or :obj:`Cube`</span>
+<span class="sd">        data input. Can be a single .nc file or a preloaded iris Cube.</span>
+<span class="sd">    var_name : :obj:`str`, optional</span>
+<span class="sd">        variable name that is extracted if `input` is a file path . Irrelevant</span>
+<span class="sd">        if `input` is preloaded Cube</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; from pyaerocom.io.testfiles import get</span>
+<span class="sd">    &gt;&gt;&gt; files = get()</span>
+<span class="sd">    &gt;&gt;&gt; data = GriddedData(files[&#39;models&#39;][&#39;aatsr_su_v4.3&#39;], var_name=&quot;od550aer&quot;,</span>
+<span class="sd">    ...                  verbose=False)</span>
+<span class="sd">    &gt;&gt;&gt; print(data.var_name)</span>
+<span class="sd">    od550aer</span>
+<span class="sd">    &gt;&gt;&gt; print(type(data.longitude))</span>
+<span class="sd">    &lt;class &#39;iris.coords.DimCoord&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; print(data.longitude.points.min(), data.longitude.points.max())</span>
+<span class="sd">    -179.5 179.5</span>
+<span class="sd">    &gt;&gt;&gt; print(data.latitude.points.min(), data.latitude.points.max())</span>
+<span class="sd">    -89.5 89.5</span>
+<span class="sd">    &gt;&gt;&gt; print(data.time.points.min(), data.time.points.max())</span>
+<span class="sd">    0.0 365.0</span>
+<span class="sd">    &gt;&gt;&gt; tstamps = data.time_stamps()</span>
+<span class="sd">    &gt;&gt;&gt; print(tstamps[0], tstamps[-1])</span>
+<span class="sd">    2008-01-01T00:00:00.000000 2008-12-31T00:00:00.000000</span>
+<span class="sd">    &gt;&gt;&gt; data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),</span>
+<span class="sd">    ...                          time_range=(&quot;2008-02-01&quot;, &quot;2008-02-15&quot;))</span>
+<span class="sd">    &gt;&gt;&gt; print(data_cropped.shape)</span>
+<span class="sd">    (15, 120, 20)</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid</span>
+<span class="sd">        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)</span>
+<span class="sd">    suppl_info : dict</span>
+<span class="sd">        dictionary containing supplementary information about this data</span>
+<span class="sd">        object (these may be attributes that are not already stored within</span>
+<span class="sd">        the metadata representation of the underlying data object)</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_grid</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_GRID_IO</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">GRID_IO</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">,</span> 
+                 <span class="o">**</span><span class="n">suppl_info</span><span class="p">):</span>
+        <span class="c1">#super(GriddedData, self).__init__(input, var_name, verbose, **suppl_info)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">from_files</span>     <span class="o">=</span> <span class="p">[],</span>
+                             <span class="n">name</span>           <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
+                             <span class="n">ts_type</span>        <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
+                             <span class="n">region</span>         <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="c1">#attribute used to store area weights (if applicable, see method</span>
+        <span class="c1">#area_weights)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">input</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">suppl_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_masked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flag specifying whether data is masked or not</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This method only works if the data is loaded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">has_lazy_data</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Information cannot be accessed. Data is not &quot;</span>
+                                 <span class="s2">&quot;available in memory (lazy loading)&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">MaskedArray</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Longitudes of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span>
+        
+    <span class="nd">@longitude</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Longitudes cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;latitude&quot;</span><span class="p">)</span>
+        
+    <span class="nd">@latitude</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Latitudes cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Time dimension of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        
+    <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+            
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Underlying grid data object&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span>
+    
+    <span class="nd">@grid</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Cube</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Grid data format </span><span class="si">%s</span><span class="s2"> is not supported, need Cube&quot;</span> 
+                            <span class="o">%</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grid</span> <span class="o">=</span> <span class="n">value</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">var_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Name of variable in grid&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Attribute var_name is not available&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">var_name</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">plot_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;:class:`Variable` instance that contains plot settings</span>
+<span class="sd">        </span>
+<span class="sd">        The settings can be specified in the variables.ini file based on the</span>
+<span class="sd">        unique var_name, see e.g. `here &lt;http://aerocom.met.no/pyaerocom/</span>
+<span class="sd">        config_files.html#variables&gt;`__</span>
+<span class="sd">        </span>
+<span class="sd">        If no default settings can be found for this variable, all parameters</span>
+<span class="sd">        will be initiated with ``None``, in which case the Aerocom plot method</span>
+<span class="sd">        uses</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">Variable</span>
+        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+            
+    <span class="nd">@property</span> 
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ID of model to which data belongs&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_cube</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if underlying data type is of type :class:`iris.cube.Cube`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">Cube</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;True if grid data is available (:attr:`grid` =! None)</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Since so far, the only supported type is :class:`iris.cube.Cube`, this</span>
+<span class="sd">        method simply returns :attr:`is_cube`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;No data available...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span> 
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Number of dimensions&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;No data available...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">ndim</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">coords_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Array containing the order of coordinates&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;No data available...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coords</span><span class="p">()]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calc_area_weights</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span>
+    
+    <span class="nd">@area_weights</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Area weights cannot be set manually yet...&quot;</span><span class="p">)</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start time of dataset as datetime64 object&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start time could not be accessed in &quot;</span>
+                                 <span class="s2">&quot;GriddedData class&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">nan</span>
+        <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start time of dataset as datetime64 object&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stop time could not be accessed in &quot;</span>
+                                 <span class="s2">&quot;GriddedData class&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">nan</span>
+        <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        
+<div class="viewcode-block" id="GriddedData.load_input"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.load_input">[docs]</a>    <span class="k">def</span> <span class="nf">load_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Interprete and load input</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input : :obj:`str:` or :obj:`Cube`</span>
+<span class="sd">            data input. Can be a single .nc file or a preloaded iris Cube.</span>
+<span class="sd">        var_name : :obj:`str`, optional</span>
+<span class="sd">            variable name that is extracted if `input` is a file path . Irrelevant</span>
+<span class="sd">            if `input` is preloaded Cube</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exists</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">_var_names</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">ctemp</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctemp</span><span class="p">,</span> <span class="n">CubeList</span><span class="p">):</span>
+                        <span class="n">_var_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">var_name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ctemp</span><span class="p">]</span>
+                        <span class="n">_addstr</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;The following variable names exist in &quot;</span>
+                                   <span class="s2">&quot;input file: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">_var_names</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">_addstr</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                            
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file </span><span class="si">%s</span><span class="s2"> requires &quot;</span>
+                                 <span class="s2">&quot;specification of a variable name using &quot;</span>
+                                 <span class="s2">&quot;input parameter var_name. </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">_addstr</span><span class="p">))</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">var_name</span> <span class="o">==</span> <span class="n">var_name</span>
+            <span class="n">constraint</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">cube_func</span><span class="o">=</span><span class="n">func</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">load_cube</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span> <span class="c1">#instance of CubeList</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">[</span><span class="s2">&quot;from_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">Cube</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="nb">input</span> <span class="c1">#instance of Cube</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GRID_IO</span><span class="p">[</span><span class="s2">&quot;DEL_TIME_BOUNDS&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to access time coordinate in GriddedData class&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_GRID_IO</span><span class="p">[</span><span class="s2">&quot;SHIFT_LONS&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_and_regrid_lons</span><span class="p">()</span></div>
+        <span class="c1">#if isinstance(sel)</span>
+            
+<div class="viewcode-block" id="GriddedData.time_stamps"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.time_stamps">[docs]</a>    <span class="k">def</span> <span class="nf">time_stamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert time stamps into list of numpy datetime64 objects</span>
+<span class="sd">        </span>
+<span class="sd">        The conversion is done using method :func:`cfunit_to_datetime64`</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing all time stamps as datetime64 objects </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>    
+            <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
+    
+    
+<div class="viewcode-block" id="GriddedData.lonlat_resolution"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.lonlat_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">lonlat_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Longitude / latitude resolution of grid</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            2-element tuple containing</span>
+<span class="sd">            </span>
+<span class="sd">            - average longitude resolution in decimal degrees</span>
+<span class="sd">            - average latitude resolution in decimal degrees</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
+<div class="viewcode-block" id="GriddedData.crop_around_coord"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.crop_around_coord">[docs]</a>    <span class="k">def</span> <span class="nf">crop_around_coord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">step_deg</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Crop cube around a single lon / lat coordinate</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        lon : float</span>
+<span class="sd">            longitude of coordinate</span>
+<span class="sd">        lat: float</span>
+<span class="sd">            latitude of coordinate</span>
+<span class="sd">        step_deg : :obj:`float` or :obj:`int`</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
+<div class="viewcode-block" id="GriddedData.to_timeseries_iter_coords"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.to_timeseries_iter_coords">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries_iter_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_points</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> <span class="n">collapse_scalar</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract time-series for provided input coordinates (lon, lat)</span>
+<span class="sd">        </span>
+<span class="sd">        Other than :func:`to_time_series`, this method extracts the time-series</span>
+<span class="sd">        at all input coordinates by iterating over the coordinate locations, </span>
+<span class="sd">        cropping the grid around the coordinate and then interpolating it using</span>
+<span class="sd">        the provided interpolation scheme.</span>
+<span class="sd">        </span>
+<span class="sd">        This method may be faster for a small number of coordinates (compared </span>
+<span class="sd">        to :func:`to_timeseries`). It may also be the better choice in case the</span>
+<span class="sd">        number of coordinates is too large in which case :func:`to_time_series`</span>
+<span class="sd">        may fail due to a MemoryError (i.e. the case where the final </span>
+<span class="sd">        interpolated object is too large to fit into memory).</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_points : list</span>
+<span class="sd">            coordinates (e.g. lon / lat) at which time series is supposed to be</span>
+<span class="sd">            retrieved</span>
+<span class="sd">        scheme : str or iris interpolator object</span>
+<span class="sd">            interpolation scheme (for details, see :func:`interpolate`)</span>
+<span class="sd">        collapse_scalar : bool</span>
+<span class="sd">            see :func:`interpolate`</span>
+<span class="sd">        **coords</span>
+<span class="sd">            additional keyword args that may be used to provide the interpolation</span>
+<span class="sd">            coordinates (for details, see :func:`interpolate`)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            list of result dictionaries for each coordinate. Dictionary keys</span>
+<span class="sd">            are: ``longitude, latitude, var_name``</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="GriddedData.to_time_series"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.to_time_series">[docs]</a>    <span class="k">def</span> <span class="nf">to_time_series</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> 
+                    <span class="n">collapse_scalar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">coords</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Extract time-series for provided input coordinates (lon, lat)</span>
+
+<span class="sd">        Extract time series for each lon / lat coordinate in this cube or at</span>
+<span class="sd">        predefined sample points (e.g. station data). If sample points are</span>
+<span class="sd">        provided, the cube is interpolated first onto the sample points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_points : list</span>
+<span class="sd">            coordinates (e.g. lon / lat) at which time series is supposed to be</span>
+<span class="sd">            retrieved</span>
+<span class="sd">        scheme : str or iris interpolator object</span>
+<span class="sd">            interpolation scheme (for details, see :func:`interpolate`)</span>
+<span class="sd">        collapse_scalar : bool</span>
+<span class="sd">            see :func:`interpolate`</span>
+<span class="sd">        **coords</span>
+<span class="sd">            additional keyword args that may be used to provide the interpolation</span>
+<span class="sd">            coordinates (for details, see :func:`interpolate`)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            list of result dictionaries for each coordinate. Dictionary keys</span>
+<span class="sd">            are: ``longitude, latitude, var_name``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="n">sample_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sample_points</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_order</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;So far, time series can only be &quot;</span>
+                                      <span class="s2">&quot;retrieved for 3-dimensional data &quot;</span>
+                                      <span class="s2">&quot;with coordinate order &quot;</span>
+                                      <span class="s2">&quot;[time, latitude, longitude].&quot;</span><span class="p">)</span>
+        <span class="n">lens</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sample_points</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">lens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lens</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Arrays for sample coordinates must have the &quot;</span>
+                             <span class="s2">&quot;same lengths&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">sample_points</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> <span class="n">collapse_scalar</span><span class="p">)</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+            <span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sample_points</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;latitude&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sample_points</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;longitude&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">grid_lons</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+                <span class="n">lon</span> <span class="o">=</span> <span class="n">lons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">grid_lons</span> <span class="o">==</span> <span class="n">lon</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;latitude&#39;</span>   <span class="p">:</span>   <span class="n">lat</span><span class="p">,</span>
+                               <span class="s1">&#39;longitude&#39;</span>  <span class="p">:</span>   <span class="n">lon</span><span class="p">,</span>
+                               <span class="n">var</span>          <span class="p">:</span>   <span class="n">Series</span><span class="p">(</span><span class="n">arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> 
+                                                       <span class="n">index</span><span class="o">=</span><span class="n">times</span><span class="p">)})</span>
+        <span class="k">except</span> <span class="ne">MemoryError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_slow</span><span class="p">(</span><span class="n">sample_points</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> <span class="n">collapse_scalar</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">result</span></div>
+            
+<div class="viewcode-block" id="GriddedData.calc_area_weights"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.calc_area_weights">[docs]</a>    <span class="k">def</span> <span class="nf">calc_area_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate area weights for grid&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_area_weights</span> <span class="o">=</span> <span class="n">area_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_weights</span></div>
+        
+<div class="viewcode-block" id="GriddedData.check_and_regrid_lons"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.check_and_regrid_lons">[docs]</a>    <span class="k">def</span> <span class="nf">check_and_regrid_lons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks and corrects for if longitudes of :attr:`grid` are 0 -&gt; 360</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This method checks if the maximum of the current longitudes array</span>
+<span class="sd">        exceeds 180. Thus, it is not recommended to use this function after</span>
+<span class="sd">        subsetting a cube, rather, it should be checked directly when the </span>
+<span class="sd">        file is loaded (cf. :func:`load_input`)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True, if longitudes were on 0 -&gt; 360 and have been rolled, else</span>
+<span class="sd">            False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Rolling longitudes to -180 -&gt; 180 definition&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">))</span></div>
+        
+<div class="viewcode-block" id="GriddedData.crop"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.crop">[docs]</a>    <span class="k">def</span> <span class="nf">crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lon_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+             <span class="n">time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;High level function that applies cropping along multiple axes</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">            1. For cropping of longitudes and latitudes, the method </span>
+<span class="sd">            :func:`iris.cube.Cube.intersection` is used since it automatically </span>
+<span class="sd">            accepts and understands longitude input based on definition </span>
+<span class="sd">            0 &lt;= lon &lt;= 360 as well as for -180 &lt;= lon &lt;= 180</span>
+<span class="sd">            2. Time extraction may be provided directly as index or in form of</span>
+<span class="sd">            :class:`pandas.Timestamp` objects. </span>
+<span class="sd">            </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lon_range : :obj:`tuple`, optional</span>
+<span class="sd">            2-element tuple containing longitude range for cropping. If None, </span>
+<span class="sd">            the longitude axis remains unchanged. </span>
+<span class="sd">            Example input to crop around meridian: `lon_range=(-30, 30)`</span>
+<span class="sd">        lat_range : :obj:`tuple`, optional</span>
+<span class="sd">            2-element tuple containing latitude range for cropping. If None, </span>
+<span class="sd">            the latitude axis remains unchanged</span>
+<span class="sd">        time_range : :obj:`tuple`, optional</span>
+<span class="sd">            2-element tuple containing time range for cropping. Allowed data</span>
+<span class="sd">            types for specifying the times are </span>
+<span class="sd">            </span>
+<span class="sd">                1. a combination of 2 :class:`pandas.Timestamp` instances or </span>
+<span class="sd">                2. a combination of two strings that can be directly converted\</span>
+<span class="sd">                into :class:`pandas.Timestamp` instances (e.g.\</span>
+<span class="sd">                `time_range=(&quot;2010-1-1&quot;, &quot;2012-1-1&quot;)`) or</span>
+<span class="sd">                3. directly a combination of indices (:obj:`int`). </span>
+<span class="sd">            </span>
+<span class="sd">            If None, the time axis remains unchanged.</span>
+<span class="sd">        region : :obj:`str` or :obj:`Region`, optional</span>
+<span class="sd">            string ID of pyaerocom default region or directly an instance of </span>
+<span class="sd">            the :class:`Region` object. May be used instead of </span>
+<span class="sd">            ``lon_range`` and ``lat_range``, if these are unspecified.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            new data object containing cropped grid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This feature is only available if the&quot;</span>
+                                      <span class="s2">&quot;underlying data is of type iris.Cube&quot;</span><span class="p">)</span>
+        <span class="n">suppl</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">region</span> <span class="o">=</span> <span class="n">Region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to access longitude / latitude range &quot;</span>
+                              <span class="s2">&quot;using region ID </span><span class="si">{}</span><span class="s2">. Error msg: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> 
+                                               <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">Region</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for region&quot;</span><span class="p">)</span>
+            <span class="n">suppl</span><span class="p">[</span><span class="s2">&quot;region&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">region</span>
+            <span class="n">lon_range</span><span class="p">,</span> <span class="n">lat_range</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">lon_range</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">lat_range</span>
+        <span class="k">if</span> <span class="n">lon_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lat_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">lon_range</span><span class="p">,</span> 
+                                          <span class="n">latitude</span><span class="o">=</span><span class="n">lat_range</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">lon_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lat_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">lon_range</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">lon_range</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lat_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">lat_range</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to apply spatial cropping...&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">time_range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">suppl</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">time_range</span><span class="p">):</span>
+                <span class="n">time_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                              <span class="n">Timestamp</span><span class="p">(</span><span class="n">time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">time_range</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cropping along time axis based on Timestamps&quot;</span><span class="p">)</span>
+                <span class="n">time_constraint</span> <span class="o">=</span> <span class="n">get_time_constraint</span><span class="p">(</span><span class="o">*</span><span class="n">time_range</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">time_constraint</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">time_range</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cropping along time axis based on indices&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to apply temporal cropping&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">suppl</span><span class="p">)</span></div>
+        
+    
+<div class="viewcode-block" id="GriddedData.area_weighted_mean"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.area_weighted_mean">[docs]</a>    <span class="k">def</span> <span class="nf">area_weighted_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get area weighted mean&quot;&quot;&quot;</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">area_weights</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">],</span> 
+                              <span class="n">aggregator</span><span class="o">=</span><span class="n">MEAN</span><span class="p">,</span> 
+                              <span class="n">weights</span><span class="o">=</span><span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span></div>
+        
+    <span class="c1"># redefined methods from iris.Cube class. This includes all Cube </span>
+    <span class="c1"># processing methods that exist in the Cube class and that work on the </span>
+    <span class="c1"># Cube and return a Cube instance. These may be expanded (e.g. for </span>
+    <span class="c1"># instance what they accept as input</span>
+    
+<div class="viewcode-block" id="GriddedData.interpolate"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> 
+                    <span class="n">collapse_scalar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Interpolate cube at certain discrete points</span>
+<span class="sd">        </span>
+<span class="sd">        Reimplementation of method :func:`iris.cube.Cube.interpolate`, for </span>
+<span class="sd">        details `see here &lt;http://scitools.org.uk/iris/docs/v1.10.0/iris/iris/</span>
+<span class="sd">        cube.html#iris.cube.Cube.interpolate&gt;`__</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The input coordinates may also be provided using the input arg **coords</span>
+<span class="sd">        which provides a more intuitive option (e.g. input</span>
+<span class="sd">        ``(sample_points=[(&quot;longitude&quot;, [10, 20]), (&quot;latitude&quot;, [1, 2])])`` </span>
+<span class="sd">        is the same as input</span>
+<span class="sd">        ``(longitude=[10, 20], latitude=[1,2])``</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_points : list</span>
+<span class="sd">            sequence of coordinate pairs over which to interpolate</span>
+<span class="sd">        scheme : str or iris interpolator object</span>
+<span class="sd">            interpolation scheme, pyaerocom default is Nearest. If input is </span>
+<span class="sd">            string, it is converted into the corresponding iris Interpolator </span>
+<span class="sd">            object, see :func:`str_to_iris` for valid strings</span>
+<span class="sd">        collapse_scalar : bool</span>
+<span class="sd">            Whether to collapse the dimension of scalar sample points in the</span>
+<span class="sd">            resulting cube. Default is True.</span>
+<span class="sd">        **coords</span>
+<span class="sd">            additional keyword args that may be used to provide the interpolation</span>
+<span class="sd">            coordinates in an easier way than using the ``Cube`` argument</span>
+<span class="sd">            :arg:`sample_points``. May also be a combination of both.</span>
+<span class="sd">         </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            collapsed data object</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">            &gt;&gt;&gt; from pyaerocom import GriddedData</span>
+<span class="sd">            &gt;&gt;&gt; data = GriddedData()</span>
+<span class="sd">            &gt;&gt;&gt; data._init_testdata_default()</span>
+<span class="sd">            &gt;&gt;&gt; itp = data.interpolate([(&quot;longitude&quot;, (10)),</span>
+<span class="sd">            ...                         (&quot;latitude&quot; , (35))])</span>
+<span class="sd">            &gt;&gt;&gt; print(itp.shape)</span>
+<span class="sd">            (365, 1, 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheme</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">scheme</span> <span class="o">=</span> <span class="n">str_to_iris</span><span class="p">(</span><span class="n">scheme</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="n">sample_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sample_points</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">itp_cube</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">sample_points</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> 
+                                             <span class="n">collapse_scalar</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">MemoryError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">MemoryError</span><span class="p">(</span><span class="s2">&quot;Interpolation failed since grid of interpolated &quot;</span>
+                              <span class="s2">&quot;Cube is too large&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">itp_cube</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GriddedData.collocate"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.collocate">[docs]</a>    <span class="k">def</span> <span class="nf">collocate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> 
+                  <span class="n">collapse_scalar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collocate Cube to positions of input coordinates</span>
+<span class="sd">        </span>
+<span class="sd">        Other than :func:`interpolate`, this method extracts the data values </span>
+<span class="sd">        for a given number of input coordinates (e.g. combination of lon / lat</span>
+<span class="sd">        values that belong, e.g. to station coordinates). Thus, this results in</span>
+<span class="sd">        a reduction of dimensionality, since the provided coordinate </span>
+<span class="sd">        combinations are not othorgonal anymore. </span>
+<span class="sd">        </span>
+<span class="sd">        All other dimensions are preserved (e.g. time), thus, collocating a 3D</span>
+<span class="sd">        grid of time / lon / lat dimension and shape ``(265, 360, 180)`` at </span>
+<span class="sd">        50 lon / lat coordinates will result in a 2D numpy array of shape </span>
+<span class="sd">        ``(365, 50)``</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_points : list</span>
+<span class="sd">            sequence of coordinate pairs over which to interpolate</span>
+<span class="sd">        scheme : str or iris interpolator object</span>
+<span class="sd">            interpolation scheme (for details, see :func:`interpolate`)</span>
+<span class="sd">        collapse_scalar : bool</span>
+<span class="sd">            see :func:`interpolate`</span>
+<span class="sd">        **coords</span>
+<span class="sd">            keyword args specifying coordinate name (key, e.g. longitude) and </span>
+<span class="sd">            list of corresponding sample point coordinates (value, </span>
+<span class="sd">            e.g. ``[1,2,3]``)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            data values at provided input coordinates</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if length of coordinate arrays are unequal or coord</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            if one of the provided coordinates does not exist[(&#39;a&#39;, 1), (&#39;b&#39;, 2), (&#39;c&#39;, 3)]</span>
+<span class="sd">        </span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        </span>
+<span class="sd">            &gt;&gt;&gt; from pyaerocom import GriddedData</span>
+<span class="sd">            &gt;&gt;&gt; data = GriddedData()</span>
+<span class="sd">            &gt;&gt;&gt; data._init_testdata_default()</span>
+<span class="sd">            &gt;&gt;&gt; lons = [10, 20, 30, 40]</span>
+<span class="sd">            &gt;&gt;&gt; lats = [5, 7, 9, 11]</span>
+<span class="sd">            &gt;&gt;&gt; pt_data = data.collocate(longitude=lons,</span>
+<span class="sd">            ...                          latitude=lats)</span>
+<span class="sd">            &gt;&gt;&gt; print(pt_data.shape)</span>
+<span class="sd">            (365, 4)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="n">sample_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sample_points</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Please provide coordinate either using arg&quot;</span>
+                          <span class="s2">&quot;sample_points or via **coords&quot;</span><span class="p">)</span>
+        <span class="n">coords_avail</span> <span class="o">=</span> <span class="p">[</span><span class="n">coord</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coords</span><span class="p">()]</span>
+        <span class="n">_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="n">sample_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sample_points</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span> 
+        <span class="c1"># get length of sample points array of first coordinate</span>
+        <span class="n">ref_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_points</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">sample_points</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">coords_avail</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Coordinate </span><span class="si">{}</span><span class="s2"> does not exist in data, existing &quot;</span>
+                               <span class="s2">&quot;coordinates are </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">coords_avail</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">==</span> <span class="n">ref_len</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Length of coordinate arrays must be the &quot;</span>
+                                 <span class="s2">&quot;same...&quot;</span><span class="p">)</span>
+            <span class="n">_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coords_avail</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            
+        <span class="c1">### interpolate grid to new coordinates</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">sample_points</span><span class="p">,</span> <span class="n">scheme</span><span class="p">,</span> <span class="n">collapse_scalar</span><span class="p">)</span>
+        
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        
+        <span class="c1">#total number of points in grid</span>
+        <span class="n">tot_num_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        
+        <span class="c1">#get the number of parameters spanned by the subspace</span>
+        <span class="n">sub_num_grid</span> <span class="o">=</span> <span class="n">ref_len</span><span class="o">**</span><span class="nb">len</span><span class="p">(</span><span class="n">sample_points</span><span class="p">)</span>
+        
+        <span class="c1">#put reduced dimension into first index, so we can loop over it</span>
+        <span class="n">arr_dimred</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">sub_num_grid</span><span class="p">,</span> <span class="p">)</span>
+        
+        <span class="c1">#remove first item in sample_points (used to iterate over all points)</span>
+        <span class="n">first_coord</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">sample_points</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sample_points</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;latitude&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sample_points</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;longitude&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Under construction...&quot;</span><span class="p">)</span></div>
+        <span class="c1">#for val in values:</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#             </span>
+<span class="c1">#         grid_lons = data.longitude.points</span>
+<span class="c1">#         for i, lat in enumerate(lats):</span>
+<span class="c1">#             lon = lons[i]</span>
+<span class="c1">#             j = np.where(grid_lons == lon)[0][0]</span>
+<span class="c1">#             result.append({&#39;latitude&#39;   :   lat,</span>
+<span class="c1">#                            &#39;longitude&#39;  :   lon,</span>
+<span class="c1">#                            var          :   Series(arr[:, i, j], </span>
+<span class="c1">#                                                    index=times)})</span>
+<span class="c1">#         return ()</span>
+<span class="c1"># =============================================================================</span>
+        
+    
+<div class="viewcode-block" id="GriddedData.collapsed"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.collapsed">[docs]</a>    <span class="k">def</span> <span class="nf">collapsed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collapse cube</span>
+<span class="sd">        </span>
+<span class="sd">        Reimplementation of method :func:`iris.cube.Cube.collapsed`, for </span>
+<span class="sd">        details `see here &lt;http://scitools.org.uk/iris/docs/latest/iris/iris/</span>
+<span class="sd">        cube.html#iris.cube.Cube.collapsed&gt;`__</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coords : str or list</span>
+<span class="sd">            string IDs of coordinate(s) that are to be collapsed (e.g. </span>
+<span class="sd">            ``[&quot;longitude&quot;, &quot;latitude&quot;]``)</span>
+<span class="sd">        aggregator : str or Aggregator or WeightedAggretor</span>
+<span class="sd">            the aggregator used. If input is string, it is converted into the</span>
+<span class="sd">            corresponding iris Aggregator object, see </span>
+<span class="sd">            :func:`str_to_iris` for valid strings</span>
+<span class="sd">        **kwargs </span>
+<span class="sd">            additional keyword args (e.g. ``weights``)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            collapsed data object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggregator</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">aggregator</span> <span class="o">=</span> <span class="n">str_to_iris</span><span class="p">(</span><span class="n">aggregator</span><span class="p">)</span>
+        <span class="n">collapsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">collapsed</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
+    
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     def extract(self, constraint):</span>
+<span class="c1">#         &quot;&quot;&quot;Extract subset</span>
+<span class="c1">#         </span>
+<span class="c1">#         Parameters</span>
+<span class="c1">#         ----------</span>
+<span class="c1">#         constraint : iris.Constraint</span>
+<span class="c1">#             constraint that is to be applied</span>
+<span class="c1">#             </span>
+<span class="c1">#         Returns</span>
+<span class="c1">#         -------</span>
+<span class="c1">#         GriddedData</span>
+<span class="c1">#             new data object containing cropped data</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         if not self.is_cube:</span>
+<span class="c1">#             raise NotImplementedError(&quot;This feature is only available if the&quot;</span>
+<span class="c1">#                                       &quot;underlying data is of type iris.Cube&quot;)</span>
+<span class="c1">#         data_crop = self.grid.extract(constraint)</span>
+<span class="c1">#         if not data_crop:</span>
+<span class="c1">#             raise DataExtractionError(&quot;Failed to extract subset&quot;)</span>
+<span class="c1">#         </span>
+<span class="c1">#         return GriddedData(data_crop, **self.suppl_info)</span>
+<span class="c1"># =============================================================================</span>
+    
+<div class="viewcode-block" id="GriddedData.intersection"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.intersection">[docs]</a>    <span class="k">def</span> <span class="nf">intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ectract subset using :func:`iris.cube.Cube.intersection` </span>
+<span class="sd">        </span>
+<span class="sd">        See `here for details &lt;http://scitools.org.uk/iris/docs/v1.9.0/html/</span>
+<span class="sd">        iris/iris/cube.html#iris.cube.Cube.intersection&gt;`__</span>
+<span class="sd">        related to method and input parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Only works if underlying grid data type is :class:`iris.cube.Cube`</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args</span>
+<span class="sd">            non-keyword args</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            keyword args</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            new data object containing cropped data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This feature is only available if the&quot;</span>
+                                      <span class="s2">&quot;underlying data is of type iris.Cube&quot;</span><span class="p">)</span>
+        <span class="n">data_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">data_crop</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="GriddedData.quickplot_map"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.quickplot_map">[docs]</a>    <span class="k">def</span> <span class="nf">quickplot_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
+                      <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a quick plot onto a map</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_idx : int</span>
+<span class="sd">            index in time to be plotted</span>
+<span class="sd">        xlim : tuple</span>
+<span class="sd">            2-element tuple specifying plotted longitude range</span>
+<span class="sd">        ylim : tuple</span>
+<span class="sd">            2-element tuple specifying plotted latitude range</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional keyword arguments passed to </span>
+<span class="sd">            :func:`pyaerocom.quickplot.plot_map`</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig</span>
+<span class="sd">            matplotlib figure instance containing plot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pyaerocom.plot.mapping</span> <span class="k">import</span> <span class="n">plot_map</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_map</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">time_idx</span><span class="p">],</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Model: </span><span class="si">%s</span><span class="s2">, var=</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> 
+                     <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">time_idx</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">fig</span></div>
+    
+<div class="viewcode-block" id="GriddedData.min"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Minimum value&quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span></div>
+        
+<div class="viewcode-block" id="GriddedData.max"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.max">[docs]</a>    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Maximum value&quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GriddedData.mean"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mean value of data array</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Corresponds to numerical mean of underlying N-dimensional numpy array.</span>
+<span class="sd">        Does not consider area-weights or any other advanced averaging.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GriddedData.std"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Standard deviation of values&quot;&quot;&quot;</span>
+        <span class="c1">#make sure data is in memory</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_masked</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">std</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="GriddedData.short_str"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.short_str">[docs]</a>    <span class="k">def</span> <span class="nf">short_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Short string representation&quot;&quot;&quot;</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Variable: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Temporal resolution: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;Start / Stop: </span><span class="si">{}</span><span class="s2"> - </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span>
+                                            <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+    
+    <span class="k">def</span> <span class="nf">_check_lonlat_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if longitude and latitude bounds are set and if not, guess&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+            
+    <span class="k">def</span> <span class="nf">_init_testdata_default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method that loads ECMWF_OSUITE test data&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="n">get</span><span class="p">()[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;x.__getitem__(y) &lt;==&gt; x[y]&quot;&quot;&quot;</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">sub</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For now, use string representation of underlying data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;pyaerocom.GriddedData: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Grid data: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()))</span>
+    
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For now, use representation of underlying data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;pyaerocom.GriddedData</span><span class="se">\n</span><span class="s2">Grid data: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span></div>
+    
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+    <span class="n">RUN_OLD_STUFF</span> <span class="o">=</span> <span class="kc">False</span>
+    
+    <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">_init_testdata_default</span><span class="p">()</span>
+    
+    <span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2018-1-22&quot;</span><span class="p">)</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2018-2-5&quot;</span><span class="p">)</span>
+    
+    <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="n">lons</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lons</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> 
+                        <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="n">lats</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> 
+                        <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+    
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;CROPPED&quot;</span><span class="p">)</span>
+    
+    <span class="n">itp</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">lons</span><span class="p">,</span> 
+                              <span class="n">latitude</span><span class="o">=</span><span class="n">lats</span><span class="p">)</span>
+    
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">itp</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;INTERPOLATED&quot;</span><span class="p">)</span>
+    
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     collo = cropped.collocate(longitude=lons, </span>
+<span class="c1">#                               latitude=lats)</span>
+<span class="c1"># =============================================================================</span>
+    
+    <span class="n">s</span> <span class="o">=</span> <span class="n">cropped</span><span class="o">.</span><span class="n">to_time_series</span><span class="p">(</span><span class="n">sample_points</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="n">lons</span><span class="p">),</span>
+                                              <span class="p">(</span><span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="n">lats</span><span class="p">)])</span>
+    
+    
+    <span class="k">if</span> <span class="n">RUN_OLD_STUFF</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
+        <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">close</span><span class="p">,</span> <span class="n">figure</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">get</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span>
+                         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">data</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">tstamps</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">tstamps</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tstamps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="n">data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">circular</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">cropped</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">170</span><span class="p">),</span> <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">cropped</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">cropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+        
+        <span class="n">other</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">],</span>
+                          <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+        <span class="c1">#crop randomly</span>
+        <span class="n">ocropped</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">170</span><span class="p">),</span> <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span>
+        <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+        <span class="c1"># some plot options</span>
+        <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=.</span><span class="mi">4</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">ocropped</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># crop india</span>
+        <span class="n">cropped_india</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;INDIA&quot;</span><span class="p">)[:</span><span class="mi">60</span><span class="p">]</span>
+        <span class="n">cropped_india</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">cropped_india</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+        
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">cropped_india</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
+        
+        <span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
+        
+        <span class="n">s</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">cropped_india</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+        
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">figure</span><span class="p">()</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">GriddedData</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     import doctest</span>
+<span class="c1">#     doctest.testmod()</span>
+<span class="c1"># </span>
+<span class="c1"># =============================================================================</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

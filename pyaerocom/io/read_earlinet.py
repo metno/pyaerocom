@@ -44,7 +44,6 @@ import numpy as np
 import xarray
 
 import pandas as pd
-import re
 
 from pyaerocom import const
 
@@ -62,7 +61,20 @@ class ReadEarlinet:
     ----------
     verboseflag : Bool
         if True some running information is printed
+    
+    Todo
+    ----
 
+        - Review file search routine: iterates currently over all variables \
+        thus, iterates over all files N-times if N is the number of req. \
+        variables. Should iterate over all files only once and check match \
+        of either variable. 
+        - Check mask for dust layer height: e.g. first file found when \
+        calling :func:`get_file_list` is: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/ev/f2010/ev1008192050.e532 \
+        and does not contain dust layer height..
+        
+        
+        
     """
     _FILEMASK = '*.e*'
     __version__ = "0.03"
@@ -94,13 +106,13 @@ class ReadEarlinet:
     VAR_INFO = {}
     VAR_INFO['ec5503daer'] = {}
     VAR_INFO['ec5503daer']['file_mask'] = '*/f*/*.e5*'
-    VAR_INFO['ec5503daer']['netcdf_nar_name'] = 'Extinction'
+    VAR_INFO['ec5503daer']['netcdf_var_name'] = 'Extinction'
     VAR_INFO['ec5323daer'] = {}
     VAR_INFO['ec5323daer']['file_mask'] = '*/f*/*.e5*'
-    VAR_INFO['ec5323daer']['netcdf_nar_name'] = 'Extinction'
+    VAR_INFO['ec5323daer']['netcdf_var_name'] = 'Extinction'
     VAR_INFO['ec3553daer'] = {}
     VAR_INFO['ec3553daer']['file_mask'] = '*/f*/*.e3*'
-    VAR_INFO['ec3553daer']['netcdf_nar_name'] = 'Extinction'
+    VAR_INFO['ec3553daer']['netcdf_var_name'] = 'Extinction'
     VAR_INFO['zdust'] = {}
     VAR_INFO['zdust']['file_mask'] = '*/f*/*.e*'
     VAR_INFO['zdust']['netcdf_var_name'] = 'DustLayerHeight'
@@ -109,7 +121,7 @@ class ReadEarlinet:
 
 
 
-    def __init__(self, index_pointer = 0, verbose = False):
+    def __init__(self, index_pointer=0, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -141,7 +153,7 @@ class ReadEarlinet:
 
     ###################################################################################
 
-    def read_file(self, filename, varstoread = ['zdust'], verbose = False):
+    def read_file(self, filename, vars_to_read = ['zdust'], verbose = False):
         """method to read an EARLINET file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -149,7 +161,7 @@ class ReadEarlinet:
         ----------
         filename : str
             absolute path to filename to read
-        varstoread : list
+        vars_to_read : list
             list of str with variable names to read; defaults to ['od550aer']
         verbose : Bool
             set to True to increase verbosity
@@ -196,7 +208,7 @@ Attributes:
 
     ###################################################################################
 
-    def read(self, varstoread = ['zdust'], verbose = False):
+    def read(self, vars_to_read = ['zdust'], verbose = False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
@@ -209,18 +221,18 @@ Attributes:
         # Metadata key is float because the numpy array holding it is float
 
         met_data_key = -1. # we want to start at key 0.
-        self.files = self.get_file_list()
+        files = self.get_file_list()
         # self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
         self.data = np.zeros([self._ROWNO, self._COLNO], dtype=np.float64)
 
         last_stat_code = ''
         time = []
         start_index = self.index_pointer
-        for _file in sorted(self.files):
+        for _file in sorted(files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
 
-            stat_obs_data = self.read_file(_file, varstoread = varstoread)
+            stat_obs_data = self.read_file(_file, vars_to_read = vars_to_read)
             # Fill the metatdata dict
             stat_code = _file.split('/')[-3]
             if stat_code != last_stat_code:
@@ -262,7 +274,7 @@ Attributes:
             obs_var_index = 0
 
 
-            for var in sorted(varstoread):
+            for var in sorted(vars_to_read):
                 netcdf_var_name = self.VAR_INFO[var]['netcdf_var_name']
                 # check if the desired variable is in the file
                 if netcdf_var_name not in stat_obs_data.variables:
@@ -341,9 +353,19 @@ Attributes:
 
     ###################################################################################
 
-    def get_file_list(self, varstoread = ['zdust']):
+    def get_file_list(self, vars_to_read=['zdust']):
         """search for files to read
 
+        Parameters
+        ----------
+        vars_to_read : list
+            list of variables that are supposed to be read
+        
+        Returns
+        -------
+        list
+            file list
+            
         Example
         -------
         >>> import pyaerocom.io.read_earlinet
@@ -357,9 +379,11 @@ Attributes:
         # files = glob.glob(os.path.join(self.DATASET_PATH,
         #                                self._FILEMASK), recursive=True)
         #files = []
-        for var in varstoread:
+        for var in vars_to_read:
             files = (glob.glob(os.path.join(self.DATASET_PATH,
-                                            self.VAR_INFO[var]['file_mask']), recursive=True))
+                                            self.VAR_INFO[var]['file_mask']), 
+                     recursive=True))
+        self.files = files
         return files
 
     ###################################################################################
@@ -370,9 +394,9 @@ Attributes:
         revision_file = os.path.join(self.DATASET_PATH, const.REVISION_FILE)
         revision = 'unset'
         if os.path.isfile(revision_file):
-            with open(revision_file, 'rt') as InFile:
-                revision = InFile.readline().strip()
-                InFile.close()
+            with open(revision_file, 'rt') as in_file:
+                revision = in_file.readline().strip()
+                in_file.close()
 
         return revision
 ###################################################################################

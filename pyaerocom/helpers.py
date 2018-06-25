@@ -248,7 +248,7 @@ def get_lon_constraint_buggy(lon_range, meridian_centre=True):
     In this definition, the constraint is combined in case the border of the
     longitude array is crossed. Apparently, that does not work properly and 
     it is therefore recommended to use :func:`iris.cube.Cube.intersection` 
-    instead (which is also reimplemented in :class:`pyaerocom.GridData`).
+    instead (which is also reimplemented in :class:`pyaerocom.GriddedData`).
     If you use :func:`get_lon_constraint` it will detect if there is a border 
     crossing, and if so, it will raise an error (that suggests to use the
     intersection method instead).
@@ -309,9 +309,9 @@ def get_lon_constraint(lon_range, meridian_centre=True):
     Example
     -------
     >>> from pyaerocom.io.testfiles import get
-    >>> from pyaerocom import GridData
+    >>> from pyaerocom import GriddedData
     >>> files = get()
-    >>> data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    >>> data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
     >>> c = get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
     Traceback (most recent call last):
      ...
@@ -350,7 +350,7 @@ def get_time_constraint(start_time, stop_time):
     -------
     Constraint
         iris Constraint instance that can, e.g., be used as input for
-        :func:`pyaerocom.griddata.GridData.extract`
+        :func:`pyaerocom.griddeddata.GriddedData.extract`
     """
     if not isinstance(start_time, Timestamp):
         start_time = Timestamp(start_time)
@@ -368,7 +368,7 @@ def get_time_constraint(start_time, stop_time):
 
 def to_time_series_griesie(data, lats, lons, times, var_name=['zdust'],**kwargs):
     """small helper routine to convert data from the object
-    pyaerocom.io.ReadGrid.interpolate to the obs data dictionary
+    pyaerocom.io.ReadGridded.interpolate to the obs data dictionary
     containing the pandas timeseries
 
     FOR TESTING ONLY!"""
@@ -449,9 +449,9 @@ if __name__=="__main__":
     warnings.simplefilter("ignore")
     doctest.testmod()
     from pyaerocom.io.testfiles import get
-    from pyaerocom import GridData
+    from pyaerocom import GriddedData
     files = get()
-    data = GridData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
+    data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
     lons = data.grid.coord("longitude")
     try:
         get_lon_constraint(lon_range=(170, -160), meridian_centre=True)

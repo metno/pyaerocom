@@ -9,7 +9,7 @@ The Pyaerocom website
 
 Official website of Pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AEROCOM project <http://aerocom.met.no/protocol.html>`__.
 
-.. image:: 03_intro_class_ReadMultiGrid/03_intro_class_ReadMultiGrid_21_3.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_3.png
   :width: 600px
   :align: center
 

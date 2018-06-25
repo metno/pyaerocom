@@ -29,7 +29,14 @@ xypos.append((0.8, 0.06))
 
 
 def plotscatter(model_name, model_data = None, obs_data = None, Options = None, verbose = True):
-    """method to plot scatterplots"""
+    """Method to plot scatterplots
+
+    Todo
+    ----
+
+    Complete docstring, review code
+
+    """
 
     plt_name = 'SCATTERLOG'
     var_to_run = Options['VariablesToRun'][0]

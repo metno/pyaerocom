@@ -174,11 +174,17 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">datetime64</span><span class="p">,</span> <span class="n">asarray</span><span class="p">,</span> <span class="n">arange</span>
 <span class="kn">import</span> <span class="nn">cf_units</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span><span class="o">,</span> <span class="nn">re</span>
 
-<span class="n">TSTR_TO_NP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hourly&quot;</span>  <span class="p">:</span>  <span class="s2">&quot;timedelta64[h]&quot;</span><span class="p">,</span>
-              <span class="s2">&quot;3hourly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;timedelta64[3h]&quot;</span><span class="p">,</span>
-              <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;timedelta64[D]&quot;</span><span class="p">,</span>
-              <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;timedelta64[M]&quot;</span><span class="p">}</span>
+<span class="n">TSTR_TO_NP_DT</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hourly&quot;</span>  <span class="p">:</span>  <span class="s2">&quot;datetime64[h]&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;3hourly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;datetime64[3h]&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;datetime64[D]&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;datetime64[M]&quot;</span><span class="p">}</span>
+
+<span class="n">TSTR_TO_NP_TD</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hourly&quot;</span>  <span class="p">:</span>  <span class="s2">&quot;timedelta64[h]&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;3hourly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;timedelta64[3h]&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;timedelta64[D]&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;timedelta64[M]&quot;</span><span class="p">}</span>
 
 
 <span class="n">TSTR_TO_CF</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;hourly&quot;</span>  <span class="p">:</span>  <span class="s2">&quot;hours&quot;</span><span class="p">,</span>
@@ -186,7 +192,108 @@
               <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">,</span>
               <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">}</span>
 
-<div class="viewcode-block" id="search_data_dir_aerocom"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_data_dir_aerocom">[docs]</a><span class="k">def</span> <span class="nf">search_data_dir_aerocom</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
+
+<div class="viewcode-block" id="search_data_dir_aerocom"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_data_dir_aerocom">[docs]</a><span class="k">def</span> <span class="nf">search_data_dir_aerocom</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">ignorecase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                            <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Search Aerocom data directory based on model / data ID</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name_or_pattern : str</span>
+<span class="sd">        name of model</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        print output</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Model directory</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    IOError</span>
+<span class="sd">        if model directory cannot be found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">)</span>
+    <span class="n">_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_msgs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1">#</span>
+    <span class="k">for</span> <span class="n">obs_id</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">OBS_IDS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ignorecase</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">name_or_pattern</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">obs_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">name_or_pattern</span> <span class="o">==</span> <span class="n">obs_id</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found match for search pattern in obs network &quot;</span>
+                      <span class="s2">&quot;directories </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obs_id</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">obs_id</span><span class="p">][</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ignorecase</span><span class="p">:</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">obs_id</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">obs_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_id</span><span class="p">)</span>
+        
+    <span class="k">for</span> <span class="n">search_dir</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">MODELDIRS</span><span class="p">:</span>
+        <span class="c1"># get the directories</span>
+        <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">search_dir</span><span class="p">):</span>
+            <span class="c1">#subdirs = listdir(search_dir)</span>
+            <span class="n">subdirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">search_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">x</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">subdir</span> <span class="ow">in</span> <span class="n">subdirs</span><span class="p">:</span>
+                
+                <span class="k">if</span> <span class="n">ignorecase</span><span class="p">:</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">subdir</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">subdir</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">ignorecase</span><span class="p">:</span>
+                        <span class="n">match</span> <span class="o">=</span> <span class="n">name_or_pattern</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">subdir</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">match</span> <span class="o">=</span> <span class="n">name_or_pattern</span> <span class="o">==</span> <span class="n">subdir</span>
+                    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                        <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found match for ID </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">))</span>
+                        <span class="n">_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">subdir</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">USE_RENAMED_DIR</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Checking if renamed directory exists&quot;</span><span class="p">)</span>
+                            <span class="n">_dir</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">_dir</span><span class="p">,</span> <span class="s2">&quot;renamed&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">_dir</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found directory </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_dir</span><span class="p">))</span>    
+                            <span class="k">return</span> <span class="n">_dir</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                <span class="n">_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Renamed folder does not exist &quot;</span>
+                                      <span class="s2">&quot;in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">search_dir</span><span class="p">,</span> <span class="n">subdir</span><span class="p">)))</span>
+                    <span class="k">if</span> <span class="n">ok</span><span class="p">:</span>
+                        <span class="n">_candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;directory </span><span class="si">%s</span><span class="s1"> does not exist</span><span class="se">\n</span><span class="s1">&#39;</span>
+                             <span class="o">%</span><span class="n">search_dir</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">_msgs</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_candidates</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found exactly one match for search pattern &quot;</span>
+                      <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">_candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="k">return</span> <span class="n">_candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Found multiple matches. Please choose from the &quot;</span>
+                  <span class="s2">&quot;following list: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_candidates</span><span class="p">))</span>
+        
+    <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No unique match found for ID ot pattern </span><span class="si">{}</span><span class="s2">. &quot;</span>
+                  <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="search_data_dir_aerocom_old"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_data_dir_aerocom_old">[docs]</a><span class="k">def</span> <span class="nf">search_data_dir_aerocom_old</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Search Aerocom data directory based on model / data ID</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -269,6 +376,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">ok</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">test_idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span> <span class="c1">#7, since last accessible index in a 3hourly dataset of one day is 7</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">t</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
@@ -280,17 +388,26 @@
             <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not convert time unit string&quot;</span><span class="p">)</span>
-        <span class="n">tres_np</span> <span class="o">=</span> <span class="n">TSTR_TO_NP</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
-        <span class="n">base</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-01-01 00:00:00&quot;</span> <span class="o">%</span><span class="n">year</span><span class="p">)</span> 
-        <span class="n">test_datenums</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+        <span class="n">tres_np</span> <span class="o">=</span> <span class="n">TSTR_TO_NP_TD</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
+        <span class="n">conv</span> <span class="o">=</span> <span class="n">TSTR_TO_NP_DT</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-01-01 00:00:00&quot;</span> <span class="o">%</span><span class="n">year</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
+        <span class="n">test_datenums</span> <span class="o">=</span> <span class="n">asarray</span><span class="p">(</span><span class="n">test_idx</span><span class="p">)</span>
         <span class="n">ts_nominal</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">test_datenums</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">tres_np</span><span class="p">)</span>
-        <span class="n">ts_values</span> <span class="o">=</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+        <span class="n">dts_nominal</span> <span class="o">=</span> <span class="n">ts_nominal</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">ts_nominal</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ts_values</span> <span class="o">=</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
+        <span class="n">dts_values</span> <span class="o">=</span> <span class="n">ts_values</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">ts_values</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">ts_values</span> <span class="o">==</span> <span class="n">ts_nominal</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time match error, nominal dates for test array&quot;</span>
                              <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (unit=</span><span class="si">%s</span><span class="s2">): </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Received values after &quot;</span>
                              <span class="s2">&quot;conversion: </span><span class="si">%s</span><span class="s2">&quot;</span>
                              <span class="o">%</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                <span class="n">ts_nominal</span><span class="p">,</span> <span class="n">ts_values</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">dts_values</span> <span class="o">==</span> <span class="n">dts_nominal</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time match error, time steps for test array&quot;</span>
+                             <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (unit=</span><span class="si">%s</span><span class="s2">): </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Received values after &quot;</span>
+                             <span class="s2">&quot;conversion: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                             <span class="o">%</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                               <span class="n">dts_nominal</span><span class="p">,</span> <span class="n">dts_values</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid time dimension.</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -321,17 +438,18 @@
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tres_str</span> <span class="o">=</span> <span class="n">TSTR_TO_CF</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">TSTR_TO_NP_DT</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
     <span class="n">tunit_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> since </span><span class="si">%s</span><span class="s1">-01-01 00:00:00&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">tres_str</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
     <span class="n">num</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">tindex_cube</span><span class="p">]</span>
 
     <span class="n">tunit</span> <span class="o">=</span> <span class="n">cf_units</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">tunit_str</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="n">cf_units</span><span class="o">.</span><span class="n">CALENDAR_STANDARD</span><span class="p">)</span>
-    <span class="n">tres_np</span> <span class="o">=</span> <span class="n">TSTR_TO_NP</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
-    <span class="n">base</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-01-01 00:00:00&quot;</span> <span class="o">%</span><span class="n">year</span><span class="p">)</span> 
+    <span class="n">tres_np</span> <span class="o">=</span> <span class="n">TSTR_TO_NP_TD</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-01-01 00:00:00&quot;</span> <span class="o">%</span><span class="n">year</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
     <span class="n">times</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">tres_np</span><span class="p">)</span>
     <span class="c1"># see this thread https://github.com/matplotlib/matplotlib/issues/2259/</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">datetime</span><span class="p">)</span>
+    <span class="n">times_dt</span> <span class="o">=</span> <span class="n">times</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">datetime</span><span class="p">)</span>
 <span class="c1">#    timestamps = datetime64(str(year)) + </span>
-    <span class="n">time_nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">tunit</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times</span><span class="p">]</span>
+    <span class="n">time_nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">tunit</span><span class="o">.</span><span class="n">date2num</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times_dt</span><span class="p">]</span>
     <span class="n">tcoord</span> <span class="o">=</span> <span class="n">DimCoord</span><span class="p">(</span><span class="n">time_nums</span><span class="p">,</span> <span class="n">standard_name</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">tunit</span><span class="p">)</span>
         
     <span class="c1">#tcoord_dim = cube.coord_dims(&#39;time&#39;)</span>

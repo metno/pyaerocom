@@ -6,7 +6,7 @@ pyaerocom/exceptions.py
 pyaerocom/glob.py
 pyaerocom/helpers.py
 pyaerocom/mathutils.py
-pyaerocom/griddata.py
+pyaerocom/griddeddata.py
 pyaerocom/multiproc.py
 pyaerocom/obsdata.py
 pyaerocom/region.py
@@ -27,7 +27,7 @@ pyaerocom/io/fileconventions.py
 pyaerocom/io/helpers.py
 pyaerocom/io/read_aeronet_sdav2.py
 pyaerocom/io/read_aeronet_sunv2.py
-pyaerocom/io/readgrid.py
+pyaerocom/io/readgridded.py
 pyaerocom/io/readobsdata.py
 pyaerocom/io/testfiles.py
 pyaerocom/plot/__init__.py

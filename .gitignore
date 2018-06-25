@@ -100,5 +100,7 @@ test_dev/out
 # Private folder in folder test_dev
 test_dev/private
 
-#Private top level folder
+#Private top level folders
 private
+_dev
+dev_input_others
