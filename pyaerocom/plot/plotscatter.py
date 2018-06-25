@@ -83,6 +83,7 @@ def plotscatter(model_name, model_data = None, obs_data = None, Options = None, 
     print('# of measurements: {}'.format(len(df_points)))
 
     filter_name = 'WORLD-wMOUNTAINS'
+    filter_name = 'WORLD'
     time_step_name = 'mALLYEARdaily'
     # OD550_AER_an2008_YEARLY_WORLD_SCATTERLOG_AeronetSunV3Lev2.0.daily.ps.png
     # if df_time[model_name].index[0].year != df_time[model_name].index[-1].year:
@@ -163,3 +164,4 @@ def plotscatter(model_name, model_data = None, obs_data = None, Options = None, 
                         xy=xypos[-1], xycoords='axes fraction', ha='center', fontsize=10, color='black')
 
     plt.savefig(figname, dpi=300)
+    plt.close()
