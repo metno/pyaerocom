@@ -257,6 +257,24 @@ class ReadUngridded():
             elif data_set_to_read == const.AERONET_SUN_V2L2_SDA_DAILY_NAME:
                 print("Not implemented at this point.")
 
+            elif data_set_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
+                print("Not implemented at this point.")
+
+            elif data_set_to_read == const.AERONET_SUN_V3L2_SDA_ALL_NAME:
+                print("Not implemented at this point.")
+
+            elif data_set_to_read == const.AERONET_SUN_V3L15_AOD_DAILY_NAME:
+                print("Not implemented at this point.")
+
+            elif data_set_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
+                print("Not implemented at this point.")
+
+            elif data_set_to_read == const.AERONET_SUN_V3L20_AOD_DAILY_NAME:
+                print("Not implemented at this point.")
+
+            elif data_set_to_read == const.AERONET_SUN_V3L20_AOD_ALL_POINTS_NAME:
+                print("Not implemented at this point.")
+
             elif data_set_to_read == const.EARLINET_NAME:
                 read_dummy = ReadEarlinet(index_pointer=self.index_pointer, verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
