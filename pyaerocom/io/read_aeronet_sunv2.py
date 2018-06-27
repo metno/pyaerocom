@@ -295,7 +295,7 @@ Length: 223, dtype: float64}
                         self.data = np.append(self.data, np.zeros([self._CHUNKSIZE, self._COLNO], dtype=np.float64), axis=0)
                         self._ROWNO += self._CHUNKSIZE
     
-                end_index = self.index_pointer - 1
+                end_index = self.index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
                 self.metadata[met_data_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
