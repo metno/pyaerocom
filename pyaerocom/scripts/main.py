@@ -106,9 +106,8 @@ def cli():
     from pyaerocom import const
     import pyaerocom.io as pio
     import pyaerocom as pa
-    supported_obs_networks = ",".join(pa.ReadUngridded.SUPPORTED_DATASETS)
+    supported_obs_networks = ", ".join(pio.ReadUngridded.SUPPORTED_DATASETS)
     import pyaerocom.plot
-    supported_obs_networks = ",".join(pa.NoGridData.SUPPORTED_DATASETS)
 
     # command line interface using argparse
     options = {}
@@ -343,11 +342,11 @@ def cli():
             # observations only
             # 1st check if the obs network string is right
             # pa.readungridded.ReadUngridded(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
-            if options['ObsNetworkName'][0] in pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS:
+            # if options['ObsNetworkName'][0] in pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS:
             # pa.nogriddata.NoGridData(data_set_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
-            if options['ObsNetworkName'][0] in pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS:
+            if options['ObsNetworkName'][0] in pio.ReadUngridded.SUPPORTED_DATASETS:
                 # start Obs reading
-                ObsData = pyaerocom.io.readungridded.ReadUngridded(data_set_to_read = options['ObsNetworkName'][0],
+                ObsData = pio.ReadUngridded(data_set_to_read = options['ObsNetworkName'][0],
                                                                    vars_to_read = [options['VariablesToRun'][0]],
                                                                    verbose= args.verbose)
                 ObsData.read()
@@ -363,7 +362,7 @@ def cli():
                 TimeSeries = ObsData.to_timeseries(start_date = args.startdate, end_date=args.enddate)
                 for series in TimeSeries:
                     print(series['station name'])
-                    print(series[options['VariablesToRun'][0]])
+                    # print(series[options['VariablesToRun'][0]])
 
                 # this returns a single station in a dictionary using the station name as key
                 # test = ObsData.to_timeseries('AOE_Baotou')
