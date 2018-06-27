@@ -13,10 +13,10 @@ from pyaerocom.exceptions import LongitudeConstraintError
 from cf_units import Unit
 from datetime import MINYEAR, datetime
 
-from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
-                    hr_units, day_units)
-from netCDF4._netCDF4 import _dateparse
- 
+# from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
+#                     hr_units, day_units)
+# from netCDF4._netCDF4 import _dateparse
+#
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
 GREGORIAN_BASE = datetime(1582, 10, 15)
