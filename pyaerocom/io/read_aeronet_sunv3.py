@@ -96,10 +96,10 @@ class ReadAeronetSunV3:
     METADATA_COLNAMES = {}
     METADATA_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
     METADATA_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
-    METADATA_COLNAMES['station_name'] = 'AERONET_Site'
+    METADATA_COLNAMES['station name'] = 'AERONET_Site'
     METADATA_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
     METADATA_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
-    METADATA_COLNAMES['elevation'] = 'Site_Elevation(m)'
+    METADATA_COLNAMES['altitude'] = 'Site_Elevation(m)'
     METADATA_COLNAMES['date'] = 'Date(dd:mm:yyyy)'
     METADATA_COLNAMES['time'] = 'Time(hh:mm:ss)'
     METADATA_COLNAMES['day_of_year'] = 'Day_of_Year'
@@ -111,7 +111,8 @@ class ReadAeronetSunV3:
     AUX_COLNAMES.append('od550aer')
 
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
-    PROVIDES_VARIABLES.append(AUX_COLNAMES)
+    for col in AUX_COLNAMES:
+        PROVIDES_VARIABLES.append(col)
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
@@ -167,22 +168,25 @@ class ReadAeronetSunV3:
         >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed/Karlsruhe.lev30'
         >>> filedata = obj.read_daily_file(filename)
         >>> print(filedata)
-{'latitude': -13.533, 'longitude': 23.107, 'altitude': 1040.0, 'station name': 'Zambezi', 'PI': 'Brent Holben', 'od550aer': 1996-08-10    0.801845
-1996-08-11    1.062833
-1996-08-12    0.850586
-1996-08-13    0.839460
-                ...
-2000-09-22    1.304724
-2000-09-23    1.197722
-2000-09-24    1.035123
-Length: 223, dtype: float64}
+{'PI': 'Brent_Holben', 'PI_email': 'Brent.N.Holben@nasa.gov\n', 'od550aer': 2005-03-21 12:00:00    0.238024
+2005-03-23 12:00:00    0.268991
+2005-03-24 12:00:00    0.641364
+                         ...
+2018-04-28 12:00:00         NaN
+2018-04-29 12:00:00    0.161189
+2018-04-30 12:00:00    0.058717
+2018-05-01 12:00:00    0.083875
+2018-05-03 12:00:00    0.326524
+2018-05-04 12:00:00    0.277096
+2018-05-05 12:00:00    0.272977
+2018-05-06 12:00:00    0.083989
+2018-05-07 12:00:00    0.084507
+2018-05-08 12:00:00    0.078192
+2018-05-09 12:00:00    0.172097
+2018-05-11 12:00:00    0.326830
+2018-05-12 12:00:00    0.311610
+Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
         """
-        # Level 2.0. Quality Assured Data.<p>The following data are pre and post field calibrated, automatically cloud cleared and manually inspected.
-        # Version 2 Direct Sun Algorithm
-        # Location=Zvenigorod,long=36.775,lat=55.695,elev=200,Nmeas=11,PI=Brent_Holben,Email=Brent.N.Holben@nasa.gov
-        # AOD Level 2.0,Daily Averages,UNITS can be found at,,, http://aeronet.gsfc.nasa.gov/data_menu.html
-        # Date(dd-mm-yy),Time(hh:mm:ss),Julian_Day,AOT_1640,AOT_1020,AOT_870,AOT_675,AOT_667,AOT_555,AOT_551,AOT_532,AOT_531,AOT_500,AOT_490,AOT_443,AOT_440,AOT_412,AOT_380,AOT_340,Water(cm),%TripletVar_1640,%TripletVar_1020,%TripletVar_870,%TripletVar_675,%TripletVar_667,%TripletVar_555,%TripletVar_551,%TripletVar_532,%TripletVar_531,%TripletVar_500,%TripletVar_490,%TripletVar_443,%TripletVar_440,%TripletVar_412,%TripletVar_380,%TripletVar_340,%WaterError,440-870Angstrom,380-500Angstrom,440-675Angstrom,500-870Angstrom,340-440Angstrom,440-675Angstrom(Polar),N[AOT_1640],N[AOT_1020],N[AOT_870],N[AOT_675],N[AOT_667],N[AOT_555],N[AOT_551],N[AOT_532],N[AOT_531],N[AOT_500],N[AOT_490],N[AOT_443],N[AOT_440],N[AOT_412],N[AOT_380],N[AOT_340],N[Water(cm)],N[440-870Angstrom],N[380-500Angstrom],N[440-675Angstrom],N[500-870Angstrom],N[340-440Angstrom],N[440-675Angstrom(Polar)]
-        # 16:09:2006,00:00:00,259.000000,-9999.,0.036045,0.036734,0.039337,-9999.,-9999.,-9999.,-9999.,-9999.,0.064670,-9999.,-9999.,0.069614,-9999.,0.083549,0.092204,0.973909,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,1.126095,0.973741,1.474242,1.135232,1.114550,-9999.,-9999.,11,11,11,-9999.,-9999.,-9999.,-9999.,-9999.,11,-9999.,-9999.,11,-9999.,11,11,11,11,11,11,11,11,-9999.
 
         # AERONET Version 3;
         # Cuiaba
@@ -193,10 +197,6 @@ Length: 223, dtype: float64}
         # AERONET_Site,Date(dd:mm:yyyy),Time(hh:mm:ss),Day_of_Year,AOD_1640nm,AOD_1020nm,AOD_870nm,AOD_865nm,AOD_779nm,AOD_675nm,AOD_667nm,AOD_620nm,AOD_560nm,AOD_555nm,AOD_551nm,AOD_532nm,AOD_531nm,AOD_510nm,AOD_500nm,AOD_490nm,AOD_443nm,AOD_440nm,AOD_412nm,AOD_400nm,AOD_380nm,AOD_340nm,Precipitable_Water(cm),AOD_681nm,AOD_709nm,AOD_Empty,AOD_Empty,AOD_Empty,AOD_Empty,AOD_Empty,440-870_Angstrom_Exponent,380-500_Angstrom_Exponent,440-675_Angstrom_Exponent,500-870_Angstrom_Exponent,340-440_Angstrom_Exponent,440-675_Angstrom_Exponent[Polar],N[AOD_1640nm],N[AOD_1020nm],N[AOD_870nm],N[AOD_865nm],N[AOD_779nm],N[AOD_675nm],N[AOD_667nm],N[AOD_620nm],N[AOD_560nm],N[AOD_555nm],N[AOD_551nm],N[AOD_532nm],N[AOD_531nm],N[AOD_510nm],N[AOD_500nm],N[AOD_490nm],N[AOD_443nm],N[AOD_440nm],N[AOD_412nm],N[AOD_400nm],N[AOD_380nm],N[AOD_340nm],N[Precipitable_Water(cm)],N[AOD_681nm],N[AOD_709nm],N[AOD_Empty],N[AOD_Empty],N[AOD_Empty],N[AOD_Empty],N[AOD_Empty],N[440-870_Angstrom_Exponent],N[380-500_Angstrom_Exponent],N[440-675_Angstrom_Exponent],N[500-870_Angstrom_Exponent],N[340-440_Angstrom_Exponent],N[440-675_Angstrom_Exponent[Polar]],
         # Data_Quality_Level,AERONET_Instrument_Number,AERONET_Site_Name,Site_Latitude(Degrees),Site_Longitude(Degrees),Site_Elevation(m)
         # Karlsruhe,21:03:2005,12:00:00,80,-999.,0.222846,0.222462,-999.,-999.,0.224444,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,0.242872,-999.,-999.,0.256999,-999.,-999.,0.276636,0.283760,0.733243,-999.,-999.,-999.,-999.,-999.,-999.,-999.,0.211561,0.473610,0.306976,0.161805,0.391631,-999.,0,2,2,0,0,2,0,0,0,0,0,0,0,0,2,0,0,2,0,0,2,2,2,0,0,0,0,0,0,0,2,2,2,2,2,0,lev15,325,Karlsruhe,49.093300,8.427900,140.000000
-
-
-
-        # define some row numbers. not all of them are used at this point
 
         # This value is later put to a np.nan
         nan_val = np.float_(-9999.)
@@ -236,14 +236,6 @@ Length: 223, dtype: float64}
                 data_out[var] = []
 
             for line in in_file:
-                # although the location id given for every data point in the file,
-                # we assume that the location is always kept constant over the years
-                # probably not always the case
-
-                # data_out['latitude'] = float(dict_loc['lat'])
-                # data_out['longitude'] = float(dict_loc['long'])
-                # data_out['altitude'] = float(dict_loc['elev'])
-                # data_out['station name'] = dict_loc['Location']
                 # process line
                 dummy_arr = line.split(',')
                 # the following uses the standard python datetime functions
@@ -252,20 +244,18 @@ Length: 223, dtype: float64}
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                # day, month, year = dummy_arr[date_index].split(':')
                 day, month, year = dummy_arr[index_str[self.METADATA_COLNAMES['date']]].split(':')
-                # pdb.set_trace()
                 datestring = '-'.join([year, month, day])
                 datestring = 'T'.join([datestring, dummy_arr[index_str[self.METADATA_COLNAMES['time']]]])
                 datestring = '+'.join([datestring, '00:00'])
                 dtime.append(np.datetime64(datestring))
 
-                # copy the meta data (type strings)
+                # copy the meta data (array of type string)
                 for var in self.METADATA_COLNAMES:
                     if len(self.METADATA_COLNAMES[var]) == 0: continue
                     data_out[var].append(dummy_arr[index_str[self.METADATA_COLNAMES[var]]])
 
-                # copy the data fields (type np.float_)
+                # copy the data fields (array type np.float_; will be converted to pandas.Series later)
                 for var in self.DATA_COLNAMES:
                     data_out[var].append(np.float_(dummy_arr[index_str[self.DATA_COLNAMES[var]]]))
                     if data_out[var][-1] == nan_val: data_out[var][-1] = np.nan
@@ -282,6 +272,7 @@ Length: 223, dtype: float64}
                     if not np.isnan(temp) and temp > 0.:
                         data_out['od550aer'][-1] = (data_out['od440aer'][-1] * (0.55 / 0.44) **
                                                     (np.float_(-1.) * data_out['ang4487aer'][-1]))
+                # apply the lower limit for od550aer
                 if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
                     data_out['od550aer'][-1] = np.nan
                 data_line_no += 1
@@ -303,8 +294,8 @@ Length: 223, dtype: float64}
 
         Example
         -------
-        >>> import pyaerocom.io.read_aeronet_sunv2
-        >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
+        >>> import pyaerocom.io.read_aeronet_sunv3
+        >>> obj = pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3()
         >>> obj.read(verbose=True)
         """
 
@@ -312,18 +303,21 @@ Length: 223, dtype: float64}
 
         met_data_key = 0.
         self.files = self.get_file_list()
-        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
+        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
 
         for _file in sorted(self.files):
             if self.verbose:
                 sys.stdout.write(_file + "\n")
             stat_obs_data = self.read_daily_file(_file, vars_to_read=vars_to_read)
             # Fill the metatdata dict
+            # the location in the data set is time step dependant!
+            # use the lat location here since we have to choose one location
+            # in the time series plot
             self.metadata[met_data_key] = {}
-            self.metadata[met_data_key]['station name'] = stat_obs_data['station name']
-            self.metadata[met_data_key]['latitude'] = stat_obs_data['latitude']
-            self.metadata[met_data_key]['longitude'] = stat_obs_data['longitude']
-            self.metadata[met_data_key]['altitude'] = stat_obs_data['altitude']
+            self.metadata[met_data_key]['station name'] = stat_obs_data['station name'][-1]
+            self.metadata[met_data_key]['latitude'] = stat_obs_data['latitude'][-1]
+            self.metadata[met_data_key]['longitude'] = stat_obs_data['longitude'][-1]
+            self.metadata[met_data_key]['altitude'] = stat_obs_data['altitude'][-1]
             self.metadata[met_data_key]['PI'] = stat_obs_data['PI']
             self.metadata[met_data_key]['data_set_name'] = self.DATASET_NAME
 
@@ -345,8 +339,11 @@ Length: 223, dtype: float64}
                                               axis=0)
                         self._ROWNO += self._CHUNKSIZE
 
-                end_index = self.index_pointer - 1
+                # end_index = self.index_pointer - 1
+                # This is right because numpy leaves out the lat index number at array ops
+                end_index = self.index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
+                # NOTE THAT THE LOCATION KEPT THE TIME STEP DEPENDENCY HERE
                 self.metadata[met_data_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                 self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
