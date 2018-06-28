@@ -116,12 +116,30 @@ class ReadAeronetSunV3:
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
-    def __init__(self, index_pointer=0, verbose=False):
+    def __init__(self, index_pointer=0, data_set_to_read = None, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []
         self.index = len(self.metadata)
         self.files = []
+        # the reading actually works for all V3 direct sun data sets
+        # so just adjust the name and the path here
+        # const.AERONET_SUN_V3L15_AOD_DAILY_NAME is the default
+        if data_set_to_read is None:
+            pass
+            # self.dataset_name = const.AERONET_SUN_V3L15_AOD_DAILY_NAME
+            # self.dataset_path = const.OBSCONFIG[const.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH']
+        elif data_set_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
+            self.DATASET_NAME = const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME
+            self.DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH']
+        elif data_set_to_read == const.AERONET_SUN_V3L2_AOD_DAILY_NAME:
+            self.DATASET_NAME = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
+            self.DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH']
+        elif data_set_to_read == const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME:
+            self.DATASET_NAME = const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME
+            self.DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH']
+
+
         # set the revision to the one from Revision.txt if that file exist
         self.revision = self.get_data_revision()
 
@@ -148,7 +166,7 @@ class ReadAeronetSunV3:
 
     ###################################################################################
 
-    def read_daily_file(self, filename, vars_to_read=['od550aer'], verbose=False):
+    def read_file(self, filename, vars_to_read=['od550aer'], verbose=False):
         """method to read an Aeronet Sun V3 level 1.5 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -166,7 +184,8 @@ class ReadAeronetSunV3:
         >>> import pyaerocom.io.read_aeronet_sunv3
         >>> obj = pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3()
         >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed/Karlsruhe.lev30'
-        >>> filedata = obj.read_daily_file(filename)
+        >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed/Karlsruhe.lev30'
+        >>> filedata = obj.read_file(filename)
         >>> print(filedata)
 {'PI': 'Brent_Holben', 'PI_email': 'Brent.N.Holben@nasa.gov\n', 'od550aer': 2005-03-21 12:00:00    0.238024
 2005-03-23 12:00:00    0.268991
@@ -188,6 +207,8 @@ class ReadAeronetSunV3:
 Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
         """
 
+        # DAILY DATA:
+        # ===========
         # AERONET Version 3;
         # Cuiaba
         # Version 3: AOD Level 1.5
@@ -197,6 +218,18 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
         # AERONET_Site,Date(dd:mm:yyyy),Time(hh:mm:ss),Day_of_Year,AOD_1640nm,AOD_1020nm,AOD_870nm,AOD_865nm,AOD_779nm,AOD_675nm,AOD_667nm,AOD_620nm,AOD_560nm,AOD_555nm,AOD_551nm,AOD_532nm,AOD_531nm,AOD_510nm,AOD_500nm,AOD_490nm,AOD_443nm,AOD_440nm,AOD_412nm,AOD_400nm,AOD_380nm,AOD_340nm,Precipitable_Water(cm),AOD_681nm,AOD_709nm,AOD_Empty,AOD_Empty,AOD_Empty,AOD_Empty,AOD_Empty,440-870_Angstrom_Exponent,380-500_Angstrom_Exponent,440-675_Angstrom_Exponent,500-870_Angstrom_Exponent,340-440_Angstrom_Exponent,440-675_Angstrom_Exponent[Polar],N[AOD_1640nm],N[AOD_1020nm],N[AOD_870nm],N[AOD_865nm],N[AOD_779nm],N[AOD_675nm],N[AOD_667nm],N[AOD_620nm],N[AOD_560nm],N[AOD_555nm],N[AOD_551nm],N[AOD_532nm],N[AOD_531nm],N[AOD_510nm],N[AOD_500nm],N[AOD_490nm],N[AOD_443nm],N[AOD_440nm],N[AOD_412nm],N[AOD_400nm],N[AOD_380nm],N[AOD_340nm],N[Precipitable_Water(cm)],N[AOD_681nm],N[AOD_709nm],N[AOD_Empty],N[AOD_Empty],N[AOD_Empty],N[AOD_Empty],N[AOD_Empty],N[440-870_Angstrom_Exponent],N[380-500_Angstrom_Exponent],N[440-675_Angstrom_Exponent],N[500-870_Angstrom_Exponent],N[340-440_Angstrom_Exponent],N[440-675_Angstrom_Exponent[Polar]],
         # Data_Quality_Level,AERONET_Instrument_Number,AERONET_Site_Name,Site_Latitude(Degrees),Site_Longitude(Degrees),Site_Elevation(m)
         # Karlsruhe,21:03:2005,12:00:00,80,-999.,0.222846,0.222462,-999.,-999.,0.224444,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,0.242872,-999.,-999.,0.256999,-999.,-999.,0.276636,0.283760,0.733243,-999.,-999.,-999.,-999.,-999.,-999.,-999.,0.211561,0.473610,0.306976,0.161805,0.391631,-999.,0,2,2,0,0,2,0,0,0,0,0,0,0,0,2,0,0,2,0,0,2,2,2,0,0,0,0,0,0,0,2,2,2,2,2,0,lev15,325,Karlsruhe,49.093300,8.427900,140.000000
+
+        # ALL POINT DATA
+        # ==============
+        # AERONET Version 3;
+        # Cuiaba
+        # Version 3: AOD Level 1.5
+        # The following data are cloud cleared and quality controls have been applied but these data may not have final calibration applied.  These data may change.
+        # Contact: PI=Brent_Holben; PI Email=Brent.N.Holben@nasa.gov
+        # All Points,UNITS can be found at,,, https://aeronet.gsfc.nasa.gov/new_web/units.html
+        # AERONET_Site,Date(dd:mm:yyyy),Time(hh:mm:ss),Day_of_Year,Day_of_Year(Fraction),AOD_1640nm,AOD_1020nm,AOD_870nm,AOD_865nm,AOD_779nm,AOD_675nm,AOD_667nm,AOD_620nm,AOD_560nm,AOD_555nm,AOD_551nm,AOD_532nm,AOD_531nm,AOD_510nm,AOD_500nm,AOD_490nm,AOD_443nm,AOD_440nm,AOD_412nm,AOD_400nm,AOD_380nm,AOD_340nm,Precipitable_Water(cm),AOD_681nm,AOD_709nm,AOD_Empty,AOD_Empty,AOD_Empty,AOD_Empty,AOD_Empty,Triplet_Variability_1640,Triplet_Variability_1020,Triplet_Variability_870,Triplet_Variability_865,Triplet_Variability_779,Triplet_Variability_675,Triplet_Variability_667,Triplet_Variability_620,Triplet_Variability_560,Triplet_Variability_555,Triplet_Variability_551,Triplet_Variability_532,Triplet_Variability_531,Triplet_Variability_510,Triplet_Variability_500,Triplet_Variability_490,Triplet_Variability_443,Triplet_Variability_440,Triplet_Variability_412,Triplet_Variability_400,Triplet_Variability_380,Triplet_Variability_340,Triplet_Variability_Precipitable_Water(cm),Triplet_Variability_681,Triplet_Variability_709,Triplet_Variability_AOD_Empty,Triplet_Variability_AOD_Empty,Triplet_Variability_AOD_Empty,Triplet_Variability_AOD_Empty,Triplet_Variability_AOD_Empty,440-870_Angstrom_Exponent,380-500_Angstrom_Exponent,440-675_Angstrom_Exponent,500-870_Angstrom_Exponent,340-440_Angstrom_Exponent,440-675_Angstrom_Exponent[Polar],Data_Quality_Level,AERONET_Instrument_Number,AERONET_Site_Name,Site_Latitude(Degrees),Site_Longitude(Degrees),Site_Elevation(m),Solar_Zenith_Angle(Degrees),Optical_Air_Mass,Sensor_Temperature(Degrees_C),Ozone(Dobson),NO2(Dobson),Last_Date_Processed,Number_of_Wavelengths,Exact_Wavelengths_of_AOD(um)_1640nm,Exact_Wavelengths_of_AOD(um)_1020nm,Exact_Wavelengths_of_AOD(um)_870nm,Exact_Wavelengths_of_AOD(um)_865nm,Exact_Wavelengths_of_AOD(um)_779nm,Exact_Wavelengths_of_AOD(um)_675nm,Exact_Wavelengths_of_AOD(um)_667nm,Exact_Wavelengths_of_AOD(um)_620nm,Exact_Wavelengths_of_AOD(um)_560nm,Exact_Wavelengths_of_AOD(um)_555nm,Exact_Wavelengths_of_AOD(um)_551nm,Exact_Wavelengths_of_AOD(um)_532nm,Exact_Wavelengths_of_AOD(um)_531nm,Exact_Wavelengths_of_AOD(um)_510nm,Exact_Wavelengths_of_AOD(um)_500nm,Exact_Wavelengths_of_AOD(um)_490nm,Exact_Wavelengths_of_AOD(um)_443nm,Exact_Wavelengths_of_AOD(um)_440nm,Exact_Wavelengths_of_AOD(um)_412nm,Exact_Wavelengths_of_AOD(um)_400nm,Exact_Wavelengths_of_AOD(um)_380nm,Exact_Wavelengths_of_AOD(um)_340nm,Exact_Wavelengths_of_PW(um)_935nm,Exact_Wavelengths_of_AOD(um)_681nm,Exact_Wavelengths_of_AOD(um)_709nm,Exact_Wavelengths_of_AOD(um)_Empty,Exact_Wavelengths_of_AOD(um)_Empty,Exact_Wavelengths_of_AOD(um)_Empty,Exact_Wavelengths_of_AOD(um)_Empty,Exact_Wavelengths_of_AOD(um)_Empty
+        # Karlsruhe,21:03:2005,16:35:13,80,80.691123,-999.000000,0.217930,0.217887,-999.000000,-999.000000,0.220243,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,0.238660,-999.000000,-999.000000,0.252361,-999.000000,-999.000000,0.271864,0.278779,0.733072,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,0.009736,0.009758,-999.000000,-999.000000,0.008882,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,0.008965,-999.000000,-999.000000,0.007377,-999.000000,-999.000000,0.007786,0.005861,0.040874,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,-999.000000,0.215628,0.474049,0.309065,0.167603,0.393740,-999.000000,lev15,325,Karlsruhe,49.093300,8.427900,140.000000,80.094832,5.635644,19.000000,0.368148,0.434568,07:12:2017,8,-999.,1.019300,0.870200,-999.,-999.,0.674800,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,0.500400,-999.,-999.,0.439600,-999.,-999.,0.380000,0.340000,0.941100,-999.,-999.,-999.,-999.,-999.,-999.,-999.
+
 
         # This value is later put to a np.nan
         nan_val = np.float_(-9999.)
@@ -212,11 +245,11 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
             line_3 = in_file.readline()
             line_4 = in_file.readline()
             # PI line
-            dummy_arr = in_file.readline().split(';')
+            dummy_arr = in_file.readline().strip().split(';')
             data_out['PI'] = dummy_arr[0].split('=')[1]
             data_out['PI_email'] = dummy_arr[1].split('=')[1]
 
-            line_6 = in_file.readline()
+            data_type_comment = in_file.readline()
             # line_7 = in_file.readline()
             # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string
@@ -308,7 +341,7 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
         for _file in sorted(self.files):
             if self.verbose:
                 sys.stdout.write(_file + "\n")
-            stat_obs_data = self.read_daily_file(_file, vars_to_read=vars_to_read)
+            stat_obs_data = self.read_file(_file, vars_to_read=vars_to_read)
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
