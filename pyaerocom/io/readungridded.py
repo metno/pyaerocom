@@ -46,7 +46,6 @@ from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_earlinet import ReadEarlinet
 
-#from pyaerocom import config as const
 from pyaerocom import const
 
 class ReadUngridded():
@@ -56,6 +55,7 @@ class ReadUngridded():
     #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
+                          const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME,
                           const.EARLINET_NAME]
     #
     _METADATAKEYINDEX = 0
@@ -93,7 +93,6 @@ class ReadUngridded():
         self.filemasks = []
         self.__version__ = 0.02
         self.datasetnames = []
-        # self.superclasses = {}
         self.infiles = []
         # file caching
         self.writecachefile = True
@@ -197,8 +196,9 @@ class ReadUngridded():
 
         Example
         -------
-        >>> import pyaerocom.io.readungridded
-        >>> obj = pyaerocom.io.readungridded.ReadUngridded()
+        >>> import pyaerocom.io.readungridded as pio
+        >>> from pyaerocom import const
+        >>> obj = pio.ReadUngridded(data_set_to_read=[const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME])
         >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
@@ -281,7 +281,20 @@ class ReadUngridded():
                     read_dummy.read(self.vars_to_read)
 
             elif data_set_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
-                print("Not implemented at this point.")
+                # read AERONETSUN V3 L1.5 all points data set
+                read_dummy = ReadAeronetSunV3(index_pointer=self.index_pointer,
+                                              data_set_to_read=data_set_to_read,
+                                              verbose=self.verbose)
+                if cache_hit_flag and object_version_saved == read_dummy.__version__:
+                    read_dummy = pickle.load(in_handle)
+                    if self.verbose:
+                        sys.stdout.write('cache file ' + cache_file + ' read\n')
+                    # TODO we might need to adjust self.index_pointer in case we really work with more than one data set!
+                    in_handle.close()
+                else:
+                    # re-read data
+                    read_dummy.read(self.vars_to_read)
+
 
             elif data_set_to_read == const.AERONET_SUN_V3L20_AOD_DAILY_NAME:
                 print("Not implemented at this point.")
