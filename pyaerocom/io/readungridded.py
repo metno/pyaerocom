@@ -57,6 +57,7 @@ class ReadUngridded():
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
+                          const.AERONET_SUN_V3L2_SDA_DAILY_NAME,
                           const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME,
                           const.EARLINET_NAME]
     #
@@ -258,9 +259,11 @@ class ReadUngridded():
                     # re-read data
                     read_dummy.read(self.vars_to_read)
 
-            elif data_set_to_read == const.AERONET_SUN_V3L15_SDA_DAILY_NAME:
+            elif data_set_to_read == const.AERONET_SUN_V3L15_SDA_DAILY_NAME or \
+                    data_set_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
                 # read AERONET SDA V3 L1.5 daily data set
                 read_dummy = ReadAeronetSdaV3(index_pointer=self.index_pointer,
+                                              data_set_to_read=data_set_to_read,
                                               verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
@@ -271,9 +274,6 @@ class ReadUngridded():
                 else:
                     # re-read data
                     read_dummy.read(self.vars_to_read)
-
-            elif data_set_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
-                print("Not implemented at this point.")
 
             # elif data_set_to_read == const.AERONET_SUN_V3L2_SDA_ALL_NAME:
             #     print("Not implemented at this point.")
