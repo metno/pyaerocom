@@ -63,7 +63,7 @@ class ReadAeronetSdaV3:
 
     """
     _FILEMASK = '*.lev30'
-    __version__ = "0.01"
+    __version__ = "0.02"
     DATASET_NAME = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
     DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L15_SDA_DAILY_NAME]['PATH']
     # Flag if the dataset contains all years or not
