@@ -17,7 +17,7 @@ module of pya, as well as the class
 In the following cells, we create an instance of the the ``ReadGridded``
 class and use this object to find and import data files containing the
 aerosol optical depth at 550 nm (*od550aer*) from the ECMWF CAMS
-reanalysis model (*ECMWF\_CAMS\_REAN*) for the years 2003-2007 in daily
+reanalysis model (*ECMWF_CAMS_REAN*) for the years 2003-2007 in daily
 resolution. The files will be temporally merged and put into an instance
 of the ``GriddedData`` class.
 
@@ -118,7 +118,7 @@ or multiple variables on the run.
 
 
 
-Now let's double check if all variables have been imported.
+Now let’s double check if all variables have been imported.
 
 .. code:: ipython3
 
@@ -211,9 +211,9 @@ correct for this on data import by
 1. First checking if the time dimension in the NetCDF file is correct
    according to CF convention (`see here for details on the
    implementation <http://aerocom.met.no/pya/api.html#pya.io.helpers.check_time_coord>`__
-   and if a problem is detected, then ...
+   and if a problem is detected, then …
 2. the time axis is redefined based on the year and time resolution
-   (*ts\_type*) that is encrypted in the filename. The latter requires
+   (*ts_type*) that is encrypted in the filename. The latter requires
    that the file follows one of the `pya file
    conventions <http://aerocom.met.no/pya/config_files.html#file-conventions>`__.
 

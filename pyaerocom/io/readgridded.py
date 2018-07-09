@@ -487,16 +487,16 @@ class ReadGridded(object):
                 else:
                     if self.verbose:
                         print("WARNING: Automatic check of time "
-                                         "array in netCDF files is deactivated."
-                                         " This may cause problems in case "
-                                         "the time dimension is not CF conform.\n")
+                              "array in netCDF files is deactivated."
+                              " This may cause problems in case "
+                              "the time dimension is not CF conform.")
                 
                 cubes.append(cube)
                 loaded_files.append(_file)
             except Exception as e:
                 if self.verbose:
                     print("Failed to load {} as Iris cube.\n"
-                                     "Error: {}".format(_file, repr(e)))
+                          "Error: {}".format(_file, repr(e)))
         
         if len(loaded_files) == 0:
             raise IOError("None of the found files for variable {}, and {} "

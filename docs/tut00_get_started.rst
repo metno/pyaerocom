@@ -169,7 +169,7 @@ options to do this:
     All paths valid? False
 
 
-See what's currently in there.
+See what’s currently in there.
 
 .. code:: ipython3
 
@@ -243,10 +243,10 @@ See what's currently in there.
 
 
 As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
-paths, but e.g. the list containing model directories (``MODELDIRS``)
+paths, but e.g. the list containing model directories (``MODELDIRS``)
 still has the original settings. This is because, these are written in
 the method ``load_config(config_file)`` or the wrapper method
-``reload()`` which does the same. Now reload the config\_file and print.
+``reload()`` which does the same. Now reload the config_file and print.
 
 .. code:: ipython3
 
@@ -491,8 +491,8 @@ this.
 Finding data directories of model or observation data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let's presume you want to access data from a certain model or
-observation and you want to check if it is available. Let's assume you
+Let’s presume you want to access data from a certain model or
+observation and you want to check if it is available. Let’s assume you
 are interested in data from a control run (*CTRL*) of the CAM Oslo model
 but you do not know the exact model version or run ID. Then, you can
 browse existing data directories using a wildcard search, simply by (we
@@ -516,7 +516,7 @@ Reading the aerosol optical detph at 550nm using a specified model ID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The resulting list shows possible options that were found in the
-database. Let's choose the *CAM5.3-Oslo\_CTRL2016* run and import the
+database. Let’s choose the *CAM5.3-Oslo_CTRL2016* run and import the
 data. In the following cell, we directly instantiate a read class for
 data import since we know the model and run ID from the previous cell
 (the read class basically includes the above used search method.
@@ -533,7 +533,7 @@ data import since we know the model and run ID from the previous cell
     Found directory /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
 
 
-Okay, let's see what is in there.
+Okay, let’s see what is in there.
 
 .. code:: ipython3
 
@@ -550,13 +550,12 @@ Okay, let's see what is in there.
     Available years: [2006, 2008, 2010]
 
 
-Let's load results for the aerosol optical depth (*od550aer*) for march
+Let’s load results for the aerosol optical depth (*od550aer*) for march
 2010. The read function take a string or a list of strings as input for
 specifying one or more variables that are supposed to be read. Thus, the
-return type of this method is ***always a tuple, even if we only provide
-one variable*** (as in the following example) and as a result, the
-loaded data object has to be accessed using the first index of the
-tuple.
+return type of this method is **always a tuple, even if we only provide
+one variable** (as in the following example) and as a result, the loaded
+data object has to be accessed using the first index of the tuple.
 
 .. code:: ipython3
 
@@ -575,7 +574,7 @@ Accessing the data and plotting a map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The loaded data is of type *GriddedData* and can now be used for further
-analysis. It's string representation contains a useful summary of what
+analysis. It’s string representation contains a useful summary of what
 is in there.
 
 .. code:: ipython3
@@ -612,7 +611,7 @@ is in there.
 
 The data comprises 31 time stamps, as expected, since we picked one
 month and the dataset is daily. Now, for instance, we can crop the data
-using a predefined region (e.g. South America) and plot the first day of
+using a predefined region (e.g. South America) and plot the first day of
 the dataset.
 
 .. code:: ipython3
@@ -671,7 +670,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ffba8d523c8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fbde940fb70>
 
 
 

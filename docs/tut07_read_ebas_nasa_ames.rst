@@ -298,7 +298,7 @@ Column information
 
 You can see that all variable columns were assigned the same flag
 column, since there is only one. This would be different if there were
-multiple flag columns (e.g. one for each variable).
+multiple flag columns (e.g. one for each variable).
 
 Access flag information
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -316,7 +316,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7fd151458780>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7fdfe34b4710>)])
 
 
 
@@ -1174,7 +1174,7 @@ Read only header
 
 .. parsed-literal::
 
-    6.33 ms ± 398 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    6.31 ms ± 411 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Read raw:
@@ -1192,7 +1192,7 @@ Read raw:
 
 .. parsed-literal::
 
-    56.9 ms ± 6.55 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    57.3 ms ± 2.07 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 Perform all operations:
@@ -1210,5 +1210,5 @@ Perform all operations:
 
 .. parsed-literal::
 
-    62.4 ms ± 1.95 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    69.4 ms ± 10.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 

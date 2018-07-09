@@ -239,13 +239,13 @@ def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
             raise ValueError("Time match error, nominal dates for test array"
                              "%s (unit=%s): %s\nReceived values after "
                              "conversion: %s"
-                             %(test_datenums, t.units.name,
+                             %(test_datenums, t.units.origin,
                                ts_nominal, ts_values))
         elif not all(dts_values == dts_nominal):
             raise ValueError("Time match error, time steps for test array"
                              "%s (unit=%s): %s\nReceived values after "
                              "conversion: %s"
-                             %(test_datenums, t.units.name,
+                             %(test_datenums, t.units.origin,
                                dts_nominal, dts_values))
     except Exception as e:
         if verbose:

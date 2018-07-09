@@ -3,10 +3,10 @@ Reading data from multiple models: the ReadGriddedMulti class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``pyaerocom.ReadGriddedMulti`` class provides an interface to import
-multiple variables for an arbitrary number of gridded datasets (e.g.
-model data, level3 satellite data) and within a specific time interval.
-It makes large use of the ``ReadGridded`` class that provides an
-interface for importing results from a single dataset.
+multiple variables for an arbitrary number of gridded datasets
+(e.g. model data, level3 satellite data) and within a specific time
+interval. It makes large use of the ``ReadGridded`` class that provides
+an interface for importing results from a single dataset.
 
 .. code:: ipython3
 
@@ -23,7 +23,7 @@ Again, if you are not sure what is the exact name of the dataset you are
 searching for, you may use wildcards to search for options. For
 instance, if you want to include results from the implementation of the
 sectional aerosol microphysics module (SALSA) in the ECHAM5-HAM
-aerosol-climate model, you may search if data exists ...
+aerosol-climate model, you may search if data exists …
 
 .. code:: ipython3
 
@@ -38,7 +38,7 @@ aerosol-climate model, you may search if data exists ...
     Found exactly one match for search pattern *ECHAM*salsa*CTRL*2015: ECHAM6-SALSA_AP3-CTRL2015
 
 
-... and include it:
+… and include it:
 
 .. code:: ipython3
 
@@ -89,7 +89,7 @@ were created (which was introduced in the previous tutorial), one for
 each of the 3 requested datasets. These can be used to access the data
 for each of the datasets.
 
-Let's define a bunch of test variables that are supposed to be loaded
+Let’s define a bunch of test variables that are supposed to be loaded
 for each model. In the ideal case, these should be contained in all
 input models (not the case here, since AATST v1.0 does not include
 ``od550dust``.
@@ -110,7 +110,7 @@ input models (not the case here, since AATST v1.0 does not include
 
     FOUND MATCH: aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc
     Invalid time dimension.
-    Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=day since 2001-01-01 00:00 UTC): ['2010-01' '2010-02' '2010-03' '2010-08']\nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']",)
+    Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since  2001-01-01 00:00:00): ['2010-01' '2010-02' '2010-03' '2010-08']\nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']",)
     Invalid time axis in file aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc. Attempting to correct.
     Applying temporal cropping of result cube
     Cropping along time axis based on Timestamps
@@ -254,7 +254,7 @@ Print some information about the different data objects
     Grid data: <iris 'Cube' of atmosphere_optical_thickness_due_to_ambient_aerosol_particles / (1) (time: 12; latitude: 96; longitude: 192)>
 
 
-Now get and arbitrarily crop the CAM5.3-Oslo\_CTRL2016 data object
+Now get and arbitrarily crop the CAM5.3-Oslo_CTRL2016 data object
 containing the od550aer values and draw a map.
 
 .. code:: ipython3

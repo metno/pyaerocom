@@ -8,16 +8,16 @@ class of pya. The ``GriddedData`` class is the fundamental base class
 for the analysis of model data. The underlying data type is
 `iris.cube.Cube <http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube>`__
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of ``GriddedData`` (i.e. by passing the
+files when creating an instance of ``GriddedData`` (i.e. by passing the
 filename and specifying the variable name on initialisation). This
 notebook introduces some of the features of the ``GriddedData`` class.
-Starting with some imports...
+Starting with some imports…
 
 .. code:: ipython3
 
     import pyaerocom as pya
 
-Let's get a test file to load
+Let’s get a test file to load
 
 .. code:: ipython3
 
@@ -38,9 +38,9 @@ Let's get a test file to load
 The dictionary, returned by the ``get()`` function is categorised into
 two subirectories for model based test files (``key="models"``) and for
 observation based test files (``key=observations``). So far, there is
-not much in there (i.e. only two files).
+not much in there (i.e. only two files).
 
-Let's pick out the ECMWF OSUITE test file and load the data directly
+Let’s pick out the ECMWF OSUITE test file and load the data directly
 into an instance of the ``GriddedData`` class. The ``GriddedData`` class
 takes either preloaded instances of the ``iris.cube.Cube`` class as
 input, or a valid netCDF file path. The latter requires specification of
@@ -108,10 +108,10 @@ Features of the ``GriddedData`` class
 In the following cell, some of the most important attributes are
 introduced. These are mostly reimplementations of the underlying
 ``Cube`` data which is stored in the ``GriddedData.grid`` attribute. For
-instance the attribute ``GriddedData.longitude`` get's you
-``GriddedData.grid.coord("longitude")``, ``GriddedData.latitude`` get's
+instance the attribute ``GriddedData.longitude`` get’s you
+``GriddedData.grid.coord("longitude")``, ``GriddedData.latitude`` get’s
 you ``GriddedData.grid.coord("latitude")`` and ``GriddedData.time``
-get's you ``GriddedData.grid.coord("time")``.
+get’s you ``GriddedData.grid.coord("time")``.
 
 .. code:: ipython3
 
@@ -150,7 +150,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550aer', 'od550dust', 'od550so4', 'od550bc', 'od550oa']",)
+    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550dust', 'od550so4', 'od550aer', 'od550oa', 'od550bc']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -184,7 +184,7 @@ method
 .. image:: tut04_intro_class_GriddedData/tut04_intro_class_GriddedData_14_0.png
 
 
-Why not load some of the other variables...
+Why not load some of the other variables…
 
 .. code:: ipython3
 
@@ -198,7 +198,7 @@ Why not load some of the other variables...
     Rolling longitudes to -180 -> 180 definition
 
 
-... and plot them as well
+… and plot them as well
 
 .. code:: ipython3
 
@@ -217,8 +217,8 @@ Why not load some of the other variables...
 .. image:: tut04_intro_class_GriddedData/tut04_intro_class_GriddedData_18_1.png
 
 
-... more to come
-^^^^^^^^^^^^^^^^
+… more to come
+^^^^^^^^^^^^^^
 
 This tutorial is not yet completed as the ``GriddedData`` class is
 currently under development.

@@ -1,4 +1,7 @@
 {
+  "dev_scripts/private/test_pass_tuple_multiargs.py": true,
   "dev_scripts/test_crop_boundaries.py": true,
-  "dev_scripts/test_model_read_cube_TIME.py": true
+  "dev_scripts/test_model_read_cube.py": true,
+  "dev_scripts/test_model_read_cube_TIME.py": true,
+  "dev_scripts/test_multivar_load_cube.py": true
 }

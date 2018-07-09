@@ -3,10 +3,10 @@ EBAS file query and database browser
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The previous tutorial showed how to read EBAS NASA Ames files and gave
-insights into the strucure of these files. However, this did not include
-the specification of an actual data request (for instance: get data from
-all stations in the arcitc that contain measurements of the AOD between
-2010 and 2016).
+insights into the structure of these files. However, this did not
+include the specification of an actual data request (for instance: get
+data from all stations in the arctic that contain measurements of the
+AOD between 2010 and 2016).
 
 In this tutorial, we show, how such requests can be specified easily in
 pyaerocom and how the database can be browsed for instance by variable
@@ -153,7 +153,7 @@ Or which station coordinates (lon, lat) the dataset contains:
     [23.583333, -79.783839, -122.9576034546, -104.986864, -62.3415260315, 7.985, 11.0096197128, 12.93386, 10.97964, -8.266, -16.4994, -3.605, 2.35, 24.283333, 24.116111111, 2.95, 25.666667, 19.583333, -9.89944, 77.151389, 8.633333, 10.7, 126.17, 4.926389, 8.252, 11.888333, 2.533333, -65.618, 13.15, 120.87, -156.6114654541, -111.9841, -112.1288, -111.6832, -112.8, -109.3889, -155.5761566162, -86.148, -68.2608, -113.9958, -81.7, -103.1772, -97.5, -24.7999992371, -124.1510009766, -105.5457, -111.9692, -77.04, -109.7958, 18.48968]
 
 
-Now, let's narrow this down:
+Now, let’s narrow this down:
 
 .. code:: ipython3
 
@@ -187,7 +187,7 @@ wrappers for the general query method ``make_query_str`` of the
 ``EbasSQLRequest`` class, that is then called by the ``EbasFileIndex``
 class using the method ``execute_request``). Thus, if needed, you may
 define your own request simply by using the provided interface. Here an
-example using the request constraints specified above. Let's say we want
+example using the request constraints specified above. Let’s say we want
 to retrieve a list of station names and their coordinates (lon, lat,
 alt). This can be done by calling (we store the results in a list named
 ``station_info``):
@@ -218,7 +218,7 @@ the order of the request.
 Read all files
 ^^^^^^^^^^^^^^
 
-Let's update the file list and read all files.
+Let’s update the file list and read all files.
 
 .. code:: ipython3
 
@@ -231,7 +231,7 @@ Let's update the file list and read all files.
     Total number of files found: 7
 
 
-Let's read the files:
+Let’s read the files:
 
 .. code:: ipython3
 

@@ -1,6 +1,14 @@
 [
-  "pyaerocom/test/test_mathutils.py::test_exponent",
   "pyaerocom/test/test_griddeddata.py::test_longitude",
   "pyaerocom/test/test_griddeddata.py::test_latitude",
-  "pyaerocom/test/test_griddeddata.py::test_time"
+  "pyaerocom/test/test_griddeddata.py::test_time",
+  "pyaerocom/test/test_mathutils.py::test_exponent",
+  "pyaerocom/test/test_readgridded.py::test_variables",
+  "pyaerocom/test/test_readgridded.py::test_years_available",
+  "pyaerocom/test/test_readgridded.py::test_meta",
+  "pyaerocom/test/test_readgridded.py::test_read_var",
+  "pyaerocom/test/test_readgridded.py::test_read_vars",
+  "pyaerocom/test/test_readgriddedmulti.py::test_info_available",
+  "pyaerocom/test/test_readgriddedmulti.py::test_read_vars",
+  "pyaerocom/test/test_readgriddedmulti.py::test_data_available"
 ]
