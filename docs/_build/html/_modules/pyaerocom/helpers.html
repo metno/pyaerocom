@@ -174,10 +174,19 @@
 <span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">Unit</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">MINYEAR</span><span class="p">,</span> <span class="n">datetime</span>
 
-<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="p">(</span><span class="n">microsec_units</span><span class="p">,</span> <span class="n">millisec_units</span><span class="p">,</span> <span class="n">sec_units</span><span class="p">,</span> <span class="n">min_units</span><span class="p">,</span>
-                    <span class="n">hr_units</span><span class="p">,</span> <span class="n">day_units</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">netCDF4._netCDF4</span> <span class="k">import</span> <span class="n">_dateparse</span>
- 
+<span class="c1"># The following import was removed and the information about available unit </span>
+<span class="c1"># strings was copied from the netCDF4 module directly here</span>
+<span class="c1"># from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,</span>
+<span class="c1">#                     hr_units, day_units)</span>
+<span class="c1"># from netCDF4._netCDF4 import _dateparse</span>
+<span class="n">microsec_units</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;microseconds&#39;</span><span class="p">,</span> <span class="s1">&#39;microsecond&#39;</span><span class="p">,</span> <span class="s1">&#39;microsec&#39;</span><span class="p">,</span> <span class="s1">&#39;microsecs&#39;</span><span class="p">]</span>
+<span class="n">millisec_units</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;milliseconds&#39;</span><span class="p">,</span> <span class="s1">&#39;millisecond&#39;</span><span class="p">,</span> <span class="s1">&#39;millisec&#39;</span><span class="p">,</span> <span class="s1">&#39;millisecs&#39;</span><span class="p">]</span>
+<span class="n">sec_units</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;second&#39;</span><span class="p">,</span> <span class="s1">&#39;seconds&#39;</span><span class="p">,</span> <span class="s1">&#39;sec&#39;</span><span class="p">,</span> <span class="s1">&#39;secs&#39;</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">]</span>
+<span class="n">min_units</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;minute&#39;</span><span class="p">,</span> <span class="s1">&#39;minutes&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;mins&#39;</span><span class="p">]</span>
+<span class="n">hr_units</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;hour&#39;</span><span class="p">,</span> <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;hrs&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">]</span>
+<span class="n">day_units</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;day&#39;</span><span class="p">,</span> <span class="s1">&#39;days&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
+
+<span class="c1">#</span>
 <span class="c1"># Start of the gregorian calendar</span>
 <span class="c1"># adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   </span>
 <span class="n">GREGORIAN_BASE</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1582</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
@@ -269,10 +278,8 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="n">Unit</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide cfunit either as instance of class &quot;</span>
                          <span class="s2">&quot;cf_units.Unit or as a string&quot;</span><span class="p">)</span>
-    <span class="n">cfu_str</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">calendar</span>
-    <span class="n">basedate</span> <span class="o">=</span> <span class="n">_dateparse</span><span class="p">(</span><span class="n">cfu_str</span><span class="p">)</span>
-    <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">basedate</span> <span class="o">=</span> <span class="n">_dateparse</span><span class="p">(</span><span class="n">cfu_str</span><span class="p">)</span>  
+    <span class="n">calendar</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">calendar</span>
+    <span class="n">basedate</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">((</span><span class="n">calendar</span> <span class="o">==</span> <span class="s1">&#39;proleptic_gregorian&#39;</span> <span class="ow">and</span> <span class="n">basedate</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="n">MINYEAR</span><span class="p">)</span> <span class="ow">or</span> 
         <span class="p">(</span><span class="n">calendar</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gregorian&#39;</span><span class="p">,</span><span class="s1">&#39;standard&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">basedate</span> <span class="o">&gt;</span> <span class="n">GREGORIAN_BASE</span><span class="p">)):</span>
         <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
@@ -546,9 +553,70 @@
         <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_dict</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span></div>
 
+<span class="c1"># TODO: Review and move into test-suite</span>
+<div class="viewcode-block" id="griesie_dataframe_testing"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.griesie_dataframe_testing">[docs]</a><span class="k">def</span> <span class="nf">griesie_dataframe_testing</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">startdate</span><span class="p">,</span> <span class="n">enddate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;testing routine to create a scatterplot using a pandas data frame&quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">pyaerocom.io</span> <span class="k">as</span> <span class="nn">pio</span>
+    <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pa</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+    <span class="n">obs_data_as_series</span> <span class="o">=</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">start_date</span><span class="o">=</span><span class="n">startdate</span><span class="p">,</span> 
+                                                <span class="n">end_date</span><span class="o">=</span><span class="n">enddate</span><span class="p">,</span> 
+                                                <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+    <span class="n">obs_lats</span> <span class="o">=</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">latitude</span>
+    <span class="n">obs_lons</span> <span class="o">=</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">longitude</span>
+    <span class="n">obs_lats</span><span class="o">=</span><span class="p">[</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">))]</span>
+    <span class="n">obs_lons</span><span class="o">=</span><span class="p">[</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">))]</span>
+    <span class="n">obs_names</span><span class="o">=</span><span class="p">[</span><span class="n">obs_data_as_series</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data_as_series</span><span class="p">))]</span>
+    <span class="n">model_station_data</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">([(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">obs_lats</span><span class="p">),(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">obs_lons</span><span class="p">)])</span>
+    <span class="n">times_as_dt64</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="n">model_station_data</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">model_data_as_series</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">to_time_series_griesie</span><span class="p">(</span><span class="n">model_station_data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">obs_lats</span><span class="p">,</span> <span class="n">obs_lons</span><span class="p">,</span> <span class="n">times_as_dt64</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">obs_lats</span><span class="p">)</span></div>
+    <span class="c1"># # single station</span>
+    <span class="c1"># df = pd.DataFrame(obs_data_as_series[1][&#39;zdust&#39;], columns=[&#39;obs&#39;])</span>
+    <span class="c1"># df[&#39;model&#39;] = model_data_as_series[1][&#39;zdust&#39;]</span>
+    <span class="c1"># # remove points where any of the df is NaN</span>
+    <span class="c1"># #df = df.dropna(axis=0, how=&#39;any&#39;)</span>
+    <span class="c1"># correlation = df.corr(method=&#39;pearson&#39;)</span>
+    <span class="c1"># plot = df.plot.scatter(&#39;obs&#39;,&#39;model&#39;)</span>
+    <span class="c1"># df.show()</span>
+
+<span class="c1"># TODO: review and move into test-suite</span>
+<div class="viewcode-block" id="griesie_xarray_to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.griesie_xarray_to_timeseries">[docs]</a><span class="k">def</span> <span class="nf">griesie_xarray_to_timeseries</span><span class="p">(</span><span class="n">xarray_obj</span><span class="p">,</span> <span class="n">obs_lats</span><span class="p">,</span> <span class="n">obs_lons</span><span class="p">,</span> <span class="n">vars_to_read</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550_aer&#39;</span><span class="p">],</span> <span class="n">debug_mode</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;test routine to colocate xarray object&quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">debug_mode</span><span class="p">:</span>
+        <span class="n">max_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_lats</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">max_index</span> <span class="o">=</span> <span class="mi">20</span>
+
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_index</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">xarray_col</span> <span class="o">=</span> <span class="n">xarray_obj</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">latitude</span><span class="o">=</span><span class="n">obs_lats</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">longitude</span><span class="o">=</span><span class="n">obs_lons</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+        <span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># _dict[&#39;latitude&#39;] = obs_lats[index]</span>
+        <span class="c1"># _dict[&#39;longitude&#39;] = obs_lons[index]</span>
+        <span class="n">_dict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">xarray_col</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
+        <span class="n">_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">xarray_col</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
+
+        <span class="c1">#data_frame = xarray_col.to_dataframe()</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
+            <span class="c1"># _dict[var] = pd.Series(data_frame[var])</span>
+            <span class="c1"># _dict[var] = xarray_col[var].to_series()</span>
+            <span class="n">_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">xarray_col</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">xarray_col</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">)</span>
+
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    
+    
     <span class="kn">import</span> <span class="nn">doctest</span>
     <span class="kn">import</span> <span class="nn">warnings</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
@@ -562,16 +630,16 @@
         <span class="n">get_lon_constraint</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">170</span><span class="p">,</span> <span class="o">-</span><span class="mi">160</span><span class="p">),</span> <span class="n">meridian_centre</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Expected behaviour&quot;</span><span class="p">)</span>
-    
+
     <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">load</span>
     <span class="n">cubes</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">])</span>
     <span class="n">lons</span> <span class="o">=</span> <span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span>
     <span class="n">meridian_centre</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">lons</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span> <span class="k">else</span> <span class="kc">False</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> 
-                       <span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span> 
-                       <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> 
+    <span class="n">c</span> <span class="o">=</span> <span class="n">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span>
+                       <span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>
+                       <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
                        <span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;2008-02-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2008-02-05&quot;</span><span class="p">))</span>
-    
+
     <span class="n">cube_crop</span> <span class="o">=</span> <span class="n">cubes</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">c</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
                            

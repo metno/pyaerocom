@@ -251,6 +251,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;# of measurements: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_points</span><span class="p">)))</span>
 
     <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span>
+    <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD&#39;</span>
     <span class="n">time_step_name</span> <span class="o">=</span> <span class="s1">&#39;mALLYEARdaily&#39;</span>
     <span class="c1"># OD550_AER_an2008_YEARLY_WORLD_SCATTERLOG_AeronetSunV3Lev2.0.daily.ps.png</span>
     <span class="c1"># if df_time[model_name].index[0].year != df_time[model_name].index[-1].year:</span>
@@ -330,7 +331,8 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filter_name</span><span class="p">),</span>
                         <span class="n">xy</span><span class="o">=</span><span class="n">xypos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
 
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span></div>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

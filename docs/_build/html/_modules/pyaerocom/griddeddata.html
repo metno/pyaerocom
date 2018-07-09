@@ -933,29 +933,27 @@
         <span class="n">collapsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">collapsed</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">aggregator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">collapsed</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
     
-<span class="c1"># =============================================================================</span>
-<span class="c1">#     def extract(self, constraint):</span>
-<span class="c1">#         &quot;&quot;&quot;Extract subset</span>
-<span class="c1">#         </span>
-<span class="c1">#         Parameters</span>
-<span class="c1">#         ----------</span>
-<span class="c1">#         constraint : iris.Constraint</span>
-<span class="c1">#             constraint that is to be applied</span>
-<span class="c1">#             </span>
-<span class="c1">#         Returns</span>
-<span class="c1">#         -------</span>
-<span class="c1">#         GriddedData</span>
-<span class="c1">#             new data object containing cropped data</span>
-<span class="c1">#         &quot;&quot;&quot;</span>
-<span class="c1">#         if not self.is_cube:</span>
-<span class="c1">#             raise NotImplementedError(&quot;This feature is only available if the&quot;</span>
-<span class="c1">#                                       &quot;underlying data is of type iris.Cube&quot;)</span>
-<span class="c1">#         data_crop = self.grid.extract(constraint)</span>
-<span class="c1">#         if not data_crop:</span>
-<span class="c1">#             raise DataExtractionError(&quot;Failed to extract subset&quot;)</span>
-<span class="c1">#         </span>
-<span class="c1">#         return GriddedData(data_crop, **self.suppl_info)</span>
-<span class="c1"># =============================================================================</span>
+<div class="viewcode-block" id="GriddedData.extract"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.extract">[docs]</a>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract subset</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        constraint : iris.Constraint</span>
+<span class="sd">            constraint that is to be applied</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            new data object containing cropped data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This feature is only available if the&quot;</span>
+                                      <span class="s2">&quot;underlying data is of type iris.Cube&quot;</span><span class="p">)</span>
+        <span class="n">data_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data_crop</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s2">&quot;Failed to extract subset&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">data_crop</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="GriddedData.intersection"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.intersection">[docs]</a>    <span class="k">def</span> <span class="nf">intersection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Ectract subset using :func:`iris.cube.Cube.intersection` </span>

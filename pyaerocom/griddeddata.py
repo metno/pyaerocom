@@ -772,29 +772,27 @@ class GriddedData(object):
         collapsed = self.grid.collapsed(coords, aggregator, **kwargs)
         return GriddedData(collapsed, **self.suppl_info)
     
-# =============================================================================
-#     def extract(self, constraint):
-#         """Extract subset
-#         
-#         Parameters
-#         ----------
-#         constraint : iris.Constraint
-#             constraint that is to be applied
-#             
-#         Returns
-#         -------
-#         GriddedData
-#             new data object containing cropped data
-#         """
-#         if not self.is_cube:
-#             raise NotImplementedError("This feature is only available if the"
-#                                       "underlying data is of type iris.Cube")
-#         data_crop = self.grid.extract(constraint)
-#         if not data_crop:
-#             raise DataExtractionError("Failed to extract subset")
-#         
-#         return GriddedData(data_crop, **self.suppl_info)
-# =============================================================================
+    def extract(self, constraint):
+        """Extract subset
+        
+        Parameters
+        ----------
+        constraint : iris.Constraint
+            constraint that is to be applied
+            
+        Returns
+        -------
+        GriddedData
+            new data object containing cropped data
+        """
+        if not self.is_cube:
+            raise NotImplementedError("This feature is only available if the"
+                                      "underlying data is of type iris.Cube")
+        data_crop = self.grid.extract(constraint)
+        if not data_crop:
+            raise DataExtractionError("Failed to extract subset")
+        
+        return GriddedData(data_crop, **self.suppl_info)
     
     def intersection(self, *args, **kwargs):
         """Ectract subset using :func:`iris.cube.Cube.intersection` 

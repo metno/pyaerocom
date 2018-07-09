@@ -150,7 +150,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550bc', 'od550dust', 'od550oa', 'od550aer', 'od550so4']",)
+    This did not work...error message: ValueError("Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: ['od550aer', 'od550dust', 'od550so4', 'od550bc', 'od550oa']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.

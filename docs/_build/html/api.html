@@ -303,17 +303,17 @@ var_name or time interval).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID of model (e.g. “AATSR_SU_v4.3”,”CAM5.3-Oslo_CTRL2016”)</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string ID of model (e.g. “AATSR_SU_v4.3”,”CAM5.3-Oslo_CTRL2016”)</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
-<li><strong>file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string ID specifying the file convention of this model (cf.
+<li><strong>file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string ID specifying the file convention of this model (cf.
 installation file <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini">file_conventions.ini</a>)</li>
-<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.search_data_dir" title="pyaerocom.io.readgridded.ReadGridded.search_data_dir"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_data_dir()</span></code></a>) on
+<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the model directory is searched (<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.search_data_dir" title="pyaerocom.io.readgridded.ReadGridded.search_data_dir"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_data_dir()</span></code></a>) on
 instantiation and if it is found, all valid files for this model are
 searched using <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.search_all_files" title="pyaerocom.io.readgridded.ReadGridded.search_all_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">search_all_files()</span></code></a>.</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, output is printed</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, output is printed</li>
 </ul>
 </td>
 </tr>
@@ -394,9 +394,9 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">data directory</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if directory cannot be found</td>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if directory cannot be found</td>
 </tr>
 </tbody>
 </table>
@@ -411,7 +411,7 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update_file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the first file in <cite>data_dir</cite> is used to identify the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>update_file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the first file in <cite>data_dir</cite> is used to identify the
 file naming convention (cf. <code class="xref py py-class docutils literal notranslate"><span class="pre">FileConventionRead</span></code>)</td>
 </tr>
 </tbody>
@@ -463,13 +463,13 @@ NetCDF import using the attribute <code class="xref py py-attr docutils literal 
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – variable name that is supposed to be plotted (e.g. )
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable name that is supposed to be plotted (e.g. )
 Must be in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.vars" title="pyaerocom.io.readgridded.ReadGridded.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a></li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
 <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
 <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string specifying temporal resolution (choose from
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”)</li>
 </ul>
 </td>
@@ -497,7 +497,7 @@ Must be in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGri
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">loaded data objects (type GriddedData)</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)">tuple</a></td>
 </tr>
 </tbody>
 </table>
@@ -600,7 +600,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgridded
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True, if directory could be found, else False</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
 </tr>
 </tbody>
 </table>
@@ -626,13 +626,13 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgridded
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>var_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – string IDs of all variables that are supposed to be imported</li>
-<li><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – string IDs of all models that are supposed to be imported</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<li><strong>var_ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – string IDs of all variables that are supposed to be imported</li>
+<li><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – string IDs of all models that are supposed to be imported</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
 <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start_time" title="pyaerocom.io.readgridded.ReadGriddedMulti.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
 <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start_time" title="pyaerocom.io.readgridded.ReadGriddedMulti.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string specifying temporal resolution (choose from
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”)</li>
 </ul>
 </td>
@@ -640,7 +640,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgridded
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">result dictionary</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
 </td>
 </tr>
 </tbody>
@@ -667,7 +667,7 @@ model specified in <a class="reference internal" href="#pyaerocom.io.readgridded
 <dd><p>High-level reading class for ungridded files based on obsnetwork ID</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS">
-<code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSunV2Lev2.daily', 'EARLINET']</em><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSunV2Lev2.daily', 'AeronetInvV2Lev2.daily', 'AeronetSunV3Lev1.5.daily', 'AeronetSDAV3Lev1.5.daily', 'AeronetSDAV3Lev2.daily', 'AeronetSunV3Lev1.5.AP', 'EARLINET']</em><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -712,8 +712,9 @@ determine single locations</p>
 <code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungridded.html#ReadUngridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read observations</p>
 <p class="rubric">Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.readungridded</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">readungridded</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyaerocom.io.readungridded</span> <span class="k">as</span> <span class="nn">pio</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">pio</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="n">data_set_to_read</span><span class="o">=</span><span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="mf">0.</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
@@ -730,7 +731,7 @@ determine single locations</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station name or list of station names to return</li>
+<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station name or list of station names to return</li>
 <li><strong>end_date</strong> (<em>start_date</em><em>,</em>) – date strings with start and end date to return</li>
 <li><strong>freq</strong> (obj:<cite>str:</cite>, optional) – frequency to resample to using the pandas resample method
 us the offset aliases as noted in
@@ -742,7 +743,7 @@ us the offset aliases as noted in
 station_names is list or None: list of dictionaries with station data</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a> or dictionary</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a> or dictionary</p>
 </td>
 </tr>
 </tbody>
@@ -1113,11 +1114,11 @@ DustLayerHeight   float32 3200.0</div></blockquote>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vars_to_read</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – list of variables that are supposed to be read</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vars_to_read</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list of variables that are supposed to be read</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">file list</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -1169,7 +1170,7 @@ CF conventions and may not work for files that do not follow this standard.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>input</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
 if <cite>input</cite> is preloaded Cube</li>
 </ul>
 </td>
@@ -1332,7 +1333,7 @@ method simply returns <a class="reference internal" href="#pyaerocom.griddeddata
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>input</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
 if <cite>input</cite> is preloaded Cube</li>
 </ul>
 </td>
@@ -1352,7 +1353,7 @@ if <cite>input</cite> is preloaded Cube</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list containing all time stamps as datetime64 objects</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -1372,7 +1373,7 @@ if <cite>input</cite> is preloaded Cube</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)">tuple</a></td>
 </tr>
 </tbody>
 </table>
@@ -1387,9 +1388,9 @@ if <cite>input</cite> is preloaded Cube</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>lon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – longitude of coordinate</li>
-<li><strong>lat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – latitude of coordinate</li>
-<li><strong>step_deg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – </li>
+<li><strong>lon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – longitude of coordinate</li>
+<li><strong>lat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – latitude of coordinate</li>
+<li><strong>step_deg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – </li>
 </ul>
 </td>
 </tr>
@@ -1415,10 +1416,10 @@ interpolated object is too large to fit into memory).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – coordinates (e.g. lon / lat) at which time series is supposed to be
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – coordinates (e.g. lon / lat) at which time series is supposed to be
 retrieved</li>
-<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
-<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
 <li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
 coordinates (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
 </ul>
@@ -1428,7 +1429,7 @@ coordinates (for details, see <a class="reference internal" href="#pyaerocom.gri
 are: <code class="docutils literal notranslate"><span class="pre">longitude,</span> <span class="pre">latitude,</span> <span class="pre">var_name</span></code></p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -1447,10 +1448,10 @@ provided, the cube is interpolated first onto the sample points.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – coordinates (e.g. lon / lat) at which time series is supposed to be
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – coordinates (e.g. lon / lat) at which time series is supposed to be
 retrieved</li>
-<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
-<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
 <li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
 coordinates (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
 </ul>
@@ -1460,7 +1461,7 @@ coordinates (for details, see <a class="reference internal" href="#pyaerocom.gri
 are: <code class="docutils literal notranslate"><span class="pre">longitude,</span> <span class="pre">latitude,</span> <span class="pre">var_name</span></code></p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -1491,7 +1492,7 @@ file is loaded (cf. <a class="reference internal" href="#pyaerocom.griddeddata.G
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True, if longitudes were on 0 -&gt; 360 and have been rolled, else
 False</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
 </tr>
 </tbody>
 </table>
@@ -1515,23 +1516,23 @@ accepts and understands longitude input based on definition
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping. If None,
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping. If None,
 the longitude axis remains unchanged.
 Example input to crop around meridian: <cite>lon_range=(-30, 30)</cite></li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping. If None,
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping. If None,
 the latitude axis remains unchanged</li>
-<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
+<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
 types for specifying the times are</p>
 <blockquote>
 <div><ol class="arabic">
 <li>a combination of 2 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances or</li>
 <li>a combination of two strings that can be directly converted                into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances (e.g.                <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
-<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>).</li>
+<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>).</li>
 </ol>
 </div></blockquote>
 <p>If None, the time axis remains unchanged.</p>
 </li>
-<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Region</span></code>, optional) – string ID of pyaerocom default region or directly an instance of
+<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Region</span></code>, optional) – string ID of pyaerocom default region or directly an instance of
 the <code class="xref py py-class docutils literal notranslate"><span class="pre">Region</span></code> object. May be used instead of
 <code class="docutils literal notranslate"><span class="pre">lon_range</span></code> and <code class="docutils literal notranslate"><span class="pre">lat_range</span></code>, if these are unspecified.</li>
 </ul>
@@ -1572,11 +1573,11 @@ is the same as input
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – sequence of coordinate pairs over which to interpolate</li>
-<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme, pyaerocom default is Nearest. If input is
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – sequence of coordinate pairs over which to interpolate</li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme, pyaerocom default is Nearest. If input is
 string, it is converted into the corresponding iris Interpolator
 object, see <code class="xref py py-func docutils literal notranslate"><span class="pre">str_to_iris()</span></code> for valid strings</li>
-<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Whether to collapse the dimension of scalar sample points in the
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Whether to collapse the dimension of scalar sample points in the
 resulting cube. Default is True.</li>
 <li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
 coordinates in an easier way than using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> argument
@@ -1622,9 +1623,9 @@ grid of time / lon / lat dimension and shape <code class="docutils literal notra
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – sequence of coordinate pairs over which to interpolate</li>
-<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
-<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – sequence of coordinate pairs over which to interpolate</li>
+<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
+<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
 <li><strong>**coords</strong> – keyword args specifying coordinate name (key, e.g. longitude) and
 list of corresponding sample point coordinates (value,
 e.g. <code class="docutils literal notranslate"><span class="pre">[1,2,3]</span></code>)</li>
@@ -1638,8 +1639,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">[1,2,3]</span>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if length of coordinate arrays are unequal or coord</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code></a> – if one of the provided coordinates does not exist[(‘a’, 1), (‘b’, 2), (‘c’, 3)]</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if length of coordinate arrays are unequal or coord</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">KeyError</span></code></a> – if one of the provided coordinates does not exist[(‘a’, 1), (‘b’, 2), (‘c’, 3)]</li>
 </ul>
 </td>
 </tr>
@@ -1670,9 +1671,9 @@ details <a class="reference external" href="http://scitools.org.uk/iris/docs/lat
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>coords</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – string IDs of coordinate(s) that are to be collapsed (e.g.
+<li><strong>coords</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – string IDs of coordinate(s) that are to be collapsed (e.g.
 <code class="docutils literal notranslate"><span class="pre">[&quot;longitude&quot;,</span> <span class="pre">&quot;latitude&quot;]</span></code>)</li>
-<li><strong>aggregator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><em>Aggregator</em><em> or </em><em>WeightedAggretor</em>) – the aggregator used. If input is string, it is converted into the
+<li><strong>aggregator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>Aggregator</em><em> or </em><em>WeightedAggretor</em>) – the aggregator used. If input is string, it is converted into the
 corresponding iris Aggregator object, see
 <code class="xref py py-func docutils literal notranslate"><span class="pre">str_to_iris()</span></code> for valid strings</li>
 <li><strong>**kwargs</strong> – additional keyword args (e.g. <code class="docutils literal notranslate"><span class="pre">weights</span></code>)</li>
@@ -1684,6 +1685,24 @@ corresponding iris Aggregator object, see
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData">GriddedData</a></p>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.extract">
+<code class="descname">extract</code><span class="sig-paren">(</span><em>constraint</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract subset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>constraint</strong> (<em>iris.Constraint</em>) – constraint that is to be applied</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">new data object containing cropped data</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData">GriddedData</a></td>
 </tr>
 </tbody>
 </table>
@@ -1728,9 +1747,9 @@ related to method and input parameters.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>time_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index in time to be plotted</li>
-<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
-<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
+<li><strong>time_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – index in time to be plotted</li>
+<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
 <li><strong>**kwargs</strong> – additional keyword arguments passed to
 <code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.quickplot.plot_map()</span></code></li>
 </ul>
@@ -1846,13 +1865,13 @@ identified by the delimiter used.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – file path or file name</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file path or file name</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">this object (with updated convention)</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyaerocom.io.fileconventions.FileConventionRead" title="pyaerocom.io.fileconventions.FileConventionRead">FileConventionRead</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if convention cannot be identified</td>
 </tr>
 </tbody>
 </table>
@@ -1885,14 +1904,14 @@ identified by the delimiter used.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – file path or file name</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file path or file name</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary containing keys <cite>year, var_name, ts_type</cite> and
 corresponding variables, extracted from the filename</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">OrderedDict</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if convention cannot be identified</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if convention cannot be identified</td>
 </tr>
 </tbody>
 </table>
@@ -1918,9 +1937,9 @@ corresponding variables, extracted from the filename</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>var</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – variable string ID (e.g. “od550aer”)</li>
-<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – desired year of observation (e.g. 2012)</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – string specifying temporal resolution (e.g. “daily”)</li>
+<li><strong>var</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable string ID (e.g. “od550aer”)</li>
+<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – desired year of observation (e.g. 2012)</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (e.g. “daily”)</li>
 </ul>
 </td>
 </tr>
@@ -1951,7 +1970,7 @@ ts_type = “daily”</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_vals</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – dictionary containing information</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_vals</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – dictionary containing information</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -1982,18 +2001,18 @@ ts_type = “daily”</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name_or_pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of model</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – print output</li>
+<li><strong>name_or_pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of model</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – print output</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model directory</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if model directory cannot be found</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if model directory cannot be found</p>
 </td>
 </tr>
 </tbody>
@@ -2009,18 +2028,18 @@ ts_type = “daily”</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of model</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – print output</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of model</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – print output</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Model directory</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if model directory cannot be found</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if model directory cannot be found</p>
 </td>
 </tr>
 </tbody>
@@ -2040,17 +2059,17 @@ correct. For the latter, please see <a class="reference internal" href="#pyaeroc
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>cube</strong> (<em>Cube</em>) – cube containing data</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
 is e.g. encrypted in the filename of a NetCDF file and may be
 accessed using <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
-<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
+<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True, if time dimension is ok, False if not</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
 </td>
 </tr>
 </tbody>
@@ -2067,11 +2086,11 @@ accessed using <code class="xref py py-class docutils literal notranslate"><span
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>cube</strong> (<em>Cube</em>) – cube containing data</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – temporal resolution of data (e.g. “hourly”, “daily”). This information
 is e.g. encrypted in the filename of a NetCDF file and may be
 accessed using <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.io.FileConventionRead</span></code></li>
-<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
-<li><strong>tindex_cube</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – index of time dimension in Cube</li>
+<li><strong>year</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – interger specifying year of observation, e.g. 2017</li>
+<li><strong>tindex_cube</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – index of time dimension in Cube</li>
 </ul>
 </td>
 </tr>
@@ -2094,9 +2113,9 @@ accessed using <code class="xref py py-class docutils literal notranslate"><span
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>update_inifile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the file <em>names.txt</em> will be updated. The file is located
+<li><strong>update_inifile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the file <em>names.txt</em> will be updated. The file is located
 in the installation <em>data</em> directory.</li>
-<li><strong>check_nc_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, only model IDs are included, for which at least one nc file
+<li><strong>check_nc_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If True, only model IDs are included, for which at least one nc file
 can be detected in the corresponding renamed sub directory</li>
 </ul>
 </td>
@@ -2126,15 +2145,15 @@ can be detected in the corresponding renamed sub directory</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proj_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – project base directory (i.e. pyaerocom.__dir__)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proj_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – project base directory (i.e. pyaerocom.__dir__)</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dictionary containing two keys (<cite>models</cite>, <cite>observations</cite>), with
 values being 2 dictionaries that contain pairs of <cite>name</cite> and
 test paths.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if the test_files.ini file cannot be found in the specified loaction</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if the test_files.ini file cannot be found in the specified loaction</td>
 </tr>
 </tbody>
 </table>
@@ -2167,19 +2186,19 @@ test paths.</td>
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lon_range">
 <code class="descname">lon_range</code><a class="headerlink" href="#pyaerocom.region.Region.lon_range" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – longitude range (min, max) covered by region</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – longitude range (min, max) covered by region</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lat_range">
 <code class="descname">lat_range</code><a class="headerlink" href="#pyaerocom.region.Region.lat_range" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – latitude range (min, max) covered by region</p>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – latitude range (min, max) covered by region</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lon_range_plot">
 <code class="descname">lon_range_plot</code><a class="headerlink" href="#pyaerocom.region.Region.lon_range_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – longitude range (min, max) used for plotting region. Defaults to
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – longitude range (min, max) used for plotting region. Defaults to
 values of <a class="reference internal" href="#pyaerocom.region.Region.lon_range" title="pyaerocom.region.Region.lon_range"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lon_range</span></code></a> but may be extended, see e.g.
 <a class="reference external" href="http://aerocom.met.no/DATA/SURFOBS/ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png">the example of india</a></p>
 </dd></dl>
@@ -2187,7 +2206,7 @@ values of <a class="reference internal" href="#pyaerocom.region.Region.lon_range
 <dl class="attribute">
 <dt id="pyaerocom.region.Region.lat_range_plot">
 <code class="descname">lat_range_plot</code><a class="headerlink" href="#pyaerocom.region.Region.lat_range_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – latitude range (min, max) used for plotting region. Defaults to
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> – latitude range (min, max) used for plotting region. Defaults to
 values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range" title="pyaerocom.region.Region.lat_range"><code class="xref py py-attr docutils literal notranslate"><span class="pre">lat_range</span></code></a> but may be extended, see e.g.
 <a class="reference external" href="http://aerocom.met.no/DATA/SURFOBS/ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png">the example of india</a></p>
 </dd></dl>
@@ -2197,9 +2216,9 @@ values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – ID of region (e.g. “EUROPE”)</li>
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>) – longitude range (min, max) covered by region</li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>) – latitude range (min, max) covered by region</li>
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – ID of region (e.g. “EUROPE”)</li>
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>) – longitude range (min, max) covered by region</li>
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>) – latitude range (min, max) covered by region</li>
 </ul>
 </td>
 </tr>
@@ -2234,13 +2253,13 @@ values of <a class="reference internal" href="#pyaerocom.region.Region.lat_range
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – strind ID of region (must be specified in <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini">regions.ini</a>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – strind ID of region (must be specified in <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini">regions.ini</a>
 file)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if regions.ini file does not exist</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if default region with ID specified by input parameter <code class="docutils literal notranslate"><span class="pre">name</span></code>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if regions.ini file does not exist</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NameError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NameError</span></code></a> – if default region with ID specified by input parameter <code class="docutils literal notranslate"><span class="pre">name</span></code>
 cannot be found in regions.ini file</li>
 </ul>
 </td>
@@ -2261,7 +2280,7 @@ cannot be found in regions.ini file</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">all default region IDs (sections in <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini">regions.ini</a> file)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)">list</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
 </tr>
 </tbody>
 </table>
@@ -2283,7 +2302,7 @@ cannot be found in regions.ini file</li>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary containing all default regions that are found in
 the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini">regions.ini</a> file</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
 </tr>
 </tbody>
 </table>
@@ -2308,20 +2327,20 @@ low level, very flexible plot method</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">GriddedData</span></code>) – input grid data object. Uses first time stamp if data is has
 more than one time stamp</li>
-<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
-<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
+<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
 <li><strong>color_norm</strong> – data mapping norm for color display</li>
-<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
-<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
-<li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
+<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
+<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
+<li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
 This may be used, e.g. for logarithmic scales that should include 0.</li>
-<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal notranslate"><span class="pre">vmin</span></code></li>
-<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal notranslate"><span class="pre">vmax</span></code></li>
-<li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
+<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal notranslate"><span class="pre">vmin</span></code></li>
+<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal notranslate"><span class="pre">vmax</span></code></li>
+<li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
 (see <code class="xref py py-func docutils literal notranslate"><span class="pre">get_cmap_levels_auto()</span></code> for implementation)</li>
-<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True,</li>
-<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – height of figure in inches</li>
-<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if True, the aspect of the GeoAxes instance is kept fix using the
+<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True,</li>
+<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – height of figure in inches</li>
+<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if True, the aspect of the GeoAxes instance is kept fix using the
 default aspect <code class="docutils literal notranslate"><span class="pre">MAP_AXES_ASPECT</span></code> defined in
 <a class="reference internal" href="#module-pyaerocom.plot.config" title="pyaerocom.plot.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyaerocom.plot.config</span></code></a></li>
 <li><strong>cbar_levels</strong> (<em>iterable</em><em>, </em><em>optional</em>) – discrete colorbar levels. Will be computed automatically, if None
@@ -2337,7 +2356,7 @@ be string</li>
 input args (<code class="docutils literal notranslate"><span class="pre">figh</span></code> and <code class="docutils literal notranslate"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
 Figure is wiped clean before plotting, so any plotted content will be
 lost</li>
-<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, print output</li>
+<li><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, print output</li>
 </ul>
 </td>
 </tr>
@@ -2365,20 +2384,20 @@ title or lon / lat range, etc.)</p>
 <li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">GriddedData</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>) – input data from one timestamp. May also be of type
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.GriddedData</span></code>. Uses first time stamp if data is has
 more than one time stamp</li>
-<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
-<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
+<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
 <li><strong>color_norm</strong> – data mapping norm for color display</li>
-<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
-<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
-<li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
+<li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
+<li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
+<li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
 This may be used, e.g. for logarithmic scales that should include 0.</li>
-<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal notranslate"><span class="pre">vmin</span></code></li>
-<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal notranslate"><span class="pre">vmax</span></code></li>
-<li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
+<li><strong>c_under</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values smaller than <code class="docutils literal notranslate"><span class="pre">vmin</span></code></li>
+<li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal notranslate"><span class="pre">vmax</span></code></li>
+<li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
 (see <code class="xref py py-func docutils literal notranslate"><span class="pre">get_cmap_levels_auto()</span></code> for implementation)</li>
-<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – if True,</li>
-<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – height of figure in inches</li>
-<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if not None, then the figure width is computed by multiplication of
+<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True,</li>
+<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – height of figure in inches</li>
+<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if not None, then the figure width is computed by multiplication of
 the input float with input parameter <code class="docutils literal notranslate"><span class="pre">figh</span></code></li>
 </ul>
 </td>
@@ -2460,7 +2479,7 @@ stamp, the first index is used)</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or :obj) – </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or :obj) – </td>
 </tr>
 </tbody>
 </table>
@@ -2509,9 +2528,9 @@ color_coastline : #e6e6e6</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theme_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – name of default theme</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>theme_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of default theme</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if <code class="docutils literal notranslate"><span class="pre">theme_name</span></code> is not a valid default theme</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if <code class="docutils literal notranslate"><span class="pre">theme_name</span></code> is not a valid default theme</td>
 </tr>
 </tbody>
 </table>
@@ -2537,7 +2556,7 @@ color_coastline : #e6e6e6</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dictionary representation of this object</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
 </tr>
 </tbody>
 </table>
@@ -2566,7 +2585,7 @@ color_coastline : #e6e6e6</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – key of <code class="xref py py-attr docutils literal notranslate"><span class="pre">_STR_TO_IRIS</span></code> dictionary</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – key of <code class="xref py py-attr docutils literal notranslate"><span class="pre">_STR_TO_IRIS</span></code> dictionary</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">corresponding iris analysis object (e.g. Aggregator, method)</td>
 </tr>
@@ -2590,12 +2609,12 @@ standard calendar.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.coords.DimCoord</span></code>) – array containing numerical time stamps (relative to basedate of
+<li><strong>times</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.coords.DimCoord</span></code>) – array containing numerical time stamps (relative to basedate of
 <code class="docutils literal notranslate"><span class="pre">cfunit</span></code>). Can also be a single number.</li>
-<li><strong>cfunit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Unit</span></code>, optional) – CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
+<li><strong>cfunit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Unit</span></code>, optional) – CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
 unit. Required if <cite>times</cite> is not an instance of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.coord.DimCoord</span></code></li>
-<li><strong>calendar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – string specifying calendar (only required if <code class="docutils literal notranslate"><span class="pre">cfunit</span></code> is of type
+<li><strong>calendar</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – string specifying calendar (only required if <code class="docutils literal notranslate"><span class="pre">cfunit</span></code> is of type
 <code class="docutils literal notranslate"><span class="pre">str</span></code>).</li>
 </ul>
 </td>
@@ -2606,7 +2625,7 @@ unit. Required if <cite>times</cite> is not an instance of
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">ndarray</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if cfunit is <code class="docutils literal notranslate"><span class="pre">str</span></code> and calendar is not provided or invalid, or if
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if cfunit is <code class="docutils literal notranslate"><span class="pre">str</span></code> and calendar is not provided or invalid, or if
 the cfunit string is invalid</p>
 </td>
 </tr>
@@ -2639,22 +2658,22 @@ to North America),</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – variable name or list of variable names. Note that if multiple
+<li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional) – variable name or list of variable names. Note that if multiple
 variables are provided in a list</li>
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing longitude range for cropping
 Example input to crop around meridian: <cite>lon_range=(-30, 30)</cite></li>
-<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping.</li>
-<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
+<li><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – 2-element tuple containing latitude range for cropping.</li>
+<li><strong>time_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – <p>2-element tuple containing time range for cropping. Allowed data
 types for specifying the times are</p>
 <blockquote>
 <div><ol class="arabic">
 <li>a combination of 2 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances or</li>
 <li>a combination of two strings that can be directly converted            into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> instances (e.g.            <cite>time_range=(“2010-1-1”, “2012-1-1”)</cite>) or</li>
-<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>).</li>
+<li>directly a combination of indices (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>).</li>
 </ol>
 </div></blockquote>
 </li>
-<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array. If True,
+<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array. If True,
 then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 </ul>
 </td>
@@ -2704,7 +2723,7 @@ then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple specifying latitude range</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lat_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying latitude range</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the corresponding iris.Constraint instance</td>
 </tr>
@@ -2733,8 +2752,8 @@ intersection method instead).</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple containing from left -&gt; right end of range</li>
-<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array. If True,
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple containing from left -&gt; right end of range</li>
+<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array. If True,
 then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 </ul>
 </td>
@@ -2758,8 +2777,8 @@ then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a>) – 2-element tuple containing from left -&gt; right end of range</li>
-<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array of the
+<li><strong>lon_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple containing from left -&gt; right end of range</li>
+<li><strong>meridian_centre</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – specifies the coordinate definition range of longitude array of the
 data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</li>
 </ul>
 </td>
@@ -2771,7 +2790,7 @@ data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</l
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if first coordinate in lon_range equals or exceeds second</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if first coordinate in lon_range equals or exceeds second</li>
 <li><code class="xref py py-exc docutils literal notranslate"><span class="pre">LongitudeConstraintError</span></code> – if the input implies cropping over border of longitude array
 (e.g. 160 -&gt; - 160 if -180 &lt;= lon &lt;= 180).</li>
 </ul>
@@ -2812,7 +2831,7 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">iris Constraint instance that can, e.g., be used as input for
-<code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.griddeddata.GriddedData.extract()</span></code></p>
+<a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.extract" title="pyaerocom.griddeddata.GriddedData.extract"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.griddeddata.GriddedData.extract()</span></code></a></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Constraint</p>
@@ -2831,6 +2850,18 @@ containing the pandas timeseries</p>
 <p>FOR TESTING ONLY!</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="pyaerocom.helpers.griesie_dataframe_testing">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">griesie_dataframe_testing</code><span class="sig-paren">(</span><em>model_data</em>, <em>obs_data</em>, <em>startdate</em>, <em>enddate</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#griesie_dataframe_testing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.griesie_dataframe_testing" title="Permalink to this definition">¶</a></dt>
+<dd><p>testing routine to create a scatterplot using a pandas data frame</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.griesie_xarray_to_timeseries">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">griesie_xarray_to_timeseries</code><span class="sig-paren">(</span><em>xarray_obj, obs_lats, obs_lons, vars_to_read=['od550_aer'], debug_mode=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#griesie_xarray_to_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.griesie_xarray_to_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>test routine to colocate xarray object</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-pyaerocom.mathutils">
 <span id="mathematical-helpers"></span><h3>Mathematical helpers<a class="headerlink" href="#module-pyaerocom.mathutils" title="Permalink to this headline">¶</a></h3>
@@ -2843,11 +2874,11 @@ containing the pandas timeseries</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or iterable) – input number</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or iterable) – input number</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">exponent of input number(s)</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> containing ints</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> containing ints</td>
 </tr>
 </tbody>
 </table>
@@ -2868,15 +2899,15 @@ containing the pandas timeseries</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>low</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – lower end of range</li>
-<li><strong>high</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – upper end of range</li>
+<li><strong>low</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – lower end of range</li>
+<li><strong>high</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – upper end of range</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">magnitudes spanned by input numbers</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></p>
 </td>
 </tr>
 </tbody>

@@ -101,6 +101,8 @@ via an instance of the ``Config`` class.
     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
     AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
     AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
     AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
@@ -211,6 +213,8 @@ See what's currently in there.
     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
     AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
     AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
     AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
@@ -287,6 +291,8 @@ the method ``load_config(config_file)`` or the wrapper method
     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
     AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
     AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
     AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
@@ -369,6 +375,8 @@ choose valid paths, this should work.
     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
     AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
     AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
     AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
@@ -443,6 +451,8 @@ have to reload the config as it was at the beginning:
     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
     AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
     AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
     AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
@@ -499,7 +509,7 @@ find a unique ID and thus raise an Exception):
 
 .. parsed-literal::
 
-    OSError("No unique match found for ID ot pattern CAM*CTRL*. Found multiple matches. Please choose from the following list: ['CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM4-Oslo_Vprelim.A2.CTRL', 'CAM5-MAM3-PNNL.A2.CTRL', 'CAM4-Oslo-Vcmip5online.A2.CTRL', 'CAM4-Oslo-Vcmip5.A2.CTRL', 'CAM4-Oslo-Vcmip5emi2000.A2.CTRL', 'CAM5.1-MAM3-PNNL.A2.CTRL', 'CAM3.A2.CTRL', 'CAM4-Oslo.A2.CTRL', 'BCC_AGCM2.0.1_CAM.A2.CTRL', 'ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD', 'ECMWF-IFS-CY43R1-CAMS-NITRATE-DEV_AP3-CTRL2016-PD', 'CAM5.4_CTRL2016', 'CAM5_CTRL2016', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']",)
+    OSError("No unique match found for ID ot pattern CAM*CTRL*. Found multiple matches. Please choose from the following list: ['CAMS_REANCTRL', 'CAMS_REANCTRL', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM4-Oslo_Vprelim.A2.CTRL', 'CAM5-MAM3-PNNL.A2.CTRL', 'CAM4-Oslo-Vcmip5online.A2.CTRL', 'CAM4-Oslo-Vcmip5.A2.CTRL', 'CAM4-Oslo-Vcmip5emi2000.A2.CTRL', 'CAM5.1-MAM3-PNNL.A2.CTRL', 'CAM3.A2.CTRL', 'CAM4-Oslo.A2.CTRL', 'BCC_AGCM2.0.1_CAM.A2.CTRL', 'ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD', 'ECMWF-IFS-CY43R1-CAMS-NITRATE-DEV_AP3-CTRL2016-PD', 'CAM5.4_CTRL2016', 'CAM5_CTRL2016', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']",)
 
 
 Reading the aerosol optical detph at 550nm using a specified model ID
@@ -661,7 +671,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f61a0589470>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7ffba8d523c8>
 
 
 

@@ -13,9 +13,18 @@ from pyaerocom.exceptions import LongitudeConstraintError
 from cf_units import Unit
 from datetime import MINYEAR, datetime
 
+# The following import was removed and the information about available unit 
+# strings was copied from the netCDF4 module directly here
 # from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
 #                     hr_units, day_units)
 # from netCDF4._netCDF4 import _dateparse
+microsec_units = ['microseconds', 'microsecond', 'microsec', 'microsecs']
+millisec_units = ['milliseconds', 'millisecond', 'millisec', 'millisecs']
+sec_units = ['second', 'seconds', 'sec', 'secs', 's']
+min_units = ['minute', 'minutes', 'min', 'mins']
+hr_units = ['hour', 'hours', 'hr', 'hrs', 'h']
+day_units = ['day', 'days', 'd']
+
 #
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
@@ -108,10 +117,8 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     if not isinstance(cfunit, Unit):
         raise ValueError("Please provide cfunit either as instance of class "
                          "cf_units.Unit or as a string")
-    cfu_str, calendar = cfunit.name, cfunit.calendar
-    basedate = _dateparse(cfu_str)
-    cfu_str = cfunit.name
-    basedate = _dateparse(cfu_str)  
+    calendar = cfunit.calendar
+    basedate = cfunit.num2date(0)
     if ((calendar == 'proleptic_gregorian' and basedate.year >= MINYEAR) or 
         (calendar in ['gregorian','standard'] and basedate > GREGORIAN_BASE)):
         cfu_str = cfunit.name
@@ -385,16 +392,18 @@ def to_time_series_griesie(data, lats, lons, times, var_name=['zdust'],**kwargs)
         result.append(_dict)
     return result
 
+# TODO: Review and move into test-suite
 def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
     """testing routine to create a scatterplot using a pandas data frame"""
 
     import pyaerocom.io as pio
     import pyaerocom as pa
-    import itertools
     import matplotlib.pyplot as plt
     import pandas as pd
 
-    obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
+    obs_data_as_series = obs_data.to_timeseries(start_date=startdate, 
+                                                end_date=enddate, 
+                                                freq='D')
     obs_lats = obs_data.latitude
     obs_lons = obs_data.longitude
     obs_lats=[obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
@@ -413,6 +422,7 @@ def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
     # plot = df.plot.scatter('obs','model')
     # df.show()
 
+# TODO: review and move into test-suite
 def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_read=['od550_aer'], debug_mode = False):
     """test routine to colocate xarray object"""
 
@@ -444,6 +454,8 @@ def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_read=['
 
 
 if __name__=="__main__":
+    
+    
     import doctest
     import warnings
     warnings.simplefilter("ignore")
