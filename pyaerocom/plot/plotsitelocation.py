@@ -11,10 +11,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from mpl_toolkits.basemap import Basemap
+try:
+    from mpl_toolkits.basemap import Basemap
+    BASEMAP_AVAILABLE = True
+except ModuleNotFoundError:
+    BASEMAP_AVAILABLE = False
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
+# TODO: Not used currently, required??
 # text positions for the annotations
 XYPOS=[]
 XYPOS.append((.01, 0.95))
@@ -30,22 +35,29 @@ XYPOS.append((0.8, 0.1))
 XYPOS.append((0.8, 0.06))
 
 
-def plotsitelocation(model_name, model_data = None, obs_data = None, Options = None, verbose = True):
+def plotsitelocation(model_name, model_data=None, obs_data=None, options=None, 
+                     verbose=True):
     """method to plot scatterplots"""
 
     plt_name = 'SITELOCATION'
-    var_to_run = Options['VariablesToRun'][0]
-    obs_network_name = Options['ObsNetworkName'][0]
-    obs_data_as_series = obs_data.to_timeseries(start_date=Options['StartDate'], end_date=Options['EndDate'], freq='D')
-    obs_lats = [obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
-    obs_lons = [obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
-    obs_names = [obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
+    var_to_run = options['VariablesToRun'][0]
+    obs_network_name = options['ObsNetworkName'][0]
+    obs_data_as_series = obs_data.to_timeseries(start_date=options['StartDate'], 
+                                                end_date=options['EndDate'], 
+                                                freq='D')
+    obs_lats = [obs_data_as_series[i]['latitude'] 
+                for i in range(len(obs_data_as_series))]
+    obs_lons = [obs_data_as_series[i]['longitude'] 
+                for i in range(len(obs_data_as_series))]
+    obs_names = [obs_data_as_series[i]['station name'] 
+                 for i in range(len(obs_data_as_series))]
     # model_station_data = model_data.interpolate([("latitude", obs_lats), ("longitude", obs_lons)])
     # times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
     # model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons,
     #                                                          times_as_dt64, var_name = [var_to_run])
 
-    model_data_as_series = model_data.to_time_series([("latitude", obs_lats), ("longitude", obs_lons)])
+    model_data_as_series = model_data.to_time_series([("latitude", obs_lats), 
+                                                      ("longitude", obs_lons)])
 
     df_time = pd.DataFrame()
     df_points = pd.DataFrame()
@@ -75,7 +87,8 @@ def plotsitelocation(model_name, model_data = None, obs_data = None, Options = N
         # df_time has now all time steps where either one of the obs or model data have data
         #
         # df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))
-        df_time = df_time.append(pd.DataFrame(df_time_temp, columns=df_time_temp.columns))
+        df_time = df_time.append(pd.DataFrame(df_time_temp, 
+                                              columns=df_time_temp.columns))
 
     # remove all indexes where either one of the data pairs is NaN
     # mainly done to get the number of days right.
@@ -109,15 +122,16 @@ def plotsitelocation(model_name, model_data = None, obs_data = None, Options = N
     if verbose:
         sys.stdout.write(figname+"\n")
 
-    LatMin = -90
-    LatEnd = 90.
-    LonMin = -180.
-    LonEnd = 180.
-
+    lat_low = -90
+    lat_high = 90.
+    lon_low = -180.
+    lon_high = 180.
+    
+    # TODO: review basemap dependency
     basemap_flag=False
-    if basemap_flag:
-        m = Basemap(projection='cyl', llcrnrlat=LatMin, urcrnrlat=LatEnd,
-                    llcrnrlon=LonMin, urcrnrlon=LonEnd, resolution='c', fix_aspect=False)
+    if basemap_flag and BASEMAP_AVAILABLE:
+        m = Basemap(projection='cyl', llcrnrlat=lat_low, urcrnrlat=lat_high,
+                    llcrnrlon=lon_low, urcrnrlon=lon_high, resolution='c', fix_aspect=False)
 
         x, y = m(obs_lons, obs_lats)
         # m.drawmapboundary(fill_color='#99ffff')
@@ -130,8 +144,8 @@ def plotsitelocation(model_name, model_data = None, obs_data = None, Options = N
         m.drawcoastlines()
     else:
         ax = plt.axes([0.15,0.1,0.8,0.8],projection=ccrs.PlateCarree())
-        ax.set_ylim([LatMin, LatEnd])
-        ax.set_xlim([LonMin, LonEnd])
+        ax.set_ylim([lat_low, lat_high])
+        ax.set_xlim([lon_low, lon_high])
         #ax.set_aspect(2)
 
         ax.coastlines()
