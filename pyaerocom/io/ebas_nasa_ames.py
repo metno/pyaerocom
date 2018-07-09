@@ -279,6 +279,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
  
     @property
     def data(self):
+        """2D numpy array containing data table"""
         return self._data
     
     @property
@@ -287,27 +288,33 @@ class EbasNasaAmesFile(NasaAmesHeader):
     
     @property
     def shape(self):
+        """Shape of data array"""
         return self.data.shape
     
     @property
     def col_num(self):
+        """Number of columns in table"""
         return self.num_cols_dependent + 1
     
     @property
     def col_names(self):
+        """Column names of table"""
         #cols = [x["name"] for x in self.var_defs]
         return [x["name"] for x in self.var_defs]
     
     @property
     def col_names_vars(self):
+        """Names of all columns that are flagged as variables"""
         return [x.name for x in self.var_defs if x.is_var]
     
     @property
     def col_nums_vars(self):
+        """Column index number of all variables"""
         return [i for (i, item) in enumerate(self.var_defs) if item.is_var]
 
     @property
     def base_date(self):
+        """Base date of data"""
         if not "timezone" in self.meta:
             raise AttributeError("Fatal: could not infer base date. Timezone "
                                  "is not available in file header")
@@ -317,10 +324,27 @@ class EbasNasaAmesFile(NasaAmesHeader):
     
     @property
     def time_unit(self):
+        """Time unit of data"""
         return self.descr_time_unit.split()[0].strip()
     
     @staticmethod
     def numarr_to_datetime64(basedate, num_arr, mulfac_to_sec):
+        """Convert array of numerical timestamps into datetime64 array
+        
+        Parameters
+        ----------
+        basedate : datetime64
+            reference date
+        num_arr : ndarray
+            numerical time stamps relative to basedate
+        mulfac_to_sec : float
+            multiplicative factor to convert numerical values to unit of 
+            seconds
+        Returns
+        -------
+        ndarray
+            array containing timestamps as datetime64 objects
+        """
         totnum = len(num_arr)
         if totnum == 0:
             raise AttributeError("No data available in file")
@@ -328,20 +352,30 @@ class EbasNasaAmesFile(NasaAmesHeader):
             num_arr = np.asarray([num_arr])
         return basedate + (num_arr * mulfac_to_sec).astype("timedelta64[s]")
     
-    def decode_flags_col(self, colnum=None):
-        if colnum is None:
-            l = self.col_names
-            flag_cols = [i for (i, item) in enumerate(l) if "numflag" in item]
-            if len(flag_cols) > 1:
-                raise ValueError("Found multiple flag columns: {}. Please "
-                                 "specify which column to decode.".format(flag_cols))
-            colnum = flag_cols[0]
-        elif not self.var_defs[colnum].is_flag:
-            raise IndexError("Provided column number is not a flag column")
+# =============================================================================
+#     def decode_flags_col(self, colnum=None):
+#         """Decode flags column
+#         
+#         Parameters
+#         ----------
+#         colnum : int
+#             flag column number (only relevant if file contains multiple flag
+#             columns)
+#         """
+#         if colnum is None:
+#             l = self.col_names
+#             flag_cols = [i for (i, item) in enumerate(l) if "numflag" in item]
+#             if len(flag_cols) > 1:
+#                 raise ValueError("Found multiple flag columns: {}. Please "
+#                                  "specify which column to decode.".format(flag_cols))
+#             colnum = flag_cols[0]
+#         elif not self.var_defs[colnum].is_flag:
+#             raise IndexError("Provided column number is not a flag column")
+# =============================================================================
         
             
     def to_dataframe(self):
-        """Convert to dataframe"""
+        """Convert table to dataframe"""
         return pd.DataFrame(data=self.data[:,self.col_nums_vars],
                             index=self.time_stamps,
                             columns=self.col_names_vars)
