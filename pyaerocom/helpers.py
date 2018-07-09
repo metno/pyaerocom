@@ -13,10 +13,10 @@ from pyaerocom.exceptions import LongitudeConstraintError
 from cf_units import Unit
 from datetime import MINYEAR, datetime
 
-from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
-                    hr_units, day_units)
-from netCDF4._netCDF4 import _dateparse
- 
+# from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
+#                     hr_units, day_units)
+# from netCDF4._netCDF4 import _dateparse
+#
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
 GREGORIAN_BASE = datetime(1582, 10, 15)
@@ -385,6 +385,62 @@ def to_time_series_griesie(data, lats, lons, times, var_name=['zdust'],**kwargs)
         result.append(_dict)
     return result
 
+def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
+    """testing routine to create a scatterplot using a pandas data frame"""
+
+    import pyaerocom.io as pio
+    import pyaerocom as pa
+    import itertools
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
+    obs_lats = obs_data.latitude
+    obs_lons = obs_data.longitude
+    obs_lats=[obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
+    obs_lons=[obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
+    obs_names=[obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
+    model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
+    times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
+    model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
+    print(obs_lats)
+    # # single station
+    # df = pd.DataFrame(obs_data_as_series[1]['zdust'], columns=['obs'])
+    # df['model'] = model_data_as_series[1]['zdust']
+    # # remove points where any of the df is NaN
+    # #df = df.dropna(axis=0, how='any')
+    # correlation = df.corr(method='pearson')
+    # plot = df.plot.scatter('obs','model')
+    # df.show()
+
+def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_read=['od550_aer'], debug_mode = False):
+    """test routine to colocate xarray object"""
+
+    import pandas as pd
+    import numpy as np
+    result=[]
+    if not debug_mode:
+        max_index = len(obs_lats)
+    else:
+        max_index = 20
+
+    for index in range(max_index):
+        print(index)
+        xarray_col = xarray_obj.sel(latitude=obs_lats[index], longitude=obs_lons[index], method='nearest')
+        _dict = {}
+        # _dict['latitude'] = obs_lats[index]
+        # _dict['longitude'] = obs_lons[index]
+        _dict['latitude'] = np.float_(xarray_col['latitude'])
+        _dict['longitude'] = np.float_(xarray_col['longitude'])
+
+        #data_frame = xarray_col.to_dataframe()
+        for var in vars_to_read:
+            # _dict[var] = pd.Series(data_frame[var])
+            # _dict[var] = xarray_col[var].to_series()
+            _dict[var] = pd.Series(xarray_col[var], index=xarray_col['time'], dtype=np.float_)
+
+        result.append(_dict)
+    return result
 
 
 if __name__=="__main__":
@@ -401,16 +457,16 @@ if __name__=="__main__":
         get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
     except ValueError:
         print("Expected behaviour")
-    
+
     from iris import load
     cubes = load(files['models']['aatsr_su_v4.3'])
     lons = cubes[0].coord("longitude").points
     meridian_centre = True if lons.max() > 180 else False
-    c = get_constraint(var_names="od550aer", 
-                       lon_range=(50, 150), 
-                       lat_range=(20, 60), 
+    c = get_constraint(var_names="od550aer",
+                       lon_range=(50, 150),
+                       lat_range=(20, 60),
                        time_range=("2008-02-01", "2008-02-05"))
-    
+
     cube_crop = cubes.extract(c)[0]
 
                            

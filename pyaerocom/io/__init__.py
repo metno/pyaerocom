@@ -32,8 +32,11 @@
 #MA 02110-1301, USA
 
 # =============================================================================
-from .read_aeronet_sdav2 import ReadAeronetSDAV2
+# from .read_aeronet_sdav2 import ReadAeronetSDAV2
+from .read_aeronet_invv2 import ReadAeronetInvV2
+from .read_aeronet_sdav3 import ReadAeronetSdaV3
 from .read_aeronet_sunv2 import ReadAeronetSunV2
+from .read_aeronet_sunv3 import ReadAeronetSunV3
 from .ebas_nasa_ames import EbasNasaAmesFile
 from .ebas_sqlite_query import EbasSQLRequest, EbasFileIndex
 
