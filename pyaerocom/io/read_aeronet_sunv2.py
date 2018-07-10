@@ -276,7 +276,7 @@ Length: 223, dtype: float64}
             self.metadata[met_data_key]['longitude'] = stat_obs_data['longitude']
             self.metadata[met_data_key]['altitude'] = stat_obs_data['altitude']
             self.metadata[met_data_key]['PI'] = stat_obs_data['PI']
-            self.metadata[met_data_key]['data_set_name'] = self.DATASET_NAME
+            self.metadata[met_data_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things

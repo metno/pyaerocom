@@ -244,7 +244,7 @@ Attributes:
                 self.metadata[met_data_key]['longitude'] = stat_obs_data.attrs['Longitude_degrees_east']
                 self.metadata[met_data_key]['altitude'] = stat_obs_data.attrs['Altitude_meter_asl']
                 self.metadata[met_data_key]['PI'] = ''
-                self.metadata[met_data_key]['data_set_name'] = self.DATASET_NAME
+                self.metadata[met_data_key]['dataset_name'] = self.DATASET_NAME
                 self.metadata[met_data_key]['has_zdust'] = False
                 # this is a list with indexes of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things

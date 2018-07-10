@@ -113,7 +113,7 @@ class ReadAeronetSdaV3:
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
-    def __init__(self, index_pointer=0, data_set_to_read=None, verbose=False):
+    def __init__(self, index_pointer=0, dataset_to_read=None, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -122,11 +122,11 @@ class ReadAeronetSdaV3:
         # the reading actually works for all V3 SDA data sets
         # so just adjust the name and the path here
         # const.AERONET_SUN_V3L15_SDA_DAILY_NAME is the default
-        if data_set_to_read is None:
+        if dataset_to_read is None:
             pass
             # self.dataset_name = const.AERONET_SUN_V3L15_AOD_DAILY_NAME
             # self.dataset_path = const.OBSCONFIG[const.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH']
-        elif data_set_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
+        elif dataset_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
             self.DATASET_NAME = const.AERONET_SUN_V3L2_SDA_DAILY_NAME
             self.DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH']
 
@@ -312,7 +312,7 @@ class ReadAeronetSdaV3:
             self.metadata[met_data_key]['longitude'] = stat_obs_data['longitude'][-1]
             self.metadata[met_data_key]['altitude'] = stat_obs_data['altitude'][-1]
             self.metadata[met_data_key]['PI'] = stat_obs_data['PI']
-            self.metadata[met_data_key]['data_set_name'] = self.DATASET_NAME
+            self.metadata[met_data_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things

@@ -83,20 +83,20 @@ class ReadUngridded:
     # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
-    def __init__(self, data_set_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME],
+    def __init__(self, dataset_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME],
                  vars_to_read=ReadAeronetSunV2.PROVIDES_VARIABLES,
                  verbose=False):
-        if isinstance(data_set_to_read, list):
-            self.data_sets_to_read = data_set_to_read
+        if isinstance(dataset_to_read, list):
+            self.datasets_to_read = dataset_to_read
         else:
-            self.data_sets_to_read = [data_set_to_read]
+            self.datasets_to_read = [dataset_to_read]
 
         self.verbose = verbose
         self.vars_to_read = vars_to_read
         self.metadata = {}
         self.data = []
         self.filemasks = []
-        self.__version__ = 0.02
+        self.__version__ = 0.03
         self.datasetnames = []
         self.infiles = []
         # file caching
@@ -203,7 +203,7 @@ class ReadUngridded:
         -------
         >>> import pyaerocom.io.readungridded as pio
         >>> from pyaerocom import const
-        >>> obj = pio.ReadUngridded(data_set_to_read=[const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME])
+        >>> obj = pio.ReadUngridded(dataset_to_read=[const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME])
         >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
@@ -211,19 +211,19 @@ class ReadUngridded:
 
         import pickle
 
-        for data_set_to_read in self.data_sets_to_read:
+        for dataset_to_read in self.datasets_to_read:
             # read the data sets
             cache_hit_flag = False
 
-            data_dir = const.OBSCONFIG[data_set_to_read]['PATH']
-            revision = self.get_data_revision(data_set_to_read)
+            data_dir = const.OBSCONFIG[dataset_to_read]['PATH']
+            revision = self.get_data_revision(dataset_to_read)
             newest_file_in_read_dir = max(glob.iglob(os.path.join(data_dir, '*')), 
                                           key=os.path.getctime)
             newest_file_date_in_read_dir = os.path.getctime(newest_file_in_read_dir)
 
             cache_file = os.path.join(
                 const.OBSDATACACHEDIR,
-                '_'.join([data_set_to_read, 'AllYears', 'AllVars.plk']))
+                '_'.join([dataset_to_read, 'AllYears', 'AllVars.plk']))
             # TODO: check for yearly data sets as well and single variables as well
             if os.path.isfile(cache_file):
                 # CACHE HIT
@@ -245,10 +245,10 @@ class ReadUngridded:
                 # The rest can only be checked when the reading object is initialised
                 object_version_saved = pickle.load(in_handle)
 
-            # self.ReadCacheData(data_set_to_read)
+            # self.ReadCacheData(dataset_to_read)
             # CACHE MISS
             # call the different obs data reading classes
-            if data_set_to_read == const.AERONET_SUN_V2L2_AOD_DAILY_NAME:
+            if dataset_to_read == const.AERONET_SUN_V2L2_AOD_DAILY_NAME:
                 # read AERONETSUN V2 L2 daily data set
                 read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, 
                                               verbose=self.verbose)
@@ -262,11 +262,11 @@ class ReadUngridded:
                     # re-read data
                     read_dummy.read(self.vars_to_read)
 
-            elif data_set_to_read == const.AERONET_SUN_V3L15_SDA_DAILY_NAME or \
-                    data_set_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
+            elif dataset_to_read == const.AERONET_SUN_V3L15_SDA_DAILY_NAME or \
+                    dataset_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
                 # read AERONET SDA V3 L1.5 daily data set
                 read_dummy = ReadAeronetSdaV3(index_pointer=self.index_pointer,
-                                              data_set_to_read=data_set_to_read,
+                                              dataset_to_read=dataset_to_read,
                                               verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
@@ -278,10 +278,10 @@ class ReadUngridded:
                     # re-read data
                     read_dummy.read(self.vars_to_read)
 
-            elif data_set_to_read == const.AERONET_INV_V2L2_DAILY_NAME:
+            elif dataset_to_read == const.AERONET_INV_V2L2_DAILY_NAME:
                 # read AERONET inversions V2 L2.0 daily data set
                 read_dummy = ReadAeronetInvV2(index_pointer=self.index_pointer,
-                                              data_set_to_read=data_set_to_read,
+                                              dataset_to_read=dataset_to_read,
                                               verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
@@ -293,7 +293,7 @@ class ReadUngridded:
                     # re-read data
                     read_dummy.read(self.vars_to_read)
 
-            elif data_set_to_read == const.AERONET_SUN_V3L15_AOD_DAILY_NAME:
+            elif dataset_to_read == const.AERONET_SUN_V3L15_AOD_DAILY_NAME:
                 # read AERONETSUN V3 L1.5 daily data set
                 read_dummy = ReadAeronetSunV3(index_pointer=self.index_pointer,
                                               verbose=self.verbose)
@@ -307,10 +307,10 @@ class ReadUngridded:
                     # re-read data
                     read_dummy.read(self.vars_to_read)
 
-            elif data_set_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
+            elif dataset_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
                 # read AERONETSUN V3 L1.5 all points data set
                 read_dummy = ReadAeronetSunV3(index_pointer=self.index_pointer,
-                                              data_set_to_read=data_set_to_read,
+                                              dataset_to_read=dataset_to_read,
                                               verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
@@ -323,13 +323,13 @@ class ReadUngridded:
                     read_dummy.read(self.vars_to_read)
 
 
-            elif data_set_to_read == const.AERONET_SUN_V3L20_AOD_DAILY_NAME:
+            elif dataset_to_read == const.AERONET_SUN_V3L20_AOD_DAILY_NAME:
                 print("Not implemented at this point.")
 
-            elif data_set_to_read == const.AERONET_SUN_V3L20_AOD_ALL_POINTS_NAME:
+            elif dataset_to_read == const.AERONET_SUN_V3L20_AOD_ALL_POINTS_NAME:
                 print("Not implemented at this point.")
 
-            elif data_set_to_read == const.EARLINET_NAME:
+            elif dataset_to_read == const.EARLINET_NAME:
                 read_dummy = ReadEarlinet(index_pointer=self.index_pointer, 
                                           verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
@@ -346,9 +346,9 @@ class ReadUngridded:
                 continue
             self.infiles.append(read_dummy.files)
             self.index_pointer = read_dummy.index_pointer
-            self.data_dirs[data_set_to_read] = const.OBSCONFIG[data_set_to_read]['PATH']
-            self.revision[data_set_to_read] = revision
-            self.data_version[data_set_to_read] = read_dummy.__version__
+            self.data_dirs[dataset_to_read] = const.OBSCONFIG[dataset_to_read]['PATH']
+            self.revision[dataset_to_read] = revision
+            self.data_version[dataset_to_read] = read_dummy.__version__
             # TODO do not forget to adjust pointers between metadata and data in case there's more than one data set!!!
             if isinstance(self.data, list):
                 # this is the 1st data set
@@ -448,12 +448,12 @@ class ReadUngridded:
 
     ###################################################################################
 
-    def get_data_revision(self, data_set_name):
+    def get_data_revision(self, dataset_name):
         """method to read the revision string from the file Revision.txt in the main data directory"""
 
         revision = 'unset'
         try:
-            revision_file = os.path.join(const.OBSCONFIG[data_set_name]['PATH'], 
+            revision_file = os.path.join(const.OBSCONFIG[dataset_name]['PATH'], 
                                          const.REVISION_FILE)
             if os.path.isfile(revision_file):
                 with open(revision_file, 'rt') as in_file:
@@ -462,19 +462,19 @@ class ReadUngridded:
             
         except:
             if self.verbose:
-                print("Revision file for {} does not exist".format(data_set_name))
+                print("Revision file for {} does not exist".format(dataset_name))
 
         return revision
 
     ###################################################################################
 
-    def get_data_dir(self, data_set_name):
+    def get_data_dir(self, dataset_name):
         """method to return the path of an obs data set"""
 
         try:
-            return const.OBSCONFIG[data_set_name]['PATH']
+            return const.OBSCONFIG[dataset_name]['PATH']
         except:
-            raise AttributeError("data set name " + data_set_name + "not found ")
+            raise AttributeError("data set name " + dataset_name + "not found ")
 
     ###################################################################################
 
@@ -490,7 +490,7 @@ class ReadUngridded:
         temp_dict['longitude'] = val['longitude']
         temp_dict['altitude'] = val['altitude']
         temp_dict['PI'] = val['PI']
-        temp_dict['data_set_name'] = val['data_set_name']
+        temp_dict['dataset_name'] = val['dataset_name']
         if 'files' in val:
             temp_dict['files'] = val['files']
         for var in val['indexes']:
