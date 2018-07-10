@@ -40,7 +40,7 @@ import glob
 import numpy as np
 import sys
 import pandas as pd
-
+from collections import OrderedDict as od
 #from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
@@ -50,6 +50,28 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 
 from pyaerocom import const
 
+class UngriddedData(object):
+    _METADATAKEYINDEX = 0
+    _TIMEINDEX = 1
+    _LATINDEX = 2
+    _LONINDEX = 3
+    _ALTITUDEINDEX = 4
+    _VARINDEX = 5
+    _DATAINDEX = 6
+
+    _COLNO = 11
+    _ROWNO = 10000
+
+    # The following number denotes the kept precision after the decimal dot of
+    # the location (e.g denotes lat = 300.12345)
+    # used to code lat and long in a single number for a uniqueness test
+    _LOCATION_PRECISION = 5
+    _LAT_OFFSET = np.float(90.)
+    
+    def __init__(self):
+        self.data = np.empty()
+        self.metadata = od()
+        
 class ReadUngridded:
     """High-level reading class for ungridded files based on obsnetwork ID
     """
@@ -188,7 +210,7 @@ class ReadUngridded:
     @property
     def time(self):
         """Time dimension of data"""
-        pass
+        raise NotImplementedError
 
     @time.setter
     def time(self, value):

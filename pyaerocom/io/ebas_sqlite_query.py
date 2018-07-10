@@ -66,6 +66,7 @@ class EbasSQLRequest(dict):
         self.lat_range = lat_range
         self.instrument_types = instrument_types
         self.statistics = statistics
+        
     
     def update(self, verbose=True, **kwargs):
         for k, v in kwargs.items():
@@ -124,8 +125,9 @@ class EbasSQLRequest(dict):
             SQL file request command for current specs
         """
         self.update(**kwargs)
-        if not isinstance(what, str):
+        if not isinstance(what, str): #tuple or list of parameters to be retrieved
             what = ",".join(what)
+        
         if distinct:
             req = 'select distinct {} from variable'.format(what)
         else:
@@ -302,7 +304,8 @@ class EbasFileIndex(object):
             con = sqlite3.connect(self.database)
             cur = con.cursor()
             cur.execute(request)
-            return [f[0] for f in cur.fetchall()]
+            #return [f[0] for f in cur.fetchall()]
+            return [f for f in cur.fetchall()]
         except sqlite3.Error as e:
             if con:
                 con.rollback()
