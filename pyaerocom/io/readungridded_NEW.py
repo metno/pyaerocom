@@ -84,20 +84,21 @@ class ReadUngridded:
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
     def __init__(self, data_set_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME],
-                 vars_to_read=ReadAeronetSunV2.PROVIDES_VARIABLES,
+                 vars_to_read=None,
                  verbose=False):
         if isinstance(data_set_to_read, list):
             self.data_sets_to_read = data_set_to_read
         else:
             self.data_sets_to_read = [data_set_to_read]
 
-        self.verbose = verbose
+        # optional: list of variables that are supposed to be imported, if 
+        # None, all variables provided by the corresponding network are loaded
         self.vars_to_read = vars_to_read
+        
+        self.verbose = verbose
         self.metadata = {}
         self.data = []
-        self.filemasks = []
         self.__version__ = 0.02
-        self.datasetnames = []
         self.infiles = []
         # file caching
         self.writecachefile = True
@@ -330,8 +331,7 @@ class ReadUngridded:
                 print("Not implemented at this point.")
 
             elif data_set_to_read == const.EARLINET_NAME:
-                read_dummy = ReadEarlinet(index_pointer=self.index_pointer, 
-                                          verbose=self.verbose)
+                read_dummy = ReadEarlinet(index_pointer=self.index_pointer, verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:
                     read_dummy = pickle.load(in_handle)
                     if self.verbose:
@@ -459,7 +459,6 @@ class ReadUngridded:
                 with open(revision_file, 'rt') as in_file:
                     revision = in_file.readline().strip()
                     in_file.close()
-            
         except:
             if self.verbose:
                 print("Revision file for {} does not exist".format(data_set_name))

@@ -39,9 +39,7 @@ import glob
 import sys
 
 import numpy as np
-
 import pandas as pd
-import re
 
 from pyaerocom import const
 
@@ -115,7 +113,7 @@ class ReadAeronetSdaV3:
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
-    def __init__(self, index_pointer=0, data_set_to_read = None, verbose=False):
+    def __init__(self, index_pointer=0, data_set_to_read=None, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []

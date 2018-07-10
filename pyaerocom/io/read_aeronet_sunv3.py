@@ -41,11 +41,13 @@ import sys
 import numpy as np
 
 import pandas as pd
-import re
 
 from pyaerocom import const
 
-
+# TODO: flag somehow the values that are postcomputed during read (e.g. AODs
+# at 550nm that are missing, using angstrom exponent and values at 440 and 
+# 870 nm). The same applied for other Aeronet reading classes. Maybe it is 
+# better to do this in post on request and leave the original data as is? 
 class ReadAeronetSunV3:
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
 
@@ -116,7 +118,7 @@ class ReadAeronetSunV3:
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
-    def __init__(self, index_pointer=0, data_set_to_read = None, verbose=False):
+    def __init__(self, index_pointer=0, data_set_to_read=None, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []

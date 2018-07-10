@@ -65,7 +65,7 @@ class ReadAeronetSunV2:
 
     """
     _FILEMASK = '*.lev20'
-    __version__ = "0.06"
+    __version__ = "0.07"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH']
     # Flag if the dataset contains all years or not
@@ -116,7 +116,7 @@ class ReadAeronetSunV2:
 
     ###################################################################################
 
-    def read_daily_file(self, filename, vars_to_read=['od550aer'], verbose=False):
+    def read_file(self, filename, vars_to_read=['od550aer'], verbose=False):
         """method to read an Aeronet Sun V2 level 2 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -133,7 +133,7 @@ class ReadAeronetSunV2:
         -------
         >>> import pyaerocom.io.read_aeronet_sunv2
         >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
-        >>> filedata = obj.read_daily_file('/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_170401_Zambezi.lev20')
+        >>> filedata = obj.read_file('/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_170401_Zambezi.lev20')
         >>> print(filedata)
 {'latitude': -13.533, 'longitude': 23.107, 'altitude': 1040.0, 'station name': 'Zambezi', 'PI': 'Brent Holben', 'od550aer': 1996-08-10    0.801845
 1996-08-11    1.062833
@@ -249,7 +249,7 @@ Length: 223, dtype: float64}
 
     ###################################################################################
 
-    def read(self, vars_to_read = ['od550aer'], verbose = False):
+    def read(self, vars_to_read=['od550aer'], verbose=False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
@@ -268,7 +268,7 @@ Length: 223, dtype: float64}
         for _file in sorted(self.files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
-            stat_obs_data = self.read_daily_file(_file, vars_to_read = vars_to_read)
+            stat_obs_data = self.read_file(_file, vars_to_read = vars_to_read)
             # Fill the metatdata dict
             self.metadata[met_data_key] = {}
             self.metadata[met_data_key]['station name'] = stat_obs_data['station name']
@@ -335,4 +335,4 @@ Length: 223, dtype: float64}
                 in_file.close()
 
             self.revision = revision
-###################################################################################
+

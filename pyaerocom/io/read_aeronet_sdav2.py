@@ -82,7 +82,7 @@ class ReadAeronetSDAV2(object):
         return ','.join(self.data.keys())
 
     @staticmethod
-    def read_daily_file(in_file, verbose=False):
+    def read_file(in_file, verbose=False):
 
         # This how the beginning of data file lookes like
 
@@ -276,7 +276,7 @@ class ReadAeronetSDAV2(object):
             if self.verbose:
                 print(File)
 
-            TempData = ReadAeronetSDAV2.read_daily_file(File)
+            TempData = ReadAeronetSDAV2.read_file(File)
             self.data[TempData['station name']] = TempData
 
     ###################################################################################
@@ -299,4 +299,4 @@ if __name__ == "__main__":
 
     l = os.listdir(p)
 
-    r = ReadAeronetSDAV2.read_daily_file(p + l[0], verbose=True)
+    r = ReadAeronetSDAV2.read_file(p + l[0], verbose=True)

@@ -111,7 +111,7 @@ class ReadAeronetInvV2:
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
-    def __init__(self, index_pointer=0, data_set_to_read = None, verbose=False):
+    def __init__(self, index_pointer=0, data_set_to_read=None, verbose=False):
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -214,7 +214,8 @@ class ReadAeronetInvV2:
             line_2 = in_file.readline()
             line_3 = in_file.readline()
 
-            # put together a dict with the header string as key and the index number as value so that we can access
+            # put together a dict with the header string as key and the index 
+            # number as value so that we can access
             # the index number via the header string
             headers = in_file.readline().strip().split(',')
             index_str = {}
