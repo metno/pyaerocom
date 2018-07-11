@@ -138,15 +138,18 @@ class ReadUngriddedBase(abc.ABC):
         -------
         
         """
-
-        revision_file = os.path.join(self.DATASET_PATH, self.REVISION_FILE)
-        revision = 'unset'
-        if os.path.isfile(revision_file):
-            with open(revision_file, 'rt') as in_file:
-                revision = in_file.readline().strip()
-                in_file.close()
-
-            self.revision = revision
+        try:
+            revision_file = os.path.join(self.DATASET_PATH, self.REVISION_FILE)
+            if os.path.isfile(revision_file):
+                with open(revision_file, 'rt') as in_file:
+                    revision = in_file.readline().strip()
+                    in_file.close()
+    
+                return revision
+        except Exception as e:
+            raise IOError("Failed to access revision info for dataset {}. "
+                          "Error message: {}".format(self.DATASET_NAME,
+                                          repr(e)))
 
 class ReadAeronetSunV2:
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
@@ -808,8 +811,14 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
             
 if __name__=="__main__":
     
+    from pyaerocom import const
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
+        _FILEMASK = ".txt"
         DATASET_NAME = "Blaaa"
+        __version__ = "0.01"
+        PROVIDES_VARIABLES = ["od550aer"]
+        REVISION_FILE = const.REVISION_FILE
+        
         def __init__(self, dataset_to_read=None):
             if dataset_to_read is not None:
                 self.DATASET_NAME = dataset_to_read

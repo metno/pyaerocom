@@ -236,8 +236,7 @@ class UngriddedData(object):
             
 class QueryUngridded(_BrowserDict):
     """Query class for specifying obsdata requests"""
-    def __init__(self, dataset_to_read, vars_to_read=None, start=None, 
-                 stop=None):
+    def __init__(self, dataset_to_read, vars_to_read=None):
         self.dataset_to_read = dataset_to_read
         self.vars_to_read = vars_to_read
         
