@@ -6,14 +6,15 @@ import glob, os
 
 from pyaerocom.io.helpers import get_obsnetwork_dir
 
-
 # TODO: implement dict-like class for output of read_file method, that avoids 
 # creating pandas.Series instances in the first place but keeps the individual 
 # data columns
 class ReadUngriddedBase(abc.ABC):
     """Abstract base class template for reading of ungridded data"""
-    verbose = False
-    
+    def __init__(self, verbose=False):
+        self.files = []
+        self.verbose = verbose
+        
     @abc.abstractproperty
     def REVISION_FILE(self):
         """Location of data revision file
@@ -24,6 +25,7 @@ class ReadUngriddedBase(abc.ABC):
         
         """
         pass
+    
     @abc.abstractproperty
     def DATASET_NAME(self):
         """Name of dataset (OBS_ID)
@@ -76,13 +78,16 @@ class ReadUngriddedBase(abc.ABC):
      
         
     @abc.abstractmethod
-    def read_file(self, filename):
+    def read_file(self, filename, vars_to_read=None):
         """Method that reads a single data file and returns the result
         
         Parameters
         ----------
         filename : str
             string specifying filename
+        vars_to_read : :obj:`list` or similar, optional,
+            list containing variable IDs that are supposed to be read. If None, 
+            all variables in :attr:`PROVIDES_VARIABLES` are loaded
         
         Returns
         -------
@@ -97,9 +102,14 @@ class ReadUngriddedBase(abc.ABC):
         
         Parameters
         ----------
-        filename : str
-            string specifying filename
+        vars_to_read : :obj:`list` or similar, optional,
+            list containing variable IDs that are supposed to be read. If None, 
+            all variables in :attr:`PROVIDES_VARIABLES` are loaded
         
+        Returns
+        -------
+        UngriddedData
+            data object
         """
         pass
 
@@ -110,7 +120,8 @@ class ReadUngriddedBase(abc.ABC):
 
         if self.verbose:
             print('searching for data files. This might take a while...')
-        return glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
+        self.files = glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
+        return self.files
     
     def read_first_file(self):
         """Read first file returned from :func:`get_file_list`
@@ -119,9 +130,11 @@ class ReadUngriddedBase(abc.ABC):
         
         Returns
         -------
-        dict
-            
+        dict-like
+            dictionary or similar containing loaded results from first file
         """
+        file = self.get_file_list()[0]
+        return self.read_file(file)
     
     @property
     def data_revision(self):

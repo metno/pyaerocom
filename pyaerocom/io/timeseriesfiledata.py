@@ -5,7 +5,7 @@ from pyaerocom.utils import _BrowserDict
 import pandas as pd
 import numpy as np
 
-class TimeseriesFileData(_BrowserDict):
+class TimeSeriesFileData(_BrowserDict):
     """Low level dict-like class for results from timeseries file reads
     
     The idea is to provide a common interface for storage of time-series data
@@ -23,7 +23,7 @@ class TimeseriesFileData(_BrowserDict):
     Not in use currently
     """
     def __init__(self):
-        self.time = np.empty(0)
+        self.time = []
             
     def check_time(self):
         """Check if time dimension is valid"""
@@ -127,6 +127,11 @@ class TimeseriesFileData(_BrowserDict):
         s = self.to_timeseries(varname)
         ax = s.plot(**kwargs)
         return ax
+    
+if __name__=="__main__":
+    
+    d = TimeSeriesFileData()
+    print(d)
         
         
         

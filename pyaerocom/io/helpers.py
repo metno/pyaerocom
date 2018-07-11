@@ -61,6 +61,7 @@ def get_obsnetwork_dir(obs_id):
         raise IOError("Data directory {} of observation network {} does not "
                       "exists".format(data_dir, obs_id))
     return data_dir
+
 def search_data_dir_aerocom(name_or_pattern, ignorecase=True, 
                             verbose=const.VERBOSE):
     """Search Aerocom data directory based on model / data ID

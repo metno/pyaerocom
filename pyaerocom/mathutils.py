@@ -4,7 +4,28 @@
 Mathematical low level utility methods ofcd pyaerocom
 """
 
-from numpy import floor, log10, asarray
+import numpy as np
+
+def compute_angstrom_coeff(aod1, aod2, lambda1, lambda2):
+    """Compute Angstrom coefficient based on 2 optical densities
+    
+    Parameters
+    ----------
+    aod1 : float
+        AOD at wavelength 1
+    aod2 : float
+        AOD at wavelength 2
+    lambda1 : float
+        wavelength 1
+    lambda 2 : float
+        wavelength 2
+        
+    Returns
+    -------
+    float
+        Angstrom exponent
+    """
+    return -np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
 def exponent(num):
     """Get exponent of input number

@@ -43,7 +43,7 @@ try:
     from ConfigParser import ConfigParser
 except: 
     from configparser import ConfigParser
-
+    
 class GridIO(object):
     """Settings class for managing IO settings
     

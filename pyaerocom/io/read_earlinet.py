@@ -152,7 +152,7 @@ class ReadEarlinet:
         return ','.join(stat_names)
 
     ###################################################################################
-
+    # TODO: need review vars_to_read
     def read_file(self, filename, vars_to_read = ['zdust'], verbose = False):
         """method to read an EARLINET file and return it in a dictionary
         with the data variables as pandas time series
