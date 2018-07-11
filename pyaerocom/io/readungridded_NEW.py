@@ -48,6 +48,7 @@ from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_earlinet import ReadEarlinet
 
+from pyaerocom.utils import _BrowserDict
 from pyaerocom import const
 
 class UngriddedData(object):
@@ -232,40 +233,14 @@ class UngriddedData(object):
         raise AttributeError("Time array cannot be changed, please check "
                              "underlying data type stored in attribute grid")
  
-
-class _BrowserDict(dict):
-    """Dictionary with get and set attribute methods
-    
-    Note
-    ----
-    Currently not in use, may be used later to create more intuitive interface
-    for obsdata access, (e.g. AeroNetBrowser.sun.v2.l2.daily)
-    """
-    def __getattr__(self, key):
-        return self[key]
-    
-    def __setattr__(self, key, val):
-        self[key] = val
-       
-    def __str__(self):
-        s=""
-        for k, v in self.items():
-            s += "{}: {}\n".format(k, v)
-        return s
             
-class QueryUngridded(dict):
+class QueryUngridded(_BrowserDict):
     """Query class for specifying obsdata requests"""
     def __init__(self, dataset_to_read, vars_to_read=None, start=None, 
                  stop=None):
         self.dataset_to_read = dataset_to_read
         self.vars_to_read = vars_to_read
         
-    def __getattr__(self, key):
-        return self[key]
-    
-    def __setattr__(self, key, val):
-        self[key] = val
-    
     def __str__(self):
         s=""
         for k, v in self.items():
@@ -485,9 +460,7 @@ class ReadUngridded:
             else:
                 # re-read data
                 read_dummy.read(self.vars_to_read)
-
-        else:
-            continue
+            
         self.infiles.append(read_dummy.files)
         self.index_pointer = read_dummy.index_pointer
         self.data_dirs[dataset_to_read] = const.OBSCONFIG[dataset_to_read]['PATH']

@@ -6,9 +6,9 @@ I/O helper methods of the pyaerocom package
 from pyaerocom import const
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom import __dir__
-from os.path import join, isdir
+from os.path import join, exists, isdir
+from os import listdir
 from collections import OrderedDict as od
-from os import listdir    
 from iris.coords import DimCoord
 from datetime import datetime
 from numpy import datetime64, asarray, arange
@@ -32,6 +32,35 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "monthly" :  "days"}
 
 
+
+def get_obsnetwork_dir(obs_id):
+    """Returns data path for obsnetwork ID
+    
+    Parameters
+    ----------
+    obs_id : str
+        ID  of obsnetwork (e.g. AeronetSunV2Lev2.daily)
+        
+    Returns
+    -------
+    str
+        corresponding directory from ``pyaerocom.const``
+        
+    Raises
+    ------
+    ValueError
+        if obs_id is invalid
+    IOError
+        if directory does not exist
+    """
+    if not obs_id in const.OBS_IDS:
+        raise ValueError("Observation network ID {} does not exist".format(obs_id))
+        
+    data_dir = const.OBSCONFIG[obs_id]['PATH']
+    if not exists(data_dir):
+        raise IOError("Data directory {} of observation network {} does not "
+                      "exists".format(data_dir, obs_id))
+    return data_dir
 def search_data_dir_aerocom(name_or_pattern, ignorecase=True, 
                             verbose=const.VERBOSE):
     """Search Aerocom data directory based on model / data ID
