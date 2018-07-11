@@ -48,6 +48,7 @@ import re
 
 from pyaerocom import const
 
+
 class ReadAeronetSunV2:
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
 
