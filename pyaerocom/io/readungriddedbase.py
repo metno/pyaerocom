@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import abc
-import numpy as np
 import glob, os
 
 from pyaerocom.io.helpers import get_obsnetwork_dir
@@ -11,6 +10,7 @@ from pyaerocom.io.helpers import get_obsnetwork_dir
 # data columns
 class ReadUngriddedBase(abc.ABC):
     """Abstract base class template for reading of ungridded data"""
+    
     def __init__(self, verbose=False):
         self.files = []
         self.verbose = verbose
@@ -78,14 +78,14 @@ class ReadUngriddedBase(abc.ABC):
      
         
     @abc.abstractmethod
-    def read_file(self, filename, vars_to_read=None):
+    def read_file(self, filename, vars_to_retrieve=None):
         """Method that reads a single data file and returns the result
         
         Parameters
         ----------
         filename : str
             string specifying filename
-        vars_to_read : :obj:`list` or similar, optional,
+        vars_to_retrieve : :obj:`list` or similar, optional,
             list containing variable IDs that are supposed to be read. If None, 
             all variables in :attr:`PROVIDES_VARIABLES` are loaded
         
@@ -97,12 +97,12 @@ class ReadUngriddedBase(abc.ABC):
         pass
     
     @abc.abstractmethod
-    def read(self, vars_to_read=None):
+    def read(self, vars_to_retrieve=None):
         """Method that reads a single data file and returns the result
         
         Parameters
         ----------
-        vars_to_read : :obj:`list` or similar, optional,
+        vars_to_retrieve : :obj:`list` or similar, optional,
             list containing variable IDs that are supposed to be read. If None, 
             all variables in :attr:`PROVIDES_VARIABLES` are loaded
         
@@ -123,18 +123,25 @@ class ReadUngriddedBase(abc.ABC):
         self.files = glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
         return self.files
     
-    def read_first_file(self):
+    def read_first_file(self, **kwargs):
         """Read first file returned from :func:`get_file_list`
         
         This method may be used for test purposes. It calls :func:`get
         
+        Parameters
+        ----------
+        **kwargs
+            keyword args passed to :func:`read_file` (e.g. vars_to_retrieve)
+            
         Returns
         -------
         dict-like
             dictionary or similar containing loaded results from first file
         """
-        file = self.get_file_list()[0]
-        return self.read_file(file)
+        files = self.files
+        if len(files) == 0:
+            files = self.get_file_list()
+        return self.read_file(files[0], **kwargs)
     
     @property
     def data_revision(self):

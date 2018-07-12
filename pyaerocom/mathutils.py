@@ -27,6 +27,31 @@ def compute_angstrom_coeff(aod1, aod2, lambda1, lambda2):
     """
     return -np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
 
+def compute_aod_from_angstromexp(to_lambda, aod_ref, lambda_ref, angstrom_coeff):
+    """Compute AOD at specified wavelength 
+    
+    Uses Angstrom coefficient and reference AOD to compute the 
+    corresponding wavelength shifted AOD
+    
+    Parameters
+    ----------
+    to_lambda : float
+        wavelength for which AOD is calculated
+    aod_ref : float
+        reference AOD
+    lambda_ref : float
+        wavelength corresponding to reference AOD
+    angstrom_coeff : float
+        Angstrom coefficient
+        
+    Returns
+    -------
+    float
+        AOD at shifted wavelength
+    
+    """
+    return aod_ref * (lambda_ref / to_lambda) ** angstrom_coeff
+
 def exponent(num):
     """Get exponent of input number
         
@@ -46,7 +71,7 @@ def exponent(num):
     >>> exponent(2340)
     3
     """
-    return floor(log10(abs(asarray(num)))).astype(int)
+    return np.floor(np.log10(abs(np.asarray(num)))).astype(int)
 
 def range_magnitude(low, high):
     """Returns magnitude of value range

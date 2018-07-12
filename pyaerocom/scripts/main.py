@@ -56,7 +56,7 @@ def cli():
     >>> var_to_read = 'zdust'
     >>> model_obj = pio.ReadGridded(name = model, start_time = startdate, stop_time = enddate, verbose=True)
     >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
-    >>> obs_data = pyaerocom.io.readungridded.ReadUngridded(dataset_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+    >>> obs_data = pyaerocom.io.readungridded.ReadUngridded(dataset_to_read = obsnetwork_to_read, vars_to_retrieve = var_to_read, verbose=True)
     >>> obs_data.read()
     >>> pa.helpers.griesie_dataframe_testing(model_data, obs_data, startdate, enddate)
 
@@ -228,13 +228,13 @@ def cli():
 
             model_obj = pio.ReadGridded(name=model_name, start_time=args.startdate, stop_time=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=options['VariablesToRun'][0], ts_type="daily")
-            obs_data = pyaerocom.io.readungridded.ReadUngridded(dataset_to_read=options['ObsNetworkName'][0], vars_to_read=[options['VariablesToRun'][0]],
+            obs_data = pyaerocom.io.readungridded.ReadUngridded(dataset_to_read=options['ObsNetworkName'][0], vars_to_retrieve=[options['VariablesToRun'][0]],
                                                                 verbose=True)
             model_obj = pio.ReadGridded(name=model_name, start_time=args.startdate, stop_time=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=options['VariablesToRun'][0], ts_type="daily")
             obs_data = pyaerocom.io.readungridded.ReadUngridded(
                 dataset_to_read=options['ObsNetworkName'][0],
-                vars_to_read=[options['VariablesToRun'][0]],
+                vars_to_retrieve=[options['VariablesToRun'][0]],
                 verbose=True)
             obs_data.read()
 
@@ -258,7 +258,7 @@ def cli():
             # model_station_data_xarray_single = xarray_ds.sel(latitude=obs_lats[0], longitude=obs_lons[0], method='nearest')
             #
             # model_station_data_xarray_all = pa.helpers.griesie_xarray_to_timeseries(xarray_ds, obs_lats, obs_lons,
-            #                                                                         vars_to_read=[
+            #                                                                         vars_to_retrieve=[
             #                                                                             Options['VariablesToRun'][0]])
             #
             #
@@ -341,13 +341,13 @@ def cli():
         else:
             # observations only
             # 1st check if the obs network string is right
-            # pa.readungridded.ReadUngridded(dataset_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+            # pa.readungridded.ReadUngridded(dataset_to_read = obsnetwork_to_read, vars_to_retrieve = var_to_read, verbose=True)
             # if options['ObsNetworkName'][0] in pyaerocom.io.readungridded.ReadUngridded.SUPPORTED_DATASETS:
-            # pa.nogriddata.NoGridData(dataset_to_read = obsnetwork_to_read, vars_to_read = var_to_read, verbose=True)
+            # pa.nogriddata.NoGridData(dataset_to_read = obsnetwork_to_read, vars_to_retrieve = var_to_read, verbose=True)
             if options['ObsNetworkName'][0] in pio.ReadUngridded.SUPPORTED_DATASETS:
                 # start Obs reading
                 ObsData = pio.ReadUngridded(dataset_to_read = options['ObsNetworkName'][0],
-                                                                   vars_to_read = [options['VariablesToRun'][0]],
+                                                                   vars_to_retrieve = [options['VariablesToRun'][0]],
                                                                    verbose= args.verbose)
                 ObsData.read()
 

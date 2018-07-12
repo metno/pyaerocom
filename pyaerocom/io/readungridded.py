@@ -84,7 +84,7 @@ class ReadUngridded:
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
     def __init__(self, dataset_to_read=[const.AERONET_SUN_V2L2_AOD_DAILY_NAME],
-                 vars_to_read=ReadAeronetSunV2.PROVIDES_VARIABLES,
+                 vars_to_retrieve=ReadAeronetSunV2.PROVIDES_VARIABLES,
                  verbose=False):
         if isinstance(dataset_to_read, list):
             self.datasets_to_read = dataset_to_read
@@ -92,7 +92,7 @@ class ReadUngridded:
             self.datasets_to_read = [dataset_to_read]
 
         self.verbose = verbose
-        self.vars_to_read = vars_to_read
+        self.vars_to_retrieve = vars_to_retrieve
         self.metadata = {}
         self.data = []
         self.filemasks = []
@@ -260,7 +260,7 @@ class ReadUngridded:
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read(self.vars_to_read)
+                    read_dummy.read(self.vars_to_retrieve)
 
             elif dataset_to_read == const.AERONET_SUN_V3L15_SDA_DAILY_NAME or \
                     dataset_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
@@ -276,7 +276,7 @@ class ReadUngridded:
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read(self.vars_to_read)
+                    read_dummy.read(self.vars_to_retrieve)
 
             elif dataset_to_read == const.AERONET_INV_V2L2_DAILY_NAME:
                 # read AERONET inversions V2 L2.0 daily data set
@@ -291,7 +291,7 @@ class ReadUngridded:
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read(self.vars_to_read)
+                    read_dummy.read(self.vars_to_retrieve)
 
             elif dataset_to_read == const.AERONET_SUN_V3L15_AOD_DAILY_NAME:
                 # read AERONETSUN V3 L1.5 daily data set
@@ -305,7 +305,7 @@ class ReadUngridded:
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read(self.vars_to_read)
+                    read_dummy.read(self.vars_to_retrieve)
 
             elif dataset_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
                 # read AERONETSUN V3 L1.5 all points data set
@@ -320,7 +320,7 @@ class ReadUngridded:
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read(self.vars_to_read)
+                    read_dummy.read(self.vars_to_retrieve)
 
 
             elif dataset_to_read == const.AERONET_SUN_V3L20_AOD_DAILY_NAME:
@@ -340,7 +340,7 @@ class ReadUngridded:
                     in_handle.close()
                 else:
                     # re-read data
-                    read_dummy.read(self.vars_to_read)
+                    read_dummy.read(self.vars_to_retrieve)
 
             else:
                 continue
@@ -494,7 +494,7 @@ class ReadUngridded:
         if 'files' in val:
             temp_dict['files'] = val['files']
         for var in val['indexes']:
-            if var in self.vars_to_read:
+            if var in self.vars_to_retrieve:
                 data_found_flag = True
                 temp_dict[var] = pd.Series(self.data[val['indexes'][var], self._DATAINDEX],
                                            index=pd.to_datetime(

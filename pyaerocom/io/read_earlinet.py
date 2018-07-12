@@ -152,8 +152,8 @@ class ReadEarlinet:
         return ','.join(stat_names)
 
     ###################################################################################
-    # TODO: need review vars_to_read
-    def read_file(self, filename, vars_to_read = ['zdust'], verbose = False):
+    # TODO: need review vars_to_retrieve
+    def read_file(self, filename, vars_to_retrieve = ['zdust'], verbose = False):
         """method to read an EARLINET file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -161,7 +161,7 @@ class ReadEarlinet:
         ----------
         filename : str
             absolute path to filename to read
-        vars_to_read : list
+        vars_to_retrieve : list
             list of str with variable names to read; defaults to ['od550aer']
         verbose : Bool
             set to True to increase verbosity
@@ -208,7 +208,7 @@ Attributes:
 
     ###################################################################################
 
-    def read(self, vars_to_read = ['zdust'], verbose = False):
+    def read(self, vars_to_retrieve = ['zdust'], verbose = False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
@@ -220,7 +220,7 @@ Attributes:
 
         # Metadata key is float because the numpy array holding it is float
 
-        met_data_key = -1. # we want to start at key 0.
+        meta_data_key = -1. # we want to start at key 0.
         files = self.get_file_list()
         # self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
         self.data = np.zeros([self._ROWNO, self._COLNO], dtype=np.float64)
@@ -232,24 +232,24 @@ Attributes:
             if self.verbose:
                 sys.stdout.write(_file+"\n")
 
-            stat_obs_data = self.read_file(_file, vars_to_read = vars_to_read)
+            stat_obs_data = self.read_file(_file, vars_to_retrieve = vars_to_retrieve)
             # Fill the metatdata dict
             stat_code = _file.split('/')[-3]
             if stat_code != last_stat_code:
                 # new station
-                met_data_key += 1.
-                self.metadata[met_data_key] = {}
-                self.metadata[met_data_key]['station name'] = stat_obs_data.attrs['Location']
-                self.metadata[met_data_key]['latitude'] = stat_obs_data.attrs['Latitude_degrees_north']
-                self.metadata[met_data_key]['longitude'] = stat_obs_data.attrs['Longitude_degrees_east']
-                self.metadata[met_data_key]['altitude'] = stat_obs_data.attrs['Altitude_meter_asl']
-                self.metadata[met_data_key]['PI'] = ''
-                self.metadata[met_data_key]['dataset_name'] = self.DATASET_NAME
-                self.metadata[met_data_key]['has_zdust'] = False
+                meta_data_key += 1.
+                self.metadata[meta_data_key] = {}
+                self.metadata[meta_data_key]['station name'] = stat_obs_data.attrs['Location']
+                self.metadata[meta_data_key]['latitude'] = stat_obs_data.attrs['Latitude_degrees_north']
+                self.metadata[meta_data_key]['longitude'] = stat_obs_data.attrs['Longitude_degrees_east']
+                self.metadata[meta_data_key]['altitude'] = stat_obs_data.attrs['Altitude_meter_asl']
+                self.metadata[meta_data_key]['PI'] = ''
+                self.metadata[meta_data_key]['dataset_name'] = self.DATASET_NAME
+                self.metadata[meta_data_key]['has_zdust'] = False
                 # this is a list with indexes of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                self.metadata[met_data_key]['indexes'] = {}
-                self.metadata[met_data_key]['files'] = []
+                self.metadata[meta_data_key]['indexes'] = {}
+                self.metadata[meta_data_key]['files'] = []
                 last_stat_code = stat_code
 
             str_dummy = str(stat_obs_data.StartDate)
@@ -274,7 +274,7 @@ Attributes:
             obs_var_index = 0
 
 
-            for var in sorted(vars_to_read):
+            for var in sorted(vars_to_retrieve):
                 netcdf_var_name = self.VAR_INFO[var]['netcdf_var_name']
                 # check if the desired variable is in the file
                 if netcdf_var_name not in stat_obs_data.variables:
@@ -292,8 +292,8 @@ Attributes:
                     if stat_obs_data.variables[netcdf_var_name] < self.VAR_INFO[var]['min_val']:
                         sys.stderr.write("Error: value of variable " + var + " in file " + _file + " less than max val. Skipping...!\n")
                         continue
-                    self.metadata[met_data_key]['files'].append(_file)
-                    self.metadata[met_data_key]['has_zdust'] = True
+                    self.metadata[meta_data_key]['files'].append(_file)
+                    self.metadata[meta_data_key]['has_zdust'] = True
                     self.data[self.index_pointer, self._DATAINDEX] = stat_obs_data.variables[netcdf_var_name]
                     #self.data[self.index_pointer, self._DATAHEIGHTINDEX] = height_data[step]
                     self.index_pointer += 1
@@ -305,18 +305,18 @@ Attributes:
                     end_index = self.index_pointer - 1
                     # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
                     try:
-                        self.metadata[met_data_key]['indexes'][var].append(end_index)
+                        self.metadata[meta_data_key]['indexes'][var].append(end_index)
                     except KeyError:
-                        self.metadata[met_data_key]['indexes'][var] = []
-                        self.metadata[met_data_key]['indexes'][var].append(end_index)
+                        self.metadata[meta_data_key]['indexes'][var] = []
+                        self.metadata[meta_data_key]['indexes'][var].append(end_index)
 
-                    # self.metadata[met_data_key]['indexes'][var] = np.arange(start_index, end_index)
+                    # self.metadata[meta_data_key]['indexes'][var] = np.arange(start_index, end_index)
                     self.data[end_index, self._TIMEINDEX] = np.float64(time.value / 1.E9)
                     self.data[end_index, self._VARINDEX] = obs_var_index
                     self.data[end_index, self._LATINDEX] = stat_obs_data.attrs['Latitude_degrees_north']
                     self.data[end_index, self._LONINDEX] = stat_obs_data.attrs['Longitude_degrees_east']
                     self.data[end_index, self._ALTITUDEINDEX] = stat_obs_data.attrs['Altitude_meter_asl']
-                    self.data[end_index, self._METADATAKEYINDEX] = met_data_key
+                    self.data[end_index, self._METADATAKEYINDEX] = meta_data_key
                 else: #2d variable
                     # TODO test profile code
                     height_steps = len(stat_obs_data.variables[netcdf_var_name])
@@ -332,19 +332,19 @@ Attributes:
                             # add another array chunk to self.data
                             self.data = np.append(self.data, np.zeros([self._CHUNKSIZE, self._COLNO], dtype=np.float64), axis=0)
                             self._ROWNO += self._CHUNKSIZE
-                    # self.metadata[met_data_key]['indexes'][var] = np.arange(start_index, end_index)
+                    # self.metadata[meta_data_key]['indexes'][var] = np.arange(start_index, end_index)
                     end_index = self.index_pointer
                     self.data[start_index:end_index, self._TIMEINDEX] = np.float64(time.value / 1.E9)
                     self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                     self.data[start_index:end_index, self._LATINDEX] = stat_obs_data.attrs['Latitude_degrees_north']
                     self.data[start_index:end_index, self._LONINDEX] = stat_obs_data.attrs['Longitude_degrees_east']
                     self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data.attrs['Altitude_meter_asl']
-                    self.data[start_index:end_index, self._METADATAKEYINDEX] = met_data_key
+                    self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_data_key
 
 
                 start_index = self.index_pointer
                 obs_var_index += 1
-            # TODO check self.metadata[met_data_key]['indexes'] for reference
+            # TODO check self.metadata[meta_data_key]['indexes'] for reference
             # if none is found, remove the last metadata entry again since the station did not provide data
 
         # shorten self.data to the right number of points
@@ -353,12 +353,12 @@ Attributes:
 
     ###################################################################################
 
-    def get_file_list(self, vars_to_read=['zdust']):
+    def get_file_list(self, vars_to_retrieve=['zdust']):
         """search for files to read
 
         Parameters
         ----------
-        vars_to_read : list
+        vars_to_retrieve : list
             list of variables that are supposed to be read
         
         Returns
@@ -379,7 +379,7 @@ Attributes:
         # files = glob.glob(os.path.join(self.DATASET_PATH,
         #                                self._FILEMASK), recursive=True)
         #files = []
-        for var in vars_to_read:
+        for var in vars_to_retrieve:
             files = (glob.glob(os.path.join(self.DATASET_PATH,
                                             self.VAR_INFO[var]['file_mask']), 
                      recursive=True))

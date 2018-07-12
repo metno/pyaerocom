@@ -117,7 +117,7 @@ class ReadAeronetSunV2:
 
     ###################################################################################
 
-    def read_file(self, filename, vars_to_read=['od550aer'], verbose=False):
+    def read_file(self, filename, vars_to_retrieve=['od550aer'], verbose=False):
         """method to read an Aeronet Sun V2 level 2 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -125,7 +125,7 @@ class ReadAeronetSunV2:
         ----------
         filename : str
             absolute path to filename to read
-        vars_to_read : list
+        vars_to_retrieve : list
             list of str with variable names to read; defaults to ['od550aer']
         verbose : Bool
             set to True to increase verbosity
@@ -233,15 +233,14 @@ Length: 223, dtype: float64}
                 if np.isnan(data_out['od550aer'][-1]):
                     temp = data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
                     if not np.isnan(temp) and temp > 0.:
-                        data_out['od550aer'][-1] = (data_out['od440aer'][-1] * (0.55 / 0.44) **
-                                                    (np.float_(-1.) * data_out['ang4487aer'][-1]))
+                        data_out['od550aer'][-1] = temp #data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
                 if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
                    data_out['od550aer'][-1] = np.nan
 
-        # convert  the vars in vars_to_read to pandas time series
+        # convert  the vars in vars_to_retrieve to pandas time series
         # and delete the other ones
         for var in self.PROVIDES_VARIABLES:
-            if var in vars_to_read:
+            if var in vars_to_retrieve:
                 data_out[var] = pd.Series(data_out[var], index=dtime)
             else:
                 del data_out[var]
@@ -250,7 +249,7 @@ Length: 223, dtype: float64}
 
     ###################################################################################
 
-    def read(self, vars_to_read=['od550aer'], verbose=False):
+    def read(self, vars_to_retrieve=['od550aer'], verbose=False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
@@ -262,30 +261,30 @@ Length: 223, dtype: float64}
 
         # Metadata key is float because the numpy array holding it is float
 
-        met_data_key = 0.
+        meta_data_key = 0.
         self.files = self.get_file_list()
         self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
 
         for _file in sorted(self.files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
-            stat_obs_data = self.read_file(_file, vars_to_read = vars_to_read)
+            stat_obs_data = self.read_file(_file, vars_to_retrieve = vars_to_retrieve)
             # Fill the metatdata dict
-            self.metadata[met_data_key] = {}
-            self.metadata[met_data_key]['station name'] = stat_obs_data['station name']
-            self.metadata[met_data_key]['latitude'] = stat_obs_data['latitude']
-            self.metadata[met_data_key]['longitude'] = stat_obs_data['longitude']
-            self.metadata[met_data_key]['altitude'] = stat_obs_data['altitude']
-            self.metadata[met_data_key]['PI'] = stat_obs_data['PI']
-            self.metadata[met_data_key]['dataset_name'] = self.DATASET_NAME
+            self.metadata[meta_data_key] = {}
+            self.metadata[meta_data_key]['station name'] = stat_obs_data['station name']
+            self.metadata[meta_data_key]['latitude'] = stat_obs_data['latitude']
+            self.metadata[meta_data_key]['longitude'] = stat_obs_data['longitude']
+            self.metadata[meta_data_key]['altitude'] = stat_obs_data['altitude']
+            self.metadata[meta_data_key]['PI'] = stat_obs_data['PI']
+            self.metadata[meta_data_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            self.metadata[met_data_key]['indexes'] = {}
+            self.metadata[meta_data_key]['indexes'] = {}
             start_index = self.index_pointer
             # variable index
             obs_var_index = 0
-            for var in sorted(vars_to_read):
+            for var in sorted(vars_to_retrieve):
                 for time, val in stat_obs_data[var].iteritems():
                     self.data[self.index_pointer, self._DATAINDEX] = val
                     # pd.TimeStamp.value is nano seconds since the epoch!
@@ -298,15 +297,15 @@ Length: 223, dtype: float64}
     
                 end_index = self.index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
-                self.metadata[met_data_key]['indexes'][var] = np.arange(start_index, end_index)
+                self.metadata[meta_data_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                 self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
                 self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']
                 self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data['altitude']
-                self.data[start_index:end_index, self._METADATAKEYINDEX] = met_data_key
+                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_data_key
                 start_index = self.index_pointer
                 obs_var_index += 1
-            met_data_key = met_data_key + 1.
+            meta_data_key = meta_data_key + 1.
     
         # shorten self.data to the right number of points
         self.data = self.data[0:end_index]

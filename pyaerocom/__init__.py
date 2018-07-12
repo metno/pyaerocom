@@ -34,6 +34,7 @@ from .variable import Variable
 from .region import Region
 
 from .griddeddata import GriddedData
+from .ungriddeddata import UngriddedData
 #from .ungriddeddata import UngriddedData
 from .io.helpers import search_data_dir_aerocom
 #from .obsdata import ObsData, ProfileData, StationData

@@ -427,7 +427,7 @@ def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
     # df.show()
 
 # TODO: review and move into test-suite
-def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_read=['od550_aer'], debug_mode = False):
+def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_retrieve=['od550_aer'], debug_mode = False):
     """test routine to colocate xarray object"""
 
     import pandas as pd
@@ -448,7 +448,7 @@ def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_read=['
         _dict['longitude'] = np.float_(xarray_col['longitude'])
 
         #data_frame = xarray_col.to_dataframe()
-        for var in vars_to_read:
+        for var in vars_to_retrieve:
             # _dict[var] = pd.Series(data_frame[var])
             # _dict[var] = xarray_col[var].to_series()
             _dict[var] = pd.Series(xarray_col[var], index=xarray_col['time'], dtype=np.float_)

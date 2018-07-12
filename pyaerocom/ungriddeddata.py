@@ -20,17 +20,31 @@ class UngriddedData(object):
 
     _COLNO = 11
     _ROWNO = 10000
-
+    _CHUNKSIZE = 1000
     # The following number denotes the kept precision after the decimal dot of
     # the location (e.g denotes lat = 300.12345)
     # used to code lat and long in a single number for a uniqueness test
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
     
-    def __init__(self):
-        self.data = np.empty()
+    def __init__(self, verbose=True):
+        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
         self.metadata = od()
+        self.index_pointer = 0
+        self.verbose = verbose
     
+    def _add_chunk(self):
+        chunk = np.empty([self._CHUNKSIZE, self._COLNO])*np.nan
+        self.data = np.append(self.data, chunk, axis=0)
+        self.ROWNO += self.CHUNKSIZE
+        print("adding chunk, new array size ({})".format(self.arr.shape))
+    
+    def __setitem__(self, key, val):
+        if self.index_pointer >= self._ROWNO:
+            self._add_chunk()
+        self.data[key] = val
+        self.index_pointer += 1
+        
     def _to_timeseries_helper(self, val, start_date=None, end_date=None, 
                               freq=None):
         """small helper routine for self.to_timeseries to not to repeat the same code fragment three times"""
@@ -47,7 +61,7 @@ class UngriddedData(object):
         if 'files' in val:
             temp_dict['files'] = val['files']
         for var in val['indexes']:
-            if var in self.vars_to_read:
+            if var in self.vars_to_retrieve:
                 data_found_flag = True
                 temp_dict[var] = pd.Series(self.data[val['indexes'][var], self._DATAINDEX],
                                            index=pd.to_datetime(

@@ -52,9 +52,9 @@ from pyaerocom import const
 
 class QueryUngridded(_BrowserDict):
     """Query class for specifying obsdata requests"""
-    def __init__(self, dataset_to_read, vars_to_read=None):
+    def __init__(self, dataset_to_read, vars_to_retrieve=None):
         self.dataset_to_read = dataset_to_read
-        self.vars_to_read = vars_to_read
+        self.vars_to_retrieve = vars_to_retrieve
         
     def __str__(self):
         s=""
@@ -78,7 +78,7 @@ class ReadUngridded:
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
     def __init__(self, dataset_to_read=const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-                 vars_to_read=None, ignore_cache=False,
+                 vars_to_retrieve=None, ignore_cache=False,
                  verbose=False):
         
         #will be assigned in setter method of dataset_to_read
@@ -89,7 +89,7 @@ class ReadUngridded:
         
         # optional: list of variables that are supposed to be imported, if 
         # None, all variables provided by the corresponding network are loaded
-        self.vars_to_read = vars_to_read
+        self.vars_to_retrieve = vars_to_retrieve
         
         # the data for each dataset_to
         self.data = od()
@@ -195,7 +195,7 @@ class ReadUngridded:
                 in_handle.close()
             else:
                 # re-read data
-                read_dummy.read(self.vars_to_read)
+                read_dummy.read(self.vars_to_retrieve)
 
         elif dataset_to_read == const.AERONET_SUN_V3L15_SDA_DAILY_NAME or \
                 dataset_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
@@ -211,7 +211,7 @@ class ReadUngridded:
                 in_handle.close()
             else:
                 # re-read data
-                read_dummy.read(self.vars_to_read)
+                read_dummy.read(self.vars_to_retrieve)
 
         elif dataset_to_read == const.AERONET_INV_V2L2_DAILY_NAME:
             # read AERONET inversions V2 L2.0 daily data set
@@ -226,7 +226,7 @@ class ReadUngridded:
                 in_handle.close()
             else:
                 # re-read data
-                read_dummy.read(self.vars_to_read)
+                read_dummy.read(self.vars_to_retrieve)
 
         elif dataset_to_read == const.AERONET_SUN_V3L15_AOD_DAILY_NAME:
             # read AERONETSUN V3 L1.5 daily data set
@@ -240,7 +240,7 @@ class ReadUngridded:
                 in_handle.close()
             else:
                 # re-read data
-                read_dummy.read(self.vars_to_read)
+                read_dummy.read(self.vars_to_retrieve)
 
         elif dataset_to_read == const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME:
             # read AERONETSUN V3 L1.5 all points data set
@@ -255,7 +255,7 @@ class ReadUngridded:
                 in_handle.close()
             else:
                 # re-read data
-                read_dummy.read(self.vars_to_read)
+                read_dummy.read(self.vars_to_retrieve)
 
 
         elif dataset_to_read == const.AERONET_SUN_V3L20_AOD_DAILY_NAME:
@@ -274,7 +274,7 @@ class ReadUngridded:
                 in_handle.close()
             else:
                 # re-read data
-                read_dummy.read(self.vars_to_read)
+                read_dummy.read(self.vars_to_retrieve)
             
         self.infiles.append(read_dummy.files)
         self.index_pointer = read_dummy.index_pointer
