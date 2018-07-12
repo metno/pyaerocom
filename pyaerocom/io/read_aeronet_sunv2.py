@@ -261,7 +261,7 @@ Length: 223, dtype: float64}
 
         # Metadata key is float because the numpy array holding it is float
 
-        meta_data_key = 0.
+        meta_key = 0.
         self.files = self.get_file_list()
         self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
 
@@ -270,17 +270,17 @@ Length: 223, dtype: float64}
                 sys.stdout.write(_file+"\n")
             stat_obs_data = self.read_file(_file, vars_to_retrieve = vars_to_retrieve)
             # Fill the metatdata dict
-            self.metadata[meta_data_key] = {}
-            self.metadata[meta_data_key]['station name'] = stat_obs_data['station name']
-            self.metadata[meta_data_key]['latitude'] = stat_obs_data['latitude']
-            self.metadata[meta_data_key]['longitude'] = stat_obs_data['longitude']
-            self.metadata[meta_data_key]['altitude'] = stat_obs_data['altitude']
-            self.metadata[meta_data_key]['PI'] = stat_obs_data['PI']
-            self.metadata[meta_data_key]['dataset_name'] = self.DATASET_NAME
+            self.metadata[meta_key] = {}
+            self.metadata[meta_key]['station name'] = stat_obs_data['station name']
+            self.metadata[meta_key]['latitude'] = stat_obs_data['latitude']
+            self.metadata[meta_key]['longitude'] = stat_obs_data['longitude']
+            self.metadata[meta_key]['altitude'] = stat_obs_data['altitude']
+            self.metadata[meta_key]['PI'] = stat_obs_data['PI']
+            self.metadata[meta_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            self.metadata[meta_data_key]['indexes'] = {}
+            self.metadata[meta_key]['indexes'] = {}
             start_index = self.index_pointer
             # variable index
             obs_var_index = 0
@@ -297,15 +297,15 @@ Length: 223, dtype: float64}
     
                 end_index = self.index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
-                self.metadata[meta_data_key]['indexes'][var] = np.arange(start_index, end_index)
+                self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                 self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
                 self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']
                 self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data['altitude']
-                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_data_key
+                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_key
                 start_index = self.index_pointer
                 obs_var_index += 1
-            meta_data_key = meta_data_key + 1.
+            meta_key = meta_key + 1.
     
         # shorten self.data to the right number of points
         self.data = self.data[0:end_index]

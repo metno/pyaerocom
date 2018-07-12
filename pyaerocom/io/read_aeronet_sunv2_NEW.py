@@ -413,10 +413,10 @@ Length: 223, dtype: float64}
         #self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
         if data_obj is None:
             data_obj = UngriddedData()
-            meta_data_key = 0.0
+            meta_key = 0.0
         else:
             # get current metadata key of data object
-            meta_data_key = max(data_obj.metadata.keys())
+            meta_key = max(data_obj.metadata.keys())
         
         # the first current free row in data object (is 0 on init)
         start_index = data_obj.index_pointer
@@ -430,17 +430,17 @@ Length: 223, dtype: float64}
             stat_obs_data = self.read_file(_file, 
                                            vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
-            metadata[meta_data_key] = {}
-            metadata[meta_data_key]['station name'] = stat_obs_data['station name']
-            metadata[meta_data_key]['latitude'] = stat_obs_data['latitude']
-            metadata[meta_data_key]['longitude'] = stat_obs_data['longitude']
-            metadata[meta_data_key]['altitude'] = stat_obs_data['altitude']
-            metadata[meta_data_key]['PI'] = stat_obs_data['PI']
-            metadata[meta_data_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key] = {}
+            metadata[meta_key]['station name'] = stat_obs_data['station name']
+            metadata[meta_key]['latitude'] = stat_obs_data['latitude']
+            metadata[meta_key]['longitude'] = stat_obs_data['longitude']
+            metadata[meta_key]['altitude'] = stat_obs_data['altitude']
+            metadata[meta_key]['PI'] = stat_obs_data['PI']
+            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            metadata[meta_data_key]['indexes'] = {}
+            metadata[meta_key]['indexes'] = {}
             start_index = self.index_pointer
             # variable index
             obs_var_index = 0
@@ -457,15 +457,15 @@ Length: 223, dtype: float64}
     
                 end_index = self.index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
-                metadata[meta_data_key]['indexes'][var] = np.arange(start_index, end_index)
+                metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                 self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
                 self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']
                 self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data['altitude']
-                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_data_key
+                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_key
                 start_index = self.index_pointer
                 obs_var_index += 1
-            meta_data_key = meta_data_key + 1.
+            meta_key = meta_key + 1.
     
         # shorten self.data to the right number of points
         self.data = self.data[0:end_index]
