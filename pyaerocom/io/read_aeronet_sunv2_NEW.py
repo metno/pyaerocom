@@ -185,19 +185,19 @@ class ReadAeronetSunV2NEW(ReadUngriddedBase):
         #file column information
         self.file_cols = _COL_INFO()
     
-    def _add_additional_vars(self, vars_to_retrIEVE):
+    def _add_additional_vars(self, vars_to_retrieve):
         added = False
         added_vars = []
-        for var in vars_to_retrIEVE:
+        for var in vars_to_retrieve:
             if var in self.ADDITIONAL_REQUIRES:
                 add_vars = self.ADDITIONAL_REQUIRES[var]
                 for add_var in add_vars:
-                    if not add_var in vars_to_retrIEVE:
+                    if not add_var in vars_to_retrieve:
                         added_vars.append(add_var)
                         added = True
         return (added, added_vars)
     
-    def check_vars_to_retrieve(self, vars_to_retrIEVE):
+    def check_vars_to_retrieve(self, vars_to_retrieve):
         """Separate variables that are in file from those that are computed
         
         Some of the provided variables by this interface are not included in
@@ -215,7 +215,7 @@ class ReadAeronetSunV2NEW(ReadUngriddedBase):
         
         Parameters
         ----------
-        vars_to_retrIEVE : list
+        vars_to_retrieve : list
             all parameter names that are supposed to be loaded
         
         Returns
@@ -233,29 +233,37 @@ class ReadAeronetSunV2NEW(ReadUngriddedBase):
         """
         repeat = True
         while repeat:
-            repeat, add_vars = self._add_additional_vars(vars_to_retrIEVE)
+            repeat, add_vars = self._add_additional_vars(vars_to_retrieve)
             #it is important to insert the additionally required variables in
             #the beginning, as these need to be computed first later on 
-            # Example: if vars_to_retrIEVE=['od550aer'] then this loop will
+            # Example: if vars_to_retrieve=['od550aer'] then this loop will
             # find out that this requires 'ang4487aer' to be computed as 
             # well. So at the end of this function, ang4487aer needs to be 
             # before od550aer in the list vars_to_compute, since the method
             # @"compute_additional_vars" loops over that list in the specified
             # order
-            vars_to_retrIEVE = add_vars + vars_to_retrIEVE
+            vars_to_retrieve = add_vars + vars_to_retrieve
         
-        vars_to_retrIEVE = list(dict.fromkeys(vars_to_retrIEVE))
-        vars_to_retrieve = []
+        # unique list containing all variables that are supposed to be read, 
+        # either because they are required to be retrieved, or because they 
+        # are supposed to be read because they are required to compute one 
+        # of the output variables
+        vars_to_retrieve = list(dict.fromkeys(vars_to_retrieve))
+        
+        # in the following, vars_to_retrieve is separated into two arrays, one 
+        # containing all variables that can be read from the files, and the 
+        # second containing all variables that are computed
+        vars_to_read = []
         vars_to_compute = []
         
-        for var in vars_to_retrIEVE:
+        for var in vars_to_retrieve:
             if var in self.file_cols:
-                vars_to_retrieve.append(var)
+                vars_to_read.append(var)
             elif var in self.ADDITIONAL_REQUIRES:
                 vars_to_compute.append(var)
             else:
                 raise IOError("Variable {} not supported".format(var))
-        return (vars_to_retrieve, vars_to_compute)
+        return (vars_to_read, vars_to_compute)
     
     
     def compute_additional_vars(self, data, vars_to_compute):
@@ -278,7 +286,7 @@ class ReadAeronetSunV2NEW(ReadUngriddedBase):
             data = self.ADDITIONAL_FUNS[var](data)
         return data
     
-    def read_file(self, filename, vars_to_retrieve=['od550aer']):
+    def read_file(self, filename, vars_to_retrieve=['od550aer'], to_series=True):
         """Read Aeronet Sun V2 level 2 file 
 
         Parameters
@@ -310,12 +318,13 @@ Length: 223, dtype: float64}
             vars_to_retrieve = self.PROVIDES_VARIABLES
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-        vars_to_retrieve, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
-        data_out = TimeSeriesFileData() #is dictionary with extended functionality
+        #create empty data object (is dictionary with extended functionality)
+        data_out = TimeSeriesFileData() 
         
         #create empty array for all variables that are supposed to be read
-        for var in vars_to_retrieve:
+        for var in vars_to_read:
             data_out[var] = []
     
         # Iterate over the lines of the file
@@ -351,23 +360,28 @@ Length: 223, dtype: float64}
                 
                 data_out['time'].append(np.datetime64(datestring))
                 
-                for var in vars_to_retrieve:
+                for var in vars_to_read:
                     val = float(dummy_arr[self.file_cols[var]])
                     if val == self.NAN_VAL:
                         val = np.nan
                     data_out[var].append(val)
         data_out['time'] = np.asarray(data_out['time'])
-        for var in vars_to_retrieve:
+        for var in vars_to_read:
             data_out[var] = np.asarray(data_out[var])
         
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
         
+        # TODO: reconsider to skip conversion to Series
         # convert  the vars in vars_to_retrieve to pandas time series
         # and delete the other ones
-        for var in vars_to_retrieve:
-            data_out[var] = pd.Series(data_out[var], 
-                                      index=data_out['time'])
-            
+        if to_series:
+            for var in (vars_to_read + vars_to_compute):
+                if var in vars_to_retrieve:
+                    data_out[var] = pd.Series(data_out[var], 
+                                              index=data_out['time'])
+                else:
+                    del data_out[var]
+                
         return data_out
 
     def read(self, vars_to_retrieve=['od550aer'], data_obj=None):
@@ -413,7 +427,8 @@ Length: 223, dtype: float64}
         for _file in sorted(files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
-            stat_obs_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            stat_obs_data = self.read_file(_file, 
+                                           vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
             metadata[meta_data_key] = {}
             metadata[meta_data_key]['station name'] = stat_obs_data['station name']
@@ -463,6 +478,8 @@ if __name__=="__main__":
     
     files = read.get_file_list()
 
-    data = read.read_first_file(vars_to_retrieve="od440aer")
+    data = read.read_first_file()
+    
+    data.read()
 
 
