@@ -31,33 +31,121 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-"""
-Note
-----
-    This module has not yet been translated / shipped to the pyaerocom 
-    library
-"""
-import os
-import glob
 import sys
-
 import numpy as np
-
 import pandas as pd
 import re
+import fnmatch
 
 from pyaerocom import const
+from pyaerocom.mathutils import (compute_angstrom_coeff, 
+                                 compute_aod_from_angstromexp)
+from pyaerocom.utils import _BrowserDict
+from pyaerocom.io import ReadUngriddedBase, TimeSeriesFileData
+from pyaerocom import UngriddedData
 
+# define some row numbers. not all of them are used at this point
+class _COL_INFO(_BrowserDict):
+    """ info for AeronetSunV2 files
+    
+    Please use keys corresponding to AEROCOM convention
+    """
+    def __init__(self):
+        self.date           = 0
+        self.time           = 1
+        self.julien_day     = 2
+        self.od1640aer      = 3
+        self.od1020aer      = 4
+        self.od870aer       = 5
+        self.od675aer       = 6
+        self.od667aer       = 7
+        self.od555aer       = 8
+        self.od551aer       = 9
+        self.od532aer       = 10
+        self.od531aer       = 11
+        self.od500aer       = 12
+        self.od440aer       = 15
+        self.od380aer       = 17
+        self.od340aer       = 18
+        
+    @property
+    def PROVIDES_VARIABLES(self):
+        return [x for x in self.keys() if re.search(fnmatch.translate("od*aer"), x)]
+    
+def add_ang4487aer(data):
+    """Method that computes and adds Angstrom coefficient (440-870nm) to data
+    
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+    
+    Returns
+    -------
+    dict
+        updated data object
+    """
+    od440aer, od870aer = data['od440aer'], data['od870aer']
+    data['ang4487aer'] = compute_angstrom_coeff(od440aer, od870aer, .44, .87)
+    return data
+    
 
-class ReadAeronetSunV2:
+def add_od550aer(data):
+    """Method that computes and adds AOD at 550 nm to data object
+        
+        Parameters
+        ----------
+        data : dict-like
+            data object containing imported results
+        
+        Returns
+        -------
+        dict
+            updated data object
+    """
+    od550aer = compute_aod_from_angstromexp(to_lambda=.55, 
+                                            aod_ref=data['od500aer'],
+                                            lambda_ref=.50, 
+                                            angstrom_coeff=data['ang4487aer'])
+    
+    # ;fill up time steps of the now calculated od550_aer that are nans with values calculated from the
+    # ;440nm wavelength to minimise gaps in the time series
+    mask = np.argwhere(np.isnan(od550aer))
+    
+    if len(mask) > 0: #there are nans
+        od440aer = data['od440aer'][mask]
+        ang4487aer = data['ang4487aer'][mask]
+        replace = compute_aod_from_angstromexp(to_lambda=.55, 
+                                                aod_ref=od440aer,
+                                                lambda_ref=.44, 
+                                                angstrom_coeff=ang4487aer)
+        od550aer[mask] = replace
+        
+    # now replace all v
+    below_thresh = od550aer < const.VAR_PARAM['od550aer']['lower_limit']
+    od550aer[below_thresh] = np.nan
+
+    data['od550aer'] = od550aer
+    return data
+
+class ReadAeronetSunV2(ReadUngriddedBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
-
+    
+    Note
+    ----
+    Even though this is a reading class, it also includes the option to 
+    compute variables during import, that are not contained in the actual 
+    data files. These are, for instance, the AOD at 550nm or the Angstrom 
+    coefficient (corresponding to 440-870 nm range), where the latter is 
+    required to compute the former. These additional computations are 
+    specified in the two header dictionaries ``ADDITIONAL_REQUIRES`` (what
+    variables are required to perform the computation) and 
+    ``ADDITIONAL_FUNS`` (functions used to perform the computations).
+    
     Attributes
     ----------
-    data : numpy array of dtype np.float64 initially of shape (10000,8)
-        data point array
-    metadata : dict
-        meta data dictionary
+    file_cols : _COL_INFO
+        class containing information about what can be imported from the files
 
     Parameters
     ----------
@@ -66,60 +154,149 @@ class ReadAeronetSunV2:
 
     """
     _FILEMASK = '*.lev20'
-    __version__ = "0.07"
+    __version__ = "0.08"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
-    DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH']
-    # Flag if the dataset contains all years or not
-    DATASET_IS_YEARLY = False
+    
+    #value corresponding to invalid measurement
+    NAN_VAL = float(-9999)
+    # Variables provided by this interface. Note that some of them are not 
+    # contained in the original data files but are computed in this class
+    # during data import
+    PROVIDES_VARIABLES = ['od500aer', 
+                          'od440aer', 
+                          'od870aer', 
+                          'ang4487aer', 
+                          'od550aer']
 
-    _METADATAKEYINDEX = 0
-    _TIMEINDEX = 1
-    _LATINDEX = 2
-    _LONINDEX = 3
-    _ALTITUDEINDEX = 4
-    _VARINDEX = 5
-    _DATAINDEX = 6
-
-    _COLNO = 11
-    _ROWNO = 10000
-    _CHUNKSIZE = 1000
-    PROVIDES_VARIABLES = ['od500aer', 'od440aer', 'od870aer', 'ang4487aer', 'od550aer']
-
-    def __init__(self, index_pointer=0, verbose=False):
-        self.verbose = verbose
-        self.metadata = {}
-        self.data = []
-        self.index = len(self.metadata)
-        self.files = []
-        #set the revision to the one from Revision.txt if that file exist
-        self.revision = self.get_data_revision()
-
-        # pointer to 1st free row in self.data
-        # can be externally set so that in case the super class wants to read more than one data set
-        # no data modification is needed to bring several data sets together
-        self.index_pointer = index_pointer
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.index == 0:
-            raise StopIteration
-        self.index = self.index - 1
-        return self.metadata[float(self.index)]
-
-    def __str__(self):
-        stat_names = []
-        for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
-
-        return ','.join(stat_names)
-
-    ###################################################################################
-
-    def read_file(self, filename, vars_to_retrieve=['od550aer'], verbose=False):
-        """method to read an Aeronet Sun V2 level 2 file and return it in a dictionary
-        with the data variables as pandas time series
+    REVISION_FILE = const.REVISION_FILE
+    
+    # specify required dependencies for variables that are NOT in Aeronet files
+    # but are computed within this class. 
+    # For instance, the computation of the AOD at 550nm requires import of
+    # the AODs at 440, 500 and 870 nm. 
+    ADDITIONAL_REQUIRES = {'od550aer'   :   ['od440aer', 
+                                             'od500aer',
+                                             'ang4487aer'],
+                           'ang4487aer' :   ['od440aer',
+                                             'od870aer']}
+    # Functions that are used to compute additional variables (i.e. one 
+    # for each variable defined in ADDITIONAL_REQUIRES)
+    ADDITIONAL_FUNS = {"od550aer"   :   add_od550aer,
+                      'ang4487aer'  :   add_ang4487aer}
+    # Level 2.0. Quality Assured Data.<p>The following data are pre and post field calibrated, automatically cloud cleared and manually inspected.
+    # Version 2 Direct Sun Algorithm
+    # Location=Zvenigorod,long=36.775,lat=55.695,elev=200,Nmeas=11,PI=Brent_Holben,Email=Brent.N.Holben@nasa.gov
+    # AOD Level 2.0,Daily Averages,UNITS can be found at,,, http://aeronet.gsfc.nasa.gov/data_menu.html
+    # Date(dd-mm-yy),Time(hh:mm:ss),Julian_Day,AOT_1640,AOT_1020,AOT_870,AOT_675,AOT_667,AOT_555,AOT_551,AOT_532,AOT_531,AOT_500,AOT_490,AOT_443,AOT_440,AOT_412,AOT_380,AOT_340,Water(cm),%TripletVar_1640,%TripletVar_1020,%TripletVar_870,%TripletVar_675,%TripletVar_667,%TripletVar_555,%TripletVar_551,%TripletVar_532,%TripletVar_531,%TripletVar_500,%TripletVar_490,%TripletVar_443,%TripletVar_440,%TripletVar_412,%TripletVar_380,%TripletVar_340,%WaterError,440-870Angstrom,380-500Angstrom,440-675Angstrom,500-870Angstrom,340-440Angstrom,440-675Angstrom(Polar),N[AOT_1640],N[AOT_1020],N[AOT_870],N[AOT_675],N[AOT_667],N[AOT_555],N[AOT_551],N[AOT_532],N[AOT_531],N[AOT_500],N[AOT_490],N[AOT_443],N[AOT_440],N[AOT_412],N[AOT_380],N[AOT_340],N[Water(cm)],N[440-870Angstrom],N[380-500Angstrom],N[440-675Angstrom],N[500-870Angstrom],N[340-440Angstrom],N[440-675Angstrom(Polar)]
+    # 16:09:2006,00:00:00,259.000000,-9999.,0.036045,0.036734,0.039337,-9999.,-9999.,-9999.,-9999.,-9999.,0.064670,-9999.,-9999.,0.069614,-9999.,0.083549,0.092204,0.973909,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,1.126095,0.973741,1.474242,1.135232,1.114550,-9999.,-9999.,11,11,11,-9999.,-9999.,-9999.,-9999.,-9999.,11,-9999.,-9999.,11,-9999.,11,11,11,11,11,11,11,11,-9999.
+    def __init__(self, **kwargs):
+        super(ReadAeronetSunV2, self).__init__(**kwargs)
+        #file column information
+        self.file_cols = _COL_INFO()
+    
+    def _add_additional_vars(self, vars_to_retrieve):
+        added = False
+        added_vars = []
+        for var in vars_to_retrieve:
+            if var in self.ADDITIONAL_REQUIRES:
+                add_vars = self.ADDITIONAL_REQUIRES[var]
+                for add_var in add_vars:
+                    if not add_var in vars_to_retrieve:
+                        added_vars.append(add_var)
+                        added = True
+        return (added, added_vars)
+    
+    def check_vars_to_retrieve(self, vars_to_retrieve):
+        """Separate variables that are in file from those that are computed
+        
+        Some of the provided variables by this interface are not included in
+        the data files but are computed within this class during data import
+        (e.g. od550aer, ang4487aer). 
+        
+        The latter may require additional parameters to be retrieved from the 
+        file, which is specified in the class header (cf. attribute
+        ``ADDITIONAL_REQUIRES``).
+        
+        This function checks the input list that specifies all required 
+        variables and separates them into two lists, one that includes all
+        variables that can be read from the files and a second list that
+        specifies all variables that are computed in this class.
+        
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            all parameter names that are supposed to be loaded
+        
+        Returns
+        -------
+        tuple
+            2-element tuple, containing
+            
+            - list: list containing all variables to be read
+            - list: list containing all variables to be computed
+        
+        Raises
+        ------
+        IOError
+            if one of the variables is not supported by this interface
+        """
+        repeat = True
+        while repeat:
+            repeat, add_vars = self._add_additional_vars(vars_to_retrieve)
+            #it is important to insert the additionally required variables in
+            #the beginning, as these need to be computed first later on 
+            # Example: if vars_to_retrieve=['od550aer'] then this loop will
+            # find out that this requires 'ang4487aer' to be computed as 
+            # well. So at the end of this function, ang4487aer needs to be 
+            # before od550aer in the list vars_to_compute, since the method
+            # @"compute_additional_vars" loops over that list in the specified
+            # order
+            vars_to_retrieve = add_vars + vars_to_retrieve
+        
+        # unique list containing all variables that are supposed to be read, 
+        # either because they are required to be retrieved, or because they 
+        # are supposed to be read because they are required to compute one 
+        # of the output variables
+        vars_to_retrieve = list(dict.fromkeys(vars_to_retrieve))
+        
+        # in the following, vars_to_retrieve is separated into two arrays, one 
+        # containing all variables that can be read from the files, and the 
+        # second containing all variables that are computed
+        vars_to_read = []
+        vars_to_compute = []
+        
+        for var in vars_to_retrieve:
+            if var in self.file_cols:
+                vars_to_read.append(var)
+            elif var in self.ADDITIONAL_REQUIRES:
+                vars_to_compute.append(var)
+            else:
+                raise IOError("Variable {} not supported".format(var))
+        return (vars_to_read, vars_to_compute)
+    
+    
+    def compute_additional_vars(self, data, vars_to_compute):
+        """Compute all additional variables
+        
+        The computations for each additional parameter are done using the 
+        specified methods in ``ADDITIONAL_FUNS``.
+        
+        Parameters
+        ----------
+        data : dict-like
+            data object containing imported results
+        
+        Returns
+        -------
+        dict
+            updated data object
+        """
+        for var in vars_to_compute:
+            data = self.ADDITIONAL_FUNS[var](data)
+        return data
+    
+    def read_file(self, filename, vars_to_retrieve=['od550aer']):
+        """Read Aeronet Sun V2 level 2 file 
 
         Parameters
         ----------
@@ -146,42 +323,26 @@ class ReadAeronetSunV2:
 2000-09-24    1.035123
 Length: 223, dtype: float64}
         """
-
-        # Level 2.0. Quality Assured Data.<p>The following data are pre and post field calibrated, automatically cloud cleared and manually inspected.
-        # Version 2 Direct Sun Algorithm
-        # Location=Zvenigorod,long=36.775,lat=55.695,elev=200,Nmeas=11,PI=Brent_Holben,Email=Brent.N.Holben@nasa.gov
-        # AOD Level 2.0,Daily Averages,UNITS can be found at,,, http://aeronet.gsfc.nasa.gov/data_menu.html
-        # Date(dd-mm-yy),Time(hh:mm:ss),Julian_Day,AOT_1640,AOT_1020,AOT_870,AOT_675,AOT_667,AOT_555,AOT_551,AOT_532,AOT_531,AOT_500,AOT_490,AOT_443,AOT_440,AOT_412,AOT_380,AOT_340,Water(cm),%TripletVar_1640,%TripletVar_1020,%TripletVar_870,%TripletVar_675,%TripletVar_667,%TripletVar_555,%TripletVar_551,%TripletVar_532,%TripletVar_531,%TripletVar_500,%TripletVar_490,%TripletVar_443,%TripletVar_440,%TripletVar_412,%TripletVar_380,%TripletVar_340,%WaterError,440-870Angstrom,380-500Angstrom,440-675Angstrom,500-870Angstrom,340-440Angstrom,440-675Angstrom(Polar),N[AOT_1640],N[AOT_1020],N[AOT_870],N[AOT_675],N[AOT_667],N[AOT_555],N[AOT_551],N[AOT_532],N[AOT_531],N[AOT_500],N[AOT_490],N[AOT_443],N[AOT_440],N[AOT_412],N[AOT_380],N[AOT_340],N[Water(cm)],N[440-870Angstrom],N[380-500Angstrom],N[440-675Angstrom],N[500-870Angstrom],N[340-440Angstrom],N[440-675Angstrom(Polar)]
-        # 16:09:2006,00:00:00,259.000000,-9999.,0.036045,0.036734,0.039337,-9999.,-9999.,-9999.,-9999.,-9999.,0.064670,-9999.,-9999.,0.069614,-9999.,0.083549,0.092204,0.973909,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,1.126095,0.973741,1.474242,1.135232,1.114550,-9999.,-9999.,11,11,11,-9999.,-9999.,-9999.,-9999.,-9999.,11,-9999.,-9999.,11,-9999.,11,11,11,11,11,11,11,11,-9999.
-
-        # define some row numbers. not all of them are used at this point
-        date_index = 0
-        time_index = 1
-        julien_day_index = 2
-        od1640_index = 3
-        od1020index = 4
-        od870_index = 5
-        od675index = 6
-        od667index = 7
-        od555index = 8
-        od551index = 9
-        od532index = 10
-        od531index = 11
-        od500_index = 12
-        od440_index = 15
-        od380index = 17
-        od340index = 18
-
-        # This value is later put to a np.nan
-        nan_val = np.float_(-9999.)
-
-        data_out = {}
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.PROVIDES_VARIABLES
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        
+        #create empty data object (is dictionary with extended functionality)
+        data_out = TimeSeriesFileData() 
+        
+        #create empty array for all variables that are supposed to be read
+        for var in vars_to_read:
+            data_out[var] = []
+    
         # Iterate over the lines of the file
-        if verbose:
+        if self.verbose:
             sys.stderr.write(filename + '\n')
         with open(filename, 'rt') as in_file:
-            c_head_line = in_file.readline()
-            c_algorithm = in_file.readline()
+            #added to output
+            data_out.head_line = in_file.readline()
+            data_out.algorithm = in_file.readline()
             c_dummy = in_file.readline()
             # re.split(r'=|\,',c_dummy)
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
@@ -193,65 +354,57 @@ Length: 223, dtype: float64}
             data_out['station name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()
-            c_Header = in_file.readline()
-
-            #
-            #DataArr = {}
-            dtime = []
-            for var in self.PROVIDES_VARIABLES:
-                data_out[var] = []
-
+            #added to output
+            data_out.data_header = in_file.readline()
+            
             for line in in_file:
                 # process line
                 dummy_arr = line.split(',')
-                # the following uses the standatd python datetime functions
-                day, month, year = dummy_arr[date_index].split(':')
-                hour, minute, second = dummy_arr[time_index].split(':')
-
-                # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
-                # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[date_index].split(':')
-                # pdb.set_trace()
+                
+                day, month, year = dummy_arr[self.file_cols['date']].split(':')
+                
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[time_index]])
+                datestring = 'T'.join([datestring, dummy_arr[self.file_cols['time']]])
                 datestring = '+'.join([datestring, '00:00'])
-                dtime.append(np.datetime64(datestring))
-
-                data_out['od500aer'].append(np.float_(dummy_arr[od500_index]))
-                if data_out['od500aer'][-1] == nan_val: data_out['od500aer'][-1] = np.nan
-                data_out['od440aer'].append(np.float_(dummy_arr[od440_index]))
-                if data_out['od440aer'][-1] == nan_val: data_out['od440aer'][-1] = np.nan
-                data_out['od870aer'].append(np.float_(dummy_arr[od870_index]))
-                if data_out['od870aer'][-1] == nan_val: data_out['od870aer'][-1] = np.nan
-
-                data_out['ang4487aer'].append(
-                    -1.0 * np.log(data_out['od440aer'][-1] / data_out['od870aer'][-1]) / np.log(0.44 / .870))
-                data_out['od550aer'].append(
-                    data_out['od500aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
-                # ;fill up time steps of the now calculated od550_aer that are nans with values calculated from the
-                # ;440nm wavelength to minimise gaps in the time series
-                if np.isnan(data_out['od550aer'][-1]):
-                    temp = data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
-                    if not np.isnan(temp) and temp > 0.:
-                        data_out['od550aer'][-1] = temp #data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
-                if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
-                   data_out['od550aer'][-1] = np.nan
-
+                
+                data_out['time'].append(np.datetime64(datestring))
+                
+                for var in vars_to_read:
+                    val = float(dummy_arr[self.file_cols[var]])
+                    if val == self.NAN_VAL:
+                        val = np.nan
+                    data_out[var].append(val)
+        data_out['time'] = np.asarray(data_out['time'])
+        for var in vars_to_read:
+            data_out[var] = np.asarray(data_out[var])
+        
+        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        
+        # TODO: reconsider to skip conversion to Series
         # convert  the vars in vars_to_retrieve to pandas time series
         # and delete the other ones
-        for var in self.PROVIDES_VARIABLES:
+        
+        for var in (vars_to_read + vars_to_compute):
             if var in vars_to_retrieve:
-                data_out[var] = pd.Series(data_out[var], index=dtime)
+                data_out[var] = pd.Series(data_out[var], 
+                                          index=data_out['time'])
             else:
                 del data_out[var]
-
+            
         return data_out
 
-    ###################################################################################
+    def read(self, vars_to_retrieve=['od550aer']):
+        """Read all data files into instance of :class:`UngriddedData` object
+        
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            list of variables that are supposed to be read from the files
+            (cf. :class:`_COL_INFO`) or computed during import 
+            (cf. class attributes ``ADDITIONAL_REQUIRES`` and 
+            ``ADDITIONAL_FUNS``)
 
-    def read(self, vars_to_retrieve=['od550aer'], verbose=False):
-        """method to read all files in self.files into self.data and self.metadata
-
+        
         Example
         -------
         >>> import pyaerocom.io.read_aeronet_sunv2
@@ -260,79 +413,88 @@ Length: 223, dtype: float64}
         """
 
         # Metadata key is float because the numpy array holding it is float
-
-        meta_key = 0.
-        self.files = self.get_file_list()
-        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
-
-        for _file in sorted(self.files):
+        
+        files = self.files
+        if len(files) == 0:
+            files = self.get_file_list()
+        
+        # initialisations
+        data_obj = UngriddedData(verbose=self.verbose)
+        meta_key = 0.0
+        index_pointer = 0
+        start_index = index_pointer
+        
+        #assign metadata object
+        metadata = data_obj.metadata
+        
+        for _file in sorted(files):
             if self.verbose:
                 sys.stdout.write(_file+"\n")
-            stat_obs_data = self.read_file(_file, vars_to_retrieve = vars_to_retrieve)
+            stat_obs_data = self.read_file(_file, 
+                                           vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
-            self.metadata[meta_key] = {}
-            self.metadata[meta_key]['station name'] = stat_obs_data['station name']
-            self.metadata[meta_key]['latitude'] = stat_obs_data['latitude']
-            self.metadata[meta_key]['longitude'] = stat_obs_data['longitude']
-            self.metadata[meta_key]['altitude'] = stat_obs_data['altitude']
-            self.metadata[meta_key]['PI'] = stat_obs_data['PI']
-            self.metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key] = {}
+            metadata[meta_key]['station name'] = stat_obs_data['station name']
+            metadata[meta_key]['latitude'] = stat_obs_data['latitude']
+            metadata[meta_key]['longitude'] = stat_obs_data['longitude']
+            metadata[meta_key]['altitude'] = stat_obs_data['altitude']
+            metadata[meta_key]['PI'] = stat_obs_data['PI']
+            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            self.metadata[meta_key]['indexes'] = {}
-            start_index = self.index_pointer
+            metadata[meta_key]['indexes'] = {}
+            
             # variable index
             obs_var_index = 0
+            
             for var in sorted(vars_to_retrieve):
-                for time, val in stat_obs_data[var].iteritems():
-                    self.data[self.index_pointer, self._DATAINDEX] = val
+                times = np.float64(stat_obs_data.time)
+                
+                for i, val in enumerate(stat_obs_data[var].values):
+                    data_obj._data[index_pointer, data_obj._DATAINDEX] = val
+                    data_obj._data[index_pointer, data_obj._TIMEINDEX] = times[i]
                     # pd.TimeStamp.value is nano seconds since the epoch!
-                    self.data[self.index_pointer, self._TIMEINDEX] = np.float64(time.value / 1.E9)
-                    self.index_pointer += 1
-                    if self.index_pointer >= self._ROWNO:
-                        # add another array chunk to self.data
-                        self.data = np.append(self.data, np.zeros([self._CHUNKSIZE, self._COLNO], dtype=np.float64), axis=0)
-                        self._ROWNO += self._CHUNKSIZE
+                    #data_obj._data[index_pointer, data_obj._TIMEINDEX] = np.float64(time.value / 1.E9)
+                    index_pointer += 1
+                    if index_pointer >= data_obj._ROWNO:
+                        # add another array chunk to data_obj._data
+                        data_obj.add_chunk()
     
-                end_index = self.index_pointer
+                end_index = index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
-                self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
-                self.data[start_index:end_index, self._VARINDEX] = obs_var_index
-                self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
-                self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']
-                self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data['altitude']
-                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_key
-                start_index = self.index_pointer
+                metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
+                data_obj._data[start_index:end_index, 
+                               data_obj._VARINDEX] = obs_var_index
+                data_obj._data[start_index:end_index, 
+                               data_obj._LATINDEX] = stat_obs_data['latitude']
+                data_obj._data[start_index:end_index, 
+                               data_obj._LONINDEX] = stat_obs_data['longitude']
+                data_obj._data[start_index:end_index, 
+                               data_obj._ALTITUDEINDEX] = stat_obs_data['altitude']
+                data_obj._data[start_index:end_index, 
+                               data_obj._METADATAKEYINDEX] = meta_key
+                start_index = index_pointer
                 obs_var_index += 1
-            meta_key = meta_key + 1.
+            meta_key += 1
     
-        # shorten self.data to the right number of points
-        self.data = self.data[0:end_index]
+        # shorten data_obj._data to the right number of points
+        data_obj._data = data_obj._data[0:end_index]
+        self.data = data_obj
+        return data_obj
+        
+if __name__=="__main__":
+    from pyaerocom.io import ReadAeronetSunV2
+    
+    read = ReadAeronetSunV2NEW(verbose=True)
+    read_old = ReadAeronetSunV2()
+    
+    files = read.get_file_list()
 
+    data = read.read_first_file()
+    
+    data_new = read.read()
+    
+    read_old.read()
 
-    ###################################################################################
-
-    def get_file_list(self):
-        """search for files to read """
-
-        if self.verbose:
-            print('searching for data files. This might take a while...')
-        files = glob.glob(os.path.join(self.DATASET_PATH,
-                                       self._FILEMASK))
-        return files
-
-    ###################################################################################
-
-    def get_data_revision(self):
-        """method to read the revision string from the file Revision.txt in the main data directory"""
-
-        revision_file = os.path.join(self.DATASET_PATH, const.REVISION_FILE)
-        revision = 'unset'
-        if os.path.isfile(revision_file):
-            with open(revision_file, 'rt') as in_file:
-                revision = in_file.readline().strip()
-                in_file.close()
-
-            self.revision = revision
 

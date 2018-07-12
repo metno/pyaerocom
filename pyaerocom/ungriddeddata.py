@@ -10,6 +10,20 @@ from collections import OrderedDict as od
 import pandas as pd
 
 class UngriddedData(object):
+    """Class representing ungridded data
+    
+    The data is organised in a 2-dimensional numpy array where the first index
+    axis corresponds to individual measurements and the second dimension 
+    contains addit
+    
+    Attributes
+    ----------
+    _data : ndarray
+        (private) numpy array of dtype np.float64 initially of shape (10000,8)
+        data point array
+    metadata : dict
+        dictionary containing meta information about the data
+    """
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
