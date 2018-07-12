@@ -12,6 +12,7 @@ class ReadUngriddedBase(abc.ABC):
     """Abstract base class template for reading of ungridded data"""
     
     def __init__(self, verbose=False):
+        self.data = None #object that holds the loaded data
         self.files = []
         self.verbose = verbose
         

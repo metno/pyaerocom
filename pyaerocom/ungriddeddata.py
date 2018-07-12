@@ -28,23 +28,26 @@ class UngriddedData(object):
     _LAT_OFFSET = np.float(90.)
     
     def __init__(self, verbose=True):
-        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
+        #keep private, this is not supposed to be used by the user
+        self._data = np.empty([self._ROWNO, self._COLNO])*np.nan
         self.metadata = od()
-        self.index_pointer = 0
         self.verbose = verbose
     
-    def _add_chunk(self):
+    def add_chunk(self):
         chunk = np.empty([self._CHUNKSIZE, self._COLNO])*np.nan
-        self.data = np.append(self.data, chunk, axis=0)
-        self.ROWNO += self.CHUNKSIZE
-        print("adding chunk, new array size ({})".format(self.arr.shape))
-    
-    def __setitem__(self, key, val):
-        if self.index_pointer >= self._ROWNO:
-            self._add_chunk()
-        self.data[key] = val
-        self.index_pointer += 1
-        
+        self._data = np.append(self._data, chunk, axis=0)
+        self._ROWNO += self._CHUNKSIZE
+        if self.verbose:
+            print("adding chunk, new array size ({})".format(self._data.shape))
+# =============================================================================
+#     
+#     def __setitem__(self, key, val):
+#         if self.index_pointer >= self._ROWNO:
+#             self._add_chunk()
+#         self._data[key] = val
+#         self.index_pointer += 1
+#         
+# =============================================================================
     def _to_timeseries_helper(self, val, start_date=None, end_date=None, 
                               freq=None):
         """small helper routine for self.to_timeseries to not to repeat the same code fragment three times"""
@@ -63,9 +66,9 @@ class UngriddedData(object):
         for var in val['indexes']:
             if var in self.vars_to_retrieve:
                 data_found_flag = True
-                temp_dict[var] = pd.Series(self.data[val['indexes'][var], self._DATAINDEX],
+                temp_dict[var] = pd.Series(self._data[val['indexes'][var], self._DATAINDEX],
                                            index=pd.to_datetime(
-                                               self.data[
+                                               self._data[
                                                    val['indexes'][var], self._TIMEINDEX],
                                                unit='s'))
 
@@ -145,8 +148,8 @@ class UngriddedData(object):
         determine single locations"""
 
         # multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it
-        self.coded_loc = self.data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
-                self.data[:, self._LATINDEX] + self._LAT_OFFSET) * (10 ** self._LOCATION_PRECISION)
+        self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
+                self._data[:, self._LATINDEX] + self._LAT_OFFSET) * (10 ** self._LOCATION_PRECISION)
         return self.coded_loc
 
     ###################################################################################

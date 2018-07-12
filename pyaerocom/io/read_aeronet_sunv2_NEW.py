@@ -286,7 +286,7 @@ class ReadAeronetSunV2NEW(ReadUngriddedBase):
             data = self.ADDITIONAL_FUNS[var](data)
         return data
     
-    def read_file(self, filename, vars_to_retrieve=['od550aer'], to_series=True):
+    def read_file(self, filename, vars_to_retrieve=['od550aer']):
         """Read Aeronet Sun V2 level 2 file 
 
         Parameters
@@ -374,17 +374,17 @@ Length: 223, dtype: float64}
         # TODO: reconsider to skip conversion to Series
         # convert  the vars in vars_to_retrieve to pandas time series
         # and delete the other ones
-        if to_series:
-            for var in (vars_to_read + vars_to_compute):
-                if var in vars_to_retrieve:
-                    data_out[var] = pd.Series(data_out[var], 
-                                              index=data_out['time'])
-                else:
-                    del data_out[var]
-                
+        
+        for var in (vars_to_read + vars_to_compute):
+            if var in vars_to_retrieve:
+                data_out[var] = pd.Series(data_out[var], 
+                                          index=data_out['time'])
+            else:
+                del data_out[var]
+            
         return data_out
 
-    def read(self, vars_to_retrieve=['od550aer'], data_obj=None):
+    def read(self, vars_to_retrieve=['od550aer']):
         """Read all data files into instance of :class:`UngriddedData` object
         
         Parameters
@@ -394,9 +394,7 @@ Length: 223, dtype: float64}
             (cf. :class:`_COL_INFO`) or computed during import 
             (cf. class attributes ``ADDITIONAL_REQUIRES`` and 
             ``ADDITIONAL_FUNS``)
-        data_obj : :obj:`UngriddedData`, optional,
-            existing instance of data object, to which these data is 
-            supposed to be attached.
+
         
         Example
         -------
@@ -410,16 +408,12 @@ Length: 223, dtype: float64}
         files = self.files
         if len(files) == 0:
             files = self.get_file_list()
-        #self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float64)
-        if data_obj is None:
-            data_obj = UngriddedData()
-            meta_key = 0.0
-        else:
-            # get current metadata key of data object
-            meta_key = max(data_obj.metadata.keys())
         
-        # the first current free row in data object (is 0 on init)
-        start_index = data_obj.index_pointer
+        # initialisations
+        data_obj = UngriddedData(verbose=self.verbose)
+        meta_key = 0.0
+        index_pointer = 0
+        start_index = index_pointer
         
         #assign metadata object
         metadata = data_obj.metadata
@@ -441,45 +435,52 @@ Length: 223, dtype: float64}
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             metadata[meta_key]['indexes'] = {}
-            start_index = self.index_pointer
+            
             # variable index
             obs_var_index = 0
+            
             for var in sorted(vars_to_retrieve):
-                for time, val in stat_obs_data[var].iteritems():
-                    self.data[self.index_pointer, self._DATAINDEX] = val
+                times = np.float64(stat_obs_data.time)
+                
+                for i, val in enumerate(stat_obs_data[var].values):
+                    data_obj._data[index_pointer, data_obj._DATAINDEX] = val
+                    data_obj._data[index_pointer, data_obj._TIMEINDEX] = times[i]
                     # pd.TimeStamp.value is nano seconds since the epoch!
-                    self.data[self.index_pointer, self._TIMEINDEX] = np.float64(time.value / 1.E9)
-                    self.index_pointer += 1
-                    if self.index_pointer >= self._ROWNO:
-                        # add another array chunk to self.data
-                        self.data = np.append(self.data, np.zeros([self._CHUNKSIZE, self._COLNO], dtype=np.float64), axis=0)
-                        self._ROWNO += self._CHUNKSIZE
+                    #data_obj._data[index_pointer, data_obj._TIMEINDEX] = np.float64(time.value / 1.E9)
+                    index_pointer += 1
+                    if index_pointer >= data_obj._ROWNO:
+                        # add another array chunk to data_obj._data
+                        data_obj.add_chunk()
     
-                end_index = self.index_pointer
+                end_index = index_pointer
                 # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
                 metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
-                self.data[start_index:end_index, self._VARINDEX] = obs_var_index
-                self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
-                self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']
-                self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data['altitude']
-                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_key
-                start_index = self.index_pointer
+                data_obj._data[start_index:end_index, data_obj._VARINDEX] = obs_var_index
+                data_obj._data[start_index:end_index, data_obj._LATINDEX] = stat_obs_data['latitude']
+                data_obj._data[start_index:end_index, data_obj._LONINDEX] = stat_obs_data['longitude']
+                data_obj._data[start_index:end_index, data_obj._ALTITUDEINDEX] = stat_obs_data['altitude']
+                data_obj._data[start_index:end_index, data_obj._METADATAKEYINDEX] = meta_key
+                start_index = index_pointer
                 obs_var_index += 1
-            meta_key = meta_key + 1.
+            meta_key += 1
     
-        # shorten self.data to the right number of points
-        self.data = self.data[0:end_index]
+        # shorten data_obj._data to the right number of points
+        data_obj._data = data_obj._data[0:end_index]
+        self.data = data_obj
+        return data_obj
         
 if __name__=="__main__":
     from pyaerocom.io import ReadAeronetSunV2
     
-    read = ReadAeronetSunV2NEW()
+    read = ReadAeronetSunV2NEW(verbose=True)
     read_old = ReadAeronetSunV2()
     
     files = read.get_file_list()
 
     data = read.read_first_file()
     
-    data.read()
+    data_new = read.read()
+    
+    read_old.read()
 
 
