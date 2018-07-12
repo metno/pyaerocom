@@ -9,7 +9,7 @@ Created on Fri Apr 13 11:34:57 2018
 from collections import OrderedDict as od
 from multiprocessing.pool import Pool
 from functools import partial
-from pyaerocom.plot.mapping import plot_map_aerocom
+#from pyaerocom.plot.mapping import plot_map_aerocom
 
 class PlotMultiCore(Pool):
     """Class that may be used for running multi

@@ -50,8 +50,17 @@ from pyaerocom.io.read_earlinet import ReadEarlinet
 
 from pyaerocom import const
 
+"""
+CURRENTLY OUTDATED
+"""
 class ReadUngridded:
     """High-level reading class for ungridded files based on obsnetwork ID
+    
+    Note
+    ----
+    
+    THIS CLASS IS CURRENTLY OUTDATED AND WILL BE PRONE TO MAJOR API CHANGES IN
+    DUE TIME
     """
 
     #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
@@ -250,6 +259,7 @@ class ReadUngridded:
             # call the different obs data reading classes
             if dataset_to_read == const.AERONET_SUN_V2L2_AOD_DAILY_NAME:
                 # read AERONETSUN V2 L2 daily data set
+                raise DeprecationWarning("Update follows soon")
                 read_dummy = ReadAeronetSunV2(index_pointer=self.index_pointer, 
                                               verbose=self.verbose)
                 if cache_hit_flag and object_version_saved == read_dummy.__version__:

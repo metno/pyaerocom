@@ -131,6 +131,7 @@ def add_od550aer(data):
 class ReadAeronetSunV2(ReadUngriddedBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
     
+    
     Note
     ----
     Even though this is a reading class, it also includes the option to 
@@ -141,6 +142,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
     specified in the two header dictionaries ``ADDITIONAL_REQUIRES`` (what
     variables are required to perform the computation) and 
     ``ADDITIONAL_FUNS`` (functions used to perform the computations).
+    
     
     Attributes
     ----------

@@ -4,7 +4,7 @@ Reading data from multiple models: the ReadGriddedMulti class
 
 The ``pyaerocom.ReadGriddedMulti`` class provides an interface to import
 multiple variables for an arbitrary number of gridded datasets
-(e.g. model data, level3 satellite data) and within a specific time
+(e.g. model data, level 2 satellite data) and within a specific time
 interval. It makes large use of the ``ReadGridded`` class that provides
 an interface for importing results from a single dataset.
 
@@ -44,7 +44,7 @@ aerosol-climate model, you may search if data exists …
 
     models.append('ECHAM6-SALSA_AP3-CTRL2015')
 
-Now create and initiate ``ReadGriddedMulti`` class. The direcory for
+Now create and initiate ``ReadGriddedMulti`` class. The directory for
 each model as well as all valid files in the model directories are
 searched on initiation of the instance. Valid here means, that the files
 belong to the corresponding model. Subsetting of the time interval is
@@ -90,13 +90,28 @@ each of the 3 requested datasets. These can be used to access the data
 for each of the datasets.
 
 Let’s define a bunch of test variables that are supposed to be loaded
-for each model. In the ideal case, these should be contained in all
-input models (not the case here, since AATST v1.0 does not include
-``od550dust``.
+for each model.
 
 .. code:: ipython3
 
     test_vars = ["od550aer", "od550dust"]
+
+Read all variables for all models
+
+.. code:: ipython3
+
+    result_dict = read.read(test_vars, ts_type="daily")
+
+
+.. parsed-literal::
+
+    OSError('No files could be found for dataset ECHAM6-SALSA_AP3-CTRL2015, variable od550aer and daily data in specified time interval 2010-01-01 00:00:00-2011-01-01 00:00:00',)
+    OSError('No files could be found for dataset ECHAM6-SALSA_AP3-CTRL2015, variable od550dust and daily data in specified time interval 2010-01-01 00:00:00-2011-01-01 00:00:00',)
+
+
+As we can see, for the ECHAM6 data, the import failed. The reason for
+this is, that these data only exists in monthly resolution. We can load
+this data manually.
 
 .. code:: ipython3
 
@@ -124,23 +139,6 @@ input models (not the case here, since AATST v1.0 does not include
     Grid data: <iris 'Cube' of atmosphere_optical_thickness_due_to_ambient_aerosol_particles / (1) (time: 12; latitude: 96; longitude: 192)>
 
 
-
-Read all variables for all models
-
-.. code:: ipython3
-
-    result_dict = read.read(test_vars, ts_type="daily")
-
-
-.. parsed-literal::
-
-    OSError('No files could be found for dataset ECHAM6-SALSA_AP3-CTRL2015, variable od550aer and daily data in specified time interval 2010-01-01 00:00:00-2011-01-01 00:00:00',)
-    OSError('No files could be found for dataset ECHAM6-SALSA_AP3-CTRL2015, variable od550dust and daily data in specified time interval 2010-01-01 00:00:00-2011-01-01 00:00:00',)
-
-
-As we can see, for the ECHAM6 data, the import failed. The reason for
-this is, that these data only exists in monthly resolution. We can load
-this data manually.
 
 Print what is in there (similar to the previously introduced
 ``ReadGridded`` class, also the ``ReadGriddedMulti`` class has a helpful

@@ -670,7 +670,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fbde940fb70>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fd7362fb240>
 
 
 
@@ -678,11 +678,10 @@ that we extracted.
 .. image:: tut00_get_started/tut00_get_started_31_1.png
 
 
-That should be enough for an introduction. The following notebook
-introduces in more detail how pyaerocom handles regions and where they
-can be defined. In the subsequent tutorial, the ``ReadGridded`` class is
-introduced, that was usesed above to import model data in a flexible way
-based on variable name, time range and temporal resolution. The loaded
-data for each model and variable is then stored in the analysis class
-``GriddedData`` which we use in the end of this notebook and which will
-be introduced in a later tutorial.
+The following notebook introduces in more detail how pyaerocom handles
+regions and where they can be defined. In the subsequent tutorial, the
+``ReadGridded`` class is introduced, that was usesed above to import
+model data in a flexible way based on variable name, time range and
+temporal resolution. The loaded data for each model and variable is then
+stored in the analysis class ``GriddedData`` which we use in the end of
+this notebook and which will be introduced in a later tutorial.

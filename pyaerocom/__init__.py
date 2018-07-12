@@ -25,16 +25,17 @@ if not const.READY:
 from . import mathutils
 from . import multiproc
 
+from .griddeddata import GriddedData
+from .ungriddeddata import UngriddedData
+
 from . import io
 from . import plot
 from . import utils
 
-# custom toplevel class and method im
+# custom toplevel class
 from .variable import Variable
 from .region import Region
 
-from .griddeddata import GriddedData
-from .ungriddeddata import UngriddedData
 #from .ungriddeddata import UngriddedData
 from .io.helpers import search_data_dir_aerocom
 #from .obsdata import ObsData, ProfileData, StationData
