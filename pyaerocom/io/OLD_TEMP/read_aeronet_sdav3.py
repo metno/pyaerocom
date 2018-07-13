@@ -1,7 +1,7 @@
 ################################################################
-# read_aeronet_invv2.py
+# read_aeronet_sdav3.py
 #
-# read Aeronet inversion V2 data
+# read Aeronet SDA V3 data
 #
 # this file is part of the pyaerocom package
 #
@@ -39,15 +39,13 @@ import glob
 import sys
 
 import numpy as np
-
 import pandas as pd
-import re
 
 from pyaerocom import const
 
 
-class ReadAeronetInvV2:
-    """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
+class ReadAeronetSdaV3:
+    """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
 
     Attributes
     ----------
@@ -62,10 +60,10 @@ class ReadAeronetInvV2:
         if True some running information is printed
 
     """
-    _FILEMASK = '*.dubovikday'
-    __version__ = "0.01"
-    DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
-    DATASET_PATH = const.OBSCONFIG[const.AERONET_INV_V2L2_DAILY_NAME]['PATH']
+    _FILEMASK = '*.lev30'
+    __version__ = "0.02"
+    DATASET_NAME = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
+    DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L15_SDA_DAILY_NAME]['PATH']
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False
 
@@ -84,26 +82,30 @@ class ReadAeronetInvV2:
     # data vars
     # will be stored as pandas time series
     DATA_COLNAMES = {}
-    DATA_COLNAMES['ssa439aer'] = 'SSA439-T'
-    DATA_COLNAMES['ssa440aer'] = 'SSA440-T'
-    DATA_COLNAMES['ssa675aer'] = 'SSA675-T'
-    DATA_COLNAMES['ssa870aer'] = 'SSA870-T'
-    DATA_COLNAMES['ssa1018aer'] = 'SSA1018-T'
+    DATA_COLNAMES['od500gt1aer'] = 'Coarse_Mode_AOD_500nm[tau_c]'
+    DATA_COLNAMES['od500lt1aer'] = 'Fine_Mode_AOD_500nm[tau_f]'
+    DATA_COLNAMES['od500aer'] = 'Total_AOD_500nm[tau_a]'
+    DATA_COLNAMES['ang4487aer'] = 'Angstrom_Exponent(AE)-Total_500nm[alpha]'
 
     # meta data vars
     # will be stored as array of strings
     METADATA_COLNAMES = {}
-    METADATA_COLNAMES['data_quality_level'] = 'DATA_TYPE'
-    METADATA_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
-    METADATA_COLNAMES['time'] = 'Time(hh:mm:ss)'
-    METADATA_COLNAMES['day_of_year'] = 'Julian_Day'
+    METADATA_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
+    METADATA_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
+    METADATA_COLNAMES['station name'] = 'AERONET_Site'
+    METADATA_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
+    METADATA_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
+    METADATA_COLNAMES['altitude'] = 'Site_Elevation(m)'
+    METADATA_COLNAMES['date'] = 'Date_(dd:mm:yyyy)'
+    METADATA_COLNAMES['time'] = 'Time_(hh:mm:ss)'
+    METADATA_COLNAMES['day_of_year'] = 'Day_of_Year'
 
     # additional vars
     # calculated
     AUX_COLNAMES = []
-    # AUX_COLNAMES.append('od550gt1aer')
-    # AUX_COLNAMES.append('od550lt1aer')
-    # AUX_COLNAMES.append('od550aer')
+    AUX_COLNAMES.append('od550gt1aer')
+    AUX_COLNAMES.append('od550lt1aer')
+    AUX_COLNAMES.append('od550aer')
 
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
     for col in AUX_COLNAMES:
@@ -117,16 +119,16 @@ class ReadAeronetInvV2:
         self.data = []
         self.index = len(self.metadata)
         self.files = []
-        # the reading actually works for all V2 inversion data sets
+        # the reading actually works for all V3 SDA data sets
         # so just adjust the name and the path here
-        # const.AERONET_INV_V2L2_DAILY_NAME is the default
+        # const.AERONET_SUN_V3L15_SDA_DAILY_NAME is the default
         if dataset_to_read is None:
             pass
-            # self.dataset_name = const.AERONET_INV_V2L2_DAILY_NAME
-            # self.dataset_path = const.OBSCONFIG[const.AERONET_INV_V2L2_DAILY_NAME]['PATH']
-        elif dataset_to_read == const.AERONET_INV_V2L15_DAILY_NAME:
-            self.DATASET_NAME = const.AERONET_INV_V2L15_DAILY_NAME
-            self.DATASET_PATH = const.OBSCONFIG[const.AERONET_INV_V2L15_DAILY_NAME]['PATH']
+            # self.dataset_name = const.AERONET_SUN_V3L15_AOD_DAILY_NAME
+            # self.dataset_path = const.OBSCONFIG[const.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH']
+        elif dataset_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
+            self.DATASET_NAME = const.AERONET_SUN_V3L2_SDA_DAILY_NAME
+            self.DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH']
 
         # set the revision to the one from Revision.txt if that file exist
         self.revision = self.get_data_revision()
@@ -154,7 +156,7 @@ class ReadAeronetInvV2:
 
     ###################################################################################
 
-    def read_file(self, filename, vars_to_retrieve=['ssa675aer','ssa440aer'], verbose=False):
+    def read_file(self, filename, vars_to_retrieve=['od500gt1aer','od550gt1aer'], verbose=False):
         """method to read an Aeronet SDA V3 file and return it in a dictionary
         with the data variables as pandas time series
 
@@ -170,19 +172,22 @@ class ReadAeronetInvV2:
         Example
         -------
         >>> import pyaerocom.io as pio
-        >>> obj = pio.read_aeronet_invv2.ReadAeronetInvV2()
-        >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed/920801_171216_Karlsruhe.dubovikday'
-        >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed/920801_171216_AOE_Baotou.dubovikday'
+        >>> obj = pio.read_aeronet_sdav3.ReadAeronetSdaV3()
+        >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed/Karlsruhe.lev30'
         >>> filedata = obj.read_file(filename)
         >>> print(filedata)
         """
+
         # DAILY DATA:
         # ===========
-        # 21:03:2005,Locations=Karlsruhe,long=8.428,lat=49.093,elev=140,Nmeas=2,PI=Bernhard_Vogel,Email=bernhard.vogel@kit.edu
-        # Level 2.0 Almucantar Retrievals, Version 2
-        # Combined Dubovik Retrievals,DAILY AVERAGES,Inversion Product UNITS can be found at,,, http://aeronet.gsfc.nasa.gov/new_web/units.html
-        # Date(dd-mm-yyyy),Time(hh:mm:ss),Julian_Day,AOT_1640,AOT_1020,AOT_870,AOT_675,AOT_667,AOT_555,AOT_551,AOT_532,AOT_531,AOT_500,AOT_490,AOT_443,AOT_440,AOT_412,AOT_380,AOT_340,Water(cm),AOTExt440-T,AOTExt675-T,AOTExt870-T,AOTExt1018-T,AOTExt440-F,AOTExt675-F,AOTExt870-F,AOTExt1018-F,AOTExt440-C,AOTExt675-C,AOTExt870-C,AOTExt1018-C,870-440AngstromParam.[AOTExt]-Total,SSA440-T,SSA675-T,SSA870-T,SSA1018-T,AOTAbsp440-T,AOTAbsp675-T,AOTAbsp870-T,AOTAbsp1018-T,870-440AngstromParam.[AOTAbsp],REFR(440),REFR(675),REFR(870),REFR(1018),REFI(440),REFI(675),REFI(870),REFI(1018),ASYM440-T,ASYM675-T,ASYM870-T,ASYM1018-T,ASYM440-F,ASYM675-F,ASYM870-F,ASYM1018-F,ASYM440-C,ASYM675-C,ASYM870-C,ASYM1018-C,0.050000,0.065604,0.086077,0.112939,0.148184,0.194429,0.255105,0.334716,0.439173,0.576227,0.756052,0.991996,1.301571,1.707757,2.240702,2.939966,3.857452,5.061260,6.640745,8.713145,11.432287,15.000000,Inflection_Point[um],VolCon-T,EffRad-T,VolMedianRad-T,StdDev-T,VolCon-F,EffRad-F,VolMedianRad-F,StdDev-F,VolCon-C,EffRad-C,VolMedianRad-C,StdDev-C,Altitude(BOA)(km),Altitude(TOA)(km),DownwardFlux(BOA),DownwardFlux(TOA),UpwardFlux(BOA),UpwardFlux(TOA),RadiativeForcing(BOA),RadiativeForcing(TOA),ForcingEfficiency(BOA),ForcingEfficiency(TOA),DownwardFlux440-T,DownwardFlux675-T,DownwardFlux870-T,DownwardFlux1018-T,UpwardFlux440-T,UpwardFlux675-T,UpwardFlux870-T,UpwardFlux1018-T,DiffuseFlux440-T,DiffuseFlux675-T,DiffuseFlux870-T,DiffuseFlux1018-T,N[AOT_1640],N[AOT_1020],N[AOT_870],N[AOT_675],N[AOT_667],N[AOT_555],N[AOT_551],N[AOT_532],N[AOT_531],N[AOT_500],N[AOT_490],N[AOT_443],N[AOT_440],N[AOT_412],N[AOT_380],N[AOT_340],N[Water(cm)],N[AOTExt440-T],N[AOTExt675-T],N[AOTExt870-T],N[AOTExt1018-T],N[AOTExt440-F],N[AOTExt675-F],N[AOTExt870-F],N[AOTExt1018-F],N[AOTExt440-C],N[AOTExt675-C],N[AOTExt870-C],N[AOTExt1018-C],N[870-440AngstromParam.[AOTExt]-Total],N[SSA440-T],N[SSA675-T],N[SSA870-T],N[SSA1018-T],N[AOTAbsp440-T],N[AOTAbsp675-T],N[AOTAbsp870-T],N[AOTAbsp1018-T],N[870-440AngstromParam.[AOTAbsp]-Total],N[REFR(440)],N[REFR(675)],N[REFR(870)],N[REFR(1018)],N[REFI(440)],N[REFI(675)],N[REFI(870)],N[REFI(1018)],N[ASYM440-T],N[ASYM675-T],N[ASYM870-T],N[ASYM1018-T],N[ASYM440-F],N[ASYM675-F],N[ASYM870-F],N[ASYM1018-F],N[ASYM440-C],N[ASYM675-C],N[ASYM870-C],N[ASYM1018-C],N[0.050000],N[0.065604],N[0.086077],N[0.112939],N[0.148184],N[0.194429],N[0.255105],N[0.334716],N[0.439173],N[0.576227],N[0.756052],N[0.991996],N[1.301571],N[1.707757],N[2.240702],N[2.939966],N[3.857452],N[5.061260],N[6.640745],N[8.713145],N[11.432287],N[15.000000],N[Inflection_Point[um]],N[VolCon-T],N[EffRad-T],N[VolMedianRad-T],N[StdDev-T],N[VolCon-F],N[EffRad-F],N[VolMedianRad-F],N[StdDev-F],N[VolCon-C],N[EffRad-C],N[VolMedianRad-C],N[StdDev-C],N[Altitude](BOA)(km),N[Altitude](TOA)(km),N[DownwardFlux](BOA),N[DownwardFlux](TOA),N[UpwardFlux](BOA),N[UpwardFlux](TOA),N[RadiativeForcing](BOA),N[RadiativeForcing](TOA),N[ForcingEfficiency](BOA),N[ForcingEfficiency](TOA),N[DownwardFlux440-T],N[DownwardFlux675-T],N[DownwardFlux870-T],N[DownwardFlux1018-T],N[UpwardFlux440-T],N[UpwardFlux675-T],N[UpwardFlux870-T],N[UpwardFlux1018-T],N[DiffuseFlux440-T],N[DiffuseFlux675-T],N[DiffuseFlux870-T],N[DiffuseFlux1018-T],last_processing_date(mm/dd/yyyy),alm_type,DATA_TYPE
-        # 23:03:2005,00:00:00,82,-9999.,0.083839,0.107933,0.160749,-9999.,-9999.,-9999.,-9999.,-9999.,0.253814,-9999.,-9999.,0.296464,-9999.,0.344551,-9999.,1.560031,0.298250,0.161350,0.108300,0.083750,0.284250,0.146300,0.091700,0.065950,0.014000,0.015050,0.016600,0.017750,1.478205,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,0.761146,0.694031,0.648542,0.626446,0.757593,0.685709,0.626377,0.584583,0.845645,0.782238,0.776409,0.784517,0.000335,0.001379,0.004453,0.011425,0.023246,0.035244,0.034897,0.022261,0.011832,0.007350,0.006417,0.007526,0.009035,0.008374,0.006213,0.004285,0.003244,0.002710,0.002207,0.001499,0.000757,0.000272,0.756000,0.056000,0.257500,0.386000,1.075500,0.042000,0.203000,0.229000,0.492500,0.013500,1.651500,2.005000,0.681500,0.140000,120.000000,236.537995,397.202700,36.959740,93.263465,-32.737075,-17.849030,-147.851120,-80.637445,489.512910,403.065362,260.545924,192.072825,138.342458,113.911303,73.633531,54.282178,0.840192,0.503973,0.291522,0.196531,-9999.,2,2,2,-9999.,-9999.,-9999.,-9999.,-9999.,2,-9999.,-9999.,2,-9999.,2,-9999.,2,2,2,2,2,2,2,2,2,2,2,2,2,2,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,07/04/2007,2,Level 2.0
+        # AERONET Version 3; SDA Version 4.1
+        # Cuiaba
+        # Version 3: SDA Retrieval Level 1.5
+        # The following data are cloud cleared and quality controls have been applied but these data may not have final calibration applied.  These data may change.
+        # Contact: PI=Brent_Holben; PI Email=Brent.N.Holben@nasa.gov
+        # Daily Averages,UNITS can be found at,,, https://aeronet.gsfc.nasa.gov/new_web/units.html
+        # AERONET_Site,Date_(dd:mm:yyyy),Time_(hh:mm:ss),Day_of_Year,Total_AOD_500nm[tau_a],Fine_Mode_AOD_500nm[tau_f],Coarse_Mode_AOD_500nm[tau_c],FineModeFraction_500nm[eta],2nd_Order_Reg_Fit_Error-Total_AOD_500nm[regression_dtau_a],RMSE_Fine_Mode_AOD_500nm[Dtau_f],RMSE_Coarse_Mode_AOD_500nm[Dtau_c],RMSE_FineModeFraction_500nm[Deta],Angstrom_Exponent(AE)-Total_500nm[alpha],dAE/dln(wavelength)-Total_500nm[alphap],AE-Fine_Mode_500nm[alpha_f],dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f],N[Total_AOD_500nm[tau_a]],N[Fine_Mode_AOD_500nm[tau_f]],N[Coarse_Mode_AOD_500nm[tau_c]],N[FineModeFraction_500nm[eta]],N[2nd_Order_Reg_Fit_Error-Total_AOD_500nm[regression_dtau_a]],N[RMSE_Fine_Mode_AOD_500nm[Dtau_f]],N[RMSE_Coarse_Mode_AOD_500nm[Dtau_c]],N[RMSE_FineModeFraction_500nm[Deta]],N[Angstrom_Exponent(AE)-Total_500nm[alpha]],N[dAE/dln(wavelength)-Total_500nm[alphap]],N[AE-Fine_Mode_500nm[alpha_f]],N[dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f]],Data_Quality_Level,AERONET_Instrument_Number,AERONET_Site_Name,Site_Latitude(Degrees),Site_Longitude(Degrees),Site_Elevation(m),
+        # Karlsruhe,21:03:2005,12:00:00,80,0.242882,0.050086,0.192796,0.206254,0.000435,0.018642,0.019553,0.076899,0.373355,-0.766570,2.387612,1.394079,2,2,2,2,2,2,2,2,2,2,2,2,lev15,325,Karlsruhe,49.093300,8.427900,140.000000
 
 
         # ALL POINT DATA
@@ -198,24 +203,18 @@ class ReadAeronetInvV2:
         if verbose:
             sys.stderr.write(filename + '\n')
         with open(filename, 'rt') as in_file:
-            #get rid of the first com,a seperated string element...
-            c_dummy = ','.join(in_file.readline().strip().split(',')[1:])
-            # re.split(r'=|\,',c_dummy)
-            i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
-            dict_loc = dict(zip(i_dummy, i_dummy))
-
-            data_out['latitude'] = float(dict_loc['lat'])
-            data_out['longitude'] = float(dict_loc['long'])
-            data_out['altitude'] = float(dict_loc['elev'])
-            data_out['station name'] = dict_loc['Locations']
-            data_out['PI'] = dict_loc['PI']
-            data_out['PI_email'] = dict_loc['Email']
-
+            line_1 = in_file.readline()
             line_2 = in_file.readline()
             line_3 = in_file.readline()
+            line_4 = in_file.readline()
+            # PI line
+            dummy_arr = in_file.readline().strip().split(';')
+            data_out['PI'] = dummy_arr[0].split('=')[1]
+            data_out['PI_email'] = dummy_arr[1].split('=')[1]
 
-            # put together a dict with the header string as key and the index 
-            # number as value so that we can access
+            data_type_comment = in_file.readline()
+            # line_7 = in_file.readline()
+            # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string
             headers = in_file.readline().strip().split(',')
             index_str = {}
@@ -234,7 +233,7 @@ class ReadAeronetInvV2:
 
             for line in in_file:
                 # process line
-                dummy_arr = line.strip().split(',')
+                dummy_arr = line.split(',')
                 # the following uses the standard python datetime functions
                 # date_index = index_str[COLNAMES['date']]
                 # hour, minute, second = dummy_arr[index_str[COLNAMES['time']].split(':')
@@ -254,23 +253,28 @@ class ReadAeronetInvV2:
 
                 # copy the data fields (array type np.float_; will be converted to pandas.Series later)
                 for var in self.DATA_COLNAMES:
-                    if self.DATA_COLNAMES[var] in index_str:
-                        data_out[var].append(np.float_(dummy_arr[index_str[self.DATA_COLNAMES[var]]]))
-                        if data_out[var][-1] == nan_val: data_out[var][-1] = np.nan
-                    else:
-                        pass
+                    data_out[var].append(np.float_(dummy_arr[index_str[self.DATA_COLNAMES[var]]]))
+                    if data_out[var][-1] == nan_val: data_out[var][-1] = np.nan
+
+                # some stuff needs to be calculated
+                data_out['od550aer'].append(
+                    data_out['od500aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
+                data_out['od550gt1aer'].append(
+                    data_out['od500gt1aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
+                data_out['od550lt1aer'].append(
+                    data_out['od500lt1aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
+
+
+                # # apply the lower limit for od550aer
+                # if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
+                #     data_out['od550aer'][-1] = np.nan
                 data_line_no += 1
 
         # convert the vars in vars_to_retrieve to pandas time series
         # and delete the other ones
         for var in self.PROVIDES_VARIABLES:
-            # if var not in data_out: continue
             if var in vars_to_retrieve:
-                if len(data_out[var]) > 0:
-                    data_out[var] = pd.Series(data_out[var], index=dtime)
-                else:
-                    #create an list of NaNs in case the variable was not in the file
-                    data_out[var] = pd.Series(np.full_like(dtime,np.nan,dtype=np.float_), index=dtime)
+                data_out[var] = pd.Series(data_out[var], index=dtime)
             else:
                 del data_out[var]
 
@@ -278,13 +282,13 @@ class ReadAeronetInvV2:
 
     ###################################################################################
 
-    def read(self, vars_to_retrieve=['ssa675aer','ssa440aer'], verbose=False):
+    def read(self, vars_to_retrieve=['od500gt1aer','od550gt1aer'], verbose=False):
         """method to read all files in self.files into self.data and self.metadata
 
         Example
         -------
         >>> import pyaerocom.io as pio
-        >>> obj = pio.read_aeronet_invv2.ReadAeronetInvV2(verbose=True)
+        >>> obj = pio.read_aeronet_sdav3.ReadAeronetSdaV3(verbose=True)
         >>> obj.read(verbose=True)
         """
 
@@ -303,10 +307,10 @@ class ReadAeronetInvV2:
             # use the lat location here since we have to choose one location
             # in the time series plot
             self.metadata[meta_key] = {}
-            self.metadata[meta_key]['station name'] = stat_obs_data['station name']
-            self.metadata[meta_key]['latitude'] = stat_obs_data['latitude']
-            self.metadata[meta_key]['longitude'] = stat_obs_data['longitude']
-            self.metadata[meta_key]['altitude'] = stat_obs_data['altitude']
+            self.metadata[meta_key]['station name'] = stat_obs_data['station name'][-1]
+            self.metadata[meta_key]['latitude'] = stat_obs_data['latitude'][-1]
+            self.metadata[meta_key]['longitude'] = stat_obs_data['longitude'][-1]
+            self.metadata[meta_key]['altitude'] = stat_obs_data['altitude'][-1]
             self.metadata[meta_key]['PI'] = stat_obs_data['PI']
             self.metadata[meta_key]['dataset_name'] = self.DATASET_NAME
 
@@ -371,8 +375,3 @@ class ReadAeronetInvV2:
 
             self.revision = revision
 ###################################################################################
-
-if __name__=="__main__":
-    r = ReadAeronetInvV2()
-    files = r.get_file_list()
-    data = r.read_file(files[100])

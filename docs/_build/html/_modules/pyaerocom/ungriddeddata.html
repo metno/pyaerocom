@@ -1,0 +1,451 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.ungriddeddata &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.ungriddeddata</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.ungriddeddata</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Jul 11 13:39:55 2018</span>
+
+<span class="sd">@author: jonasg</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<div class="viewcode-block" id="UngriddedData"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData">[docs]</a><span class="k">class</span> <span class="nc">UngriddedData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class representing ungridded data</span>
+<span class="sd">    </span>
+<span class="sd">    The data is organised in a 2-dimensional numpy array where the first index</span>
+<span class="sd">    axis corresponds to individual measurements and the second dimension </span>
+<span class="sd">    contains addit</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    _data : ndarray</span>
+<span class="sd">        (private) numpy array of dtype np.float64 initially of shape (10000,8)</span>
+<span class="sd">        data point array</span>
+<span class="sd">    metadata : dict</span>
+<span class="sd">        dictionary containing meta information about the data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_METADATAKEYINDEX</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">_TIMEINDEX</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">_LATINDEX</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">_LONINDEX</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">_ALTITUDEINDEX</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">_VARINDEX</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">_DATAINDEX</span> <span class="o">=</span> <span class="mi">6</span>
+
+    <span class="n">_COLNO</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">_ROWNO</span> <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">_CHUNKSIZE</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="c1"># The following number denotes the kept precision after the decimal dot of</span>
+    <span class="c1"># the location (e.g denotes lat = 300.12345)</span>
+    <span class="c1"># used to code lat and long in a single number for a uniqueness test</span>
+    <span class="n">_LOCATION_PRECISION</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">_LAT_OFFSET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="mf">90.</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1">#keep private, this is not supposed to be used by the user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+    
+<div class="viewcode-block" id="UngriddedData.add_chunk"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.add_chunk">[docs]</a>    <span class="k">def</span> <span class="nf">add_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_CHUNKSIZE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CHUNKSIZE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;adding chunk, new array size (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span></div>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     </span>
+<span class="c1">#     def __setitem__(self, key, val):</span>
+<span class="c1">#         if self.index_pointer &gt;= self._ROWNO:</span>
+<span class="c1">#             self._add_chunk()</span>
+<span class="c1">#         self._data[key] = val</span>
+<span class="c1">#         self.index_pointer += 1</span>
+<span class="c1">#         </span>
+<span class="c1"># =============================================================================</span>
+    <span class="k">def</span> <span class="nf">_to_timeseries_helper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                              <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;small helper routine for self.to_timeseries to not to repeat the same code fragment three times&quot;&quot;&quot;</span>
+
+        <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">temp_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># do not return anything for stations without data</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;files&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+            <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">:</span>
+                <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">],</span>
+                                           <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span>
+                                                   <span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">],</span>
+                                               <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">))</span>
+
+                <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">data_found_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">temp_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+    <span class="c1"># TODO: review docstring        </span>
+<div class="viewcode-block" id="UngriddedData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                      <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;method to get the ObsData object data as dict using pd.Series for the variables</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        station_names : :obj:`tuple` or :obj:`str:`, optional</span>
+<span class="sd">            station name or list of station names to return</span>
+<span class="sd">        start_date, end_date : :obj:`str:`, optional</span>
+<span class="sd">            date strings with start and end date to return</span>
+<span class="sd">        freq : obj:`str:`, optional</span>
+<span class="sd">            frequency to resample to using the pandas resample method</span>
+<span class="sd">            us the offset aliases as noted in</span>
+<span class="sd">            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list or dictionary</span>
+<span class="sd">            station_names is a string: dictionary with station data</span>
+<span class="sd">            station_names is list or None: list of dictionaries with station data</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadUngridded(verbose=True)</span>
+<span class="sd">        &gt;&gt;&gt; obj.read()</span>
+<span class="sd">        &gt;&gt;&gt; pdseries = obj.to_timeseries()</span>
+<span class="sd">        &gt;&gt;&gt; pdseriesmonthly = obj.to_timeseries(station_name=&#39;Avignon&#39;,start_date=&#39;2011-01-01&#39;, end_date=&#39;2012-12-31&#39;, freq=&#39;M&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">out_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">station_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># return all stations</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> 
+                                                  <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># user asked for a single station name</span>
+            <span class="c1"># return a single dictionary in this case</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">station_name</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]:</span>
+                    <span class="c1"># we might change this to return a list at some point</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> 
+                                                      <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># user asked for a list of station names</span>
+            <span class="c1"># return list with matching station names</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># print(val[&#39;station name&#39;])</span>
+                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_name</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> 
+                                                                   <span class="n">start_date</span><span class="p">,</span> 
+                                                                   <span class="n">end_date</span><span class="p">,</span> 
+                                                                   <span class="n">freq</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">out_data</span></div>
+    
+<div class="viewcode-block" id="UngriddedData.code_lat_lon_in_float"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;method to code lat and lon in a single number so that we can use np.unique to</span>
+<span class="sd">        determine single locations&quot;&quot;&quot;</span>
+
+        <span class="c1"># multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LONINDEX</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LATINDEX</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LAT_OFFSET</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span></div>
+
+    <span class="c1">###################################################################################</span>
+<div class="viewcode-block" id="UngriddedData.decode_lat_lon_from_float"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.decode_lat_lon_from_float">[docs]</a>    <span class="k">def</span> <span class="nf">decode_lat_lon_from_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;method to decode lat and lon from a single number calculated by code_lat_lon_in_float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">))</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">))</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span>
+                <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LAT_OFFSET</span>
+
+        <span class="k">return</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span></div>
+
+    <span class="c1">###################################################################################</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Longitudes of data&quot;&quot;&quot;</span>
+
+        <span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
+        <span class="k">return</span> <span class="n">lons</span>
+
+    <span class="nd">@longitude</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Longitudes cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
+        <span class="k">return</span> <span class="n">lats</span>
+
+    <span class="nd">@latitude</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Latitudes cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
+        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
+        <span class="k">return</span> <span class="n">stat_names</span>
+
+    <span class="nd">@station_name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station names cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Time dimension of data&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed, please check &quot;</span>
+                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

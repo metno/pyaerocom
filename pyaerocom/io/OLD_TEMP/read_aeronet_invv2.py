@@ -374,5 +374,5 @@ class ReadAeronetInvV2:
 
 if __name__=="__main__":
     r = ReadAeronetInvV2()
-    files = r.get_file_list()
-    data = r.read_file(files[100])
+    r.get_file_list()
+    r.read_file(r.files[0])

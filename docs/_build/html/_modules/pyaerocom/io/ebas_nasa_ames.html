@@ -1,0 +1,862 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.io.ebas_nasa_ames &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.io.ebas_nasa_ames</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.io.ebas_nasa_ames</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Pyearocom module for reading and processing of EBAS NASA Ames files</span>
+
+<span class="sd">For details on the file format see `here &lt;https://ebas-submit.nilu.no/</span>
+<span class="sd">Submit-Data/Getting-started&gt;`__</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.utils</span> <span class="k">import</span> <span class="n">str_underline</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">TimeZoneError</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> 
+
+<div class="viewcode-block" id="NasaAmesReadError"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesReadError">[docs]</a><span class="k">class</span> <span class="nc">NasaAmesReadError</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NasaAmesVariableError"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesVariableError">[docs]</a><span class="k">class</span> <span class="nc">NasaAmesVariableError</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="EbasColDef"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef">[docs]</a><span class="k">class</span> <span class="nc">EbasColDef</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dict-like object for EBAS NASA Ames column definitions</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        column name </span>
+<span class="sd">    unit : str</span>
+<span class="sd">        unit of data in column (if applicable)</span>
+<span class="sd">    is_var : bool</span>
+<span class="sd">        True if column corresponds to variable data, False if not</span>
+<span class="sd">    is_flag : bool</span>
+<span class="sd">        True, if column corresponds to Flag column, False if not</span>
+<span class="sd">    flag_id : str</span>
+<span class="sd">        ``name`` of flag column that corresponds to this data colum (only</span>
+<span class="sd">        relevant if :attr:`is_var` is True)</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        column name </span>
+<span class="sd">    is_var : bool</span>
+<span class="sd">        True if column corresponds to variable data, False if not</span>
+<span class="sd">    is_flag : bool</span>
+<span class="sd">        True, if column corresponds to Flag column, False if not</span>
+<span class="sd">    unit : :obj:`str`, optional</span>
+<span class="sd">        unit of data in column (if applicable)</span>
+<span class="sd">    flag_id : :obj:`str`, optional</span>
+<span class="sd">        ``name`` of flag column that corresponds to this data colum (only</span>
+<span class="sd">        relevant if :attr:`is_var` is True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">is_var</span><span class="p">,</span> <span class="n">is_flag</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flag_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_var</span> <span class="o">=</span> <span class="n">is_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_flag</span> <span class="o">=</span> <span class="n">is_flag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_id</span> <span class="o">=</span> <span class="n">flag_id</span>
+        
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+    
+<div class="viewcode-block" id="NasaAmesHeader"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader">[docs]</a><span class="k">class</span> <span class="nc">NasaAmesHeader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">_NUM_FIXLINES</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">_VERBOSE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_HEAD_ROWS_MANDATORY</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">]</span>
+    
+    <span class="c1">#conversion methods for first 13 header lines of</span>
+    <span class="n">CONV_STR</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">CONV_MULTIINT</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+    <span class="n">CONV_MULTIFLOAT</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+    <span class="n">CONV_INT</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">CONV_FLOAT</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">_STARTDATE_FMT</span> <span class="o">=</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span>
+
+    <span class="n">_H_FIXLINES_YIELD</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;num_head_lines&quot;</span><span class="p">,</span> <span class="s2">&quot;num_head_fmt&quot;</span><span class="p">],</span> <span class="c1">#line 1</span>
+                    <span class="s2">&quot;data_originator&quot;</span><span class="p">,</span> <span class="c1">#line 2</span>
+                    <span class="s2">&quot;sponsor_organisation&quot;</span><span class="p">,</span> <span class="c1">#3</span>
+                    <span class="s2">&quot;submitter&quot;</span><span class="p">,</span> <span class="c1">#4</span>
+                    <span class="s2">&quot;project_association&quot;</span><span class="p">,</span> <span class="c1">#5</span>
+                    <span class="p">[</span><span class="s2">&quot;vol_num&quot;</span><span class="p">,</span> <span class="s2">&quot;vol_totnum&quot;</span><span class="p">],</span> <span class="c1">#6</span>
+                    <span class="p">[</span><span class="s2">&quot;ref_date&quot;</span><span class="p">,</span> <span class="s2">&quot;revision_date&quot;</span><span class="p">],</span> <span class="c1">#7</span>
+                    <span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="c1">#8</span>
+                    <span class="s2">&quot;descr_time_unit&quot;</span><span class="p">,</span> <span class="c1">#9</span>
+                    <span class="s2">&quot;num_cols_dependent&quot;</span><span class="p">,</span> <span class="c1">#10</span>
+                    <span class="s2">&quot;mul_factors&quot;</span><span class="p">,</span> <span class="c1">#11</span>
+                    <span class="s2">&quot;vals_invalid&quot;</span><span class="p">,</span> <span class="c1">#12</span>
+                    <span class="s2">&quot;descr_first_col&quot;</span><span class="p">,</span> <span class="c1">#13</span>
+                    <span class="p">]</span>
+    
+    <span class="n">_H_FIXLINES_CONV</span> <span class="o">=</span> <span class="p">[</span><span class="n">CONV_MULTIINT</span><span class="p">,</span> <span class="c1">#1 -&gt; yields 2</span>
+                        <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#2</span>
+                        <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#3</span>
+                        <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#4</span>
+                        <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#5</span>
+                        <span class="n">CONV_MULTIINT</span><span class="p">,</span> <span class="c1">#6</span>
+                        <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;     &quot;</span><span class="p">)],</span> <span class="c1">#7</span>
+                        <span class="n">CONV_FLOAT</span><span class="p">,</span> <span class="c1">#8</span>
+                        <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#9</span>
+                        <span class="n">CONV_INT</span><span class="p">,</span> <span class="c1">#10</span>
+                        <span class="n">CONV_MULTIFLOAT</span><span class="p">,</span> <span class="c1">#11</span>
+                        <span class="n">CONV_MULTIFLOAT</span><span class="p">,</span> <span class="c1">#12</span>
+                        <span class="n">CONV_STR</span><span class="p">]</span> <span class="c1">#13</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">num_head_lines</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">num_head_fmt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">data_originator</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">sponsor_organisation</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">submitter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">project_association</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">vol_num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">vol_totnum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">ref_date</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">revision_date</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">descr_time_unit</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                            <span class="n">num_cols_dependent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                            <span class="n">mul_factors</span> <span class="o">=</span> <span class="p">[],</span>
+                            <span class="n">vals_invalid</span> <span class="o">=</span> <span class="p">[],</span>
+                            <span class="n">descr_first_col</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_var_defs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">verbose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_VERBOSE</span>
+    
+    <span class="nd">@verbose</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">verbose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_VERBOSE</span> <span class="o">=</span> <span class="n">val</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">head_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">var_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_defs</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span>
+        
+<div class="viewcode-block" id="NasaAmesHeader.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid attribute: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span></div>
+                    
+            
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Invalid attribute: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">str_underline</span><span class="p">(</span><span class="s2">&quot;Column variable definitions&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_defs</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">str_underline</span><span class="p">(</span><span class="s2">&quot;EBAS meta data&quot;</span><span class="p">))</span>
+        
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">s</span></div>
+
+<div class="viewcode-block" id="EbasFlagCol"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasFlagCol">[docs]</a><span class="k">class</span> <span class="nc">EbasFlagCol</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_data</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">decode_on_init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Need one dimensional numpy array for flag &quot;</span>
+                                 <span class="s2">&quot;column&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span> <span class="o">=</span> <span class="n">raw_data</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">if</span> <span class="n">decode_on_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+            
+<div class="viewcode-block" id="EbasFlagCol.decode"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasFlagCol.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">not_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        
+        <span class="n">decoded</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">not_ok</span><span class="p">:</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:.9f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">decoded</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[:</span><span class="mi">3</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">9</span><span class="p">])])</span>
+        <span class="n">flags</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">decoded</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">flags</span></div></div>
+        
+        
+<div class="viewcode-block" id="EbasNasaAmesFile"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile">[docs]</a><span class="k">class</span> <span class="nc">EbasNasaAmesFile</span><span class="p">(</span><span class="n">NasaAmesHeader</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;EBAS NASA Ames file interface</span>
+<span class="sd">    </span>
+<span class="sd">    Class interface for reading and processing of EBAS NASA Ames file</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time_stamps : ndarray</span>
+<span class="sd">        array containing datetime64 objects with timestamps</span>
+<span class="sd">    flags : dict</span>
+<span class="sd">        dictionary containing :class:`EbasFlagCol` objects for each column</span>
+<span class="sd">        containing flags</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file : :obj:`str`, optional</span>
+<span class="sd">        EBAS NASA Ames file. if valid file path, then the file is read on </span>
+<span class="sd">        init (please note following options for import)</span>
+<span class="sd">    only_head : bool</span>
+<span class="sd">        read only file header</span>
+<span class="sd">    replace_invalid_nan : bool</span>
+<span class="sd">        replace all invalid values in the table by NaNs. The invalid values for</span>
+<span class="sd">        each dependent data column are identified based on the information in </span>
+<span class="sd">        the file header.</span>
+<span class="sd">    convert_timestamps : bool</span>
+<span class="sd">        compute array of numpy datetime64 timestamps from numeric timestamps</span>
+<span class="sd">        in data</span>
+<span class="sd">    decode_flags : bool</span>
+<span class="sd">        if True, all flags in all flag columns are decoded from floating </span>
+<span class="sd">        point representation to 3 integers, e.g. </span>
+<span class="sd">        0.111222333 -&gt; 111 222 333</span>
+<span class="sd">    quality_check : bool</span>
+<span class="sd">        perform quality check after import (for details see </span>
+<span class="sd">        :func:`_quality_check`)</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        print output</span>
+<span class="sd">    **kwargs </span>
+<span class="sd">        optional input args that are passed to init of :class:`NasaAmesHeader`</span>
+<span class="sd">        base class</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">TIMEUNIT2SECFAC</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">days</span> <span class="o">=</span> <span class="mi">3600</span><span class="o">*</span><span class="mi">24</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">only_head</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">replace_invalid_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">convert_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">decode_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                 <span class="n">quality_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EbasNasaAmesFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_header</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#Header line of data block</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#data block</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">only_head</span><span class="p">,</span> <span class="n">replace_invalid_nan</span><span class="p">,</span> 
+                           <span class="n">convert_timestamps</span><span class="p">,</span> <span class="n">decode_flags</span><span class="p">,</span>
+                           <span class="n">quality_check</span><span class="p">)</span>
+ 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;2D numpy array containing data table&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_header</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shape of data array&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">col_num</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Number of columns in table&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cols_dependent</span> <span class="o">+</span> <span class="mi">1</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">col_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Column names of table&quot;&quot;&quot;</span>
+        <span class="c1">#cols = [x[&quot;name&quot;] for x in self.var_defs]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">col_names_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Names of all columns that are flagged as variables&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_var</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">col_nums_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Column index number of all variables&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_var</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">base_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Base date of data&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;timezone&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Fatal: could not infer base date. Timezone &quot;</span>
+                                 <span class="s2">&quot;is not available in file header&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;utc&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TimeZoneError</span><span class="p">(</span><span class="s2">&quot;Timezones other than UTC are not yet supported&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startdate</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">))</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Time unit of data&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descr_time_unit</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="EbasNasaAmesFile.numarr_to_datetime64"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.numarr_to_datetime64">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">numarr_to_datetime64</span><span class="p">(</span><span class="n">basedate</span><span class="p">,</span> <span class="n">num_arr</span><span class="p">,</span> <span class="n">mulfac_to_sec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert array of numerical timestamps into datetime64 array</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        basedate : datetime64</span>
+<span class="sd">            reference date</span>
+<span class="sd">        num_arr : ndarray</span>
+<span class="sd">            numerical time stamps relative to basedate</span>
+<span class="sd">        mulfac_to_sec : float</span>
+<span class="sd">            multiplicative factor to convert numerical values to unit of </span>
+<span class="sd">            seconds</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            array containing timestamps as datetime64 objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">totnum</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_arr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">totnum</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;No data available in file&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">totnum</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">num_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">num_arr</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="p">(</span><span class="n">num_arr</span> <span class="o">*</span> <span class="n">mulfac_to_sec</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;timedelta64[s]&quot;</span><span class="p">)</span></div>
+    
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     def decode_flags_col(self, colnum=None):</span>
+<span class="c1">#         &quot;&quot;&quot;Decode flags column</span>
+<span class="c1">#         </span>
+<span class="c1">#         Parameters</span>
+<span class="c1">#         ----------</span>
+<span class="c1">#         colnum : int</span>
+<span class="c1">#             flag column number (only relevant if file contains multiple flag</span>
+<span class="c1">#             columns)</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         if colnum is None:</span>
+<span class="c1">#             l = self.col_names</span>
+<span class="c1">#             flag_cols = [i for (i, item) in enumerate(l) if &quot;numflag&quot; in item]</span>
+<span class="c1">#             if len(flag_cols) &gt; 1:</span>
+<span class="c1">#                 raise ValueError(&quot;Found multiple flag columns: {}. Please &quot;</span>
+<span class="c1">#                                  &quot;specify which column to decode.&quot;.format(flag_cols))</span>
+<span class="c1">#             colnum = flag_cols[0]</span>
+<span class="c1">#         elif not self.var_defs[colnum].is_flag:</span>
+<span class="c1">#             raise IndexError(&quot;Provided column number is not a flag column&quot;)</span>
+<span class="c1"># =============================================================================</span>
+        
+            
+<div class="viewcode-block" id="EbasNasaAmesFile.to_dataframe"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert table to dataframe&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">col_nums_vars</span><span class="p">],</span>
+                            <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span>
+                            <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names_vars</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="EbasNasaAmesFile.init_flags"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.init_flags">[docs]</a>    <span class="k">def</span> <span class="nf">init_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_flag</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="n">EbasFlagCol</span><span class="p">(</span><span class="n">raw_data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                                   <span class="n">info</span><span class="o">=</span><span class="n">item</span><span class="p">,</span> 
+                                   <span class="n">decode_on_init</span><span class="o">=</span><span class="n">decode</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">flag</span></div>
+                
+                
+<div class="viewcode-block" id="EbasNasaAmesFile.compute_time_stamps"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.compute_time_stamps">[docs]</a>    <span class="k">def</span> <span class="nf">compute_time_stamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">offs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_date</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">unit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIMEUNIT2SECFAC</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid unit for temporal resolution: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit</span><span class="p">))</span>
+        <span class="n">mulfac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIMEUNIT2SECFAC</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span>
+        
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numarr_to_datetime64</span><span class="p">(</span><span class="n">offs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">mulfac</span><span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numarr_to_datetime64</span><span class="p">(</span><span class="n">offs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">mulfac</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">*.</span><span class="mi">5</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span></div>
+    
+    <span class="k">def</span> <span class="nf">_quality_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msgs</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_header</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">):</span>
+            <span class="n">msgs</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;Mismatch between variable definitions in header and &quot;</span>
+                     <span class="s2">&quot;number of data columns in table</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;timezone&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">:</span>
+            <span class="n">msgs</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;Timezone not defined in metadata&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">msgs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Quality check failed. Messages: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msgs</span><span class="p">))</span>
+        
+<div class="viewcode-block" id="EbasNasaAmesFile.read_header"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.read_header">[docs]</a>    <span class="k">def</span> <span class="nf">read_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nasa_ames_file</span><span class="p">,</span> <span class="n">quality_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">nasa_ames_file</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">quality_check</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="EbasNasaAmesFile.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nasa_ames_file</span><span class="p">,</span> <span class="n">only_head</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                  <span class="n">replace_invalid_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">convert_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">decode_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                  <span class="n">quality_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read NASA Ames file</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nasa_ames_file : str</span>
+<span class="sd">            EBAS NASA Ames file</span>
+<span class="sd">        only_head : bool</span>
+<span class="sd">            read only file header</span>
+<span class="sd">        replace_invalid_nan : bool</span>
+<span class="sd">            replace all invalid values in the table by NaNs. The invalid values for</span>
+<span class="sd">            each dependent data column are identified based on the information in </span>
+<span class="sd">            the file header.</span>
+<span class="sd">        convert_timestamps : bool</span>
+<span class="sd">            compute array of numpy datetime64 timestamps from numeric timestamps</span>
+<span class="sd">            in data</span>
+<span class="sd">        decode_flags : bool</span>
+<span class="sd">            if True, all flags in all flag columns are decoded from floating </span>
+<span class="sd">            point representation to 3 integers, e.g. </span>
+<span class="sd">            0.111222333 -&gt; 111 222 333</span>
+<span class="sd">        quality_check : bool</span>
+<span class="sd">            perform quality check after import (for details see </span>
+<span class="sd">            :func:`_quality_check`)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading NASA Ames file:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nasa_ames_file</span><span class="p">))</span>
+        <span class="n">lc</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1">#line counter</span>
+        <span class="n">dc</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1">#data block line counter</span>
+        <span class="n">mc</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1">#meta block counter</span>
+        <span class="n">END_VAR_DEF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="c1">#will be set (info stored in header)</span>
+        <span class="n">IN_DATA</span> <span class="o">=</span> <span class="kc">False</span> 
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_insert_invalid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">nasa_ames_file</span><span class="p">):</span>
+            <span class="c1">#print(lc, _NUM_FIXLINES, line)</span>
+            <span class="k">if</span> <span class="n">IN_DATA</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dc</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()]))</span>
+                    <span class="c1">#data.append([float(x.strip()) for x in line.strip().split()])</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_insert_invalid</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to read data row </span><span class="si">{}</span><span class="s2">. &quot;</span>
+                              <span class="s2">&quot;Error msg: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dc</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="n">dc</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">lc</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NUM_FIXLINES</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_H_FIXLINES_CONV</span><span class="p">[</span><span class="n">lc</span><span class="p">](</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_H_FIXLINES_YIELD</span><span class="p">[</span><span class="n">lc</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>    
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">attr_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">attr</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="p">[</span><span class="n">attr_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Failed to read header row </span><span class="si">{}</span><span class="s2">.</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span> 
+                           <span class="s2">&quot;Error msg: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lc</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                    <span class="k">if</span> <span class="n">lc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_HEAD_ROWS_MANDATORY</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">NasaAmesReadError</span><span class="p">(</span><span class="s2">&quot;Fatal: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_flagmap_idx</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">mc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">END_VAR_DEF</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NUM_FIXLINES</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cols_dependent</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="n">NUM_HEAD_LINES</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_head_lines</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_vardef_line</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                           
+                <span class="k">elif</span> <span class="n">lc</span> <span class="o">&lt;</span> <span class="n">END_VAR_DEF</span><span class="p">:</span>
+                    <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_vardef_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="c1">#if variable corresponds to flag column, assign this </span>
+                    <span class="c1">#flag column to all previously read variables</span>
+                    <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_flag</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">[</span><span class="n">_flagmap_idx</span><span class="p">:]:</span>
+                            <span class="n">_var</span><span class="o">.</span><span class="n">flag_id</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+                    <span class="n">_flagmap_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                        <span class="c1">#self.var_defs.append(var)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    
+                <span class="k">elif</span> <span class="n">lc</span> <span class="o">==</span> <span class="n">NUM_HEAD_LINES</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">IN_DATA</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_header</span> <span class="o">=</span> <span class="n">h</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+                    <span class="c1">#append information of first two columns to variable </span>
+                    <span class="c1">#definition array.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_var_defs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">EbasColDef</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                        <span class="n">is_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                        <span class="n">is_var</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                        <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_var_defs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">EbasColDef</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                        <span class="n">is_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                        <span class="n">is_var</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                        <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_unit</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">only_head</span><span class="p">:</span>
+                        <span class="k">return</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;REACHED DATA BLOCK&quot;</span><span class="p">)</span>
+                    <span class="n">_insert_invalid</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">col_num</span><span class="p">)</span>
+                    
+                    
+                <span class="c1">#elif lc &gt; self._NUM_FIXLINES + 3:</span>
+                <span class="k">elif</span> <span class="n">lc</span> <span class="o">&gt;=</span> <span class="n">END_VAR_DEF</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                        <span class="n">key</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to read line no. </span><span class="si">{}</span><span class="s2">.</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                              <span class="s2">&quot;Error msg: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lc</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring line no. </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lc</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span> 
+                <span class="n">mc</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">lc</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> 
+        
+        <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mul_factors</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">if</span> <span class="n">replace_invalid_nan</span><span class="p">:</span>
+            <span class="n">dep_dat</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vals_invalid</span><span class="p">)):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">col</span> <span class="o">=</span> <span class="n">dep_dat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+                    <span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">==</span> <span class="n">val</span>
+                    <span class="n">col</span><span class="p">[</span><span class="n">cond</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="n">dep_dat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to replace invalid values with NaNs &quot;</span>
+                              <span class="s2">&quot;in column </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span><span class="n">dep_dat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        
+        <span class="k">if</span> <span class="n">convert_timestamps</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">compute_time_stamps</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to compute time stamps.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;Error message: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_flags</span><span class="p">(</span><span class="n">decode_flags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">quality_check</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_quality_check</span><span class="p">()</span></div>
+            
+    <span class="k">def</span> <span class="nf">_read_vardef_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_from_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import variable definition line from NASA Ames file&quot;&quot;&quot;</span>
+        <span class="n">spl</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line_from_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">spl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">EbasColDef</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                          <span class="n">is_flag</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">is_var</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">unit</span><span class="o">=</span><span class="n">spl</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;numflag&quot;</span><span class="p">:</span>    
+            <span class="n">data</span><span class="o">.</span><span class="n">is_var</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">is_flag</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>
+                <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                    <span class="n">sub</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Provide some useful information here&quot;</span><span class="p">)</span>
+                    <span class="n">idf</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sub</span><span class="p">]</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">idf</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">val</span>
+                <span class="k">else</span><span class="p">:</span> <span class="c1">#unit</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to interpret </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">data</span>
+    
+    <span class="k">def</span> <span class="nf">_data_short_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;No data available&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span>  <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Colnum: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Timestamps: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">s</span>            
+    
+<div class="viewcode-block" id="EbasNasaAmesFile.print_col_info"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.print_col_info">[docs]</a>    <span class="k">def</span> <span class="nf">print_col_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print information about individual columns&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">coldef</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Column </span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">coldef</span><span class="p">))</span></div>
+            
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">EbasNasaAmesFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">str_underline</span><span class="p">(</span><span class="s2">&quot;Data&quot;</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_short_str</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+    
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">DIR_MC</span> <span class="o">=</span> <span class="s2">&quot;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data&quot;</span>
+    <span class="n">FILES_MC</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas&quot;</span><span class="p">,]</span>
+    
+    <span class="n">file_mc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIR_MC</span><span class="p">,</span> <span class="n">FILES_MC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="n">mc</span> <span class="o">=</span> <span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">file_mc</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+    
+<span class="c1">#    print(mc.to_dataframe())</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

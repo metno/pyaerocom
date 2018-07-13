@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-EBAS sqlite test
-"""
-
 from pyaerocom import const as const
 from collections import OrderedDict as od
 import sqlite3
@@ -22,7 +18,7 @@ class EbasSQLRequest(dict):
     start_date : :obj:`str`, optional
         start date of data request (format YYYY-MM-DD). If None, all available
         is used
-    stop : :obj:`str`, optional
+    stop_date : :obj:`str`, optional
         stop date of data request (format YYYY-MM-DD). If None, all available
         is used
     station_names : :obj:`tuple`, optional

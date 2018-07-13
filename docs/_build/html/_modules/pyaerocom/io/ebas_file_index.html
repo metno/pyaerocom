@@ -1,0 +1,576 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.io.ebas_file_index &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.io.ebas_file_index</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.io.ebas_file_index</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">EBAS sqlite test</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<div class="viewcode-block" id="EbasSQLRequest"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest">[docs]</a><span class="k">class</span> <span class="nc">EbasSQLRequest</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Low level dictionary like object for EBAS sqlite queries</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : :obj:`tuple`, optional</span>
+<span class="sd">        tuple containing variable names to be extracted (e.g.</span>
+<span class="sd">        ``(&#39;aerosol_light_scattering_coefficient&#39;, &#39;aerosol_optical_depth&#39;)``).</span>
+<span class="sd">        If None, all available is used</span>
+<span class="sd">    start_date : :obj:`str`, optional</span>
+<span class="sd">        start date of data request (format YYYY-MM-DD). If None, all available</span>
+<span class="sd">        is used</span>
+<span class="sd">    stop : :obj:`str`, optional</span>
+<span class="sd">        stop date of data request (format YYYY-MM-DD). If None, all available</span>
+<span class="sd">        is used</span>
+<span class="sd">    station_names : :obj:`tuple`, optional</span>
+<span class="sd">        tuple containing station names of request (e.g.</span>
+<span class="sd">        ``(&#39;Birkenes II&#39;, &#39;Asa&#39;)``).If None, all available is used</span>
+<span class="sd">    matrices : :obj:`tuple`, optional</span>
+<span class="sd">        tuple containing station names of request (e.g.</span>
+<span class="sd">        ``(&#39;pm1&#39;, &#39;pm10&#39;, &#39;pm25&#39;, &#39;aerosol&#39;)``)</span>
+<span class="sd">        If None, all available is used</span>
+<span class="sd">    altitude_range : :obj:`tuple`, optional</span>
+<span class="sd">        tuple specifying alEtitude range of station in m (e.g.</span>
+<span class="sd">        ``(0.0, 500.0)``). If None, all available is used</span>
+<span class="sd">    lon_range : :obj:`tuple`, optional</span>
+<span class="sd">        tuple specifying longitude range of station in degrees (e.g.</span>
+<span class="sd">        ``(-20, 20)``). If None, all available is used</span>
+<span class="sd">    lat_range : :obj:`tuple`, optional</span>
+<span class="sd">        tuple specifying latitude range of station in degrees (e.g.</span>
+<span class="sd">        ``(50, 80)``). If None, all available is used</span>
+<span class="sd">    instrument_type : :obj:`str`, optional</span>
+<span class="sd">        string specifying instrument types (e.g.</span>
+<span class="sd">        ``(&quot;nephelometer&quot;)``)</span>
+<span class="sd">    statistics : :obj:`tuple`, optional</span>
+<span class="sd">        string specifying statistics code (e.g.</span>
+<span class="sd">        ``(&quot;arithmetic mean&quot;)``)</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    see Attributes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">station_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">matrices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">altitude_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">lon_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">instrument_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="o">=</span> <span class="n">start_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_date</span> <span class="o">=</span> <span class="n">stop_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">station_names</span> <span class="o">=</span> <span class="n">station_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matrices</span> <span class="o">=</span> <span class="n">matrices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">altitude_range</span> <span class="o">=</span> <span class="n">altitude_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lon_range</span> <span class="o">=</span> <span class="n">lon_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lat_range</span> <span class="o">=</span> <span class="n">lat_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instrument_types</span> <span class="o">=</span> <span class="n">instrument_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span> <span class="o">=</span> <span class="n">statistics</span>
+        
+    
+<div class="viewcode-block" id="EbasSQLRequest.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unknown request key </span><span class="si">{}</span><span class="s2"> (value </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="EbasSQLRequest.make_file_query_str"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.make_file_query_str">[docs]</a>    <span class="k">def</span> <span class="nf">make_file_query_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wrapper for base method :func:`make_query_str` </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        distinct : bool</span>
+<span class="sd">            return unique files</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            update request attributes (e.g. ``lon_range=(30, 60)``)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            SQL file request command for current specs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_var2sql</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="se">\&#39;</span><span class="si">{}</span><span class="se">\&#39;</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid value encountered, need list, tuple or &quot;</span>
+                             <span class="s2">&quot;str, got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">var</span><span class="p">)))</span>
+            
+<div class="viewcode-block" id="EbasSQLRequest.make_query_str"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.make_query_str">[docs]</a>    <span class="k">def</span> <span class="nf">make_query_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span>
+                       <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Translate current class state into SQL query command string </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        what : :obj:`str` or :obj:`tuple`</span>
+<span class="sd">            what columns to retrieve (e.g. comp_name for all variables) from</span>
+<span class="sd">            table specified. </span>
+<span class="sd">        distinct : bool</span>
+<span class="sd">            return unique files</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            update request attributes (e.g. ``lon_range=(30, 60)``)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            SQL file request command for current specs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span> <span class="c1">#tuple or list of parameters to be retrieved</span>
+            <span class="n">what</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">what</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">distinct</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="s1">&#39;select distinct </span><span class="si">{}</span><span class="s1"> from variable&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">what</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="s1">&#39;select </span><span class="si">{}</span><span class="s1"> from variable&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">what</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; join station on station.station_code=variable.station_code&#39;</span>
+        <span class="n">add_cond</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># add constraints from station table</span>
+        <span class="n">conv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var2sql</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">station_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; where station_name in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">station_names</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude_range</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="p">(</span><span class="s1">&#39;station_altitude&gt;</span><span class="si">{}</span><span class="s1"> and &#39;</span>
+                    <span class="s1">&#39;station_altitude&lt;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">l</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lon_range</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="p">(</span><span class="s1">&#39;station_longitude&gt;</span><span class="si">{}</span><span class="s1"> and &#39;</span>
+                    <span class="s1">&#39;station_longitude&lt;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_range</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="p">(</span><span class="s1">&#39;station_latitude&gt;</span><span class="si">{}</span><span class="s1"> and &#39;</span>
+                    <span class="s1">&#39;station_latitude&lt;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instrument_types</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;instr_type in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_types</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># add constraints from variable table</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;comp_name in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;first_end &lt; </span><span class="se">\&#39;</span><span class="si">{}</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_date</span><span class="p">)</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;last_start &gt; </span><span class="se">\&#39;</span><span class="si">{}</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">)</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;matrix in &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matrices</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>  
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;statistics in &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">))</span>
+            <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>      
+        <span class="k">return</span> <span class="p">(</span><span class="n">req</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+        
+        
+<div class="viewcode-block" id="EbasFileIndex"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex">[docs]</a><span class="k">class</span> <span class="nc">EbasFileIndex</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;EBAS SQLite I/O interface</span>
+<span class="sd">    </span>
+<span class="sd">    Takes care of connection to database and execution of requests</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">database</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBAS_SQLITE_DATABASE</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;SQLite database file does not exist&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+        
+<div class="viewcode-block" id="EbasFileIndex.contains_variables"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_variables">[docs]</a>    <span class="k">def</span> <span class="nf">contains_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List all variables contained in request</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : EbasSQLRequest</span>
+<span class="sd">            request class</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="s2">&quot;comp_name&quot;</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="EbasFileIndex.contains_matrices"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_matrices">[docs]</a>    <span class="k">def</span> <span class="nf">contains_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List all matrices that are contained in request</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : EbasSQLRequest</span>
+<span class="sd">            request class</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="s2">&quot;matrix&quot;</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="EbasFileIndex.contains_coordinates"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">contains_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List all station coordinates (lon, lat) that are contained in request</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : EbasSQLRequest</span>
+<span class="sd">            request class</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">that</span> <span class="o">=</span> <span class="s2">&quot;station_longitude, station_latitude&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="n">that</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="EbasFileIndex.contains_altitudes"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_altitudes">[docs]</a>    <span class="k">def</span> <span class="nf">contains_altitudes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List altitudes of stations contained in request</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : EbasSQLRequest</span>
+<span class="sd">            request class</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="s2">&quot;station_altitude&quot;</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="EbasFileIndex.contains_station_names"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_station_names">[docs]</a>    <span class="k">def</span> <span class="nf">contains_station_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List all station names that are contained in request</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : EbasSQLRequest</span>
+<span class="sd">            request class</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing result</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="s1">&#39;station_name&#39;</span><span class="p">))</span></div>
+        
+<div class="viewcode-block" id="EbasFileIndex.execute_request"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.execute_request">[docs]</a>    <span class="k">def</span> <span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connect to database and retrieve data for input request</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : :obj:`EbasSQLRequest` or :obj:`str`</span>
+<span class="sd">            request specifications</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">EbasSQLRequest</span><span class="p">):</span>
+            <span class="n">request</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Invalid input: Need instance of class &quot;</span>
+                          <span class="s2">&quot;EbasSQLRequest or SQL request string for query&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">)</span>
+            <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="c1">#return [f[0] for f in cur.fetchall()]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">con</span><span class="p">:</span>
+                <span class="n">con</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+                
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">con</span><span class="p">:</span>
+                <span class="n">con</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> </div></div>
+                
+            
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">dbfile</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBAS_SQLITE_DATABASE</span>
+    
+    <span class="n">db</span> <span class="o">=</span> <span class="n">EbasFileIndex</span><span class="p">(</span><span class="n">dbfile</span><span class="p">)</span>
+    
+    <span class="n">req</span> <span class="o">=</span> <span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;aerosol_optical_depth&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;aerosol_light_backscattering_coefficient&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;aerosol_optical_depth&#39;</span><span class="p">),</span>
+                        <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">,</span> 
+                        <span class="n">stop_date</span><span class="o">=</span><span class="s2">&quot;2010-07-01&quot;</span><span class="p">)</span>
+    
+    <span class="n">files</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">())</span>
+    
+    <span class="n">req</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">))</span>
+        
+    <span class="n">files_arctic</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">files_arctic</span><span class="p">))</span>
+    
+    <span class="n">variables</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">contains_variables</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">contains_coordinates</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+    
+    
+    
+    
+    
+    
+    
+    
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

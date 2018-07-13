@@ -31,7 +31,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import sys
 import numpy as np
 import pandas as pd
 import re
@@ -183,7 +182,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
                                              'od870aer']}
     # Functions that are used to compute additional variables (i.e. one 
     # for each variable defined in ADDITIONAL_REQUIRES)
-    ADDITIONAL_FUNS = {"od550aer"   :   add_od550aer,
+    ADDITIONAL_FUNS = {'od550aer'   :   add_od550aer,
                       'ang4487aer'  :   add_ang4487aer}
     # Level 2.0. Quality Assured Data.<p>The following data are pre and post field calibrated, automatically cloud cleared and manually inspected.
     # Version 2 Direct Sun Algorithm
@@ -339,8 +338,7 @@ Length: 223, dtype: float64}
             data_out[var] = []
     
         # Iterate over the lines of the file
-        if self.verbose:
-            sys.stderr.write(filename + '\n')
+        self.logger.info("Reading file {}".format(filename))
         with open(filename, 'rt') as in_file:
             #added to output
             data_out.head_line = in_file.readline()
@@ -395,7 +393,8 @@ Length: 223, dtype: float64}
             
         return data_out
 
-    def read(self, vars_to_retrieve=['od550aer']):
+    def read(self, vars_to_retrieve=['od550aer'], first_file=None, 
+             last_file=None):
         """Read all data files into instance of :class:`UngriddedData` object
         
         Parameters
@@ -405,23 +404,34 @@ Length: 223, dtype: float64}
             (cf. :class:`_COL_INFO`) or computed during import 
             (cf. class attributes ``ADDITIONAL_REQUIRES`` and 
             ``ADDITIONAL_FUNS``)
+        first_file : int
+            index of first file in file list to read. If None, the very first
+            file in the list is used
+        last_file : int
+            index of last file in list to read. If None, the very last file 
+            in the list is used
 
         
         Example
         -------
         >>> import pyaerocom.io.read_aeronet_sunv2
         >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
-        >>> obj.read(verbose=True)
+        >>> obj.read()
         """
 
         # Metadata key is float because the numpy array holding it is float
         
         files = self.files
+        self.read_failed = []
+        if first_file is None:
+            first_file = 0
+        if last_file is None:
+            last_file = len(files)
         if len(files) == 0:
             files = self.get_file_list()
         
         # initialisations
-        data_obj = UngriddedData(verbose=self.verbose)
+        data_obj = UngriddedData()
         meta_key = 0.0
         index_pointer = 0
         start_index = index_pointer
@@ -429,56 +439,59 @@ Length: 223, dtype: float64}
         #assign metadata object
         metadata = data_obj.metadata
         
+        files.insert(0, 'bla')
         for _file in sorted(files):
-            if self.verbose:
-                sys.stdout.write(_file+"\n")
-            stat_obs_data = self.read_file(_file, 
-                                           vars_to_retrieve=vars_to_retrieve)
-            # Fill the metatdata dict
-            metadata[meta_key] = {}
-            metadata[meta_key]['station name'] = stat_obs_data['station name']
-            metadata[meta_key]['latitude'] = stat_obs_data['latitude']
-            metadata[meta_key]['longitude'] = stat_obs_data['longitude']
-            metadata[meta_key]['altitude'] = stat_obs_data['altitude']
-            metadata[meta_key]['PI'] = stat_obs_data['PI']
-            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-
-            # this is a list with indexes of this station for each variable
-            # not sure yet, if we really need that or if it speeds up things
-            metadata[meta_key]['indexes'] = {}
+            try:
+                stat_obs_data = self.read_file(_file, vars_to_retrieve)
             
-            # variable index
-            obs_var_index = 0
-            
-            for var in sorted(vars_to_retrieve):
-                times = np.float64(stat_obs_data.time)
-                
-                for i, val in enumerate(stat_obs_data[var].values):
-                    data_obj._data[index_pointer, data_obj._DATAINDEX] = val
-                    data_obj._data[index_pointer, data_obj._TIMEINDEX] = times[i]
-                    # pd.TimeStamp.value is nano seconds since the epoch!
-                    #data_obj._data[index_pointer, data_obj._TIMEINDEX] = np.float64(time.value / 1.E9)
-                    index_pointer += 1
-                    if index_pointer >= data_obj._ROWNO:
-                        # add another array chunk to data_obj._data
-                        data_obj.add_chunk()
+                # Fill the metatdata dict
+                metadata[meta_key] = {}
+                metadata[meta_key]['station name'] = stat_obs_data['station name']
+                metadata[meta_key]['latitude'] = stat_obs_data['latitude']
+                metadata[meta_key]['longitude'] = stat_obs_data['longitude']
+                metadata[meta_key]['altitude'] = stat_obs_data['altitude']
+                metadata[meta_key]['PI'] = stat_obs_data['PI']
+                metadata[meta_key]['dataset_name'] = self.DATASET_NAME
     
-                end_index = index_pointer
-                # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
-                metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
-                data_obj._data[start_index:end_index, 
-                               data_obj._VARINDEX] = obs_var_index
-                data_obj._data[start_index:end_index, 
-                               data_obj._LATINDEX] = stat_obs_data['latitude']
-                data_obj._data[start_index:end_index, 
-                               data_obj._LONINDEX] = stat_obs_data['longitude']
-                data_obj._data[start_index:end_index, 
-                               data_obj._ALTITUDEINDEX] = stat_obs_data['altitude']
-                data_obj._data[start_index:end_index, 
-                               data_obj._METADATAKEYINDEX] = meta_key
-                start_index = index_pointer
-                obs_var_index += 1
-            meta_key += 1
+                # this is a list with indexes of this station for each variable
+                # not sure yet, if we really need that or if it speeds up things
+                metadata[meta_key]['indexes'] = {}
+                
+                # variable index
+                obs_var_index = 0
+                
+                for var in sorted(vars_to_retrieve):
+                    times = np.float64(stat_obs_data.time)
+                    
+                    for i, val in enumerate(stat_obs_data[var].values):
+                        data_obj._data[index_pointer, data_obj._DATAINDEX] = val
+                        data_obj._data[index_pointer, data_obj._TIMEINDEX] = times[i]
+                        # pd.TimeStamp.value is nano seconds since the epoch!
+                        #data_obj._data[index_pointer, data_obj._TIMEINDEX] = np.float64(time.value / 1.E9)
+                        index_pointer += 1
+                        if index_pointer >= data_obj._ROWNO:
+                            # add another array chunk to data_obj._data
+                            data_obj.add_chunk()
+        
+                    end_index = index_pointer
+                    # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
+                    metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
+                    data_obj._data[start_index:end_index, 
+                                   data_obj._VARINDEX] = obs_var_index
+                    data_obj._data[start_index:end_index, 
+                                   data_obj._LATINDEX] = stat_obs_data['latitude']
+                    data_obj._data[start_index:end_index, 
+                                   data_obj._LONINDEX] = stat_obs_data['longitude']
+                    data_obj._data[start_index:end_index, 
+                                   data_obj._ALTITUDEINDEX] = stat_obs_data['altitude']
+                    data_obj._data[start_index:end_index, 
+                                   data_obj._METADATAKEYINDEX] = meta_key
+                    start_index = index_pointer
+                    obs_var_index += 1
+                meta_key += 1
+            except:
+                self.read_failed.append(_file)
+                self.logger.exception("Failed to read file %s")
     
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[0:end_index]
@@ -486,17 +499,16 @@ Length: 223, dtype: float64}
         return data_obj
         
 if __name__=="__main__":
-    from pyaerocom.io import ReadAeronetSunV2
     
-    read = ReadAeronetSunV2NEW(verbose=True)
-    read_old = ReadAeronetSunV2()
+    read = ReadAeronetSunV2()
+    
+    read.verbosity_level = 'info'
     
     files = read.get_file_list()
 
-    data = read.read_first_file()
+    #data = read.read_first_file()
     
-    data_new = read.read()
-    
-    read_old.read()
+    #data_new = read.read()
+
 
 

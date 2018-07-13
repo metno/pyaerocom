@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Jul 11 13:39:55 2018
-
-@author: jonasg
-"""
+import logging
 import numpy as np
 from collections import OrderedDict as od
 import pandas as pd
@@ -41,18 +37,18 @@ class UngriddedData(object):
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
     
-    def __init__(self, verbose=True):
+    def __init__(self):
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([self._ROWNO, self._COLNO])*np.nan
         self.metadata = od()
-        self.verbose = verbose
+        
+        self.logger = logging.getLogger(__name__)
     
     def add_chunk(self):
         chunk = np.empty([self._CHUNKSIZE, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += self._CHUNKSIZE
-        if self.verbose:
-            print("adding chunk, new array size ({})".format(self._data.shape))
+        self.logger.info("adding chunk, new array size ({})".format(self._data.shape))
 # =============================================================================
 #     
 #     def __setitem__(self, key, val):
@@ -120,7 +116,7 @@ class UngriddedData(object):
         Example
         -------
         >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadUngridded(verbose=True)
+        >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
         >>> obj.read()
         >>> pdseries = obj.to_timeseries()
         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')

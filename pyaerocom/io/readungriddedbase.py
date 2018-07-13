@@ -2,20 +2,28 @@
 # -*- coding: utf-8 -*-
 import abc
 import glob, os
+import logging
 
 from pyaerocom.io.helpers import get_obsnetwork_dir
-
+from pyaerocom import LOGLEVELS
+logger = logging.getLogger(__name__)
 # TODO: implement dict-like class for output of read_file method, that avoids 
 # creating pandas.Series instances in the first place but keeps the individual 
 # data columns
 class ReadUngriddedBase(abc.ABC):
     """Abstract base class template for reading of ungridded data"""
-    
-    def __init__(self, verbose=False):
+    def __init__(self):
         self.data = None #object that holds the loaded data
         self.files = []
-        self.verbose = verbose
-        
+        # list that will be updated in read method to store all files that
+        # could not be read. It is the responsibility of developers of derived
+        # classes to include a try / except block in method read, where the 
+        # method read_file is called, and in case of an Exception, append the
+        # corresponding file path to this list.
+        self.read_failed = []
+        # 
+        self.logger = logging.getLogger(__name__)
+      
     @abc.abstractproperty
     def REVISION_FILE(self):
         """Location of data revision file
@@ -118,9 +126,7 @@ class ReadUngriddedBase(abc.ABC):
     # of the derived reading classes
     def get_file_list(self):
         """Search all files to be read"""
-
-        if self.verbose:
-            print('searching for data files. This might take a while...')
+        logger.info('searching for data files. This might take a while...')
         self.files = glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
         return self.files
     
@@ -164,7 +170,19 @@ class ReadUngriddedBase(abc.ABC):
             raise IOError("Failed to access revision info for dataset {}. "
                           "Error message: {}".format(self.DATASET_NAME,
                                           repr(e)))
-            
+    @property
+    def verbosity_level(self):
+        """Current level of verbosity of logger"""
+        return self.logger.level
+    
+    @verbosity_level.setter
+    def verbosity_level(self, val):
+        if isinstance(val, str):
+            if not val in LOGLEVELS:
+                raise ValueError("Invalid input for loglevel")
+            val = LOGLEVELS[val]
+        self.logger.setLevel(val)
+        
 if __name__=="__main__":
     
     from pyaerocom import const

@@ -1,4 +1,5 @@
 from .config import Config
+import logging
 
 def _init_supplemental():
     from pkg_resources import get_distribution
@@ -17,6 +18,32 @@ def _init_config(package_dir):
     return Config(config_file=cfg)
 
 __version__, __dir__ = _init_supplemental()
+
+###############################################################################
+### LOGGING
+# Note: configuration will be propagated to all child modules of
+# pyaerocom, for details see 
+# http://eric.themoritzfamily.com/learning-python-logging.html
+logger = logging.getLogger('pyaerocom')
+
+
+default_formatter = logging.Formatter(\
+   "%(asctime)s:%(levelname)s:\n%(message)s")
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(default_formatter)
+
+logger.addHandler(console_handler)
+
+logger.setLevel(logging.DEBUG)
+
+LOGLEVELS = {'debug': 10,
+             'info': 20,
+             'warning': 30,
+             'error': 40,
+             'critical': 50}
+
+###############################################################################
 
 const = _init_config(__dir__)
 if not const.READY:
@@ -39,3 +66,6 @@ from .region import Region
 #from .ungriddeddata import UngriddedData
 from .io.helpers import search_data_dir_aerocom
 #from .obsdata import ObsData, ProfileData, StationData
+
+
+
