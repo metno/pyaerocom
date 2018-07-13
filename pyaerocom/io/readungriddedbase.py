@@ -106,7 +106,7 @@ class ReadUngriddedBase(abc.ABC):
         pass
     
     @abc.abstractmethod
-    def read(self, vars_to_retrieve=None):
+    def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """Method that reads a single data file and returns the result
         
         Parameters
@@ -114,7 +114,13 @@ class ReadUngriddedBase(abc.ABC):
         vars_to_retrieve : :obj:`list` or similar, optional,
             list containing variable IDs that are supposed to be read. If None, 
             all variables in :attr:`PROVIDES_VARIABLES` are loaded
-        
+        first_file : int
+            index of first file in file list to read. If None, the very first
+            file in the list is used
+        last_file : int
+            index of last file in list to read. If None, the very last file 
+            in the list is used
+            
         Returns
         -------
         UngriddedData

@@ -44,10 +44,21 @@ class UngriddedData(object):
         
         self.logger = logging.getLogger(__name__)
     
-    def add_chunk(self):
-        chunk = np.empty([self._CHUNKSIZE, self._COLNO])*np.nan
+    def add_chunk(self, size=None):
+        """Extend the size of the data array
+        
+        Parameters
+        ----------
+        size : :obj:`int`, optional
+            number of additional rows. If None (default) or smaller than 
+            minimum chunksize specified in attribute ``_CHUNKSIZE``, then the
+            latter is used.
+        """
+        if size is None or size < self._CHUNKSIZE:
+            size = self._CHUNKSIZE
+        chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
-        self._ROWNO += self._CHUNKSIZE
+        self._ROWNO += size
         self.logger.info("adding chunk, new array size ({})".format(self._data.shape))
 # =============================================================================
 #     

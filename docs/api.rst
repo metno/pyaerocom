@@ -41,6 +41,10 @@ Individual Obsnetworks
 
 	The following includes only reading routines that were already shipped to the new API for ungridded data, that is, which are based on the abstract base class :class:`ReadUngriddedBase` (for details see :ref:`ungriddedbase`) and that use the new ungridded data class :class:`UngriddedData` (cf. :ref:`ungriddeddata`).
 
+.. automodule:: pyaerocom.io.read_aeronet_invv2
+   :members:
+   :undoc-members:
+   
 .. automodule:: pyaerocom.io.read_aeronet_sunv2
    :members:
    :undoc-members:

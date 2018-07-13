@@ -10,26 +10,45 @@ class TimeSeriesFileData(_BrowserDict):
     
     The idea is to provide a common interface for storage of time-series data
     from file I/O operations. The interface is simply a dictionary and only 
-    contains little logic (e.g. requires key time_stamps that is required to 
-    be filled with a list or array containing time-stamps (key: "time").
+    contains little logic.
     
     Attributes
     ----------
-    time : ndarray
+    dtime : ndarray
         numpy array or list, containing time stamps of data
         
-    Note
-    ----
-    Not in use currently
     """
     def __init__(self):
-        self.time = []
-            
+        self.dtime = []
+    
+    @property
+    def num_timestamps(self):
+        """Total number of timestamps in this object"""
+        return len(self.dtime)        
+    
     def check_time(self):
         """Check if time dimension is valid"""
-        if not len(self.time) > 0:
+        if not len(self.dtime) > 0:
             raise ValueError("No time stamps available")
+       
+    def len_flat(self, num_of_vars):
+        """The total number of observations  considering input variables
+        
+        The total number of observations *C* is determined from the number of 
+        available time-stamps *T* and the number of considered variables *V*, 
+        as *C=TxV*.
+        
+        Parameters
+        ----------
+        num_of_vars
+            number of variables to be considered
             
+        Returns
+        -------
+        int
+        """
+        return len(self.dtime) * num_of_vars
+        
     @property
     def data_columns(self):
         """List containing all data columns
@@ -45,7 +64,7 @@ class TimeSeriesFileData(_BrowserDict):
             datacolumns found. 
         """
         self.check_time()
-        num = len(self.time)
+        num = len(self.dtime)
         cols = {}
         for k, v in self.items():
             if isinstance(v, list):
@@ -66,7 +85,7 @@ class TimeSeriesFileData(_BrowserDict):
         
         """
         cols = self.data_columns
-        return pd.DataFrame(data=cols, index=self.time)
+        return pd.DataFrame(data=cols, index=self.dtime)
         
         
     
@@ -94,12 +113,12 @@ class TimeSeriesFileData(_BrowserDict):
             raise KeyError("Variable {} does not exist".format(varname))
         self.check_time()
         data = self[varname]
-        if not len(data) == len(self.time):
+        if not len(data) == len(self.dtime):
             raise ValueError("Mismatch between length of data array for "
                              "variable {} (length: {}) and time array  "
                              "(length: {}).".format(varname, len(data), 
-                               len(self.time)))
-        return pd.Series(data, index=self.time)
+                               len(self.dtime)))
+        return pd.Series(data, index=self.dtime)
     
         
     def plot_variable(self, varname, **kwargs):
