@@ -385,7 +385,7 @@ class, as follows:</li>
 </pre></div>
 </div>
 <p>As you can see, <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> contain the invalid
-paths, but e.g. the list containing model directories (<code class="docutils literal notranslate"><span class="pre">MODELDIRS</span></code>)
+paths, but e.g.&nbsp;the list containing model directories (<code class="docutils literal notranslate"><span class="pre">MODELDIRS</span></code>)
 still has the original settings. This is because, these are written in
 the method <code class="docutils literal notranslate"><span class="pre">load_config(config_file)</span></code> or the wrapper method
 <code class="docutils literal notranslate"><span class="pre">reload()</span></code> which does the same. Now reload the config_file and print.</p>
@@ -662,10 +662,9 @@ data import since we know the model and run ID from the previous cell
 <p>Let’s load results for the aerosol optical depth (<em>od550aer</em>) for march
 2010. The read function take a string or a list of strings as input for
 specifying one or more variables that are supposed to be read. Thus, the
-return type of this method is <strong>*always a tuple, even if we only provide
-one variable*</strong> (as in the following example) and as a result, the
-loaded data object has to be accessed using the first index of the
-tuple.</p>
+return type of this method is <strong>always a tuple, even if we only provide
+one variable</strong> (as in the following example) and as a result, the loaded
+data object has to be accessed using the first index of the tuple.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1 march 2010&quot;</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31 march 2010&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -711,7 +710,7 @@ Grid data: Aerosol optical depth at 550nm / (1) (time: 31; latitude: 192; longit
 </div>
 <p>The data comprises 31 time stamps, as expected, since we picked one
 month and the dataset is daily. Now, for instance, we can crop the data
-using a predefined region (e.g. South America) and plot the first day of
+using a predefined region (e.g.&nbsp;South America) and plot the first day of
 the dataset.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
@@ -750,18 +749,17 @@ that we extracted.</p>
 <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weighted_mean</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7ffba8d523c8</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f189525b8d0</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_31_1.png" src="_images/tut00_get_started_31_1.png" />
-<p>That should be enough for an introduction. The following notebook
-introduces in more detail how pyaerocom handles regions and where they
-can be defined. In the subsequent tutorial, the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class is
-introduced, that was usesed above to import model data in a flexible way
-based on variable name, time range and temporal resolution. The loaded
-data for each model and variable is then stored in the analysis class
-<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> which we use in the end of this notebook and which will
-be introduced in a later tutorial.</p>
+<p>The following notebook introduces in more detail how pyaerocom handles
+regions and where they can be defined. In the subsequent tutorial, the
+<code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class is introduced, that was usesed above to import
+model data in a flexible way based on variable name, time range and
+temporal resolution. The loaded data for each model and variable is then
+stored in the analysis class <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> which we use in the end of
+this notebook and which will be introduced in a later tutorial.</p>
 </div>
 </div>
 

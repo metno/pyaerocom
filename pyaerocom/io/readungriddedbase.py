@@ -7,12 +7,18 @@ import logging
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
 logger = logging.getLogger(__name__)
-# TODO: implement dict-like class for output of read_file method, that avoids 
-# creating pandas.Series instances in the first place but keeps the individual 
-# data columns
+
 class ReadUngriddedBase(abc.ABC):
     """Abstract base class template for reading of ungridded data"""
-    def __init__(self):
+    # dictionary containing information about additionally required variables
+    # for each auxiliary variable (i.e. each variable that is not provided
+    # by the original data but computed on import)
+    AUX_REQUIRES = {}
+    # Functions that are used to compute additional variables (i.e. one 
+    # for each variable defined in AUX_REQUIRES)
+    AUX_FUNS = {}
+    
+    def __init__(self, dataset_to_read=None):
         self.data = None #object that holds the loaded data
         self.files = []
         # list that will be updated in read method to store all files that
@@ -23,14 +29,16 @@ class ReadUngriddedBase(abc.ABC):
         self.read_failed = []
         # 
         self.logger = logging.getLogger(__name__)
-      
+        self._check_aux_variables()
+                
     @abc.abstractproperty
     def REVISION_FILE(self):
         """Location of data revision file
         
         Note
         ----
-        1. May be implemented as global constant in header of derieved class
+        
+        - May be implemented as global constant in header of derieved class
         
         """
         pass
@@ -41,8 +49,9 @@ class ReadUngriddedBase(abc.ABC):
         
         Note
         ----
-        1. May be implemented as global constant in header of derieved class
-        2. May be multiple that can be specified on init (see example below)
+        
+        - May be implemented as global constant in header of derieved class
+        - May be multiple that can be specified on init (see example below)
         
         """
         pass
@@ -80,6 +89,18 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
     
+    @abc.abstractproperty
+    def col_index(self):
+        """Dictionary that specifies the index for each data column
+        
+        Implementation depends on the data. For instance, if the variable 
+        information is provided in all files (of all stations) and always in 
+        the same column, then this can be set as a fixed dictionary in the 
+        __init__ function of the implementation (see class 
+        ReadAeronetSunV2 for an example). In other cases, it may not be ensured
+        that each variable is available in all files or the column definition
+        may differ between different stations (see )
+        """
     
     @property
     def DATASET_PATH(self):
@@ -130,31 +151,9 @@ class ReadUngriddedBase(abc.ABC):
 
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
-    def get_file_list(self):
-        """Search all files to be read"""
-        logger.info('searching for data files. This might take a while...')
-        self.files = glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
-        return self.files
-    
-    def read_first_file(self, **kwargs):
-        """Read first file returned from :func:`get_file_list`
-        
-        This method may be used for test purposes. It calls :func:`get
-        
-        Parameters
-        ----------
-        **kwargs
-            keyword args passed to :func:`read_file` (e.g. vars_to_retrieve)
-            
-        Returns
-        -------
-        dict-like
-            dictionary or similar containing loaded results from first file
-        """
-        files = self.files
-        if len(files) == 0:
-            files = self.get_file_list()
-        return self.read_file(files[0], **kwargs)
+    @property
+    def AUX_VARS(self):
+        return list(self.AUX_REQUIRES.keys())
     
     @property
     def data_revision(self):
@@ -188,6 +187,192 @@ class ReadUngriddedBase(abc.ABC):
                 raise ValueError("Invalid input for loglevel")
             val = LOGLEVELS[val]
         self.logger.setLevel(val)
+        
+    def _check_aux_variables(self):
+        """Helper that makes sure all auxiliary variables can be computed"""
+        for var in self.AUX_REQUIRES.keys():
+            if not var in self.AUX_FUNS:
+                raise AttributeError("Fatal: no computation method defined for "
+                                     "auxiliary variable {}. Please specify "
+                                     "method in class header dictionary "
+                                     "AUX_FUNS".format(var))
+            if not var in self.PROVIDES_VARIABLES:
+                self.PROVIDES_VARIABLES.append(var)
+                
+    def _add_additional_vars(self, vars_to_retrieve):
+        """Add required additional variables for computation to input list
+        
+        Helper method that is called in :func:`check_vars_to_retrieve` 
+        in order to find all variables that are required for a specified 
+        retrieval. This is relevant for additionally computed variables 
+        (attribute ``AUX_VARS``) that are not available in the original data 
+        files, but are computed from available parameters. 
+        
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            list of variables supported by this interface (i.e. must be 
+            contained in ``PROVIDES_VARIABLES``)
+        
+        Returns
+        -------
+        tuple
+            2-element tuple, containing
+            
+            - bool : boolean, specifying whether variables were added to \
+            input list
+            - list : modified / unmodified input list 
+        """
+        added = False
+        added_vars = []
+        for var in vars_to_retrieve:
+            if var in self.AUX_VARS:
+                add_vars = self.AUX_REQUIRES[var]
+                for add_var in add_vars:
+                    if not add_var in vars_to_retrieve:
+                        added_vars.append(add_var)
+                        added = True
+        return (added, added_vars)
+    
+    def check_vars_to_retrieve(self, vars_to_retrieve):
+        """Separate variables that are in file from those that are computed
+        
+        Some of the provided variables by this interface are not included in
+        the data files but are computed within this class during data import
+        (e.g. od550aer, ang4487aer). 
+        
+        The latter may require additional parameters to be retrieved from the 
+        file, which is specified in the class header (cf. attribute
+        ``AUX_REQUIRES``).
+        
+        This function checks the input list that specifies all required 
+        variables and separates them into two lists, one that includes all
+        variables that can be read from the files and a second list that
+        specifies all variables that are computed in this class.
+        
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            all parameter names that are supposed to be loaded
+        
+        Returns
+        -------
+        tuple
+            2-element tuple, containing
+            
+            - list: list containing all variables to be read
+            - list: list containing all variables to be computed
+        """
+        repeat = True
+        while repeat:
+            repeat, add_vars = self._add_additional_vars(vars_to_retrieve)
+            # it is important to insert the additionally required variables in
+            # the beginning, as these need to be computed first later on 
+            # Example: if vars_to_retrieve=['od550aer'] then this loop will
+            # find out that this requires 'ang4487aer' to be computed as 
+            # well. So at the end of this function, ang4487aer needs to be 
+            # before od550aer in the list vars_to_compute, since the method
+            # @"compute_additional_vars" loops over that list in the specified
+            # order
+            vars_to_retrieve = add_vars + vars_to_retrieve
+        
+        # unique list containing all variables that are supposed to be read, 
+        # either because they are required to be retrieved, or because they 
+        # are supposed to be read because they are required to compute one 
+        # of the output variables
+        vars_to_retrieve = list(dict.fromkeys(vars_to_retrieve))
+        
+        # in the following, vars_to_retrieve is separated into two arrays, one 
+        # containing all variables that can be read from the files, and the 
+        # second containing all variables that are computed
+        vars_to_read = []
+        vars_to_compute = []
+        
+        for var in vars_to_retrieve:
+            if var in self.AUX_REQUIRES:
+                vars_to_compute.append(var)
+            else:
+                vars_to_read.append(var)
+        return (vars_to_read, vars_to_compute)
+    
+    def compute_additional_vars(self, data, vars_to_compute):
+        """Compute all additional variables
+        
+        The computations for each additional parameter are done using the 
+        specified methods in ``AUX_FUNS``.
+        
+        Parameters
+        ----------
+        data : dict-like
+            data object containing imported results
+        
+        Returns
+        -------
+        dict
+            updated data object
+        """
+        for var in vars_to_compute:
+            data[var] = self.AUX_FUNS[var](data)
+        return data
+    
+    def get_file_list(self):
+        """Search all files to be read"""
+        logger.info('searching for data files. This might take a while...')
+        self.files = glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
+        return self.files
+    
+    def read_first_file(self, **kwargs):
+        """Read first file returned from :func:`get_file_list`
+        
+        This method may be used for test purposes. It calls :func:`get
+        
+        Parameters
+        ----------
+        **kwargs
+            keyword args passed to :func:`read_file` (e.g. vars_to_retrieve)
+            
+        Returns
+        -------
+        dict-like
+            dictionary or similar containing loaded results from first file
+        """
+        files = self.files
+        if len(files) == 0:
+            files = self.get_file_list()
+        return self.read_file(files[0], **kwargs)
+     
+class ReadUngriddedBaseMulti(ReadUngriddedBase):
+    """Base class for reading ungridded data with multi-dataset support
+    
+    For some datasets, the reading routines are the same and can be implemented
+    in a single class that is derived from this class. Compared to 
+    :class:`ReadUngriddedBase`, this class contains one further attribute
+    ``SUPPORTED_DATASETS`` that should be specified in the header of the 
+    derived implementation and that is used on init to check whether the 
+    (optional) input ``dataset_to_read`` is supported by this interface.
+    
+    Parameters
+    ----------
+    dataset_to_read : str
+        string
+    """
+    def __init__(self, dataset_to_read=None):
+        super(ReadUngriddedBaseMulti, self).__init__()
+        if dataset_to_read is not None:
+            if not dataset_to_read in self.SUPPORTED_DATASETS:
+                raise AttributeError("Dataset {} not supported by this "
+                                     "interface".format(dataset_to_read))
+            self.DATASET_NAME = dataset_to_read
+            
+    @abc.abstractproperty
+    def SUPPORTED_DATASETS(self):
+        """List of strings specifying datasets supported by this interface
+        
+        Note
+        ----
+        
+        - best practice to specify in header of class definition
+        """
         
 if __name__=="__main__":
     

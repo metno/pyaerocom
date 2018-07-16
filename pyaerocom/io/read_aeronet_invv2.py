@@ -39,10 +39,11 @@ import pandas as pd
 from collections import OrderedDict as od
 
 from pyaerocom import const
-from pyaerocom.io import ReadUngriddedBase, TimeSeriesFileData
+from pyaerocom.io.readungriddedbase import ReadUngriddedBaseMulti
+from pyaerocom.io.timeseriesfiledata import TimeSeriesFileData
 from pyaerocom import UngriddedData
 
-class ReadAeronetInvV2(ReadUngriddedBase):
+class ReadAeronetInvV2(ReadUngriddedBaseMulti):
     """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
 
     Attributes
@@ -59,7 +60,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
 
     """
     _FILEMASK = '*.dubovikday'
-    __version__ = "0.02"
+    __version__ = "0.03"
     #
     DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
     
@@ -87,46 +88,38 @@ class ReadAeronetInvV2(ReadUngriddedBase):
     METADATA_COLNAMES['time'] = 'Time(hh:mm:ss)'
     METADATA_COLNAMES['day_of_year'] = 'Julian_Day'
 
-    # additional vars
-    # calculated
-    AUX_COLNAMES = []
-    # AUX_COLNAMES.append('od550gt1aer')
-    # AUX_COLNAMES.append('od550lt1aer')
-    # AUX_COLNAMES.append('od550aer')
-
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
-    for col in AUX_COLNAMES:
-        PROVIDES_VARIABLES.append(col)
-
-    # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
     def __init__(self, dataset_to_read=None):
         #init base class
-        super(ReadAeronetInvV2, self).__init__()
-        if dataset_to_read is not None:
-            self.DATASET_NAME = dataset_to_read
+        super(ReadAeronetInvV2, self).__init__(dataset_to_read)
         
         # dictionary that contains information about the file columns
-        # is written in method _update_col_info
-        self.col_info = od()
+        # is written in method _update_col_index
+        self._col_index = od()
         
-        # header string referring to the content in attr. col_info. Is 
+        # header string referring to the content in attr. col_index. Is 
         # updated whenever the former is updated (i.e. when method
-        # _update_col_info is called). Can be used to check if
+        # _update_col_index is called). Can be used to check if
         # file structure changed between subsequent files so that 
-        # col_info is only recomputed when the file structure changes 
+        # col_index is only recomputed when the file structure changes 
         # and not for each file individually
-        self._last_col_info_str = None
+        self._last_col_index_str = None
         
-    def _update_col_info(self, col_info_str):
+    @property
+    def col_index(self):
+        """Current column index dictionary"""
+        return self._col_index
+    
+    def _update_col_index(self, col_index_str):
         """Update column information for fast access during read_file"""
-        cols = col_info_str.strip().split(',')
-        col_info = od()
+        cols = col_index_str.strip().split(',')
+        col_index = od()
         for idx, info_str in enumerate(cols):
-            col_info[info_str] = idx
-        self.col_info = col_info
-        self._last_col_info_str = col_info_str
-        return col_info
+            col_index[info_str] = idx
+        self._col_index = col_index
+        self._last_col_index_str = col_index_str
+        return col_index
     
     # TODO: currently every file is read, regardless of whether it actually
     # contains the desired variables or not. Do we need that? Slows stuff down..
@@ -134,8 +127,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
     # about 20% of the files contain the default variables..
     def read_file(self, filename, vars_to_retrieve=['ssa675aer','ssa440aer'],
                   vars_as_series=False):
-        """method to read an Aeronet SDA V3 file and return it in a dictionary
-        with the data variables as pandas time series
+        """Read Aeronet file containing results from v2 inversion algorithm
 
         Parameters
         ----------
@@ -159,17 +151,24 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         if not all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve]):
-            raise IOError("Some of the required variables are not supported "
-                          "by this interface")
+            raise IOError("Some of the specified variables are not supported "
+                          "by this dataset")
+            
+        # implemented in base class
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+       
         #create empty data object (is dictionary with extended functionality)
         data_out = TimeSeriesFileData() 
         
-        for var in self.PROVIDES_VARIABLES:
-            data_out[var] = []
-        # add time variable location
-        for var in self.METADATA_COLNAMES:
-            data_out[var] = []
+        # create empty arrays for meta information
+        for item in self.METADATA_COLNAMES:
+            data_out[item] = []
             
+        # create empty arrays for all variables that are supposed to be read
+        # from file
+        for var in vars_to_read:
+            data_out[var] = []
+        
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
     
@@ -191,17 +190,22 @@ class ReadAeronetInvV2(ReadUngriddedBase):
             in_file.readline()
             in_file.readline()
             
-            col_info_str = in_file.readline()
-            if col_info_str != self._last_col_info_str:
-                self.logger.info("Header has changed, reloading col_info map")
-                self._update_col_info(col_info_str)
-            col_info = self.col_info
+            col_index_str = in_file.readline()
+            if col_index_str != self._last_col_index_str:
+                self.logger.info("Header has changed, reloading col_index map")
+                self._update_col_index(col_index_str)
+            col_index = self.col_index
             
+            # dependent on the station, some of the required input variables
+            # may not be provided in the data file. These will be ignored
+            # in the following list that iterates over all data rows and will
+            # be filled below, with vectors containing NaNs after the file 
+            # reading loop
             vars_available = {}
             for var in vars_to_retrieve:
                 var_id = self.DATA_COLNAMES[var]
-                if var_id in col_info:
-                    vars_available[var] = col_info[var_id]
+                if var_id in col_index:
+                    vars_available[var] = col_index[var_id]
                 else:
                     self.logger.warning("Variable {} not available in file {}"
                                         .format(var, os.path.basename(filename)))
@@ -210,13 +214,13 @@ class ReadAeronetInvV2(ReadUngriddedBase):
                 # process line
                 dummy_arr = line.strip().split(',')
                 # the following uses the standard python datetime functions
-                # date_index = col_info[COLNAMES['date']]
-                # hour, minute, second = dummy_arr[col_info[COLNAMES['time']].split(':')
+                # date_index = col_index[COLNAMES['date']]
+                # hour, minute, second = dummy_arr[col_index[COLNAMES['time']].split(':')
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                date = col_info[self.METADATA_COLNAMES['date']]
-                time = col_info[self.METADATA_COLNAMES['time']]
+                date = col_index[self.METADATA_COLNAMES['date']]
+                time = col_index[self.METADATA_COLNAMES['time']]
                 day, month, year = dummy_arr[date].split(':')
                 datestring = '-'.join([year, month, day])
                 datestring = 'T'.join([datestring, dummy_arr[time]])
@@ -225,7 +229,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
 
                 # copy the meta data (array of type string)
                 for var in self.METADATA_COLNAMES:
-                    data_out[var].append(dummy_arr[col_info[self.METADATA_COLNAMES[var]]])
+                    data_out[var].append(dummy_arr[col_index[self.METADATA_COLNAMES[var]]])
 
                 # copy the data fields (array type np.float_; will be converted to pandas.Series later)
                 for var, idx in vars_available.items():
@@ -234,14 +238,22 @@ class ReadAeronetInvV2(ReadUngriddedBase):
                         val = np.nan
                     data_out[var].append(val)
         
+        # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
+        
+        for item in self.METADATA_COLNAMES:
+            data_out[item] = np.asarray(data_out[item])
+            
         for var in vars_to_retrieve:
             if var in vars_available:
                 array = np.asarray(data_out[var])
             else:
                 array = np.zeros(len(data_out['dtime'])) * np.nan
             data_out[var] = array
-            
+        
+        # compute additional variables (if applicable)
+        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        
         if vars_as_series:
             # convert the vars in vars_to_retrieve to pandas time series
             # and delete the other ones
@@ -364,6 +376,10 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         return data_obj
 
 if __name__=="__main__":
-    r = ReadAeronetInvV2()
-    r.verbosity_level = 'warning'
-    r.read()
+    read = ReadAeronetInvV2(const.AERONET_INV_V2L15_DAILY_NAME)
+    read.verbosity_level = 'debug'
+    
+    first_ten = read.read(last_file=10)
+    
+    data_first = read.read_first_file()
+    print(data_first)

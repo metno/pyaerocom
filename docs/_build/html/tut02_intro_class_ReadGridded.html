@@ -180,13 +180,13 @@
 <h1>Reading model data: the <em>ReadGridded</em> class<a class="headerlink" href="#reading-model-data-the-readgridded-class" title="Permalink to this headline">¶</a></h1>
 <p>This notebook introduces the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGridded">ReadGridded</a>
-class of pya, a flexible interface for importing model results from a
-single model, based on variable name (e.g. <em>od550aer</em>, <em>od550bc</em>), start
-/ stop time stamps and temporal resolution (e.g. <em>hourly, 3hourly,
-daily, monthly</em>).</p>
+class of pyaerocom, a flexible interface for importing model results
+from a single model, based on variable name (e.g. <em>od550aer</em>,
+<em>od550bc</em>), start / stop time stamps and temporal resolution (e.g.
+<em>hourly, 3hourly, daily, monthly</em>).</p>
 <p>The class is part of the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.io.readgridded">readgridded</a>
-module of pya, as well as the class
+module of pyaerocom, as well as the class
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti">ReadGriddedMulti</a>.</p>
 <p>In the following cells, we create an instance of the the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code>
 class and use this object to find and import data files containing the
@@ -201,9 +201,9 @@ representation of <code class="docutils literal notranslate"><span class="pre">R
 information about what is in there.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 <span class="n">read</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
-                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
-                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
-                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                          <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                          <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
+                          <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -214,9 +214,9 @@ information about what is in there.</p>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Looking at the output we can see that there were some files that did not
-follow the Aerocom file naming conventions. These were automatically
-ignored.</p>
+<p>The output contains information about all variables that were found and
+all corresponding years. These information is extracted from the
+filenames, which have to follow the AEROCOM file naming conventions.</p>
 <p><strong>Please note</strong> that at this point, no data is actually imported but
 only the paths are set that contain data for this model. In order to
 read one variable, call the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable
@@ -230,20 +230,23 @@ by printing the string representation, as shown in the cell above).</p>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>From the output we can see that based on our specified time range and
-temporal resolution, we got 6 netCDF files that were merged all into an
-instance of the
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData">GriddedData</a>
-class, which will be introduced in more detail later. This data object
-is returned by the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> method and can also be accessed from the
-instance of the reading class using:</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
+<span class="n">data</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span> <span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">1826</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">161</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">320</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The returned data object is of type
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData">GriddedData</a>
+class, which will be introduced in more detail later. This data object
+is returned by the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> method and can also be accessed from the
+instance of the reading class using:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
+<span class="n">d</span> <span class="ow">is</span> <span class="n">data</span> <span class="c1">#?</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kc">True</span>
 </pre></div>
 </div>
 <p>We may also import other variables using either the above used method
@@ -326,29 +329,30 @@ each day of the five years?</p>
 </div>
 <div class="section" id="remark-on-time-definition">
 <h2>Remark on time definition<a class="headerlink" href="#remark-on-time-definition" title="Permalink to this headline">¶</a></h2>
-<p>As you can see in the output above</p>
+<p>If you run this notebook with <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> in the reading object,
+you will receive the output</p>
 <p><code class="docutils literal notranslate"><span class="pre">Error</span> <span class="pre">message:</span> <span class="pre">AttributeError('Cube</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">contain</span> <span class="pre">time</span> <span class="pre">dimension',)</span>&#160; <span class="pre">Invalid</span> <span class="pre">time</span> <span class="pre">axis</span> <span class="pre">in</span> <span class="pre">file</span> <span class="pre">ECMWF_CAMS_REAN.daily.od550aer.2007.nc.</span> <span class="pre">Attempting</span> <span class="pre">to</span> <span class="pre">correct.</span></code></p>
-<p>these data has some issue with the time dimension, in this case, the
-time variable is not properly defined in the NetCDF file. Pyaerocom can
-correct for this on data import by</p>
+<p>several times when reading the data. This warning indicates, that the
+corresponding data in the netCDF files has some issue with the time
+dimension. Here, the time variable is not properly defined in the NetCDF
+file. Pyaerocom can correct for this on data import by</p>
 <ol class="arabic simple">
 <li>First checking if the time dimension in the NetCDF file is correct
-according to CF convention (<a class="reference external" href="http://aerocom.met.no/pya/api.html#pya.io.helpers.check_time_coord">see here for details on the
+according to CF convention (<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.helpers.check_time_coord">see here for details on the
 implementation</a>
 and if a problem is detected, then …</li>
 <li>the time axis is redefined based on the year and time resolution
 (<em>ts_type</em>) that is encrypted in the filename. The latter requires
-that the file follows one of the <a class="reference external" href="http://aerocom.met.no/pya/config_files.html#file-conventions">pya file
+that the file follows one of the <a class="reference external" href="http://aerocom.met.no/pyaerocom/config_files.html#file-conventions">pyaerocom file
 conventions</a>.</li>
 </ol>
 </div>
 <div class="section" id="a-very-brief-introduction-into-the-griddeddata-class">
 <h2>A very brief introduction into the GriddedData class<a class="headerlink" href="#a-very-brief-introduction-into-the-griddeddata-class" title="Permalink to this headline">¶</a></h2>
 <p>Now as a final step, we briefly introduce some of the features of the
-<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class by computing 1. plotting an overview map of the
-data and plotting a time series of the global weighted average aerosol
-optical density as well as the same time series at the coordinates in
-the city of Leipzig, Germany.</p>
+<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class by computing and plotting a time series of the
+global weighted average aerosol optical density as well as the same time
+series at the coordinates in the city of Leipzig, Germany.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
 <span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="k">import</span> <span class="n">gaussian_filter1d</span>
 <span class="c1">#compute global mean (area weighted)</span>

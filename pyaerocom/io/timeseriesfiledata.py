@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from pyaerocom.utils import _BrowserDict
 import pandas as pd
 import numpy as np
+from pyaerocom.utils import dict_to_str, list_to_shortstr
 
-class TimeSeriesFileData(_BrowserDict):
+class TimeSeriesFileData(dict):
     """Low level dict-like class for results from timeseries file reads
     
     The idea is to provide a common interface for storage of time-series data
@@ -18,7 +18,8 @@ class TimeSeriesFileData(_BrowserDict):
         numpy array or list, containing time stamps of data
         
     """
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(TimeSeriesFileData, self).__init__(*args, **kwargs)
         self.dtime = []
     
     @property
@@ -146,6 +147,39 @@ class TimeSeriesFileData(_BrowserDict):
         s = self.to_timeseries(varname)
         ax = s.plot(**kwargs)
         return ax
+    
+    def __getattr__(self, key):
+        return self[key]
+    
+    def __setattr__(self, key, val):
+        self[key] = val
+        
+# =============================================================================
+#     def __str__(self):
+#         s = ''
+#         for k, v in self.items():
+#             s += '{}: {}'.format(k, v)
+#         return s
+#         
+# =============================================================================
+    def __str__(self):
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}".format(head, len(head)*"-")
+        arrays = ''
+        for k, v in self.items():
+            if isinstance(v, dict):
+                s += "\n{} (dict)".format(k)
+                s = dict_to_str(v, s)
+            elif isinstance(v, list):
+                s += "\n{} (list, {} items)".format(k, len(v))
+                s += list_to_shortstr(v)
+            elif isinstance(v, np.ndarray):
+                arrays += "\n{} (array, {} items)".format(k, len(v))
+                arrays += list_to_shortstr(v)
+            else:
+                s += "\n%s: %s" %(k,v)
+        s += arrays
+        return s
     
 if __name__=="__main__":
     

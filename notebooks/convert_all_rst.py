@@ -42,16 +42,22 @@ def init_single_notebook_resources(notebook_filename):
     return resources
 
 def execute_and_save_notebook(file):
-    print("Executing notebook: {}".format(file))
-    with open(file) as f:
-        nb = nbformat.read(f, as_version=4)
+    try:
+        print("Executing notebook: {}".format(file))
+        with open(file) as f:
+            nb = nbformat.read(f, as_version=4)
+            
+        ep = ExecutePreprocessor(kernel_name="python3")
+        ep.preprocess(nb, {'metadata': {'path': '.'}})
         
-    ep = ExecutePreprocessor(kernel_name="python3")
-    ep.preprocess(nb, {'metadata': {'path': '.'}})
-    print("Success!")
-    
-    with open(file, 'wt') as f:
-        nbformat.write(nb, f)
+        
+        with open(file, 'wt') as f:
+            nbformat.write(nb, f)
+        print("Success!")
+        return True
+    except:
+        print("Failed!")
+        return False
     
 
 if __name__=="__main__":
@@ -88,16 +94,15 @@ if __name__=="__main__":
     
     
     files = sorted(fnmatch.filter(os.listdir("."), "tut[0-9][0-9]*.ipynb"))
-    
+
     if args.execute_all:
         for f in files:    
             execute_and_save_notebook(f)
-            
+                
     converter = nbconvert.RSTExporter()
     
     writer = nbconvert.writers.FilesWriter()
     writer.build_directory = out_dir
-    
     
     for file in files:
         name = os.path.basename(file)

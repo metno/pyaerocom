@@ -34,17 +34,18 @@
 """
 read Aeronet SDA V3 data
 """
-import os
-import glob
 import sys
 
 import numpy as np
 import pandas as pd
+from collections import OrderedDict as od
 
 from pyaerocom import const
+from pyaerocom.io.readungriddedbase import ReadUngriddedBaseMulti
+from pyaerocom.io.timeseriesfiledata import TimeSeriesFileData
+from pyaerocom import UngriddedData
 
-
-class ReadAeronetSdaV3:
+class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
 
     Attributes
@@ -61,24 +62,13 @@ class ReadAeronetSdaV3:
 
     """
     _FILEMASK = '*.lev30'
-    __version__ = "0.02"
+    __version__ = "0.04"
+    
     DATASET_NAME = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
-    DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L15_SDA_DAILY_NAME]['PATH']
-    # Flag if the dataset contains all years or not
-    DATASET_IS_YEARLY = False
-
-    _METADATAKEYINDEX = 0
-    _TIMEINDEX = 1
-    _LATINDEX = 2
-    _LONINDEX = 3
-    _ALTITUDEINDEX = 4
-    _VARINDEX = 5
-    _DATAINDEX = 6
-
-    _COLNO = 13
-    _ROWNO = 10000
-    _CHUNKSIZE = 1000
-
+    
+    SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
+                          const.AERONET_SUN_V3L2_SDA_DAILY_NAME]
+    
     # data vars
     # will be stored as pandas time series
     DATA_COLNAMES = {}
@@ -113,49 +103,26 @@ class ReadAeronetSdaV3:
 
     # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
-    def __init__(self, index_pointer=0, dataset_to_read=None, verbose=False):
-        self.verbose = verbose
-        self.metadata = {}
-        self.data = []
-        self.index = len(self.metadata)
-        self.files = []
-        # the reading actually works for all V3 SDA data sets
-        # so just adjust the name and the path here
-        # const.AERONET_SUN_V3L15_SDA_DAILY_NAME is the default
-        if dataset_to_read is None:
-            pass
-            # self.dataset_name = const.AERONET_SUN_V3L15_AOD_DAILY_NAME
-            # self.dataset_path = const.OBSCONFIG[const.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH']
-        elif dataset_to_read == const.AERONET_SUN_V3L2_SDA_DAILY_NAME:
-            self.DATASET_NAME = const.AERONET_SUN_V3L2_SDA_DAILY_NAME
-            self.DATASET_PATH = const.OBSCONFIG[const.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH']
-
-        # set the revision to the one from Revision.txt if that file exist
-        self.revision = self.get_data_revision()
-
-        # pointer to 1st free row in self.data
-        # can be externally set so that in case the super class wants to read more than one data set
-        # no data modification is needed to bring several data sets together
-        self.index_pointer = index_pointer
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.index == 0:
-            raise StopIteration
-        self.index = self.index - 1
-        return self.metadata[float(self.index)]
-
-    def __str__(self):
-        stat_names = []
-        for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
-
-        return ','.join(stat_names)
-
-    ###################################################################################
-
+    def __init__(self, dataset_to_read=None):
+        super(ReadAeronetSdaV3, self).__init__(dataset_to_read)
+        
+        # dictionary that contains information about the file columns
+        # is written in method _update_col_index
+        self._col_index = od()
+        
+        # header string referring to the content in attr. col_index. Is 
+        # updated whenever the former is updated (i.e. when method
+        # _update_col_index is called). Can be used to check if
+        # file structure changed between subsequent files so that 
+        # col_index is only recomputed when the file structure changes 
+        # and not for each file individually
+        self._last_col_index_str = None
+    
+    @property
+    def col_index(self):
+        """Current column index dictionary"""
+        return self._col_index
+    
     def read_file(self, filename, vars_to_retrieve=['od500gt1aer','od550gt1aer'], verbose=False):
         """method to read an Aeronet SDA V3 file and return it in a dictionary
         with the data variables as pandas time series
@@ -349,29 +316,3 @@ class ReadAeronetSdaV3:
 
         # shorten self.data to the right number of points
         self.data = self.data[0:end_index]
-
-    ###################################################################################
-
-    def get_file_list(self):
-        """search for files to read """
-
-        if self.verbose:
-            print('searching for data files. This might take a while...')
-        files = glob.glob(os.path.join(self.DATASET_PATH,
-                                       self._FILEMASK))
-        return files
-
-    ###################################################################################
-
-    def get_data_revision(self):
-        """method to read the revision string from the file Revision.txt in the main data directory"""
-
-        revision_file = os.path.join(self.DATASET_PATH, const.REVISION_FILE)
-        revision = 'unset'
-        if os.path.isfile(revision_file):
-            with open(revision_file, 'rt') as in_file:
-                revision = in_file.readline().strip()
-                in_file.close()
-
-            self.revision = revision
-###################################################################################

@@ -167,9 +167,9 @@
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="fm">__dir__</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">isdir</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">listdir</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
-<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">listdir</span>    
 <span class="kn">from</span> <span class="nn">iris.coords</span> <span class="k">import</span> <span class="n">DimCoord</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">datetime64</span><span class="p">,</span> <span class="n">asarray</span><span class="p">,</span> <span class="n">arange</span>
@@ -192,6 +192,36 @@
               <span class="s2">&quot;daily&quot;</span>   <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">,</span>
               <span class="s2">&quot;monthly&quot;</span> <span class="p">:</span>  <span class="s2">&quot;days&quot;</span><span class="p">}</span>
 
+
+
+<div class="viewcode-block" id="get_obsnetwork_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.get_obsnetwork_dir">[docs]</a><span class="k">def</span> <span class="nf">get_obsnetwork_dir</span><span class="p">(</span><span class="n">obs_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns data path for obsnetwork ID</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obs_id : str</span>
+<span class="sd">        ID  of obsnetwork (e.g. AeronetSunV2Lev2.daily)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        corresponding directory from ``pyaerocom.const``</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if obs_id is invalid</span>
+<span class="sd">    IOError</span>
+<span class="sd">        if directory does not exist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">obs_id</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">OBS_IDS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Observation network ID </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obs_id</span><span class="p">))</span>
+        
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">obs_id</span><span class="p">][</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Data directory </span><span class="si">{}</span><span class="s2"> of observation network </span><span class="si">{}</span><span class="s2"> does not &quot;</span>
+                      <span class="s2">&quot;exists&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">obs_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">data_dir</span></div>
 
 <div class="viewcode-block" id="search_data_dir_aerocom"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.search_data_dir_aerocom">[docs]</a><span class="k">def</span> <span class="nf">search_data_dir_aerocom</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">ignorecase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
                             <span class="n">verbose</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">):</span>
@@ -400,13 +430,13 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time match error, nominal dates for test array&quot;</span>
                              <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (unit=</span><span class="si">%s</span><span class="s2">): </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Received values after &quot;</span>
                              <span class="s2">&quot;conversion: </span><span class="si">%s</span><span class="s2">&quot;</span>
-                             <span class="o">%</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                             <span class="o">%</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
                                <span class="n">ts_nominal</span><span class="p">,</span> <span class="n">ts_values</span><span class="p">))</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">dts_values</span> <span class="o">==</span> <span class="n">dts_nominal</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Time match error, time steps for test array&quot;</span>
                              <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (unit=</span><span class="si">%s</span><span class="s2">): </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Received values after &quot;</span>
                              <span class="s2">&quot;conversion: </span><span class="si">%s</span><span class="s2">&quot;</span>
-                             <span class="o">%</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                             <span class="o">%</span><span class="p">(</span><span class="n">test_datenums</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
                                <span class="n">dts_nominal</span><span class="p">,</span> <span class="n">dts_values</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>

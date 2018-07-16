@@ -252,29 +252,14 @@ for the years of 2010-2018.</p>
 </div>
 <div class="section" id="import-of-aeronet-v2-data-level-2">
 <h2>Import of AeroNet V2 data (Level 2)<a class="headerlink" href="#import-of-aeronet-v2-data-level-2" title="Permalink to this headline">¶</a></h2>
-<p>The following cell imports all available data from the AeroNet network.
-This might take a while in case the data has not been cached before.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs_data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="n">obs_id</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">obs_data</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadAeronetSunV2</span><span class="p">()</span>
+<span class="n">obs_data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Importing</span> <span class="kn">from</span> <span class="nn">cache</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily_AllYears_AllVars</span><span class="o">.</span><span class="n">plk</span>
-<span class="n">cache</span> <span class="n">file</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily_AllYears_AllVars</span><span class="o">.</span><span class="n">plk</span> <span class="n">read</span>
-</pre></div>
-</div>
-<p>Now, extract time series for some stations</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">latitude</span>
-<span class="n">model_data</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
-<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span> <span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">5114</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">161</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">320</span><span class="p">)</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1028</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">169</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="n">searching</span> <span class="k">for</span> <span class="n">data</span> <span class="n">files</span><span class="o">.</span> <span class="n">This</span> <span class="n">might</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">...</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">254</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="n">Reading</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">AEROCOM_OBSDATA</span><span class="o">/</span><span class="n">AeronetRaw2</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="mi">920801</span><span class="n">_180519_UNC</span><span class="o">-</span><span class="n">Palmira</span><span class="o">.</span><span class="n">lev20</span>
 </pre></div>
 </div>
 </div>

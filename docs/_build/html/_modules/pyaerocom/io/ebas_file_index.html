@@ -161,10 +161,6 @@
   <h1>Source code for pyaerocom.io.ebas_file_index</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">EBAS sqlite test</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">const</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
@@ -183,7 +179,7 @@
 <span class="sd">    start_date : :obj:`str`, optional</span>
 <span class="sd">        start date of data request (format YYYY-MM-DD). If None, all available</span>
 <span class="sd">        is used</span>
-<span class="sd">    stop : :obj:`str`, optional</span>
+<span class="sd">    stop_date : :obj:`str`, optional</span>
 <span class="sd">        stop date of data request (format YYYY-MM-DD). If None, all available</span>
 <span class="sd">        is used</span>
 <span class="sd">    station_names : :obj:`tuple`, optional</span>

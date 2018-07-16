@@ -3,7 +3,7 @@ AEROCOM default regions
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This notebook introduces how pya handles information related to default
-regions (e.g. Europe, Asia, ...) as used in the `AEROCOM
+regions (e.g. Europe, Asia, …) as used in the `AEROCOM
 interface <http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl>`__.
 All default regions are defined in the file
 `regions.ini <http://aerocom.met.no/pya/config_files.html#default-regions>`__.

@@ -102,47 +102,16 @@ Import of model data
 Import of AeroNet V2 data (Level 2)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following cell imports all available data from the AeroNet network.
-This might take a while in case the data has not been cached before.
-
 .. code:: ipython3
 
-    obs_data = pyaerocom.io.ReadUngridded(obs_id, verbose=True)
-    obs_data.read()
+    read = pyaerocom.io.ReadAeronetSunV2()
+    obs_data = read.read_first_file()
 
 
 .. parsed-literal::
 
-    Importing from cache file: /home/jonasg/pyaerocom/_cache/AeronetSunV2Lev2.daily_AllYears_AllVars.plk
-    cache file /home/jonasg/pyaerocom/_cache/AeronetSunV2Lev2.daily_AllYears_AllVars.plk read
-
-
-Now, extract time series for some stations
-
-.. code:: ipython3
-
-    lons, lats = obs_data.longitude, obs_data.latitude
-    model_data
-
-
-
-
-.. parsed-literal::
-
-    pyaerocom.GriddedData
-    Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 5114; latitude: 161; longitude: 320)>
-
-
-
-.. code:: ipython3
-
-    len(obs_data.metadata.keys())
-
-
-
-
-.. parsed-literal::
-
-    1028
-
+    2018-07-16 15:44:45,169:INFO:
+    searching for data files. This might take a while...
+    2018-07-16 15:44:45,254:INFO:
+    Reading file /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_180519_UNC-Palmira.lev20
 

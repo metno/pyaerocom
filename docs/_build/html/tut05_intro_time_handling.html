@@ -182,14 +182,14 @@
 <a class="reference external" href="http://aerocom.met.no/pya/api.html#module-pya.griddeddata">GriddedData</a>
 class of <em>pyaerocom</em> was introduced in the previous tutorial.</p>
 <p>Here, we want to illustrate one particular feature of <em>pya</em>, namely the
-conversion of CF conform numerical time stamps with a defined unit (i.e.
-basedate and calendar, see e.g.
+conversion of CF conform numerical time stamps with a defined unit
+(i.e.&nbsp;basedate and calendar, see e.g.
 <a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate">here</a>
 for details) into datetime-like objects that can be interpreted by tools
 such as <a class="reference external" href="https://pandas.pydata.org/">Pandas</a>. The easiest way to work
 with time stamps in model data is, to simply work on the internal
 numerical indices, avoiding the necessity to convert them into actual
-datetime objects. However, sometimes (e.g. if we want to extract and
+datetime objects. However, sometimes (e.g.&nbsp;if we want to extract and
 analyse a time-series of global average Aerosol optical densities), we
 wish to use third party libraries such as Pandas, which require the
 timestamps to be datetime-like objects.</p>
@@ -277,7 +277,7 @@ conversion for us, that is, using the <code class="docutils literal notranslate"
 corresponding <code class="docutils literal notranslate"><span class="pre">index</span></code>) of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> class in combination with
 the <code class="docutils literal notranslate"><span class="pre">cells()</span></code> iterator method. However, as we shall see below, this is
 not only the slowest solution but it is also prone to errors in case the
-calendar is not standard (e.g. Julian).</p>
+calendar is not standard (e.g.&nbsp;Julian).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0_ecmwf</span> <span class="o">=</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="n">t0_aatsr</span> <span class="o">=</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First time stamp ECMWF </span><span class="si">%s</span><span class="s2"> (data type: </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">)))</span>
@@ -346,14 +346,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>119 ms ± 3.59 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>120 ms ± 3.38 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 5.16 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>107 ms ± 3.89 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -364,14 +364,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>125 ms ± 16.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>126 ms ± 4.72 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 5.66 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>114 ms ± 7.94 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -390,7 +390,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.75 ms ± 142 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.71 ms ± 57 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -508,7 +508,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>60.1 µs ± 5.84 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>57.2 µs ± 4.18 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -526,7 +526,7 @@ here</a>).</p>
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>332 µs ± 2.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>368 µs ± 52.8 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -535,11 +535,11 @@ pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 pya_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.02 ms ± 99.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.07 ms ± 65.7 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
-iris interface (i.e. iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
+iris interface (i.e.&nbsp;iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
 conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.</p>
@@ -549,14 +549,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>432 µs ± 57.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>361 µs ± 10.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.16 ms ± 86.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.45 ms ± 404 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>

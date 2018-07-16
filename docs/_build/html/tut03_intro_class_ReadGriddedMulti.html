@@ -179,10 +179,10 @@
 <div class="section" id="reading-data-from-multiple-models-the-readgriddedmulti-class">
 <h1>Reading data from multiple models: the ReadGriddedMulti class<a class="headerlink" href="#reading-data-from-multiple-models-the-readgriddedmulti-class" title="Permalink to this headline">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadGriddedMulti</span></code> class provides an interface to import
-multiple variables for an arbitrary number of gridded datasets (e.g.
-model data, level3 satellite data) and within a specific time interval.
-It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides an
-interface for importing results from a single dataset.</p>
+multiple variables for an arbitrary number of gridded datasets
+(e.g.&nbsp;model data, level 2 satellite data) and within a specific time
+interval. It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides
+an interface for importing results from a single dataset.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 </pre></div>
@@ -209,7 +209,7 @@ aerosol-climate model, you may search if data exists …</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;ECHAM6-SALSA_AP3-CTRL2015&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now create and initiate <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class. The direcory for
+<p>Now create and initiate <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class. The directory for
 each model as well as all valid files in the model directories are
 searched on initiation of the instance. Valid here means, that the files
 belong to the corresponding model. Subsetting of the time interval is
@@ -248,28 +248,8 @@ were created (which was introduced in the previous tutorial), one for
 each of the 3 requested datasets. These can be used to access the data
 for each of the datasets.</p>
 <p>Let’s define a bunch of test variables that are supposed to be loaded
-for each model. In the ideal case, these should be contained in all
-input models (not the case here, since AATST v1.0 does not include
-<code class="docutils literal notranslate"><span class="pre">od550dust</span></code>.</p>
+for each model.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;od550dust&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
-<span class="n">r</span><span class="o">.</span><span class="n">vars</span>
-<span class="n">r</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<pre class="literal-block">
-FOUND MATCH: aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc
-Invalid time dimension.
-Error message: ValueError(&quot;Time match error, nominal dates for test array[0 1 2 7] (unit=day since 2001-01-01 00:00 UTC): ['2010-01' '2010-02' '2010-03' '2010-08']nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']&quot;,)
-Invalid time axis in file aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc. Attempting to correct.
-Applying temporal cropping of result cube
-Cropping along time axis based on Timestamps
-</pre>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
-<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol_particles</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">12</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">96</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">)</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Read all variables for all models</p>
@@ -283,6 +263,24 @@ Cropping along time axis based on Timestamps
 <p>As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
 this data manually.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
+<span class="n">r</span><span class="o">.</span><span class="n">vars</span>
+<span class="n">r</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="literal-block">
+FOUND MATCH: aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc
+Invalid time dimension.
+Error message: ValueError(&quot;Time match error, nominal dates for test array[0 1 2 7] (unit=days since  2001-01-01 00:00:00): ['2010-01' '2010-02' '2010-03' '2010-08']nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']&quot;,)
+Invalid time axis in file aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc. Attempting to correct.
+Applying temporal cropping of result cube
+Cropping along time axis based on Timestamps
+</pre>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol_particles</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">12</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">96</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 <p>Print what is in there (similar to the previously introduced
 <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class has a helpful
 string representation)</p>

@@ -200,10 +200,11 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">ReadUngriddedBase</span><span class="p">,</span> <span class="n">TimeSeriesFileData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readungriddedbase</span> <span class="k">import</span> <span class="n">ReadUngriddedBaseMulti</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.timeseriesfiledata</span> <span class="k">import</span> <span class="n">TimeSeriesFileData</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">UngriddedData</span>
 
-<div class="viewcode-block" id="ReadAeronetInvV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetInvV2</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadAeronetInvV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetInvV2</span><span class="p">(</span><span class="n">ReadUngriddedBaseMulti</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data</span>
 
 <span class="sd">    Attributes</span>
@@ -220,7 +221,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.dubovikday&#39;</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.02&quot;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.03&quot;</span>
     <span class="c1">#</span>
     <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span>
     
@@ -248,46 +249,38 @@
     <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Time(hh:mm:ss)&#39;</span>
     <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;day_of_year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Julian_Day&#39;</span>
 
-    <span class="c1"># additional vars</span>
-    <span class="c1"># calculated</span>
-    <span class="n">AUX_COLNAMES</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1"># AUX_COLNAMES.append(&#39;od550gt1aer&#39;)</span>
-    <span class="c1"># AUX_COLNAMES.append(&#39;od550lt1aer&#39;)</span>
-    <span class="c1"># AUX_COLNAMES.append(&#39;od550aer&#39;)</span>
-
     <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">DATA_COLNAMES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">AUX_COLNAMES</span><span class="p">:</span>
-        <span class="n">PROVIDES_VARIABLES</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
-
-    <span class="c1"># COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1">#init base class</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetInvV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetInvV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
         
         <span class="c1"># dictionary that contains information about the file columns</span>
-        <span class="c1"># is written in method _update_col_info</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">col_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="c1"># is written in method _update_col_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_col_index</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         
-        <span class="c1"># header string referring to the content in attr. col_info. Is </span>
+        <span class="c1"># header string referring to the content in attr. col_index. Is </span>
         <span class="c1"># updated whenever the former is updated (i.e. when method</span>
-        <span class="c1"># _update_col_info is called). Can be used to check if</span>
+        <span class="c1"># _update_col_index is called). Can be used to check if</span>
         <span class="c1"># file structure changed between subsequent files so that </span>
-        <span class="c1"># col_info is only recomputed when the file structure changes </span>
+        <span class="c1"># col_index is only recomputed when the file structure changes </span>
         <span class="c1"># and not for each file individually</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_info_str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span> <span class="o">=</span> <span class="kc">None</span>
         
-    <span class="k">def</span> <span class="nf">_update_col_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_info_str</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Current column index dictionary&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_col_index</span>
+    
+    <span class="k">def</span> <span class="nf">_update_col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index_str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update column information for fast access during read_file&quot;&quot;&quot;</span>
-        <span class="n">cols</span> <span class="o">=</span> <span class="n">col_info_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-        <span class="n">col_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">col_index_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">col_index</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">info_str</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-            <span class="n">col_info</span><span class="p">[</span><span class="n">info_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">col_info</span> <span class="o">=</span> <span class="n">col_info</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_info_str</span> <span class="o">=</span> <span class="n">col_info_str</span>
-        <span class="k">return</span> <span class="n">col_info</span>
+            <span class="n">col_index</span><span class="p">[</span><span class="n">info_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_col_index</span> <span class="o">=</span> <span class="n">col_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span> <span class="o">=</span> <span class="n">col_index_str</span>
+        <span class="k">return</span> <span class="n">col_index</span>
     
     <span class="c1"># TODO: currently every file is read, regardless of whether it actually</span>
     <span class="c1"># contains the desired variables or not. Do we need that? Slows stuff down..</span>
@@ -295,8 +288,7 @@
     <span class="c1"># about 20% of the files contain the default variables..</span>
 <div class="viewcode-block" id="ReadAeronetInvV2.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">,</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">],</span>
                   <span class="n">vars_as_series</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to read an Aeronet SDA V3 file and return it in a dictionary</span>
-<span class="sd">        with the data variables as pandas time series</span>
+        <span class="sd">&quot;&quot;&quot;Read Aeronet file containing results from v2 inversion algorithm</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -320,17 +312,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="p">[</span><span class="n">vars_to_retrieve</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Some of the required variables are not supported &quot;</span>
-                          <span class="s2">&quot;by this interface&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Some of the specified variables are not supported &quot;</span>
+                          <span class="s2">&quot;by this dataset&quot;</span><span class="p">)</span>
+            
+        <span class="c1"># implemented in base class</span>
+        <span class="n">vars_to_read</span><span class="p">,</span> <span class="n">vars_to_compute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_vars_to_retrieve</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
+       
         <span class="c1">#create empty data object (is dictionary with extended functionality)</span>
         <span class="n">data_out</span> <span class="o">=</span> <span class="n">TimeSeriesFileData</span><span class="p">()</span> 
         
-        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">:</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># add time variable location</span>
-        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">:</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># create empty arrays for meta information</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">:</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             
+        <span class="c1"># create empty arrays for all variables that are supposed to be read</span>
+        <span class="c1"># from file</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        
         <span class="c1"># Iterate over the lines of the file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
     
@@ -352,17 +351,22 @@
             <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             
-            <span class="n">col_info_str</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">col_info_str</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_info_str</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Header has changed, reloading col_info map&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_update_col_info</span><span class="p">(</span><span class="n">col_info_str</span><span class="p">)</span>
-            <span class="n">col_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_info</span>
+            <span class="n">col_index_str</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">col_index_str</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Header has changed, reloading col_index map&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_col_index</span><span class="p">(</span><span class="n">col_index_str</span><span class="p">)</span>
+            <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_index</span>
             
+            <span class="c1"># dependent on the station, some of the required input variables</span>
+            <span class="c1"># may not be provided in the data file. These will be ignored</span>
+            <span class="c1"># in the following list that iterates over all data rows and will</span>
+            <span class="c1"># be filled below, with vectors containing NaNs after the file </span>
+            <span class="c1"># reading loop</span>
             <span class="n">vars_available</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
                 <span class="n">var_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="n">col_info</span><span class="p">:</span>
-                    <span class="n">vars_available</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_info</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="n">col_index</span><span class="p">:</span>
+                    <span class="n">vars_available</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">{}</span><span class="s2"> not available in file </span><span class="si">{}</span><span class="s2">&quot;</span>
                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)))</span>
@@ -371,13 +375,13 @@
                 <span class="c1"># process line</span>
                 <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
                 <span class="c1"># the following uses the standard python datetime functions</span>
-                <span class="c1"># date_index = col_info[COLNAMES[&#39;date&#39;]]</span>
-                <span class="c1"># hour, minute, second = dummy_arr[col_info[COLNAMES[&#39;time&#39;]].split(&#39;:&#39;)</span>
+                <span class="c1"># date_index = col_index[COLNAMES[&#39;date&#39;]]</span>
+                <span class="c1"># hour, minute, second = dummy_arr[col_index[COLNAMES[&#39;time&#39;]].split(&#39;:&#39;)</span>
 
                 <span class="c1"># This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta</span>
                 <span class="c1"># Build a proper ISO 8601 UTC date string</span>
-                <span class="n">date</span> <span class="o">=</span> <span class="n">col_info</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]]</span>
-                <span class="n">time</span> <span class="o">=</span> <span class="n">col_info</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]]</span>
+                <span class="n">date</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]]</span>
+                <span class="n">time</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]]</span>
                 <span class="n">day</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">year</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">date</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
                 <span class="n">datestring</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">])</span>
                 <span class="n">datestring</span> <span class="o">=</span> <span class="s1">&#39;T&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">datestring</span><span class="p">,</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">time</span><span class="p">]])</span>
@@ -386,7 +390,7 @@
 
                 <span class="c1"># copy the meta data (array of type string)</span>
                 <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">:</span>
-                    <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dummy_arr</span><span class="p">[</span><span class="n">col_info</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="n">var</span><span class="p">]]])</span>
+                    <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dummy_arr</span><span class="p">[</span><span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="n">var</span><span class="p">]]])</span>
 
                 <span class="c1"># copy the data fields (array type np.float_; will be converted to pandas.Series later)</span>
                 <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">vars_available</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -395,14 +399,22 @@
                         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                     <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         
+        <span class="c1"># convert all lists to numpy arrays</span>
         <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
+        
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">:</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
+            
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_available</span><span class="p">:</span>
                 <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span>
-            
+        
+        <span class="c1"># compute additional variables (if applicable)</span>
+        <span class="n">data_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_additional_vars</span><span class="p">(</span><span class="n">data_out</span><span class="p">,</span> <span class="n">vars_to_compute</span><span class="p">)</span>
+        
         <span class="k">if</span> <span class="n">vars_as_series</span><span class="p">:</span>
             <span class="c1"># convert the vars in vars_to_retrieve to pandas time series</span>
             <span class="c1"># and delete the other ones</span>
@@ -525,9 +537,13 @@
         <span class="k">return</span> <span class="n">data_obj</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">ReadAeronetInvV2</span><span class="p">()</span>
-    <span class="n">r</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;warning&#39;</span>
-    <span class="n">r</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetInvV2</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">)</span>
+    <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+    
+    <span class="n">first_ten</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">last_file</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    
+    <span class="n">data_first</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">data_first</span><span class="p">)</span>
 </pre></div>
 
            </div>

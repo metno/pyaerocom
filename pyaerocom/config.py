@@ -39,6 +39,7 @@ import numpy as np
 import os
 from warnings import warn
 from collections import OrderedDict as od
+from pyaerocom.utils import list_to_shortstr, dict_to_str
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -507,7 +508,7 @@ class Config(object):
                 s += "\n%s (list)" %k
                 s += list_to_shortstr(v)
             else:
-                s += "\n%s: %s" %(k,v)
+                s += "\n%s: %s" %(k, v)
         return s
     
     def __str__(self):
@@ -520,56 +521,6 @@ class Config(object):
             else:
                 s += "\n%s: %s" %(k,v)
         return s
-
-def list_to_shortstr(lst, indent=3):
-    """Custom function to convert a list into a short string representation"""
-    s = "\n" + indent*" " + "[%s\n" %lst[0]
-    if len(lst) > 4:
-        s += (indent+1)*" " + "%s\n" %lst[1]
-        s += (indent+1)*" " + "...\n"
-        s += (indent+1)*" " + "%s\n" %lst[-2]
-    else: 
-        for item in lst[1:-1]:
-            s += (indent+1)*" " + "%s" %item
-    s += (indent+1)*" " + "%s]\n" %lst[-1]
-    return s
-        
-def dict_to_str(dictionary, s="", indent=3):
-    """Custom function to convert dictionary into string (e.g. for print)
-    
-    Parameters
-    ----------
-    dictionary : dict
-        the dictionary
-    s : str
-        the input string
-    indent : int
-        indent of dictionary content
-    
-    Returns
-    -------
-    str
-        the modified input string
-        
-    Example
-    -------
-    
-    >>> string = "Printing dictionary d"
-    >>> d = dict(Bla=1, Blub=dict(BlaBlub=2))
-    >>> print(dict_to_str(d, string))
-    Printing dictionary d
-       Bla: 1
-       Blub (dict)
-        BlaBlub: 2
-    
-    """
-    for k, v in dictionary.items():
-        if isinstance(v, dict):
-            s += "\n" + indent*" " + "%s (dict)" %k
-            s = dict_to_str(v, s, indent+1)
-        else:
-            s += "\n" + indent*" " + "%s: %s" %(k,v)
-    return s
 
 if __name__=="__main__":
     import doctest

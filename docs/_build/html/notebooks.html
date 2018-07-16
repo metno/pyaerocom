@@ -456,7 +456,7 @@ class, as follows:</li>
 </pre></div>
 </div>
 <p>As you can see, <code class="docutils literal notranslate"><span class="pre">MODELBASEDIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OBSBASEDIR</span></code> contain the invalid
-paths, but e.g. the list containing model directories (<code class="docutils literal notranslate"><span class="pre">MODELDIRS</span></code>)
+paths, but e.g.&nbsp;the list containing model directories (<code class="docutils literal notranslate"><span class="pre">MODELDIRS</span></code>)
 still has the original settings. This is because, these are written in
 the method <code class="docutils literal notranslate"><span class="pre">load_config(config_file)</span></code> or the wrapper method
 <code class="docutils literal notranslate"><span class="pre">reload()</span></code> which does the same. Now reload the config_file and print.</p>
@@ -733,10 +733,9 @@ data import since we know the model and run ID from the previous cell
 <p>Let’s load results for the aerosol optical depth (<em>od550aer</em>) for march
 2010. The read function take a string or a list of strings as input for
 specifying one or more variables that are supposed to be read. Thus, the
-return type of this method is <strong>*always a tuple, even if we only provide
-one variable*</strong> (as in the following example) and as a result, the
-loaded data object has to be accessed using the first index of the
-tuple.</p>
+return type of this method is <strong>always a tuple, even if we only provide
+one variable</strong> (as in the following example) and as a result, the loaded
+data object has to be accessed using the first index of the tuple.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1 march 2010&quot;</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31 march 2010&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -782,7 +781,7 @@ Grid data: Aerosol optical depth at 550nm / (1) (time: 31; latitude: 192; longit
 </div>
 <p>The data comprises 31 time stamps, as expected, since we picked one
 month and the dataset is daily. Now, for instance, we can crop the data
-using a predefined region (e.g. South America) and plot the first day of
+using a predefined region (e.g.&nbsp;South America) and plot the first day of
 the dataset.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="s2">&quot;SAMERICA&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
@@ -821,24 +820,23 @@ that we extracted.</p>
 <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weighted_mean</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7ffba8d523c8</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f189525b8d0</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_31_1.png" src="_images/tut00_get_started_31_1.png" />
-<p>That should be enough for an introduction. The following notebook
-introduces in more detail how pyaerocom handles regions and where they
-can be defined. In the subsequent tutorial, the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class is
-introduced, that was usesed above to import model data in a flexible way
-based on variable name, time range and temporal resolution. The loaded
-data for each model and variable is then stored in the analysis class
-<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> which we use in the end of this notebook and which will
-be introduced in a later tutorial.</p>
+<p>The following notebook introduces in more detail how pyaerocom handles
+regions and where they can be defined. In the subsequent tutorial, the
+<code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class is introduced, that was usesed above to import
+model data in a flexible way based on variable name, time range and
+temporal resolution. The loaded data for each model and variable is then
+stored in the analysis class <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> which we use in the end of
+this notebook and which will be introduced in a later tutorial.</p>
 </div>
 </div>
 <div class="section" id="aerocom-default-regions">
 <h2>AEROCOM default regions<a class="headerlink" href="#aerocom-default-regions" title="Permalink to this headline">¶</a></h2>
 <p>This notebook introduces how pya handles information related to default
-regions (e.g. Europe, Asia, …) as used in the <a class="reference external" href="http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl">AEROCOM
+regions (e.g.&nbsp;Europe, Asia, …) as used in the <a class="reference external" href="http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl">AEROCOM
 interface</a>.
 All default regions are defined in the file
 <a class="reference external" href="http://aerocom.met.no/pya/config_files.html#default-regions">regions.ini</a>.</p>
@@ -896,13 +894,13 @@ of the results over Europe.</p>
 <h2>Reading model data: the <em>ReadGridded</em> class<a class="headerlink" href="#reading-model-data-the-readgridded-class" title="Permalink to this headline">¶</a></h2>
 <p>This notebook introduces the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGridded">ReadGridded</a>
-class of pya, a flexible interface for importing model results from a
-single model, based on variable name (e.g. <em>od550aer</em>, <em>od550bc</em>), start
-/ stop time stamps and temporal resolution (e.g. <em>hourly, 3hourly,
-daily, monthly</em>).</p>
+class of pyaerocom, a flexible interface for importing model results
+from a single model, based on variable name (e.g. <em>od550aer</em>,
+<em>od550bc</em>), start / stop time stamps and temporal resolution (e.g.
+<em>hourly, 3hourly, daily, monthly</em>).</p>
 <p>The class is part of the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.io.readgridded">readgridded</a>
-module of pya, as well as the class
+module of pyaerocom, as well as the class
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti">ReadGriddedMulti</a>.</p>
 <p>In the following cells, we create an instance of the the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code>
 class and use this object to find and import data files containing the
@@ -917,9 +915,9 @@ representation of <code class="docutils literal notranslate"><span class="pre">R
 information about what is in there.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 <span class="n">read</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
-                                  <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
-                                  <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
-                                  <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                          <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                          <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">,</span>
+                          <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">read</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -930,9 +928,9 @@ information about what is in there.</p>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Looking at the output we can see that there were some files that did not
-follow the Aerocom file naming conventions. These were automatically
-ignored.</p>
+<p>The output contains information about all variables that were found and
+all corresponding years. These information is extracted from the
+filenames, which have to follow the AEROCOM file naming conventions.</p>
 <p><strong>Please note</strong> that at this point, no data is actually imported but
 only the paths are set that contain data for this model. In order to
 read one variable, call the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> function with a valid variable
@@ -946,20 +944,23 @@ by printing the string representation, as shown in the cell above).</p>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>From the output we can see that based on our specified time range and
-temporal resolution, we got 6 netCDF files that were merged all into an
-instance of the
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData">GriddedData</a>
-class, which will be introduced in more detail later. This data object
-is returned by the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> method and can also be accessed from the
-instance of the reading class using:</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
+<span class="n">data</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
 <span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span> <span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">1826</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">161</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">320</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The returned data object is of type
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.griddeddata.GriddedData">GriddedData</a>
+class, which will be introduced in more detail later. This data object
+is returned by the <code class="docutils literal notranslate"><span class="pre">read_var</span></code> method and can also be accessed from the
+instance of the reading class using:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
+<span class="n">d</span> <span class="ow">is</span> <span class="n">data</span> <span class="c1">#?</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kc">True</span>
 </pre></div>
 </div>
 <p>We may also import other variables using either the above used method
@@ -1042,29 +1043,30 @@ each day of the five years?</p>
 </div>
 <div class="section" id="remark-on-time-definition">
 <h3>Remark on time definition<a class="headerlink" href="#remark-on-time-definition" title="Permalink to this headline">¶</a></h3>
-<p>As you can see in the output above</p>
+<p>If you run this notebook with <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> in the reading object,
+you will receive the output</p>
 <p><code class="docutils literal notranslate"><span class="pre">Error</span> <span class="pre">message:</span> <span class="pre">AttributeError('Cube</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">contain</span> <span class="pre">time</span> <span class="pre">dimension',)</span>&#160; <span class="pre">Invalid</span> <span class="pre">time</span> <span class="pre">axis</span> <span class="pre">in</span> <span class="pre">file</span> <span class="pre">ECMWF_CAMS_REAN.daily.od550aer.2007.nc.</span> <span class="pre">Attempting</span> <span class="pre">to</span> <span class="pre">correct.</span></code></p>
-<p>these data has some issue with the time dimension, in this case, the
-time variable is not properly defined in the NetCDF file. Pyaerocom can
-correct for this on data import by</p>
+<p>several times when reading the data. This warning indicates, that the
+corresponding data in the netCDF files has some issue with the time
+dimension. Here, the time variable is not properly defined in the NetCDF
+file. Pyaerocom can correct for this on data import by</p>
 <ol class="arabic simple">
 <li>First checking if the time dimension in the NetCDF file is correct
-according to CF convention (<a class="reference external" href="http://aerocom.met.no/pya/api.html#pya.io.helpers.check_time_coord">see here for details on the
+according to CF convention (<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.helpers.check_time_coord">see here for details on the
 implementation</a>
 and if a problem is detected, then …</li>
 <li>the time axis is redefined based on the year and time resolution
 (<em>ts_type</em>) that is encrypted in the filename. The latter requires
-that the file follows one of the <a class="reference external" href="http://aerocom.met.no/pya/config_files.html#file-conventions">pya file
+that the file follows one of the <a class="reference external" href="http://aerocom.met.no/pyaerocom/config_files.html#file-conventions">pyaerocom file
 conventions</a>.</li>
 </ol>
 </div>
 <div class="section" id="a-very-brief-introduction-into-the-griddeddata-class">
 <h3>A very brief introduction into the GriddedData class<a class="headerlink" href="#a-very-brief-introduction-into-the-griddeddata-class" title="Permalink to this headline">¶</a></h3>
 <p>Now as a final step, we briefly introduce some of the features of the
-<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class by computing 1. plotting an overview map of the
-data and plotting a time series of the global weighted average aerosol
-optical density as well as the same time series at the coordinates in
-the city of Leipzig, Germany.</p>
+<code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class by computing and plotting a time series of the
+global weighted average aerosol optical density as well as the same time
+series at the coordinates in the city of Leipzig, Germany.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Series</span>
 <span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="k">import</span> <span class="n">gaussian_filter1d</span>
 <span class="c1">#compute global mean (area weighted)</span>
@@ -1100,10 +1102,10 @@ importing data from multiple models.</p>
 <div class="section" id="reading-data-from-multiple-models-the-readgriddedmulti-class">
 <h2>Reading data from multiple models: the ReadGriddedMulti class<a class="headerlink" href="#reading-data-from-multiple-models-the-readgriddedmulti-class" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">pyaerocom.ReadGriddedMulti</span></code> class provides an interface to import
-multiple variables for an arbitrary number of gridded datasets (e.g.
-model data, level3 satellite data) and within a specific time interval.
-It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides an
-interface for importing results from a single dataset.</p>
+multiple variables for an arbitrary number of gridded datasets
+(e.g.&nbsp;model data, level 2 satellite data) and within a specific time
+interval. It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides
+an interface for importing results from a single dataset.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 </pre></div>
@@ -1130,7 +1132,7 @@ aerosol-climate model, you may search if data exists …</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;ECHAM6-SALSA_AP3-CTRL2015&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now create and initiate <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class. The direcory for
+<p>Now create and initiate <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class. The directory for
 each model as well as all valid files in the model directories are
 searched on initiation of the instance. Valid here means, that the files
 belong to the corresponding model. Subsetting of the time interval is
@@ -1169,28 +1171,8 @@ were created (which was introduced in the previous tutorial), one for
 each of the 3 requested datasets. These can be used to access the data
 for each of the datasets.</p>
 <p>Let’s define a bunch of test variables that are supposed to be loaded
-for each model. In the ideal case, these should be contained in all
-input models (not the case here, since AATST v1.0 does not include
-<code class="docutils literal notranslate"><span class="pre">od550dust</span></code>.</p>
+for each model.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;od550dust&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
-<span class="n">r</span><span class="o">.</span><span class="n">vars</span>
-<span class="n">r</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<pre class="literal-block">
-FOUND MATCH: aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc
-Invalid time dimension.
-Error message: ValueError(&quot;Time match error, nominal dates for test array[0 1 2 7] (unit=day since 2001-01-01 00:00 UTC): ['2010-01' '2010-02' '2010-03' '2010-08']nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']&quot;,)
-Invalid time axis in file aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc. Attempting to correct.
-Applying temporal cropping of result cube
-Cropping along time axis based on Timestamps
-</pre>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
-<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol_particles</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">12</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">96</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">)</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>Read all variables for all models</p>
@@ -1204,6 +1186,24 @@ Cropping along time axis based on Timestamps
 <p>As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
 this data manually.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
+<span class="n">r</span><span class="o">.</span><span class="n">vars</span>
+<span class="n">r</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="literal-block">
+FOUND MATCH: aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc
+Invalid time dimension.
+Error message: ValueError(&quot;Time match error, nominal dates for test array[0 1 2 7] (unit=days since  2001-01-01 00:00:00): ['2010-01' '2010-02' '2010-03' '2010-08']nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']&quot;,)
+Invalid time axis in file aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc. Attempting to correct.
+Applying temporal cropping of result cube
+Cropping along time axis based on Timestamps
+</pre>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">atmosphere_optical_thickness_due_to_ambient_aerosol_particles</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">12</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">96</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">192</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 <p>Print what is in there (similar to the previously introduced
 <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class, also the <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class has a helpful
 string representation)</p>
@@ -1357,7 +1357,7 @@ class of pya. The <code class="docutils literal notranslate"><span class="pre">G
 for the analysis of model data. The underlying data type is
 <a class="reference external" href="http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube">iris.cube.Cube</a>
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> (i.e. by passing the
+files when creating an instance of <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> (i.e.&nbsp;by passing the
 filename and specifying the variable name on initialisation). This
 notebook introduces some of the features of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class.
 Starting with some imports…</p>
@@ -1379,7 +1379,7 @@ Starting with some imports…</p>
 <p>The dictionary, returned by the <code class="docutils literal notranslate"><span class="pre">get()</span></code> function is categorised into
 two subirectories for model based test files (<code class="docutils literal notranslate"><span class="pre">key=&quot;models&quot;</span></code>) and for
 observation based test files (<code class="docutils literal notranslate"><span class="pre">key=observations</span></code>). So far, there is
-not much in there (i.e. only two files).</p>
+not much in there (i.e.&nbsp;only two files).</p>
 <p>Let’s pick out the ECMWF OSUITE test file and load the data directly
 into an instance of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class. The <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class
 takes either preloaded instances of the <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> class as
@@ -1463,7 +1463,7 @@ file (if the file is readable using the <code class="docutils literal notranslat
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550aer&#39;, &#39;od550dust&#39;, &#39;od550so4&#39;, &#39;od550bc&#39;, &#39;od550oa&#39;]&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loading data from input file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc requires specification of a variable name using input parameter var_name. The following variable names exist in input file: [&#39;od550oa&#39;, &#39;od550so4&#39;, &#39;od550bc&#39;, &#39;od550aer&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
@@ -1518,14 +1518,14 @@ currently under development.</p>
 <a class="reference external" href="http://aerocom.met.no/pya/api.html#module-pya.griddeddata">GriddedData</a>
 class of <em>pyaerocom</em> was introduced in the previous tutorial.</p>
 <p>Here, we want to illustrate one particular feature of <em>pya</em>, namely the
-conversion of CF conform numerical time stamps with a defined unit (i.e.
-basedate and calendar, see e.g.
+conversion of CF conform numerical time stamps with a defined unit
+(i.e.&nbsp;basedate and calendar, see e.g.
 <a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate">here</a>
 for details) into datetime-like objects that can be interpreted by tools
 such as <a class="reference external" href="https://pandas.pydata.org/">Pandas</a>. The easiest way to work
 with time stamps in model data is, to simply work on the internal
 numerical indices, avoiding the necessity to convert them into actual
-datetime objects. However, sometimes (e.g. if we want to extract and
+datetime objects. However, sometimes (e.g.&nbsp;if we want to extract and
 analyse a time-series of global average Aerosol optical densities), we
 wish to use third party libraries such as Pandas, which require the
 timestamps to be datetime-like objects.</p>
@@ -1613,7 +1613,7 @@ conversion for us, that is, using the <code class="docutils literal notranslate"
 corresponding <code class="docutils literal notranslate"><span class="pre">index</span></code>) of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> class in combination with
 the <code class="docutils literal notranslate"><span class="pre">cells()</span></code> iterator method. However, as we shall see below, this is
 not only the slowest solution but it is also prone to errors in case the
-calendar is not standard (e.g. Julian).</p>
+calendar is not standard (e.g.&nbsp;Julian).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0_ecmwf</span> <span class="o">=</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="n">t0_aatsr</span> <span class="o">=</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First time stamp ECMWF </span><span class="si">%s</span><span class="s2"> (data type: </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">)))</span>
@@ -1682,14 +1682,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>119 ms ± 3.59 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>120 ms ± 3.38 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 5.16 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>107 ms ± 3.89 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -1700,14 +1700,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>125 ms ± 16.6 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>126 ms ± 4.72 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 5.66 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>114 ms ± 7.94 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -1726,7 +1726,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.75 ms ± 142 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.71 ms ± 57 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -1844,7 +1844,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>60.1 µs ± 5.84 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>57.2 µs ± 4.18 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -1862,7 +1862,7 @@ here</a>).</p>
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>332 µs ± 2.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>368 µs ± 52.8 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -1871,11 +1871,11 @@ pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 pya_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.02 ms ± 99.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.07 ms ± 65.7 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
-iris interface (i.e. iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
+iris interface (i.e.&nbsp;iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
 conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.</p>
@@ -1885,14 +1885,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>432 µs ± 57.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>361 µs ± 10.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.16 ms ± 86.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.45 ms ± 404 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>
@@ -1973,29 +1973,14 @@ for the years of 2010-2018.</p>
 </div>
 <div class="section" id="import-of-aeronet-v2-data-level-2">
 <h3>Import of AeroNet V2 data (Level 2)<a class="headerlink" href="#import-of-aeronet-v2-data-level-2" title="Permalink to this headline">¶</a></h3>
-<p>The following cell imports all available data from the AeroNet network.
-This might take a while in case the data has not been cached before.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs_data</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="n">obs_id</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">obs_data</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadAeronetSunV2</span><span class="p">()</span>
+<span class="n">obs_data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Importing</span> <span class="kn">from</span> <span class="nn">cache</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily_AllYears_AllVars</span><span class="o">.</span><span class="n">plk</span>
-<span class="n">cache</span> <span class="n">file</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">_cache</span><span class="o">/</span><span class="n">AeronetSunV2Lev2</span><span class="o">.</span><span class="n">daily_AllYears_AllVars</span><span class="o">.</span><span class="n">plk</span> <span class="n">read</span>
-</pre></div>
-</div>
-<p>Now, extract time series for some stations</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">obs_data</span><span class="o">.</span><span class="n">latitude</span>
-<span class="n">model_data</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
-<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">iris</span> <span class="s1">&#39;Cube&#39;</span> <span class="n">of</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span> <span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">5114</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">161</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">320</span><span class="p">)</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1028</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">169</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="n">searching</span> <span class="k">for</span> <span class="n">data</span> <span class="n">files</span><span class="o">.</span> <span class="n">This</span> <span class="n">might</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">...</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">254</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="n">Reading</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">AEROCOM_OBSDATA</span><span class="o">/</span><span class="n">AeronetRaw2</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="mi">920801</span><span class="n">_180519_UNC</span><span class="o">-</span><span class="n">Palmira</span><span class="o">.</span><span class="n">lev20</span>
 </pre></div>
 </div>
 </div>
@@ -2285,7 +2270,7 @@ started</a></p>
 </div>
 <p>You can see that all variable columns were assigned the same flag
 column, since there is only one. This would be different if there were
-multiple flag columns (e.g. one for each variable).</p>
+multiple flag columns (e.g.&nbsp;one for each variable).</p>
 </div>
 <div class="section" id="access-flag-information">
 <h3>Access flag information<a class="headerlink" href="#access-flag-information" title="Permalink to this headline">¶</a></h3>
@@ -2295,7 +2280,7 @@ of the file.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;numflag&#39;</span><span class="p">,</span>
-              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7fd151458780</span><span class="o">&gt;</span><span class="p">)])</span>
+              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7f1fe40d86a0</span><span class="o">&gt;</span><span class="p">)])</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s2">&quot;numflag&quot;</span><span class="p">]</span>
@@ -3111,7 +3096,7 @@ EbasNasaAmesFile(file=ebasdir+filename,
                  only_head=True, verbose=False)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>6.33 ms ± 398 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>5.22 ms ± 229 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 <p>Read raw:</p>
@@ -3124,7 +3109,7 @@ EbasNasaAmesFile(file=ebasdir+filename,
                       verbose=False)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>56.9 ms ± 6.55 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>51.3 ms ± 2.43 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>Perform all operations:</p>
@@ -3137,7 +3122,7 @@ EbasNasaAmesFile(file=ebasdir+filename,
                       verbose=False)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>62.4 ms ± 1.95 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>59.4 ms ± 2.29 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 </div>
@@ -3145,10 +3130,10 @@ EbasNasaAmesFile(file=ebasdir+filename,
 <div class="section" id="ebas-file-query-and-database-browser">
 <h2>EBAS file query and database browser<a class="headerlink" href="#ebas-file-query-and-database-browser" title="Permalink to this headline">¶</a></h2>
 <p>The previous tutorial showed how to read EBAS NASA Ames files and gave
-insights into the strucure of these files. However, this did not include
-the specification of an actual data request (for instance: get data from
-all stations in the arcitc that contain measurements of the AOD between
-2010 and 2016).</p>
+insights into the structure of these files. However, this did not
+include the specification of an actual data request (for instance: get
+data from all stations in the arctic that contain measurements of the
+AOD between 2010 and 2016).</p>
 <p>In this tutorial, we show, how such requests can be specified easily in
 pyaerocom and how the database can be browsed for instance by variable
 name, type of instrument, location or other relevant parameters.</p>
@@ -3164,7 +3149,7 @@ name, type of instrument, location or other relevant parameters.</p>
 E.g.:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 
-<span class="n">request</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_sqlite_query</span><span class="o">.</span><span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,</span>
+<span class="n">request</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_file_index</span><span class="o">.</span><span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,</span>
                                                              <span class="s1">&#39;aerosol_light_backscattering_coefficient&#39;</span><span class="p">,</span>
                                                              <span class="s1">&#39;pressure&#39;</span><span class="p">),</span>
                                                   <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">,</span>
@@ -3182,6 +3167,13 @@ E.g.:</p>
 <span class="n">lat_range</span><span class="p">:</span> <span class="kc">None</span>
 <span class="n">instrument_types</span><span class="p">:</span> <span class="kc">None</span>
 <span class="n">statistics</span><span class="p">:</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>You can also output the actual SQL query string:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">select</span> <span class="n">distinct</span> <span class="n">filename</span> <span class="kn">from</span> <span class="nn">variable</span> <span class="n">join</span> <span class="n">station</span> <span class="n">on</span> <span class="n">station</span><span class="o">.</span><span class="n">station_code</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">station_code</span> <span class="n">where</span> <span class="n">comp_name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,</span> <span class="s1">&#39;aerosol_light_backscattering_coefficient&#39;</span><span class="p">,</span> <span class="s1">&#39;pressure&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">first_end</span> <span class="o">&lt;</span> <span class="s1">&#39;2011-01-01&#39;</span> <span class="ow">and</span> <span class="n">last_start</span> <span class="o">&gt;</span> <span class="s1">&#39;2010-01-01&#39;</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>The request class is an extended dictionary and can thus be used like a
@@ -3240,21 +3232,21 @@ in the request:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">contains_variables</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;pressure&#39;</span><span class="p">,</span> <span class="s1">&#39;aerosol_light_backscattering_coefficient&#39;</span><span class="p">,</span> <span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[(</span><span class="s1">&#39;pressure&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;aerosol_light_backscattering_coefficient&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,)]</span>
 </pre></div>
 </div>
 <p>Or what matrices the data contains:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">contains_matrices</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;instrument&#39;</span><span class="p">,</span> <span class="s1">&#39;aerosol&#39;</span><span class="p">,</span> <span class="s1">&#39;pm10&#39;</span><span class="p">,</span> <span class="s1">&#39;pm1&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[(</span><span class="s1">&#39;instrument&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;aerosol&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;pm10&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;pm1&#39;</span><span class="p">,)]</span>
 </pre></div>
 </div>
 <p>Or which station coordinates (lon, lat) the dataset contains:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">contains_coordinates</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">23.583333</span><span class="p">,</span> <span class="o">-</span><span class="mf">79.783839</span><span class="p">,</span> <span class="o">-</span><span class="mf">122.9576034546</span><span class="p">,</span> <span class="o">-</span><span class="mf">104.986864</span><span class="p">,</span> <span class="o">-</span><span class="mf">62.3415260315</span><span class="p">,</span> <span class="mf">7.985</span><span class="p">,</span> <span class="mf">11.0096197128</span><span class="p">,</span> <span class="mf">12.93386</span><span class="p">,</span> <span class="mf">10.97964</span><span class="p">,</span> <span class="o">-</span><span class="mf">8.266</span><span class="p">,</span> <span class="o">-</span><span class="mf">16.4994</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.605</span><span class="p">,</span> <span class="mf">2.35</span><span class="p">,</span> <span class="mf">24.283333</span><span class="p">,</span> <span class="mf">24.116111111</span><span class="p">,</span> <span class="mf">2.95</span><span class="p">,</span> <span class="mf">25.666667</span><span class="p">,</span> <span class="mf">19.583333</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.89944</span><span class="p">,</span> <span class="mf">77.151389</span><span class="p">,</span> <span class="mf">8.633333</span><span class="p">,</span> <span class="mf">10.7</span><span class="p">,</span> <span class="mf">126.17</span><span class="p">,</span> <span class="mf">4.926389</span><span class="p">,</span> <span class="mf">8.252</span><span class="p">,</span> <span class="mf">11.888333</span><span class="p">,</span> <span class="mf">2.533333</span><span class="p">,</span> <span class="o">-</span><span class="mf">65.618</span><span class="p">,</span> <span class="mf">13.15</span><span class="p">,</span> <span class="mf">120.87</span><span class="p">,</span> <span class="o">-</span><span class="mf">156.6114654541</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.9841</span><span class="p">,</span> <span class="o">-</span><span class="mf">112.1288</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.6832</span><span class="p">,</span> <span class="o">-</span><span class="mf">112.8</span><span class="p">,</span> <span class="o">-</span><span class="mf">109.3889</span><span class="p">,</span> <span class="o">-</span><span class="mf">155.5761566162</span><span class="p">,</span> <span class="o">-</span><span class="mf">86.148</span><span class="p">,</span> <span class="o">-</span><span class="mf">68.2608</span><span class="p">,</span> <span class="o">-</span><span class="mf">113.9958</span><span class="p">,</span> <span class="o">-</span><span class="mf">81.7</span><span class="p">,</span> <span class="o">-</span><span class="mf">103.1772</span><span class="p">,</span> <span class="o">-</span><span class="mf">97.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">24.7999992371</span><span class="p">,</span> <span class="o">-</span><span class="mf">124.1510009766</span><span class="p">,</span> <span class="o">-</span><span class="mf">105.5457</span><span class="p">,</span> <span class="o">-</span><span class="mf">111.9692</span><span class="p">,</span> <span class="o">-</span><span class="mf">77.04</span><span class="p">,</span> <span class="o">-</span><span class="mf">109.7958</span><span class="p">,</span> <span class="mf">18.48968</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[(</span><span class="mf">23.583333</span><span class="p">,</span> <span class="mf">42.166667</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">79.783839</span><span class="p">,</span> <span class="mf">44.231006</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">122.9576034546</span><span class="p">,</span> <span class="mf">50.059299469</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">104.986864</span><span class="p">,</span> <span class="mf">54.353743</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">62.3415260315</span><span class="p">,</span> <span class="mf">82.4991455078</span><span class="p">),</span> <span class="p">(</span><span class="mf">7.985</span><span class="p">,</span> <span class="mf">46.5475</span><span class="p">),</span> <span class="p">(</span><span class="mf">11.0096197128</span><span class="p">,</span> <span class="mf">47.8014984131</span><span class="p">),</span> <span class="p">(</span><span class="mf">12.93386</span><span class="p">,</span> <span class="mf">51.53014</span><span class="p">),</span> <span class="p">(</span><span class="mf">10.97964</span><span class="p">,</span> <span class="mf">47.4165</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">8.266</span><span class="p">,</span> <span class="o">-</span><span class="mf">70.666</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">16.4994</span><span class="p">,</span> <span class="mf">28.309</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">3.605</span><span class="p">,</span> <span class="mf">37.164</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.35</span><span class="p">,</span> <span class="mf">41.766667</span><span class="p">),</span> <span class="p">(</span><span class="mf">24.283333</span><span class="p">,</span> <span class="mf">61.85</span><span class="p">),</span> <span class="p">(</span><span class="mf">24.116111111</span><span class="p">,</span> <span class="mf">67.973333333</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.95</span><span class="p">,</span> <span class="mf">45.76667</span><span class="p">),</span> <span class="p">(</span><span class="mf">25.666667</span><span class="p">,</span> <span class="mf">35.316667</span><span class="p">),</span> <span class="p">(</span><span class="mf">19.583333</span><span class="p">,</span> <span class="mf">46.966667</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">9.89944</span><span class="p">,</span> <span class="mf">53.32583</span><span class="p">),</span> <span class="p">(</span><span class="mf">77.151389</span><span class="p">,</span> <span class="mf">28.427778</span><span class="p">),</span> <span class="p">(</span><span class="mf">8.633333</span><span class="p">,</span> <span class="mf">45.8</span><span class="p">),</span> <span class="p">(</span><span class="mf">10.7</span><span class="p">,</span> <span class="mf">44.183333</span><span class="p">),</span> <span class="p">(</span><span class="mf">126.17</span><span class="p">,</span> <span class="mf">33.28</span><span class="p">),</span> <span class="p">(</span><span class="mf">4.926389</span><span class="p">,</span> <span class="mf">51.970278</span><span class="p">),</span> <span class="p">(</span><span class="mf">8.252</span><span class="p">,</span> <span class="mf">58.38853</span><span class="p">),</span> <span class="p">(</span><span class="mf">11.888333</span><span class="p">,</span> <span class="mf">78.906667</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.533333</span><span class="p">,</span> <span class="o">-</span><span class="mf">72.016667</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">65.618</span><span class="p">,</span> <span class="mf">18.381</span><span class="p">),</span> <span class="p">(</span><span class="mf">13.15</span><span class="p">,</span> <span class="mf">56.016667</span><span class="p">),</span> <span class="p">(</span><span class="mf">120.87</span><span class="p">,</span> <span class="mf">23.47</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">156.6114654541</span><span class="p">,</span> <span class="mf">71.3230133057</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">111.9841</span><span class="p">,</span> <span class="mf">35.9731</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">112.1288</span><span class="p">,</span> <span class="mf">36.0778</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">111.6832</span><span class="p">,</span> <span class="mf">34.3405</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">112.8</span><span class="p">,</span> <span class="mf">31.9506</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">109.3889</span><span class="p">,</span> <span class="mf">32.0097</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">155.5761566162</span><span class="p">,</span> <span class="mf">19.5362300873</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">86.148</span><span class="p">,</span> <span class="mf">37.1317</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">68.2608</span><span class="p">,</span> <span class="mf">44.3772</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">113.9958</span><span class="p">,</span> <span class="mf">48.5103</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">81.7</span><span class="p">,</span> <span class="mf">36.2</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">103.1772</span><span class="p">,</span> <span class="mf">29.3022</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">97.5</span><span class="p">,</span> <span class="mf">36.6</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">24.7999992371</span><span class="p">,</span> <span class="o">-</span><span class="mf">89.9969482422</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">124.1510009766</span><span class="p">,</span> <span class="mf">41.0541000366</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">105.5457</span><span class="p">,</span> <span class="mf">40.2783</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">111.9692</span><span class="p">,</span> <span class="mf">35.1406</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">77.04</span><span class="p">,</span> <span class="mf">38.9</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">109.7958</span><span class="p">,</span> <span class="mf">34.9139</span><span class="p">),</span> <span class="p">(</span><span class="mf">18.48968</span><span class="p">,</span> <span class="o">-</span><span class="mf">34.35348</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>Now, let’s narrow this down:</p>
@@ -3262,14 +3254,14 @@ in the request:</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">contains_coordinates</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">-</span><span class="mf">62.3415260315</span><span class="p">,</span> <span class="mf">24.283333</span><span class="p">,</span> <span class="mf">24.116111111</span><span class="p">,</span> <span class="mf">11.888333</span><span class="p">,</span> <span class="o">-</span><span class="mf">156.6114654541</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[(</span><span class="o">-</span><span class="mf">62.3415260315</span><span class="p">,</span> <span class="mf">82.4991455078</span><span class="p">),</span> <span class="p">(</span><span class="mf">24.283333</span><span class="p">,</span> <span class="mf">61.85</span><span class="p">),</span> <span class="p">(</span><span class="mf">24.116111111</span><span class="p">,</span> <span class="mf">67.973333333</span><span class="p">),</span> <span class="p">(</span><span class="mf">11.888333</span><span class="p">,</span> <span class="mf">78.906667</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mf">156.6114654541</span><span class="p">,</span> <span class="mf">71.3230133057</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>Print all station names:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">contains_station_names</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;Alert&#39;</span><span class="p">,</span> <span class="s1">&#39;Hyytiälä&#39;</span><span class="p">,</span> <span class="s1">&#39;Pallas (Sammaltunturi)&#39;</span><span class="p">,</span> <span class="s1">&#39;Zeppelin mountain (Ny-Ålesund)&#39;</span><span class="p">,</span> <span class="s1">&#39;Barrow&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[(</span><span class="s1">&#39;Alert&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;Hyytiälä&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;Pallas (Sammaltunturi)&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;Zeppelin mountain (Ny-Ålesund)&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;Barrow&#39;</span><span class="p">,)]</span>
 </pre></div>
 </div>
 </div>
@@ -3285,20 +3277,22 @@ example using the request constraints specified above. Let’s say we want
 to retrieve a list of station names and their coordinates (lon, lat,
 alt). This can be done by calling (we store the results in a list named
 <code class="docutils literal notranslate"><span class="pre">station_info</span></code>):</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station_info</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;station_name&quot;</span><span class="p">,</span>
-                                                               <span class="s2">&quot;station_longitude&quot;</span><span class="p">,</span>
-                                                               <span class="s2">&quot;station_latitude&quot;</span><span class="p">,</span>
-                                                               <span class="s2">&quot;station_altitude&quot;</span><span class="p">)))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_str</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">(</span><span class="n">what</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;station_name&quot;</span><span class="p">,</span>
+                                         <span class="s2">&quot;station_longitude&quot;</span><span class="p">,</span>
+                                         <span class="s2">&quot;station_latitude&quot;</span><span class="p">,</span>
+                                         <span class="s2">&quot;station_altitude&quot;</span><span class="p">))</span>
+
+<span class="n">station_info</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">query_str</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">station_info</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Alert</span>
-<span class="n">Hyytiälä</span>
-<span class="n">Pallas</span> <span class="p">(</span><span class="n">Sammaltunturi</span><span class="p">)</span>
-<span class="n">Zeppelin</span> <span class="n">mountain</span> <span class="p">(</span><span class="n">Ny</span><span class="o">-</span><span class="n">Ålesund</span><span class="p">)</span>
-<span class="n">Barrow</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;Alert&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">62.3415260315</span><span class="p">,</span> <span class="mf">82.4991455078</span><span class="p">,</span> <span class="mf">210.0</span><span class="p">)</span>
+<span class="p">(</span><span class="s1">&#39;Hyytiälä&#39;</span><span class="p">,</span> <span class="mf">24.283333</span><span class="p">,</span> <span class="mf">61.85</span><span class="p">,</span> <span class="mf">181.0</span><span class="p">)</span>
+<span class="p">(</span><span class="s1">&#39;Pallas (Sammaltunturi)&#39;</span><span class="p">,</span> <span class="mf">24.116111111</span><span class="p">,</span> <span class="mf">67.973333333</span><span class="p">,</span> <span class="mf">565.0</span><span class="p">)</span>
+<span class="p">(</span><span class="s1">&#39;Zeppelin mountain (Ny-Ålesund)&#39;</span><span class="p">,</span> <span class="mf">11.888333</span><span class="p">,</span> <span class="mf">78.906667</span><span class="p">,</span> <span class="mf">474.0</span><span class="p">)</span>
+<span class="p">(</span><span class="s1">&#39;Barrow&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">156.6114654541</span><span class="p">,</span> <span class="mf">71.3230133057</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can see that the results for each station are stored in tuples in
@@ -3319,7 +3313,7 @@ the order of the request.</p>
 <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pya</span><span class="o">.</span><span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="s2">&quot;EBASMC&quot;</span><span class="p">][</span><span class="s2">&quot;PATH&quot;</span><span class="p">],</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">)))</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Reading</span> <span class="n">NASA</span> <span class="n">Ames</span> <span class="n">file</span><span class="p">:</span>

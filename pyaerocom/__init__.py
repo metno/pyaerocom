@@ -1,6 +1,4 @@
-from .config import Config
-import logging
-
+### Functions for package initialisation
 def _init_supplemental():
     from pkg_resources import get_distribution
     from os.path import abspath, dirname
@@ -16,6 +14,11 @@ def _init_config(package_dir):
     else:
         cfg = join(package_dir, 'data', 'paths.ini')
     return Config(config_file=cfg)
+
+# Imports
+from . import utils
+from .config import Config
+import logging
 
 __version__, __dir__ = _init_supplemental()
 
@@ -57,7 +60,6 @@ from .ungriddeddata import UngriddedData
 
 from . import io
 from . import plot
-from . import utils
 
 # custom toplevel class
 from .variable import Variable

@@ -161,11 +161,7 @@
   <h1>Source code for pyaerocom.ungriddeddata</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Created on Wed Jul 11 13:39:55 2018</span>
-
-<span class="sd">@author: jonasg</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -202,18 +198,29 @@
     <span class="n">_LOCATION_PRECISION</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">_LAT_OFFSET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="mf">90.</span><span class="p">)</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1">#keep private, this is not supposed to be used by the user</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
     
-<div class="viewcode-block" id="UngriddedData.add_chunk"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.add_chunk">[docs]</a>    <span class="k">def</span> <span class="nf">add_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">chunk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_CHUNKSIZE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<div class="viewcode-block" id="UngriddedData.add_chunk"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.add_chunk">[docs]</a>    <span class="k">def</span> <span class="nf">add_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extend the size of the data array</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        size : :obj:`int`, optional</span>
+<span class="sd">            number of additional rows. If None (default) or smaller than </span>
+<span class="sd">            minimum chunksize specified in attribute ``_CHUNKSIZE``, then the</span>
+<span class="sd">            latter is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CHUNKSIZE</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CHUNKSIZE</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CHUNKSIZE</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;adding chunk, new array size (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span> <span class="o">+=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;adding chunk, new array size (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span></div>
 <span class="c1"># =============================================================================</span>
 <span class="c1">#     </span>
 <span class="c1">#     def __setitem__(self, key, val):</span>
@@ -281,7 +288,7 @@
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadUngridded(verbose=True)</span>
+<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadUngridded()</span>
 <span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &gt;&gt;&gt; pdseries = obj.to_timeseries()</span>
 <span class="sd">        &gt;&gt;&gt; pdseriesmonthly = obj.to_timeseries(station_name=&#39;Avignon&#39;,start_date=&#39;2011-01-01&#39;, end_date=&#39;2012-12-31&#39;, freq=&#39;M&#39;)</span>
@@ -383,6 +390,7 @@
     <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed, please check &quot;</span>
                              <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span></div>
+    
 </pre></div>
 
            </div>

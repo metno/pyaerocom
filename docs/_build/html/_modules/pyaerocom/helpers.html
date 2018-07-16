@@ -282,7 +282,11 @@
     <span class="n">basedate</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">((</span><span class="n">calendar</span> <span class="o">==</span> <span class="s1">&#39;proleptic_gregorian&#39;</span> <span class="ow">and</span> <span class="n">basedate</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="n">MINYEAR</span><span class="p">)</span> <span class="ow">or</span> 
         <span class="p">(</span><span class="n">calendar</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gregorian&#39;</span><span class="p">,</span><span class="s1">&#39;standard&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">basedate</span> <span class="o">&gt;</span> <span class="n">GREGORIAN_BASE</span><span class="p">)):</span>
-        <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
+        <span class="c1"># NOTE: changed on 9 July 2018 by jgliss due to error (kernel died)</span>
+        <span class="c1"># after update of dependencies (cf_units). Attribute name does not</span>
+        <span class="c1"># work anymore...</span>
+        <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">origin</span> <span class="c1">#cfunit.name</span>
+        
         <span class="n">res</span> <span class="o">=</span> <span class="n">cfu_str</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">microsec_units</span><span class="p">:</span>
             <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span>
@@ -584,7 +588,7 @@
     <span class="c1"># df.show()</span>
 
 <span class="c1"># TODO: review and move into test-suite</span>
-<div class="viewcode-block" id="griesie_xarray_to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.griesie_xarray_to_timeseries">[docs]</a><span class="k">def</span> <span class="nf">griesie_xarray_to_timeseries</span><span class="p">(</span><span class="n">xarray_obj</span><span class="p">,</span> <span class="n">obs_lats</span><span class="p">,</span> <span class="n">obs_lons</span><span class="p">,</span> <span class="n">vars_to_read</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550_aer&#39;</span><span class="p">],</span> <span class="n">debug_mode</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="griesie_xarray_to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.griesie_xarray_to_timeseries">[docs]</a><span class="k">def</span> <span class="nf">griesie_xarray_to_timeseries</span><span class="p">(</span><span class="n">xarray_obj</span><span class="p">,</span> <span class="n">obs_lats</span><span class="p">,</span> <span class="n">obs_lons</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550_aer&#39;</span><span class="p">],</span> <span class="n">debug_mode</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;test routine to colocate xarray object&quot;&quot;&quot;</span>
 
     <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -605,7 +609,7 @@
         <span class="n">_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">xarray_col</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
 
         <span class="c1">#data_frame = xarray_col.to_dataframe()</span>
-        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
             <span class="c1"># _dict[var] = pd.Series(data_frame[var])</span>
             <span class="c1"># _dict[var] = xarray_col[var].to_series()</span>
             <span class="n">_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">xarray_col</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">xarray_col</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">)</span>

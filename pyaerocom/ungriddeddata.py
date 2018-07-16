@@ -229,3 +229,4 @@ class UngriddedData(object):
     def time(self, value):
         raise AttributeError("Time array cannot be changed, please check "
                              "underlying data type stored in attribute grid")
+    

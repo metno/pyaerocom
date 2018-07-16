@@ -670,7 +670,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fd7362fb240>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f189525b8d0>
 
 
 
