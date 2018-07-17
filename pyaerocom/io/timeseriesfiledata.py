@@ -159,7 +159,7 @@ class TimeSeriesFileData(BrowseDict):
             elif isinstance(v, list):
                 s += "\n{} (list, {} items)".format(k, len(v))
                 s += list_to_shortstr(v)
-            elif isinstance(v, np.ndarray):
+            elif isinstance(v, np.ndarray) and v.ndim==1:
                 arrays += "\n{} (array, {} items)".format(k, len(v))
                 arrays += list_to_shortstr(v)
             else:

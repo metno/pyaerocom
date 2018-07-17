@@ -6,8 +6,8 @@ This module contains functionality related to regions in pyaerocom
 from os.path import join, exists
 from ast import literal_eval
 from configparser import ConfigParser
-from pyaerocom import __dir__
-from pyaerocom.utils import BrowseDict
+from pyaerocom import __dir__, logger
+from pyaerocom.utils import BrowseDict, list_to_shortstr, dict_to_str
 
 class Variable(BrowseDict):
     """Interface that specifies default settings for a variable
@@ -29,7 +29,7 @@ class Variable(BrowseDict):
         AEROCOM variable name (see e.g. `AEROCOM protocol 
         <http://aerocom.met.no/protocol_table.html>`__ for a list of current
         variables)
-    map_vmin
+    
     
     
         
@@ -57,8 +57,16 @@ class Variable(BrowseDict):
     def __init__(self, var_name="od550aer", **kwargs):
         self.var_name = var_name
         
-        self.aliases = []
         self.unit = None
+        self.aliases = []
+        
+        # settings for scatter plots
+        self.scat_xlim = None
+        self.scat_ylim = None
+        self.scat_loglog = None
+        self.scat_scale_factor = 1.0
+        
+        # settings for map plotting
         self.map_vmin = None
         self.map_vmax = None
         self.map_c_over = None 
@@ -66,15 +74,13 @@ class Variable(BrowseDict):
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
         
-        if isinstance(var_name, str):
-           self.import_default(self.var_name) 
+        # imports default information and, on top, variable information (if 
+        # applicable)
+        self.parse_from_ini(var_name) 
         
-        for k, v in kwargs.items():
-            if k in self.__dict__:
-                self.__dict__[k] = v
-        
-    
-    def import_default(self, var_name):
+        self.update(**kwargs)
+            
+    def parse_from_ini(self, var_name=None):
         """Import information about default region
         
         Parameters
@@ -102,11 +108,29 @@ class Variable(BrowseDict):
                           %fpath)
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
-        if not var_name in conf_reader:
-            return False
-        self.var_name = var_name
-        for key, val in conf_reader[var_name].items():
-            if key in self.__dict__:
+        
+        var_info = {}
+        if var_name is not None and var_name != 'DEFAULT':
+            if var_name in conf_reader:
+                logger.info("Found default configuration for variable "
+                            "{}".format(var_name))
+                var_info = conf_reader[var_name]
+                self.var_name = var_name
+            else:
+                logger.warning("No default configuration available for "
+                               "variable {}. Using DEFAULT settings".format(var_name))
+            
+        default = conf_reader['DEFAULT']
+        
+        for key in self.keys():
+            ok = True
+            if key in var_info:
+                val = var_info[key]
+            elif key in default:
+                val = default[key]
+            else:
+                ok = False
+            if ok:
                 if "," in val:
                     val = list(literal_eval(val))# [float(x) for x in val.split(",")]
                 else:
@@ -117,33 +141,36 @@ class Variable(BrowseDict):
                             val = float(val)
                         except:
                             pass
-                self.__dict__[key] = val
-        return True
+                self[key] = val
     
+    def unit_str(self):
+        if self.unit is None:
+            return ''
+        else:
+            return '[{}]'.format(self.unit)
+        
     def __repr__(self):
        return ("Variable %s %s" %(self.var_name, super(Variable, self).__repr__()))
    
     def __str__(self):
-        cbl_str, tick_str = "None", "None"
-        l = self.map_cbar_levels
-        t = self.map_cbar_ticks
-        if l and len(l) > 4:
-            cbl_str = "[%s, %s, ..., %s, %s]" %(l[0], l[1], l[-2], l[-1])
-        if t and len(t) > 4:
-            tick_str = "[%s, %s, ..., %s, %s]" %(t[0], t[1], t[-2], t[-1])
-        
-        s = ("pyaeorocom Variable\nName: %s\n"
-             "Unit: %s\n"
-             "Value range: %s - %s\n"
-             "Levels colorbar: %s\n"
-             "Colorbar ticks: %s"
-             %(self.var_name, self.unit, self.map_vmin, self.map_vmax,
-               cbl_str, tick_str))
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}".format(head, len(head)*"-")
+        arrays = ''
+        for k, v in self.items():
+            if isinstance(v, dict):
+                s += "\n{} (dict)".format(k)
+                s = dict_to_str(v, s)
+            elif isinstance(v, list):
+                s += "\n{} (list, {} items)".format(k, len(v))
+                s += list_to_shortstr(v)
+            else:
+                s += "\n%s: %s" %(k,v)
+        s += arrays
         return s
-   
+    
 if __name__=="__main__":
 
-    v = Variable("od550aer")
+    v = Variable("od550aer", the_answer=42)
     print(v)
-    import doctest
-    doctest.testmod()
+    #import doctest
+    #doctest.testmod()
