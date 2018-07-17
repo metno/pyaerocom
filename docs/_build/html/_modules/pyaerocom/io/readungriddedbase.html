@@ -164,10 +164,10 @@
 <span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">get_obsnetwork_dir</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">LOGLEVELS</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ReadUngriddedBase"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase">[docs]</a><span class="k">class</span> <span class="nc">ReadUngriddedBase</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class template for reading of ungridded data&quot;&quot;&quot;</span>
@@ -190,7 +190,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">read_failed</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_aux_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_aux_variables</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Dataset </span><span class="si">{}</span><span class="s2"> not supported by this &quot;</span>
+                                     <span class="s2">&quot;interface&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
+            
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">SUPPORTED_DATASETS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of strings specifying datasets supported by this interface</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        </span>
+<span class="sd">        - best practice to specify in header of class definition</span>
+<span class="sd">        &quot;&quot;&quot;</span>
                 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
     <span class="k">def</span> <span class="nf">REVISION_FILE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -349,7 +365,7 @@
             <span class="n">val</span> <span class="o">=</span> <span class="n">LOGLEVELS</span><span class="p">[</span><span class="n">val</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         
-    <span class="k">def</span> <span class="nf">_check_aux_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_add_aux_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Helper that makes sure all auxiliary variables can be computed&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_FUNS</span><span class="p">:</span>
@@ -424,6 +440,13 @@
 <span class="sd">            - list: list containing all variables to be read</span>
 <span class="sd">            - list: list containing all variables to be computed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="p">[</span><span class="n">vars_to_retrieve</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">all</span><span class="p">([</span><span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">])):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;One or more of the desired variables is not &quot;</span>
+                                 <span class="s2">&quot;supported by this dataset.&quot;</span><span class="p">)</span>
         <span class="n">repeat</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">while</span> <span class="n">repeat</span><span class="p">:</span>
             <span class="n">repeat</span><span class="p">,</span> <span class="n">add_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_additional_vars</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
@@ -473,12 +496,20 @@
 <span class="sd">            updated data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_compute</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_FUNS</span><span class="p">[</span><span class="n">var</span><span class="p">](</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">req_var</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">for</span> <span class="n">req_var</span> <span class="ow">in</span> <span class="n">required</span><span class="p">]):</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_FUNS</span><span class="p">[</span><span class="n">var</span><span class="p">](</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not compute variable </span><span class="si">{}</span><span class="s2">. One or &quot;</span>
+                                    <span class="s2">&quot;more of the required variables </span><span class="si">{}</span><span class="s2"> is &quot;</span>
+                                    <span class="s2">&quot;missing in data. Filling with NaNs&quot;</span>
+                                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">required</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">data</span></div>
     
 <div class="viewcode-block" id="ReadUngriddedBase.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search all files to be read&quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;searching for data files. This might take a while...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Fetching data files. This might take a while...&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FILEMASK</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span></div>
     
@@ -501,40 +532,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
-     
-<div class="viewcode-block" id="ReadUngriddedBaseMulti"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBaseMulti">[docs]</a><span class="k">class</span> <span class="nc">ReadUngriddedBaseMulti</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class for reading ungridded data with multi-dataset support</span>
-<span class="sd">    </span>
-<span class="sd">    For some datasets, the reading routines are the same and can be implemented</span>
-<span class="sd">    in a single class that is derived from this class. Compared to </span>
-<span class="sd">    :class:`ReadUngriddedBase`, this class contains one further attribute</span>
-<span class="sd">    ``SUPPORTED_DATASETS`` that should be specified in the header of the </span>
-<span class="sd">    derived implementation and that is used on init to check whether the </span>
-<span class="sd">    (optional) input ``dataset_to_read`` is supported by this interface.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    dataset_to_read : str</span>
-<span class="sd">        string</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ReadUngriddedBaseMulti</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Dataset </span><span class="si">{}</span><span class="s2"> not supported by this &quot;</span>
-                                     <span class="s2">&quot;interface&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
-            
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">SUPPORTED_DATASETS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;List of strings specifying datasets supported by this interface</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        </span>
-<span class="sd">        - best practice to specify in header of class definition</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        
+
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     
     <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>

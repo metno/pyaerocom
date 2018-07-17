@@ -237,7 +237,7 @@
         <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">temp_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># do not return anything for stations without data</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span>
+        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
         <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
@@ -271,7 +271,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        station_names : :obj:`tuple` or :obj:`str:`, optional</span>
-<span class="sd">            station name or list of station names to return</span>
+<span class="sd">            station_name or list of station_names to return</span>
 <span class="sd">        start_date, end_date : :obj:`str:`, optional</span>
 <span class="sd">            date strings with start and end date to return</span>
 <span class="sd">        freq : obj:`str:`, optional</span>
@@ -303,19 +303,19 @@
                 <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="c1"># user asked for a single station name</span>
+            <span class="c1"># user asked for a single station_name</span>
             <span class="c1"># return a single dictionary in this case</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">station_name</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">station_name</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]:</span>
                     <span class="c1"># we might change this to return a list at some point</span>
                     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> 
                                                       <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="c1"># user asked for a list of station names</span>
-            <span class="c1"># return list with matching station names</span>
+            <span class="c1"># user asked for a list of station_names</span>
+            <span class="c1"># return list with matching station_names</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="c1"># print(val[&#39;station name&#39;])</span>
-                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_name</span><span class="p">:</span>
+                <span class="c1"># print(val[&#39;station_name&#39;])</span>
+                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_name</span><span class="p">:</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> 
@@ -373,7 +373,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
-        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;station name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
+        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
         <span class="k">return</span> <span class="n">stat_names</span>
 
     <span class="nd">@station_name</span><span class="o">.</span><span class="n">setter</span>

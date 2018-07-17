@@ -49,6 +49,10 @@ Individual Obsnetworks
    :members:
    :undoc-members:
 
+.. automodule:: pyaerocom.io.read_aeronet_sdav3
+   :members:
+   :undoc-members:
+   
 .. _ungriddedbase:
 
 Low level

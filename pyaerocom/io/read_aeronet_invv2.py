@@ -46,17 +46,11 @@ from pyaerocom import UngriddedData
 class ReadAeronetInvV2(ReadUngriddedBase):
     """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
 
-    Attributes
-    ----------
-    data : numpy array of dtype np.float64 initially of shape (10000,8)
-        data point array
-    metadata : dict
-        meta data dictionary
-
     Parameters
     ----------
-    verbose : Bool
-        if True some running information is printed
+    dataset_to_read
+        string specifying either of the supported datasets that are defined 
+        in ``SUPPORTED_DATASETS``.
 
     """
     _FILEMASK = '*.dubovikday'

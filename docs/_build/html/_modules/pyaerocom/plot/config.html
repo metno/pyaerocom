@@ -166,6 +166,7 @@
 <span class="sd">Global configurations for plotting </span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="k">import</span> <span class="n">get_cmap</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.utils</span> <span class="k">import</span> <span class="n">BrowseDict</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
 <span class="c1"># =============================================================================</span>
 <span class="c1"># try:</span>
@@ -186,7 +187,7 @@
 
 <span class="n">MAP_AXES_ASPECT</span> <span class="o">=</span> <span class="mf">1.5</span>
 
-<div class="viewcode-block" id="MapPlotSettings"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.MapPlotSettings">[docs]</a><span class="k">class</span> <span class="nc">MapPlotSettings</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="MapPlotSettings"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.config.MapPlotSettings">[docs]</a><span class="k">class</span> <span class="nc">MapPlotSettings</span><span class="p">(</span><span class="n">BrowseDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class specifying predefined plot settings for a species and region</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>

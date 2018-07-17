@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pyaerocom.io.read_aeronet_invv2 &mdash; pyaerocom  documentation</title>
+  <title>pyaerocom.io.read_aeronet_sdav3 &mdash; pyaerocom  documentation</title>
   
 
   
@@ -141,7 +141,7 @@
         
           <li><a href="../../index.html">Module code</a> &raquo;</li>
         
-      <li>pyaerocom.io.read_aeronet_invv2</li>
+      <li>pyaerocom.io.read_aeronet_sdav3</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -158,11 +158,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for pyaerocom.io.read_aeronet_invv2</h1><div class="highlight"><pre>
+  <h1>Source code for pyaerocom.io.read_aeronet_sdav3</h1><div class="highlight"><pre>
 <span></span><span class="c1">################################################################</span>
-<span class="c1"># read_aeronet_invv2.py</span>
+<span class="c1"># read_aeronet_sdav3.py</span>
 <span class="c1">#</span>
-<span class="c1"># read Aeronet inversion V2 data</span>
+<span class="c1"># read Aeronet SDA V3 data</span>
 <span class="c1">#</span>
 <span class="c1"># this file is part of the pyaerocom package</span>
 <span class="c1">#</span>
@@ -192,62 +192,91 @@
 <span class="c1"># Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1"># MA 02110-1301, USA</span>
 
-<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Read Aeronet SDA V3 data</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="p">(</span><span class="n">calc_od550aer</span><span class="p">,</span>
+                                 <span class="n">calc_od550gt1aer</span><span class="p">,</span>
+                                 <span class="n">calc_od550lt1aer</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.readungriddedbase</span> <span class="k">import</span> <span class="n">ReadUngriddedBase</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.timeseriesfiledata</span> <span class="k">import</span> <span class="n">TimeSeriesFileData</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">UngriddedData</span>
 
-<div class="viewcode-block" id="ReadAeronetInvV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetInvV2</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data</span>
+<div class="viewcode-block" id="ReadAeronetSdaV3"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetSdaV3</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : numpy array of dtype np.float64 initially of shape (10000,8)</span>
+<span class="sd">        data point array</span>
+<span class="sd">    metadata : dict</span>
+<span class="sd">        meta data dictionary</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    dataset_to_read</span>
-<span class="sd">        string specifying either of the supported datasets that are defined </span>
-<span class="sd">        in ``SUPPORTED_DATASETS``.</span>
+<span class="sd">    verbose : Bool</span>
+<span class="sd">        if True some running information is printed</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.dubovikday&#39;</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.03&quot;</span>
-    <span class="c1">#</span>
-    <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span>
+    <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.lev30&#39;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.04&quot;</span>
     
-    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">]</span>
+    <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_SDA_DAILY_NAME</span>
+    
+    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_SDA_DAILY_NAME</span><span class="p">,</span>
+                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L2_SDA_DAILY_NAME</span><span class="p">]</span>
     
     <span class="n">NAN_VAL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="o">-</span><span class="mf">9999.</span><span class="p">)</span>
     
     <span class="n">REVISION_FILE</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span>
-    
     <span class="c1"># data vars</span>
     <span class="c1"># will be stored as pandas time series</span>
     <span class="n">DATA_COLNAMES</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa439aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA439-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA440-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA675-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa870aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA870-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa1018aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA1018-T&#39;</span>
+    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Coarse_Mode_AOD_500nm[tau_c]&#39;</span>
+    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Fine_Mode_AOD_500nm[tau_f]&#39;</span>
+    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Total_AOD_500nm[tau_a]&#39;</span>
+    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Angstrom_Exponent(AE)-Total_500nm[alpha]&#39;</span>
 
     <span class="c1"># meta data vars</span>
     <span class="c1"># will be stored as array of strings</span>
     <span class="n">METADATA_COLNAMES</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;data_quality_level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DATA_TYPE&#39;</span>
-    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Date(dd-mm-yyyy)&#39;</span>
-    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Time(hh:mm:ss)&#39;</span>
-    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;day_of_year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Julian_Day&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;data_quality_level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Data_Quality_Level&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;instrument_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AERONET_Instrument_Number&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AERONET_Site&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Site_Latitude(Degrees)&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Site_Longitude(Degrees)&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Site_Elevation(m)&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Date_(dd:mm:yyyy)&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Time_(hh:mm:ss)&#39;</span>
+    <span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;day_of_year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Day_of_Year&#39;</span>
     
+    <span class="c1"># specify required dependencies for auxiliary variables, i.e. variables </span>
+    <span class="c1"># that are NOT in Aeronet files but are computed within this class. </span>
+    <span class="c1"># For instance, the computation of the AOD at 550nm requires import of</span>
+    <span class="c1"># the AODs at 440, 500 and 870 nm. </span>
+    <span class="n">AUX_REQUIRES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;od550aer&#39;</span>      <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;od550gt1aer&#39;</span>   <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;od550lt1aer&#39;</span>   <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">]}</span>
+                    
+    <span class="c1"># Functions that are used to compute additional variables (i.e. one </span>
+    <span class="c1"># for each variable defined in AUX_REQUIRES)</span>
+    <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;od550aer&#39;</span>      <span class="p">:</span>   <span class="n">calc_od550aer</span><span class="p">,</span>
+                <span class="s1">&#39;od550gt1aer&#39;</span>   <span class="p">:</span>   <span class="n">calc_od550gt1aer</span><span class="p">,</span>
+                <span class="s1">&#39;od550lt1aer&#39;</span>   <span class="p">:</span>   <span class="n">calc_od550lt1aer</span><span class="p">}</span>
+    
+    <span class="c1"># will be extended by auxiliary variables on class init, for details see</span>
+    <span class="c1"># base class ReadUngriddedBase</span>
     <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">DATA_COLNAMES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="c1">#init base class</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetInvV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetSdaV3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
         
         <span class="c1"># dictionary that contains information about the file columns</span>
         <span class="c1"># is written in method _update_col_index</span>
@@ -260,7 +289,7 @@
         <span class="c1"># col_index is only recomputed when the file structure changes </span>
         <span class="c1"># and not for each file individually</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span> <span class="o">=</span> <span class="kc">None</span>
-        
+    
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Current column index dictionary&quot;&quot;&quot;</span>
@@ -276,13 +305,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span> <span class="o">=</span> <span class="n">col_index_str</span>
         <span class="k">return</span> <span class="n">col_index</span>
     
-    <span class="c1"># TODO: currently every file is read, regardless of whether it actually</span>
-    <span class="c1"># contains the desired variables or not. Do we need that? Slows stuff down..</span>
-    <span class="c1"># Also: Quick check reading all files in the database showed that only </span>
-    <span class="c1"># about 20% of the files contain the default variables..</span>
-<div class="viewcode-block" id="ReadAeronetInvV2.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">,</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">],</span>
+<div class="viewcode-block" id="ReadAeronetSdaV3.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> 
+                  <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">],</span>
                   <span class="n">vars_as_series</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read Aeronet file containing results from v2 inversion algorithm</span>
+        <span class="sd">&quot;&quot;&quot;Read Aeronet SDA V3 file and return it in a dictionary</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -298,14 +324,6 @@
 <span class="sd">        -------</span>
 <span class="sd">        TimeSeriesFileData </span>
 <span class="sd">            dict-like object containing results</span>
-<span class="sd">        </span>
-
-<span class="sd">        Example</span>
-<span class="sd">        -------</span>
-<span class="sd">        &gt;&gt;&gt; import pyaerocom.io as pio</span>
-<span class="sd">        &gt;&gt;&gt; obj = pio.read_aeronet_invv2.ReadAeronetInvV2()</span>
-<span class="sd">        &gt;&gt;&gt; files = obj.get_file_list()</span>
-<span class="sd">        &gt;&gt;&gt; filedata = obj.read_file(files[0])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># implemented in base class</span>
         <span class="n">vars_to_read</span><span class="p">,</span> <span class="n">vars_to_compute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_vars_to_retrieve</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
@@ -324,25 +342,24 @@
         
         <span class="c1"># Iterate over the lines of the file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
-    
+        
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
-            <span class="c1">#get rid of the first com,a seperated string element...</span>
-            <span class="n">c_dummy</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
-            <span class="c1"># re.split(r&#39;=|\,&#39;,c_dummy)</span>
-            <span class="n">i_dummy</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=|\,&#39;</span><span class="p">,</span> <span class="n">c_dummy</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span>
-            <span class="n">dict_loc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">i_dummy</span><span class="p">,</span> <span class="n">i_dummy</span><span class="p">))</span>
-
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;long&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;elev&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Locations&#39;</span><span class="p">]</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI_email&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Email&#39;</span><span class="p">]</span>
-
-            <span class="c1">#skip next two lines</span>
+            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             
+            <span class="c1"># PI line</span>
+            <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI_email&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">data_type_comment</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="c1"># TODO: delete later</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data type comment: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_type_comment</span><span class="p">))</span>
+            <span class="c1"># line_7 = in_file.readline()</span>
+            <span class="c1"># put together a dict with the header string as key and the index number as value so that we can access</span>
+            <span class="c1"># the index number via the header string</span>
             <span class="n">col_index_str</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">col_index_str</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Header has changed, reloading col_index map&quot;</span><span class="p">)</span>
@@ -362,10 +379,10 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">{}</span><span class="s2"> not available in file </span><span class="si">{}</span><span class="s2">&quot;</span>
                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)))</span>
-                
+
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">in_file</span><span class="p">:</span>
                 <span class="c1"># process line</span>
-                <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
                 <span class="c1"># the following uses the standard python datetime functions</span>
                 <span class="c1"># date_index = col_index[COLNAMES[&#39;date&#39;]]</span>
                 <span class="c1"># hour, minute, second = dummy_arr[col_index[COLNAMES[&#39;time&#39;]].split(&#39;:&#39;)</span>
@@ -374,25 +391,31 @@
                 <span class="c1"># Build a proper ISO 8601 UTC date string</span>
                 <span class="n">date</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]]</span>
                 <span class="n">time</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]]</span>
+                
                 <span class="n">day</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">year</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">date</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
                 <span class="n">datestring</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">])</span>
                 <span class="n">datestring</span> <span class="o">=</span> <span class="s1">&#39;T&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">datestring</span><span class="p">,</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">time</span><span class="p">]])</span>
                 <span class="n">datestring</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">datestring</span><span class="p">,</span> <span class="s1">&#39;00:00&#39;</span><span class="p">])</span>
+                
                 <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datestring</span><span class="p">))</span>
 
                 <span class="c1"># copy the meta data (array of type string)</span>
-                <span class="k">for</span> <span class="n">meta_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">:</span>
-                    <span class="n">meta_val</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="n">meta_var</span><span class="p">]]]</span>
-                    <span class="n">data_out</span><span class="p">[</span><span class="n">meta_var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_val</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">col_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">METADATA_COLNAMES</span><span class="p">[</span><span class="n">var</span><span class="p">]]]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># e.g. lon, lat, altitude</span>
+                        <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
-                <span class="c1"># copy the data fields that are available (rest will be filled</span>
-                <span class="c1"># below)</span>
+                <span class="c1"># copy the data fields </span>
                 <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">vars_available</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="n">dummy_arr</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
                     <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NAN_VAL</span><span class="p">:</span> 
                         <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
                     <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-        
+
         <span class="c1"># convert all lists to numpy arrays</span>
         <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
         
@@ -422,8 +445,10 @@
 
         <span class="k">return</span> <span class="n">data_out</span></div>
 
-<div class="viewcode-block" id="ReadAeronetInvV2.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">,</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">],</span> <span class="n">first_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-             <span class="n">last_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1">###################################################################################</span>
+
+<div class="viewcode-block" id="ReadAeronetSdaV3.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">],</span> 
+             <span class="n">first_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">last_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read all data files into instance of :class:`UngriddedData` object</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -439,8 +464,8 @@
 <span class="sd">            </span>
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
-<span class="sd">        &gt;&gt;&gt; from pyaerocom.io import ReadAeronetInvV2</span>
-<span class="sd">        &gt;&gt;&gt; obj = ReadAeronetSunV2()</span>
+<span class="sd">        &gt;&gt;&gt; from pyaerocom.io import ReadAeronetSdaV3</span>
+<span class="sd">        &gt;&gt;&gt; obj = ReadAeronetSdaV3()</span>
 <span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -466,70 +491,67 @@
         <span class="n">num_vars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">station_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="p">)</span>
-                <span class="c1"># Fill the metatdata dict</span>
-                <span class="c1"># the location in the data set is time step dependant!</span>
-                <span class="c1"># use the lat location here since we have to choose one location</span>
-                <span class="c1"># in the time series plot</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
-    
-                <span class="c1"># this is a list with indexes of this station for each variable</span>
-                <span class="c1"># not sure yet, if we really need that or if it speeds up things</span>
-                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;indexes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">station_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
+            <span class="c1"># Fill the metatdata dict</span>
+            <span class="c1"># the location in the data set is time step dependant!</span>
+            <span class="c1"># use the lat location here since we have to choose one location</span>
+            <span class="c1"># in the time series plot</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
+
+            <span class="c1"># this is a list with indexes of this station for each variable</span>
+            <span class="c1"># not sure yet, if we really need that or if it speeds up things</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;indexes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="n">num_times</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">num_timestamps</span>
+            <span class="n">totnum</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">len_flat</span><span class="p">(</span><span class="n">num_vars</span><span class="p">)</span>
+            
+            <span class="c1">#check if size of data object needs to be extended</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="n">totnum</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">:</span>
+                <span class="c1">#if totnum &lt; data_obj._CHUNKSIZE, then the latter is used</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">add_chunk</span><span class="p">(</span><span class="n">totnum</span><span class="p">)</span>
+            
+            <span class="c1">#access array containing time stamps</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
+            
+            <span class="k">for</span> <span class="n">var_idx</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">):</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">var_idx</span> <span class="o">*</span> <span class="n">num_times</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">num_times</span>
                 
-                <span class="n">num_times</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">num_timestamps</span>
-                <span class="n">totnum</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">len_flat</span><span class="p">(</span><span class="n">num_vars</span><span class="p">)</span>
-                
-                <span class="c1">#check if size of data object needs to be extended</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="n">totnum</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">:</span>
-                    <span class="c1">#if totnum &lt; data_obj._CHUNKSIZE, then the latter is used</span>
-                    <span class="n">data_obj</span><span class="o">.</span><span class="n">add_chunk</span><span class="p">(</span><span class="n">totnum</span><span class="p">)</span>
                 
                 <span class="c1">#write common meta info for this station</span>
-                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:(</span><span class="n">idx</span><span class="o">+</span><span class="n">totnum</span><span class="p">),</span> 
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
                                <span class="n">data_obj</span><span class="o">.</span><span class="n">_LATINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
-                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:(</span><span class="n">idx</span><span class="o">+</span><span class="n">totnum</span><span class="p">),</span> 
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
                                <span class="n">data_obj</span><span class="o">.</span><span class="n">_LONINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
-                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:(</span><span class="n">idx</span><span class="o">+</span><span class="n">totnum</span><span class="p">),</span> 
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
                                <span class="n">data_obj</span><span class="o">.</span><span class="n">_ALTITUDEINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
-                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:(</span><span class="n">idx</span><span class="o">+</span><span class="n">totnum</span><span class="p">),</span> 
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
                                <span class="n">data_obj</span><span class="o">.</span><span class="n">_METADATAKEYINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta_key</span>
+                               
+                <span class="c1"># write data to data object</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">times</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_VARINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
                 
-                <span class="c1">#access array containing time stamps</span>
-                <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
-                
-                <span class="k">for</span> <span class="n">var_idx</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">):</span>
-                    <span class="n">values</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-                    <span class="n">start</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">var_idx</span> <span class="o">*</span> <span class="n">num_times</span>
-                    <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">num_times</span>
-                    
-                    <span class="c1"># write to data object</span>
-                    <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">times</span>
-                    <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
-                    <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_VARINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-                    
-                    <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
-                
-                <span class="n">idx</span> <span class="o">+=</span> <span class="n">totnum</span>  
-                <span class="n">meta_key</span> <span class="o">=</span> <span class="n">meta_key</span> <span class="o">+</span> <span class="mf">1.</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">read_failed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Failed to read file </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
-
+                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+            
+            <span class="n">idx</span> <span class="o">+=</span> <span class="n">totnum</span>  
+            <span class="n">meta_key</span> <span class="o">=</span> <span class="n">meta_key</span> <span class="o">+</span> <span class="mf">1.</span>
+        
         <span class="c1"># shorten data_obj._data to the right number of points</span>
         <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data_obj</span>
         <span class="k">return</span> <span class="n">data_obj</span></div></div>
-
+    
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetInvV2</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">)</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSdaV3</span><span class="p">()</span>
     <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
     
     <span class="n">first_ten</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">last_file</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>

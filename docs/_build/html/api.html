@@ -738,7 +738,7 @@ determine single locations</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station name or list of station names to return</li>
+<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station_name or list of station_names to return</li>
 <li><strong>end_date</strong> (<em>start_date</em><em>,</em>) – date strings with start and end date to return</li>
 <li><strong>freq</strong> (obj:<cite>str:</cite>, optional) – frequency to resample to using the pandas resample method
 us the offset aliases as noted in
@@ -796,23 +796,12 @@ station_names is list or None: list of dictionaries with station data</p>
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2">
 <em class="property">class </em><code class="descclassname">pyaerocom.io.read_aeronet_invv2.</code><code class="descname">ReadAeronetInvV2</code><span class="sig-paren">(</span><em>dataset_to_read=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_invv2.html#ReadAeronetInvV2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data</p>
-<dl class="attribute">
-<dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.data">
-<code class="descname">data</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.data" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>numpy array of dtype np.float64 initially of shape (10000,8)</em> – data point array</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.metadata">
-<code class="descname">metadata</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.metadata" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> – meta data dictionary</p>
-</dd></dl>
-
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbose</strong> (<em>Bool</em>) – if True some running information is printed</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataset_to_read</strong> – string specifying either of the supported datasets that are defined
+in <code class="docutils literal notranslate"><span class="pre">SUPPORTED_DATASETS</span></code>.</td>
 </tr>
 </tbody>
 </table>
@@ -865,12 +854,18 @@ station_names is list or None: list of dictionaries with station data</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – absolute path to filename to read</li>
 <li><strong>vars_to_retrieve</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list of str with variable names to read</li>
 <li><strong>vars_as_series</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the data columns of all variables in the result dictionary
 are converted into pandas Series objects</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dict-like object containing results</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">TimeSeriesFileData</p>
 </td>
 </tr>
 </tbody>
@@ -940,6 +935,11 @@ variables are required to perform the computation) and
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.SUPPORTED_DATASETS">
+<code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSunV2Lev2.daily']</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.NAN_VAL">
 <code class="descname">NAN_VAL</code><em class="property"> = -9999.0</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.NAN_VAL" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -966,7 +966,7 @@ variables are required to perform the computation) and
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f44f0b51510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f44f0b51598&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7fea2c366b70&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fea2c366bf8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1047,6 +1047,137 @@ in the list is used</li>
 
 </dd></dl>
 
+<span class="target" id="module-pyaerocom.io.read_aeronet_sdav3"></span><p>Read Aeronet SDA V3 data</p>
+<dl class="class">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3">
+<em class="property">class </em><code class="descclassname">pyaerocom.io.read_aeronet_sdav3.</code><code class="descname">ReadAeronetSdaV3</code><span class="sig-paren">(</span><em>dataset_to_read=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav3.html#ReadAeronetSdaV3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data</p>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.data">
+<code class="descname">data</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>numpy array of dtype np.float64 initially of shape (10000,8)</em> – data point array</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> – meta data dictionary</p>
+</dd></dl>
+
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verbose</strong> (<em>Bool</em>) – if True some running information is printed</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.DATASET_NAME">
+<code class="descname">DATASET_NAME</code><em class="property"> = 'AeronetSDAV3Lev1.5.daily'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.DATASET_NAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.SUPPORTED_DATASETS">
+<code class="descname">SUPPORTED_DATASETS</code><em class="property"> = ['AeronetSDAV3Lev1.5.daily', 'AeronetSDAV3Lev2.daily']</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.NAN_VAL">
+<code class="descname">NAN_VAL</code><em class="property"> = -9999.0</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.NAN_VAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.REVISION_FILE">
+<code class="descname">REVISION_FILE</code><em class="property"> = 'Revision.txt'</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.REVISION_FILE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.DATA_COLNAMES">
+<code class="descname">DATA_COLNAMES</code><em class="property"> = {'ang4487aer': 'Angstrom_Exponent(AE)-Total_500nm[alpha]', 'od500aer': 'Total_AOD_500nm[tau_a]', 'od500gt1aer': 'Coarse_Mode_AOD_500nm[tau_c]', 'od500lt1aer': 'Fine_Mode_AOD_500nm[tau_f]'}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.DATA_COLNAMES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.METADATA_COLNAMES">
+<code class="descname">METADATA_COLNAMES</code><em class="property"> = {'altitude': 'Site_Elevation(m)', 'data_quality_level': 'Data_Quality_Level', 'date': 'Date_(dd:mm:yyyy)', 'day_of_year': 'Day_of_Year', 'instrument_number': 'AERONET_Instrument_Number', 'latitude': 'Site_Latitude(Degrees)', 'longitude': 'Site_Longitude(Degrees)', 'station_name': 'AERONET_Site', 'time': 'Time_(hh:mm:ss)'}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.METADATA_COLNAMES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_REQUIRES">
+<code class="descname">AUX_REQUIRES</code><em class="property"> = {'od550aer': ['od500aer', 'ang4487aer'], 'od550gt1aer': ['od500gt1aer', 'ang4487aer'], 'od550lt1aer': ['od500lt1aer', 'ang4487aer']}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_REQUIRES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7fea2c366bf8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fea2c366c80&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fea2c366d08&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.PROVIDES_VARIABLES">
+<code class="descname">PROVIDES_VARIABLES</code><em class="property"> = ['od500gt1aer', 'od500lt1aer', 'od500aer', 'ang4487aer']</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.PROVIDES_VARIABLES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.col_index">
+<code class="descname">col_index</code><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.col_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current column index dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read_file">
+<code class="descname">read_file</code><span class="sig-paren">(</span><em>filename, vars_to_retrieve=['od550aer', 'od550gt1aer', 'od550lt1aer'], vars_as_series=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav3.html#ReadAeronetSdaV3.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read Aeronet SDA V3 file and return it in a dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – absolute path to filename to read</li>
+<li><strong>vars_to_retrieve</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list of str with variable names to read</li>
+<li><strong>vars_as_series</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the data columns of all variables in the result dictionary
+are converted into pandas Series objects</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dict-like object containing results</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">TimeSeriesFileData</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>vars_to_retrieve=['od550aer', 'od550gt1aer', 'od550lt1aer'], first_file=None, last_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav3.html#ReadAeronetSdaV3.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read all data files into instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code> object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vars_to_retrieve</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list of variables that are supposed to be imported</li>
+<li><strong>first_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – index of first file in file list to read. If None, the very first
+file in the list is used</li>
+<li><strong>last_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – index of last file in list to read. If None, the very last file
+in the list is used</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">ReadAeronetSdaV3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">ReadAeronetSdaV3</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-pyaerocom.io.readungriddedbase">
 <span id="low-level"></span><span id="ungriddedbase"></span><h4>Low level<a class="headerlink" href="#module-pyaerocom.io.readungriddedbase" title="Permalink to this headline">¶</a></h4>
@@ -1063,6 +1194,18 @@ in the list is used</li>
 <dt id="pyaerocom.io.readungriddedbase.ReadUngriddedBase.AUX_FUNS">
 <code class="descname">AUX_FUNS</code><em class="property"> = {}</em><a class="headerlink" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBase.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.readungriddedbase.ReadUngriddedBase.SUPPORTED_DATASETS">
+<code class="descname">SUPPORTED_DATASETS</code><a class="headerlink" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBase.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of strings specifying datasets supported by this interface</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>best practice to specify in header of class definition</li>
+</ul>
+</div>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readungriddedbase.ReadUngriddedBase.REVISION_FILE">
@@ -1262,38 +1405,6 @@ specified methods in <code class="docutils literal notranslate"><span class="pre
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyaerocom.io.readungriddedbase.ReadUngriddedBaseMulti">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readungriddedbase.</code><code class="descname">ReadUngriddedBaseMulti</code><span class="sig-paren">(</span><em>dataset_to_read=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungriddedbase.html#ReadUngriddedBaseMulti"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBaseMulti" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for reading ungridded data with multi-dataset support</p>
-<p>For some datasets, the reading routines are the same and can be implemented
-in a single class that is derived from this class. Compared to
-<a class="reference internal" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBase" title="pyaerocom.io.readungriddedbase.ReadUngriddedBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReadUngriddedBase</span></code></a>, this class contains one further attribute
-<code class="docutils literal notranslate"><span class="pre">SUPPORTED_DATASETS</span></code> that should be specified in the header of the
-derived implementation and that is used on init to check whether the
-(optional) input <code class="docutils literal notranslate"><span class="pre">dataset_to_read</span></code> is supported by this interface.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataset_to_read</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string</td>
-</tr>
-</tbody>
-</table>
-<dl class="attribute">
-<dt id="pyaerocom.io.readungriddedbase.ReadUngriddedBaseMulti.SUPPORTED_DATASETS">
-<code class="descname">SUPPORTED_DATASETS</code><a class="headerlink" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBaseMulti.SUPPORTED_DATASETS" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of strings specifying datasets supported by this interface</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<ul class="last simple">
-<li>best practice to specify in header of class definition</li>
-</ul>
-</div>
 </dd></dl>
 
 </dd></dl>
@@ -1645,14 +1756,14 @@ is used</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_file_index.EbasSQLRequest.station_names">
 <code class="descname">station_names</code><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasSQLRequest.station_names" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional – tuple containing station names of request (e.g.
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional – tuple containing station_names of request (e.g.
 <code class="docutils literal notranslate"><span class="pre">('Birkenes</span> <span class="pre">II',</span> <span class="pre">'Asa')</span></code>).If None, all available is used</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_file_index.EbasSQLRequest.matrices">
 <code class="descname">matrices</code><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasSQLRequest.matrices" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional – tuple containing station names of request (e.g.
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional – tuple containing station_names of request (e.g.
 <code class="docutils literal notranslate"><span class="pre">('pm1',</span> <span class="pre">'pm10',</span> <span class="pre">'pm25',</span> <span class="pre">'aerosol')</span></code>)
 If None, all available is used</p>
 </dd></dl>
@@ -1840,7 +1951,7 @@ table specified.</li>
 <dl class="method">
 <dt id="pyaerocom.io.ebas_file_index.EbasFileIndex.contains_station_names">
 <code class="descname">contains_station_names</code><span class="sig-paren">(</span><em>request</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_file_index.html#EbasFileIndex.contains_station_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_station_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>List all station names that are contained in request</p>
+<dd><p>List all station_names that are contained in request</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2583,7 +2694,7 @@ latter is used.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station name or list of station names to return</li>
+<li><strong>station_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code>, optional) – station_name or list of station_names to return</li>
 <li><strong>end_date</strong> (<em>start_date</em><em>,</em>) – date strings with start and end date to return</li>
 <li><strong>freq</strong> (obj:<cite>str:</cite>, optional) – frequency to resample to using the pandas resample method
 us the offset aliases as noted in
@@ -3272,7 +3383,7 @@ stamp, the first index is used)</li>
 <p>This module contains scatter plot routines for Aerocom data.</p>
 <dl class="function">
 <dt id="pyaerocom.plot.plotscatter.plotscatter">
-<code class="descclassname">pyaerocom.plot.plotscatter.</code><code class="descname">plotscatter</code><span class="sig-paren">(</span><em>model_name</em>, <em>model_data=None</em>, <em>obs_data=None</em>, <em>Options=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/plotscatter.html#plotscatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.plotscatter.plotscatter" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.plot.plotscatter.</code><code class="descname">plotscatter</code><span class="sig-paren">(</span><em>model_name</em>, <em>model_data=None</em>, <em>obs_data=None</em>, <em>opts=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/plotscatter.html#plotscatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.plotscatter.plotscatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot scatterplots</p>
 <div class="admonition-todo admonition" id="index-1">
 <p class="first admonition-title">Todo</p>
@@ -3680,6 +3791,31 @@ containing the pandas timeseries</p>
 <span id="mathematical-helpers"></span><h3>Mathematical helpers<a class="headerlink" href="#module-pyaerocom.mathutils" title="Permalink to this headline">¶</a></h3>
 <p>Mathematical low level utility methods ofcd pyaerocom</p>
 <dl class="function">
+<dt id="pyaerocom.mathutils.od_wavelength_from_varstr">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">od_wavelength_from_varstr</code><span class="sig-paren">(</span><em>var_str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#od_wavelength_from_varstr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.od_wavelength_from_varstr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts AOD wavelength from Aerocom variable name</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>var_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Aerocom variable string (must start with od)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">wavelength in nm</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)">int</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if input string is invalid</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">od_wavelength_from_varstr</span><span class="p">(</span><span class="s1">&#39;od500aer&#39;</span><span class="p">)</span>
+<span class="go">500</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.mathutils.calc_ang4487aer">
 <code class="descclassname">pyaerocom.mathutils.</code><code class="descname">calc_ang4487aer</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#calc_ang4487aer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.calc_ang4487aer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs</p>
@@ -3710,6 +3846,8 @@ object:</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
 </tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AttributError</span></code> – if either ‘od440aer’ or ‘od870aer’ are not available in data object</td>
+</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -3717,16 +3855,52 @@ object:</p>
 <dl class="function">
 <dt id="pyaerocom.mathutils.calc_od550aer">
 <code class="descclassname">pyaerocom.mathutils.</code><code class="descname">calc_od550aer</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#calc_od550aer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.calc_od550aer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute AOD at 550 nm using Angstrom coefficients and</p>
+<dd><p>Compute AOD at 550 nm using Angstrom coefficient and 500 nm AOD</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>dict-like</em>) – data object containing imported results</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">updated data object</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">AOD(s) at shifted wavelength</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.mathutils.calc_od550gt1aer">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">calc_od550gt1aer</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#calc_od550gt1aer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.calc_od550gt1aer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute coarse mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>dict-like</em>) – data object containing imported results</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">AOD(s) at shifted wavelength</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.mathutils.calc_od550lt1aer">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">calc_od550lt1aer</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#calc_od550lt1aer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.calc_od550lt1aer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute fine mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>dict-like</em>) – data object containing imported results</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">AOD(s) at shifted wavelength</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -3734,15 +3908,15 @@ object:</p>
 
 <dl class="function">
 <dt id="pyaerocom.mathutils.compute_angstrom_coeff">
-<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">compute_angstrom_coeff</code><span class="sig-paren">(</span><em>aod1</em>, <em>aod2</em>, <em>lambda1</em>, <em>lambda2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#compute_angstrom_coeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.compute_angstrom_coeff" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">compute_angstrom_coeff</code><span class="sig-paren">(</span><em>od1</em>, <em>od2</em>, <em>lambda1</em>, <em>lambda2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#compute_angstrom_coeff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.compute_angstrom_coeff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute Angstrom coefficient based on 2 optical densities</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>aod1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – AOD at wavelength 1</li>
-<li><strong>aod2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – AOD at wavelength 2</li>
+<li><strong>od1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – AOD at wavelength 1</li>
+<li><strong>od2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – AOD at wavelength 2</li>
 <li><strong>lambda1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – wavelength 1</li>
 <li><strong>2</strong> (<em>lambda</em>) – wavelength 2</li>
 </ul>
@@ -3759,8 +3933,8 @@ object:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyaerocom.mathutils.compute_aod_from_angstromexp">
-<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">compute_aod_from_angstromexp</code><span class="sig-paren">(</span><em>to_lambda</em>, <em>aod_ref</em>, <em>lambda_ref</em>, <em>angstrom_coeff</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#compute_aod_from_angstromexp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.compute_aod_from_angstromexp" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.mathutils.compute_od_from_angstromexp">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">compute_od_from_angstromexp</code><span class="sig-paren">(</span><em>to_lambda</em>, <em>od_ref</em>, <em>lambda_ref</em>, <em>angstrom_coeff</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#compute_od_from_angstromexp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.compute_od_from_angstromexp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute AOD at specified wavelength</p>
 <p>Uses Angstrom coefficient and reference AOD to compute the
 corresponding wavelength shifted AOD</p>
@@ -3770,7 +3944,7 @@ corresponding wavelength shifted AOD</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>to_lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – wavelength for which AOD is calculated</li>
-<li><strong>aod_ref</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – reference AOD</li>
+<li><strong>od_ref</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – reference AOD</li>
 <li><strong>lambda_ref</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – wavelength corresponding to reference AOD</li>
 <li><strong>angstrom_coeff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – Angstrom coefficient</li>
 </ul>
