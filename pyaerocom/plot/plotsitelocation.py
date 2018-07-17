@@ -49,7 +49,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
                 for i in range(len(obs_data_as_series))]
     obs_lons = [obs_data_as_series[i]['longitude'] 
                 for i in range(len(obs_data_as_series))]
-    obs_names = [obs_data_as_series[i]['station name'] 
+    obs_names = [obs_data_as_series[i]['station_name']
                  for i in range(len(obs_data_as_series))]
     # model_station_data = model_data.interpolate([("latitude", obs_lats), ("longitude", obs_lons)])
     # times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
@@ -83,7 +83,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
         df_points = df_points.append(df_time_temp)
         # df_time_temp[model_name] = model_data_as_series[i][var_to_run]*1.E3
         df_time_temp[model_name] = ( model_data_as_series[i][var_to_run] *
-                                const.VAR_PARAM[var_to_run]['scale_factor'])
+                                const.VAR_PARAM[var_to_run]['scat_scale_factor'])
         # df_time has now all time steps where either one of the obs or model data have data
         #
         # df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))

@@ -111,7 +111,7 @@ class ReadAeronetSunV2:
     def __str__(self):
         stat_names = []
         for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
+            stat_names.append(self.metadata[key]['station_name'])
 
         return ','.join(stat_names)
 
@@ -136,7 +136,7 @@ class ReadAeronetSunV2:
         >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
         >>> filedata = obj.read_file('/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/920801_170401_Zambezi.lev20')
         >>> print(filedata)
-{'latitude': -13.533, 'longitude': 23.107, 'altitude': 1040.0, 'station name': 'Zambezi', 'PI': 'Brent Holben', 'od550aer': 1996-08-10    0.801845
+{'latitude': -13.533, 'longitude': 23.107, 'altitude': 1040.0, 'station_name': 'Zambezi', 'PI': 'Brent Holben', 'od550aer': 1996-08-10    0.801845
 1996-08-11    1.062833
 1996-08-12    0.850586
 1996-08-13    0.839460
@@ -190,7 +190,7 @@ Length: 223, dtype: float64}
             data_out['latitude'] = float(dict_loc['lat'])
             data_out['longitude'] = float(dict_loc['long'])
             data_out['altitude'] = float(dict_loc['elev'])
-            data_out['station name'] = dict_loc['Location']
+            data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()
             c_Header = in_file.readline()
@@ -271,7 +271,7 @@ Length: 223, dtype: float64}
             stat_obs_data = self.read_file(_file, vars_to_retrieve = vars_to_retrieve)
             # Fill the metatdata dict
             self.metadata[meta_key] = {}
-            self.metadata[meta_key]['station name'] = stat_obs_data['station name']
+            self.metadata[meta_key]['station_name'] = stat_obs_data['station_name']
             self.metadata[meta_key]['latitude'] = stat_obs_data['latitude']
             self.metadata[meta_key]['longitude'] = stat_obs_data['longitude']
             self.metadata[meta_key]['altitude'] = stat_obs_data['altitude']
@@ -296,7 +296,7 @@ Length: 223, dtype: float64}
                         self._ROWNO += self._CHUNKSIZE
     
                 end_index = self.index_pointer
-                # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
+                # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
                 self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                 self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']

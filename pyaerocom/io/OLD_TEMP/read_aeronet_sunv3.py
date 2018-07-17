@@ -98,7 +98,7 @@ class ReadAeronetSunV3:
     METADATA_COLNAMES = {}
     METADATA_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
     METADATA_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
-    METADATA_COLNAMES['station name'] = 'AERONET_Site'
+    METADATA_COLNAMES['station_name'] = 'AERONET_Site'
     METADATA_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
     METADATA_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
     METADATA_COLNAMES['altitude'] = 'Site_Elevation(m)'
@@ -162,7 +162,7 @@ class ReadAeronetSunV3:
     def __str__(self):
         stat_names = []
         for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
+            stat_names.append(self.metadata[key]['station_name'])
 
         return ','.join(stat_names)
 
@@ -349,7 +349,7 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
             # use the lat location here since we have to choose one location
             # in the time series plot
             self.metadata[meta_key] = {}
-            self.metadata[meta_key]['station name'] = stat_obs_data['station name'][-1]
+            self.metadata[meta_key]['station_name'] = stat_obs_data['station_name'][-1]
             self.metadata[meta_key]['latitude'] = stat_obs_data['latitude'][-1]
             self.metadata[meta_key]['longitude'] = stat_obs_data['longitude'][-1]
             self.metadata[meta_key]['altitude'] = stat_obs_data['altitude'][-1]
@@ -377,7 +377,7 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
                 # end_index = self.index_pointer - 1
                 # This is right because numpy leaves out the lat index number at array ops
                 end_index = self.index_pointer
-                # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
+                # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
                 # NOTE THAT THE LOCATION KEPT THE TIME STEP DEPENDENCY HERE
                 self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index

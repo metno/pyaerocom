@@ -22,10 +22,10 @@ class EbasSQLRequest(dict):
         stop date of data request (format YYYY-MM-DD). If None, all available
         is used
     station_names : :obj:`tuple`, optional
-        tuple containing station names of request (e.g.
+        tuple containing station_names of request (e.g.
         ``('Birkenes II', 'Asa')``).If None, all available is used
     matrices : :obj:`tuple`, optional
-        tuple containing station names of request (e.g.
+        tuple containing station_names of request (e.g.
         ``('pm1', 'pm10', 'pm25', 'aerosol')``)
         If None, all available is used
     altitude_range : :obj:`tuple`, optional
@@ -269,7 +269,7 @@ class EbasFileIndex(object):
         return self.execute_request(request.make_query_str(what="station_altitude"))
     
     def contains_station_names(self, request):
-        """List all station names that are contained in request
+        """List all station_names that are contained in request
         
         Parameters
         ----------

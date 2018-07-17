@@ -176,7 +176,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
             data_out['latitude'] = float(dict_loc['lat'])
             data_out['longitude'] = float(dict_loc['long'])
             data_out['altitude'] = float(dict_loc['elev'])
-            data_out['station name'] = dict_loc['Location']
+            data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()
             #added to output
@@ -270,7 +270,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
                 
                 # Fill the metatdata dict
                 metadata[meta_key] = {}
-                metadata[meta_key]['station name'] = station_data['station name']
+                metadata[meta_key]['station_name'] = station_data['station_name']
                 metadata[meta_key]['latitude'] = station_data['latitude']
                 metadata[meta_key]['longitude'] = station_data['longitude']
                 metadata[meta_key]['altitude'] = station_data['altitude']

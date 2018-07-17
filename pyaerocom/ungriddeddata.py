@@ -76,7 +76,7 @@ class UngriddedData(object):
         data_found_flag = False
         temp_dict = {}
         # do not return anything for stations without data
-        temp_dict['station name'] = val['station name']
+        temp_dict['station_name'] = val['station_name']
         temp_dict['latitude'] = val['latitude']
         temp_dict['longitude'] = val['longitude']
         temp_dict['altitude'] = val['altitude']
@@ -110,7 +110,7 @@ class UngriddedData(object):
         Parameters
         ----------
         station_names : :obj:`tuple` or :obj:`str:`, optional
-            station name or list of station names to return
+            station_name or list of station_names to return
         start_date, end_date : :obj:`str:`, optional
             date strings with start and end date to return
         freq : obj:`str:`, optional
@@ -142,19 +142,19 @@ class UngriddedData(object):
                 if data is not None:
                     out_data.append(data)
         elif isinstance(station_name, str):
-            # user asked for a single station name
+            # user asked for a single station_name
             # return a single dictionary in this case
             for index, val in self.metadata.items():
-                if station_name == val['station name']:
+                if station_name == val['station_name']:
                     # we might change this to return a list at some point
                     return self._to_timeseries_helper(val, start_date, 
                                                       end_date, freq)
         elif isinstance(station_name, list):
-            # user asked for a list of station names
-            # return list with matching station names
+            # user asked for a list of station_names
+            # return list with matching station_names
             for index, val in self.metadata.items():
-                # print(val['station name'])
-                if val['station name'] in station_name:
+                # print(val['station_name'])
+                if val['station_name'] in station_name:
                     data = self._to_timeseries_helper(val)
                     if data is not None:
                         out_data.append(self._to_timeseries_helper(val, 
@@ -212,7 +212,7 @@ class UngriddedData(object):
     @property
     def station_name(self):
         """Latitudes of data"""
-        stat_names = [self.metadata[np.float(x)]['station name'] for x in range(len(self.metadata))]
+        stat_names = [self.metadata[np.float(x)]['station_name'] for x in range(len(self.metadata))]
         return stat_names
 
     @station_name.setter

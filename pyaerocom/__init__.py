@@ -15,9 +15,6 @@ def _init_config(package_dir):
         cfg = join(package_dir, 'data', 'paths.ini')
     return Config(config_file=cfg)
 
-# Imports
-from . import utils
-from .config import Config
 import logging
 
 __version__, __dir__ = _init_supplemental()
@@ -40,13 +37,28 @@ logger.addHandler(console_handler)
 
 logger.setLevel(logging.DEBUG)
 
+
 LOGLEVELS = {'debug': 10,
              'info': 20,
              'warning': 30,
              'error': 40,
              'critical': 50}
 
+def change_verbosity(new_level='debug'):
+    if isinstance(new_level, str):
+        if not new_level in LOGLEVELS:
+            raise ValueError("Invalid input for loglevel, choose "
+                             "from {}".format(LOGLEVELS.keys()))
+        new_level = LOGLEVELS[new_level]
+    logger.setLevel(new_level)
 ###############################################################################
+
+# Imports
+from . import utils
+# custom toplevel classes
+from .variable import Variable
+from .region import Region
+from .config import Config
 
 const = _init_config(__dir__)
 if not const.READY:
@@ -60,10 +72,6 @@ from .ungriddeddata import UngriddedData
 
 from . import io
 from . import plot
-
-# custom toplevel class
-from .variable import Variable
-from .region import Region
 
 #from .ungriddeddata import UngriddedData
 from .io.helpers import search_data_dir_aerocom

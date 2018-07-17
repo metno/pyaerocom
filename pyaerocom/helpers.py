@@ -412,7 +412,7 @@ def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
     obs_lons = obs_data.longitude
     obs_lats=[obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
     obs_lons=[obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
-    obs_names=[obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
+    obs_names=[obs_data_as_series[i]['station_name'] for i in range(len(obs_data_as_series))]
     model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
     times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
     model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)

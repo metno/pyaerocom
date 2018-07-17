@@ -128,7 +128,7 @@ class ReadUngridded:
         raise NotImplementedError("Requires review after API changes")
         stat_names = []
         for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
+            stat_names.append(self.metadata[key]['station_name'])
         return ','.join(stat_names)
 
     def read(self):
@@ -285,7 +285,7 @@ class ReadUngridded:
         if isinstance(self.data, list):
             # this is the 1st data set
             self.data = read_dummy.data
-            # we might want to check for double station names here
+            # we might want to check for double station_names here
             # for the second data set we DO need to update the dict keys of metadata and data!
             # since we do want to keep the point cloud
             # we might want to move the variables to read to a dictionary

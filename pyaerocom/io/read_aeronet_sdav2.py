@@ -173,7 +173,7 @@ class ReadAeronetSDAV2(object):
             d_data_out['latitude'] = float(dict_loc['Latitude'])
             d_data_out['longitude'] = float(dict_loc['Longitude'])
             d_data_out['altitude'] = float(dict_loc['Elevation[m]'])
-            d_data_out['station name'] = dict_loc['Location']
+            d_data_out['station_name'] = dict_loc['Location']
             d_data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()
             c_Header = in_file.readline()
@@ -270,14 +270,14 @@ class ReadAeronetSDAV2(object):
     ###################################################################################
 
     def read_daily(self):
-        """create a dictionary with all the stations using the station name as key"""
+        """create a dictionary with all the stations using the station_name as key"""
 
         for File in self.files:
             if self.verbose:
                 print(File)
 
             TempData = ReadAeronetSDAV2.read_file(File)
-            self.data[TempData['station name']] = TempData
+            self.data[TempData['station_name']] = TempData
 
     ###################################################################################
 

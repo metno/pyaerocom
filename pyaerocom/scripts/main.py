@@ -66,7 +66,7 @@ def cli():
     >>> obs_lons = obs_data.longitude
     >>> obs_lats=[obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
     >>> obs_lons=[obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
-    >>> obs_names=[obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
+    >>> obs_names=[obs_data_as_series[i]['station_name'] for i in range(len(obs_data_as_series))]
     >>> model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
     >>> times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
     >>> model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
@@ -263,7 +263,7 @@ def cli():
             #
             #
             # print('pyaerocom...')
-            # # obs_names = [obs_data_as_series[i]['station name'] for i in range(len(obs_data_as_series))]
+            # # obs_names = [obs_data_as_series[i]['station_name'] for i in range(len(obs_data_as_series))]
             # # model_station_data = model_data.interpolate([("latitude", obs_data.latitude), ("longitude", obs_data.longitude)])
             # model_station_data = model_data.interpolate([("latitude", obs_lats), ("longitude", obs_lons)])
             # model_data_as_series = model_data.to_time_series([("latitude", obs_lats), ("longitude", obs_lons)])
@@ -355,16 +355,16 @@ def cli():
                 # print(ObsData.latitude)
                 # print('Longitudes:')
                 # print(ObsData.longitude)
-                # print('station names')
+                # print('station_names')
                 # print(ObsData)
                 # This returns all stations
                 TimeSeriesSingle = ObsData.to_timeseries(station_name="L'Aquila, Italy",start_date = args.startdate, end_date=args.enddate)
                 TimeSeries = ObsData.to_timeseries(start_date = args.startdate, end_date=args.enddate)
                 for series in TimeSeries:
-                    print(series['station name'])
+                    print(series['station_name'])
                     # print(series[options['VariablesToRun'][0]])
 
-                # this returns a single station in a dictionary using the station name as key
+                # this returns a single station in a dictionary using the station_name as key
                 # test = ObsData.to_timeseries('AOE_Baotou')
                 # print(test)
                 # #This returns a dictionary with more elements

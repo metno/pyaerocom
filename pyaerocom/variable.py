@@ -27,38 +27,17 @@ class Variable(BrowseDict):
     ----------
     var_name : str
         AEROCOM variable name (see e.g. `AEROCOM protocol 
-        <http://aerocom.met.no/protocol_table.html>`__ for a list of current
-        variables)
-    
-    
-    
-        
-    Example
-    -------
-    
-    >>> v = Variable(var_name="od550aer")
-    >>> print(v)
-    pyaeorocom Variable
-    Name: od550aer
-    Unit: None
-    Value range: 0 - 1.0
-    Levels colorbar: [0.0, 0.01, ..., 0.9, 1.0]
-    Colorbar ticks: [0.0, 0.02, ..., 0.7, 0.9]
-    >>> v = Variable(var_name="MyOwn", map_vmin=0.2, map_vmax=0.6, unit="lightyears")
-    >>> print(v)
-    pyaeorocom Variable
-    Name: MyOwn
-    Unit: lightyears
-    Value range: 0.2 - 0.6
-    Levels colorbar: None
-    Colorbar ticks: None
+        <http://aerocom.met.no/protocol_table.html>`__ for a list of 
+        available variables)
     
     """
-    def __init__(self, var_name="od550aer", **kwargs):
+    def __init__(self, var_name="od550aer", init=True, **kwargs):
         self.var_name = var_name
         
         self.unit = None
         self.aliases = []
+        self.wavelength_nm = None
+        self.lower_limit = -9e30
         
         # settings for scatter plots
         self.scat_xlim = None
@@ -76,19 +55,39 @@ class Variable(BrowseDict):
         
         # imports default information and, on top, variable information (if 
         # applicable)
-        self.parse_from_ini(var_name) 
+        if init:
+            self.parse_from_ini(var_name) 
         
         self.update(**kwargs)
-            
-    def parse_from_ini(self, var_name=None):
+     
+    @property
+    def unit_str(self):
+        if self.unit is None:
+            return ''
+        else:
+            return '[{}]'.format(self.unit)
+    
+    @staticmethod
+    def open_conf_parser():
+        fpath = join(__dir__, "data", "variables.ini")
+        if not exists(fpath):
+            raise IOError("File conventions ini file could not be found: %s"
+                          %fpath)
+        conf_reader = ConfigParser()
+        conf_reader.read(fpath)
+        return conf_reader
+    
+    def parse_from_ini(self, var_name=None, conf_reader=None):
         """Import information about default region
         
         Parameters
         ----------
-        name : str
+        var_name : str
             strind ID of region (must be specified in `regions.ini <https://
             github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ 
             file)
+        conf_reader : ConfigParser
+            open config parser object
             
         Returns
         -------
@@ -102,12 +101,8 @@ class Variable(BrowseDict):
 
         
         """
-        fpath = join(__dir__, "data", "variables.ini")
-        if not exists(fpath):
-            raise IOError("File conventions ini file could not be found: %s"
-                          %fpath)
-        conf_reader = ConfigParser()
-        conf_reader.read(fpath)
+        if conf_reader is None:
+            conf_reader = self.open_conf_parser()
         
         var_info = {}
         if var_name is not None and var_name != 'DEFAULT':
@@ -131,7 +126,11 @@ class Variable(BrowseDict):
             else:
                 ok = False
             if ok:
-                if "," in val:
+                if val == '[]':
+                    val = []
+                elif val == 'None':
+                    val = None
+                elif "," in val:
                     val = list(literal_eval(val))# [float(x) for x in val.split(",")]
                 else:
                     try:
@@ -140,14 +139,11 @@ class Variable(BrowseDict):
                         try:
                             val = float(val)
                         except:
-                            pass
+                            try:
+                                val = bool(val)
+                            except:
+                                pass
                 self[key] = val
-    
-    def unit_str(self):
-        if self.unit is None:
-            return ''
-        else:
-            return '[{}]'.format(self.unit)
         
     def __repr__(self):
        return ("Variable %s %s" %(self.var_name, super(Variable, self).__repr__()))

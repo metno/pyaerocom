@@ -180,7 +180,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
             data_out['latitude'] = float(dict_loc['lat'])
             data_out['longitude'] = float(dict_loc['long'])
             data_out['altitude'] = float(dict_loc['elev'])
-            data_out['station name'] = dict_loc['Locations']
+            data_out['station_name'] = dict_loc['Locations']
             data_out['PI'] = dict_loc['PI']
             data_out['PI_email'] = dict_loc['Email']
 
@@ -317,7 +317,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
                 # use the lat location here since we have to choose one location
                 # in the time series plot
                 metadata[meta_key] = {}
-                metadata[meta_key]['station name'] = station_data['station name']
+                metadata[meta_key]['station_name'] = station_data['station_name']
                 metadata[meta_key]['latitude'] = station_data['latitude']
                 metadata[meta_key]['longitude'] = station_data['longitude']
                 metadata[meta_key]['altitude'] = station_data['altitude']

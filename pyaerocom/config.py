@@ -40,6 +40,8 @@ import os
 from warnings import warn
 from collections import OrderedDict as od
 from pyaerocom.utils import list_to_shortstr, dict_to_str
+from pyaerocom.variable import Variable
+from pyaerocom import logger
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -166,7 +168,37 @@ class GridIO(object):
                                       len(head)*"-",
                                       dict_to_str(self.to_dict())))
         
+class VarInfo(object):
+    """Class that handles default information for all available variables"""
+    def __init__(self):
+        self.import_all()
         
+    def import_all(self):
+        parser = Variable.open_conf_parser()
+        for var_name in parser.keys():
+            var = Variable(init=False)
+            var.parse_from_ini(var_name, conf_reader=parser)
+            self[var_name] = var
+            
+    def __getitem__(self, key):
+        if key in self.__dict__:
+            return self.__dict__[key]
+        else:
+            logger.warning("No default configuration available for "
+                               "variable {}. Using DEFAULT settings".format(key))
+            return self.__dict__['DEFAULT']
+        
+    def __setitem__(self, key, val):
+        self.__dict__[key] = val
+        
+    def __str__(self):
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = '\n{}\n{}\n{}'.format(len(head)*"-", head, len(head)*"-")
+        for v in self.__dict__.values():
+            s += '\n{}\n'.format(v)
+        return s   
+            
+    
 class Config(object):
     """Class containing relevant paths for read and write routines"""
     
@@ -271,41 +303,10 @@ class Config(object):
         self.PLOT_DIR = os.path.join(self.OUT_BASEDIR, "plots")
         if not self.check_dir(self.PLOT_DIR):
             os.mkdir(self.PLOT_DIR)
-
-        # this is a dictionary of plot parameters with the variable name as key
-        # will be moved to const module at some point
-        self.VAR_PARAM = {}
-        self.VAR_PARAM['DEFAULT'] = {}
-        self.VAR_PARAM['DEFAULT']['scale_factor'] = 1.
-        self.VAR_PARAM['DEFAULT']['xlim'] = (0.01, 10.)
-        self.VAR_PARAM['DEFAULT']['ylim'] = (0.01, 10.)
-        self.VAR_PARAM['DEFAULT']['loglog'] = True
-        self.VAR_PARAM['DEFAULT']['lower_limit'] = 0.
-        self.VAR_PARAM['DEFAULT']['aliases'] = []
-        self.VAR_PARAM['DEFAULT']['unit'] = ''
-
-        self.VAR_PARAM['od550aer'] = self.VAR_PARAM['DEFAULT']
-        self.VAR_PARAM['od550aer']['scale_factor'] = 1.
-        self.VAR_PARAM['od550aer']['xlim'] = (0.01, 10.)
-        self.VAR_PARAM['od550aer']['ylim'] = (0.01, 10.)
-        self.VAR_PARAM['od550aer']['loglog'] = True
-        self.VAR_PARAM['od550aer']['lower_limit'] = 0.
-
-        self.VAR_PARAM['od550ltaer'] = self.VAR_PARAM['DEFAULT']
-        self.VAR_PARAM['od550gtaer'] = self.VAR_PARAM['DEFAULT']
-        self.VAR_PARAM['ang4487aer'] = self.VAR_PARAM['DEFAULT']
-        self.VAR_PARAM['abs550aer'] = self.VAR_PARAM['DEFAULT']
-        self.VAR_PARAM['od550dust'] = self.VAR_PARAM['DEFAULT']
-
-        self.VAR_PARAM['zdust'] = self.VAR_PARAM['DEFAULT']
-        self.VAR_PARAM['zdust']['scale_factor'] = 1.E3
-        self.VAR_PARAM['zdust']['xlim'] = (0., 5000.)
-        self.VAR_PARAM['zdust']['ylim'] = (0., 5000.)
-        self.VAR_PARAM['zdust']['loglog'] = False
-        self.VAR_PARAM['zdust']['lower_limit'] = 0.
-        self.VAR_PARAM['zdust']['unit'] = '[m]'
-
+        
+        self.VAR_PARAM = VarInfo()
         self.READY
+    
         
     @property
     def READY(self):
@@ -523,9 +524,6 @@ class Config(object):
         return s
 
 if __name__=="__main__":
-    import doctest
-    doctest.testmod()
-            
     config = Config()
     
     print(config.short_str())
@@ -535,3 +533,6 @@ if __name__=="__main__":
     io1 = GridIO()
     io1.from_dict(INCLUDE_SUBDIRS=True)
     print(io1)
+    
+    var_info = VarInfo()
+    print(var_info)

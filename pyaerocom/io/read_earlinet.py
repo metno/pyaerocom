@@ -147,7 +147,7 @@ class ReadEarlinet:
     def __str__(self):
         stat_names = []
         for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
+            stat_names.append(self.metadata[key]['station_name'])
 
         return ','.join(stat_names)
 
@@ -239,7 +239,7 @@ Attributes:
                 # new station
                 meta_key += 1.
                 self.metadata[meta_key] = {}
-                self.metadata[meta_key]['station name'] = stat_obs_data.attrs['Location']
+                self.metadata[meta_key]['station_name'] = stat_obs_data.attrs['Location']
                 self.metadata[meta_key]['latitude'] = stat_obs_data.attrs['Latitude_degrees_north']
                 self.metadata[meta_key]['longitude'] = stat_obs_data.attrs['Longitude_degrees_east']
                 self.metadata[meta_key]['altitude'] = stat_obs_data.attrs['Altitude_meter_asl']
@@ -303,7 +303,7 @@ Attributes:
                         self._ROWNO += self._CHUNKSIZE
 
                     end_index = self.index_pointer - 1
-                    # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
+                    # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
                     try:
                         self.metadata[meta_key]['indexes'][var].append(end_index)
                     except KeyError:

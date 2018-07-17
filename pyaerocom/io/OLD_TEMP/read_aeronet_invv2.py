@@ -148,7 +148,7 @@ class ReadAeronetInvV2:
     def __str__(self):
         stat_names = []
         for key in self.metadata:
-            stat_names.append(self.metadata[key]['station name'])
+            stat_names.append(self.metadata[key]['station_name'])
 
         return ','.join(stat_names)
 
@@ -207,7 +207,7 @@ class ReadAeronetInvV2:
             data_out['latitude'] = float(dict_loc['lat'])
             data_out['longitude'] = float(dict_loc['long'])
             data_out['altitude'] = float(dict_loc['elev'])
-            data_out['station name'] = dict_loc['Locations']
+            data_out['station_name'] = dict_loc['Locations']
             data_out['PI'] = dict_loc['PI']
             data_out['PI_email'] = dict_loc['Email']
 
@@ -303,7 +303,7 @@ class ReadAeronetInvV2:
             # use the lat location here since we have to choose one location
             # in the time series plot
             self.metadata[meta_key] = {}
-            self.metadata[meta_key]['station name'] = stat_obs_data['station name']
+            self.metadata[meta_key]['station_name'] = stat_obs_data['station_name']
             self.metadata[meta_key]['latitude'] = stat_obs_data['latitude']
             self.metadata[meta_key]['longitude'] = stat_obs_data['longitude']
             self.metadata[meta_key]['altitude'] = stat_obs_data['altitude']
@@ -331,7 +331,7 @@ class ReadAeronetInvV2:
                 # end_index = self.index_pointer - 1
                 # This is right because numpy leaves out the lat index number at array ops
                 end_index = self.index_pointer
-                # print(','.join([stat_obs_data['station name'], str(start_index), str(end_index), str(end_index - start_index)]))
+                # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
                 # NOTE THAT THE LOCATION KEPT THE TIME STEP DEPENDENCY HERE
                 self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
