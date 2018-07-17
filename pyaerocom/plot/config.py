@@ -5,6 +5,7 @@
 Global configurations for plotting 
 """
 from matplotlib.pyplot import get_cmap
+from pyaerocom.utils import BrowseDict
 from warnings import warn
 # =============================================================================
 # try:
@@ -25,7 +26,7 @@ _COLOR_THEMES = dict(light = dict(name="light",
 
 MAP_AXES_ASPECT = 1.5
 
-class MapPlotSettings(object):
+class MapPlotSettings(BrowseDict):
     """Class specifying predefined plot settings for a species and region
     
     Parameters

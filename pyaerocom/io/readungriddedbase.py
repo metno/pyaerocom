@@ -6,7 +6,6 @@ import logging
 
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
-logger = logging.getLogger(__name__)
 
 class ReadUngriddedBase(abc.ABC):
     """Abstract base class template for reading of ungridded data"""
@@ -29,7 +28,23 @@ class ReadUngriddedBase(abc.ABC):
         self.read_failed = []
         # 
         self.logger = logging.getLogger(__name__)
-        self._check_aux_variables()
+        self._add_aux_variables()
+        
+        if dataset_to_read is not None:
+            if not dataset_to_read in self.SUPPORTED_DATASETS:
+                raise AttributeError("Dataset {} not supported by this "
+                                     "interface".format(dataset_to_read))
+            self.DATASET_NAME = dataset_to_read
+            
+    @abc.abstractproperty
+    def SUPPORTED_DATASETS(self):
+        """List of strings specifying datasets supported by this interface
+        
+        Note
+        ----
+        
+        - best practice to specify in header of class definition
+        """
                 
     @abc.abstractproperty
     def REVISION_FILE(self):
@@ -188,7 +203,7 @@ class ReadUngriddedBase(abc.ABC):
             val = LOGLEVELS[val]
         self.logger.setLevel(val)
         
-    def _check_aux_variables(self):
+    def _add_aux_variables(self):
         """Helper that makes sure all auxiliary variables can be computed"""
         for var in self.AUX_REQUIRES.keys():
             if not var in self.AUX_FUNS:
@@ -263,6 +278,13 @@ class ReadUngriddedBase(abc.ABC):
             - list: list containing all variables to be read
             - list: list containing all variables to be computed
         """
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.PROVIDES_VARIABLES
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
+            raise AttributeError("One or more of the desired variables is not "
+                                 "supported by this dataset.")
         repeat = True
         while repeat:
             repeat, add_vars = self._add_additional_vars(vars_to_retrieve)
@@ -317,7 +339,7 @@ class ReadUngriddedBase(abc.ABC):
     
     def get_file_list(self):
         """Search all files to be read"""
-        logger.info('searching for data files. This might take a while...')
+        self.logger.info('Fetching data files. This might take a while...')
         self.files = glob.glob(os.path.join(self.DATASET_PATH, self._FILEMASK))
         return self.files
     
@@ -340,40 +362,7 @@ class ReadUngriddedBase(abc.ABC):
         if len(files) == 0:
             files = self.get_file_list()
         return self.read_file(files[0], **kwargs)
-     
-class ReadUngriddedBaseMulti(ReadUngriddedBase):
-    """Base class for reading ungridded data with multi-dataset support
-    
-    For some datasets, the reading routines are the same and can be implemented
-    in a single class that is derived from this class. Compared to 
-    :class:`ReadUngriddedBase`, this class contains one further attribute
-    ``SUPPORTED_DATASETS`` that should be specified in the header of the 
-    derived implementation and that is used on init to check whether the 
-    (optional) input ``dataset_to_read`` is supported by this interface.
-    
-    Parameters
-    ----------
-    dataset_to_read : str
-        string
-    """
-    def __init__(self, dataset_to_read=None):
-        super(ReadUngriddedBaseMulti, self).__init__()
-        if dataset_to_read is not None:
-            if not dataset_to_read in self.SUPPORTED_DATASETS:
-                raise AttributeError("Dataset {} not supported by this "
-                                     "interface".format(dataset_to_read))
-            self.DATASET_NAME = dataset_to_read
-            
-    @abc.abstractproperty
-    def SUPPORTED_DATASETS(self):
-        """List of strings specifying datasets supported by this interface
-        
-        Note
-        ----
-        
-        - best practice to specify in header of class definition
-        """
-        
+
 if __name__=="__main__":
     
     from pyaerocom import const

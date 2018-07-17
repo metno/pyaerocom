@@ -34,18 +34,21 @@
 """
 read Aeronet SDA V3 data
 """
-import sys
+import sys, os
 
 import numpy as np
 import pandas as pd
 from collections import OrderedDict as od
 
 from pyaerocom import const
-from pyaerocom.io.readungriddedbase import ReadUngriddedBaseMulti
+from pyaerocom.mathutils import (calc_od550aer,
+                                 calc_od550gt1aer,
+                                 calc_od550lt1aer)
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.timeseriesfiledata import TimeSeriesFileData
 from pyaerocom import UngriddedData
 
-class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
+class ReadAeronetSdaV3(ReadUngriddedBase):
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
 
     Attributes
@@ -69,6 +72,9 @@ class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
                           const.AERONET_SUN_V3L2_SDA_DAILY_NAME]
     
+    NAN_VAL = np.float_(-9999.)
+    
+    REVISION_FILE = const.REVISION_FILE
     # data vars
     # will be stored as pandas time series
     DATA_COLNAMES = {}
@@ -89,19 +95,24 @@ class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
     METADATA_COLNAMES['date'] = 'Date_(dd:mm:yyyy)'
     METADATA_COLNAMES['time'] = 'Time_(hh:mm:ss)'
     METADATA_COLNAMES['day_of_year'] = 'Day_of_Year'
-
-    # additional vars
-    # calculated
-    AUX_COLNAMES = []
-    AUX_COLNAMES.append('od550gt1aer')
-    AUX_COLNAMES.append('od550lt1aer')
-    AUX_COLNAMES.append('od550aer')
-
+    
+    # specify required dependencies for auxiliary variables, i.e. variables 
+    # that are NOT in Aeronet files but are computed within this class. 
+    # For instance, the computation of the AOD at 550nm requires import of
+    # the AODs at 440, 500 and 870 nm. 
+    AUX_REQUIRES = {'od550aer'      :   ['od500aer'],
+                    'od550gt1aer'   :   ['od500gt1aer'],
+                    'od550lt1aer'   :   ['od500lt1aer']}
+                    
+    # Functions that are used to compute additional variables (i.e. one 
+    # for each variable defined in AUX_REQUIRES)
+    AUX_FUNS = {'od550aer'      :   calc_od550aer,
+                'od550gt1aer'   :   calc_od550gt1aer,
+                'od550lt1aer'   :   calc_od550lt1aer}
+    
+    # will be extended by auxiliary variables on class init, for details see
+    # base class ReadUngriddedBase
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
-    for col in AUX_COLNAMES:
-        PROVIDES_VARIABLES.append(col)
-
-    # COLNAMES_USED = {y:x for x,y in AUX_COLNAMES.items()}
 
     def __init__(self, dataset_to_read=None):
         super(ReadAeronetSdaV3, self).__init__(dataset_to_read)
@@ -123,18 +134,26 @@ class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
         """Current column index dictionary"""
         return self._col_index
     
-    def read_file(self, filename, vars_to_retrieve=['od500gt1aer','od550gt1aer'], verbose=False):
-        """method to read an Aeronet SDA V3 file and return it in a dictionary
-        with the data variables as pandas time series
+    def read_file(self, filename, 
+                  vars_to_retrieve=['od500gt1aer','od550aer', 'od550gt1aer',
+                                    'od550lt1aer'],
+                  vars_as_series=False):
+        """Read Aeronet SDA V3 file and return it in a dictionary
 
         Parameters
         ----------
         filename : str
             absolute path to filename to read
         vars_to_retrieve : list
-            list of str with variable names to read; defaults to ['od550aer']
-        verbose : Bool
-            set to True to increase verbosity
+            list of str with variable names to read
+        vars_as_series : bool
+            if True, the data columns of all variables in the result dictionary
+            are converted into pandas Series objects
+            
+        Returns
+        -------
+        TimeSeriesFileData 
+            dict-like object containing results
 
         Example
         -------
@@ -144,84 +163,91 @@ class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
         >>> filedata = obj.read_file(filename)
         >>> print(filedata)
         """
-
-        # DAILY DATA:
-        # ===========
-        # AERONET Version 3; SDA Version 4.1
-        # Cuiaba
-        # Version 3: SDA Retrieval Level 1.5
-        # The following data are cloud cleared and quality controls have been applied but these data may not have final calibration applied.  These data may change.
-        # Contact: PI=Brent_Holben; PI Email=Brent.N.Holben@nasa.gov
-        # Daily Averages,UNITS can be found at,,, https://aeronet.gsfc.nasa.gov/new_web/units.html
-        # AERONET_Site,Date_(dd:mm:yyyy),Time_(hh:mm:ss),Day_of_Year,Total_AOD_500nm[tau_a],Fine_Mode_AOD_500nm[tau_f],Coarse_Mode_AOD_500nm[tau_c],FineModeFraction_500nm[eta],2nd_Order_Reg_Fit_Error-Total_AOD_500nm[regression_dtau_a],RMSE_Fine_Mode_AOD_500nm[Dtau_f],RMSE_Coarse_Mode_AOD_500nm[Dtau_c],RMSE_FineModeFraction_500nm[Deta],Angstrom_Exponent(AE)-Total_500nm[alpha],dAE/dln(wavelength)-Total_500nm[alphap],AE-Fine_Mode_500nm[alpha_f],dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f],N[Total_AOD_500nm[tau_a]],N[Fine_Mode_AOD_500nm[tau_f]],N[Coarse_Mode_AOD_500nm[tau_c]],N[FineModeFraction_500nm[eta]],N[2nd_Order_Reg_Fit_Error-Total_AOD_500nm[regression_dtau_a]],N[RMSE_Fine_Mode_AOD_500nm[Dtau_f]],N[RMSE_Coarse_Mode_AOD_500nm[Dtau_c]],N[RMSE_FineModeFraction_500nm[Deta]],N[Angstrom_Exponent(AE)-Total_500nm[alpha]],N[dAE/dln(wavelength)-Total_500nm[alphap]],N[AE-Fine_Mode_500nm[alpha_f]],N[dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f]],Data_Quality_Level,AERONET_Instrument_Number,AERONET_Site_Name,Site_Latitude(Degrees),Site_Longitude(Degrees),Site_Elevation(m),
-        # Karlsruhe,21:03:2005,12:00:00,80,0.242882,0.050086,0.192796,0.206254,0.000435,0.018642,0.019553,0.076899,0.373355,-0.766570,2.387612,1.394079,2,2,2,2,2,2,2,2,2,2,2,2,lev15,325,Karlsruhe,49.093300,8.427900,140.000000
-
-
-        # ALL POINT DATA
-        # ==============
-
-
-        # This value is later put to a np.nan
-        nan_val = np.float_(-9999.)
+        # implemented in base class
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+       
+        #create empty data object (is dictionary with extended functionality)
+        data_out = TimeSeriesFileData() 
         
-        data_out = {}
-        dict_loc={}
+        # create empty arrays for meta information
+        for item in self.METADATA_COLNAMES:
+            data_out[item] = []
+            
+        # create empty arrays for all variables that are supposed to be read
+        # from file
+        for var in vars_to_read:
+            data_out[var] = []
+        
         # Iterate over the lines of the file
-        if verbose:
-            sys.stderr.write(filename + '\n')
+        self.logger.info("Reading file {}".format(filename))
+        
         with open(filename, 'rt') as in_file:
-            line_1 = in_file.readline()
-            line_2 = in_file.readline()
-            line_3 = in_file.readline()
-            line_4 = in_file.readline()
+            in_file.readline()
+            in_file.readline()
+            in_file.readline()
+            in_file.readline()
+            
             # PI line
             dummy_arr = in_file.readline().strip().split(';')
             data_out['PI'] = dummy_arr[0].split('=')[1]
             data_out['PI_email'] = dummy_arr[1].split('=')[1]
 
             data_type_comment = in_file.readline()
+            #delete later
+            self.logger.info("Data type comment: {}".format(data_type_comment))
             # line_7 = in_file.readline()
             # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string
-            headers = in_file.readline().strip().split(',')
-            index_str = {}
-            _index = 0
-            for header in headers:
-                index_str[header] = _index
-                _index += 1
-
-            data_line_no = 1
-            dtime = []
-            for var in self.PROVIDES_VARIABLES:
-                data_out[var] = []
-            # add time variable location
-            for var in self.METADATA_COLNAMES:
-                data_out[var] = []
+            col_index_str = in_file.readline()
+            if col_index_str != self._last_col_index_str:
+                self.logger.info("Header has changed, reloading col_index map")
+                self._update_col_index(col_index_str)
+            col_index = self.col_index
+            
+            # dependent on the station, some of the required input variables
+            # may not be provided in the data file. These will be ignored
+            # in the following list that iterates over all data rows and will
+            # be filled below, with vectors containing NaNs after the file 
+            # reading loop
+            vars_available = {}
+            for var in vars_to_retrieve:
+                var_id = self.DATA_COLNAMES[var]
+                if var_id in col_index:
+                    vars_available[var] = col_index[var_id]
+                else:
+                    self.logger.warning("Variable {} not available in file {}"
+                                        .format(var, os.path.basename(filename)))
 
             for line in in_file:
                 # process line
                 dummy_arr = line.split(',')
                 # the following uses the standard python datetime functions
-                # date_index = index_str[COLNAMES['date']]
-                # hour, minute, second = dummy_arr[index_str[COLNAMES['time']].split(':')
+                # date_index = col_index[COLNAMES['date']]
+                # hour, minute, second = dummy_arr[col_index[COLNAMES['time']].split(':')
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[index_str[self.METADATA_COLNAMES['date']]].split(':')
+                date = col_index[self.METADATA_COLNAMES['date']]
+                time = col_index[self.METADATA_COLNAMES['time']]
+                
+                day, month, year = dummy_arr[date].split(':')
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[index_str[self.METADATA_COLNAMES['time']]]])
+                datestring = 'T'.join([datestring, dummy_arr[time]])
                 datestring = '+'.join([datestring, '00:00'])
-                dtime.append(np.datetime64(datestring))
+                
+                data_out['dtime'].append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
                 for var in self.METADATA_COLNAMES:
-                    if len(self.METADATA_COLNAMES[var]) == 0: continue
-                    data_out[var].append(dummy_arr[index_str[self.METADATA_COLNAMES[var]]])
+                    val = dummy_arr[col_index[self.METADATA_COLNAMES[var]]]
+                    data_out[var].append(val)
 
-                # copy the data fields (array type np.float_; will be converted to pandas.Series later)
-                for var in self.DATA_COLNAMES:
-                    data_out[var].append(np.float_(dummy_arr[index_str[self.DATA_COLNAMES[var]]]))
-                    if data_out[var][-1] == nan_val: data_out[var][-1] = np.nan
+                # copy the data fields 
+                for var, idx in vars_available.items():
+                    val = np.float_(dummy_arr[idx])
+                    if val == self.NAN_VAL: 
+                        val = np.nan
+                    data_out[var].append(val)
 
                 # some stuff needs to be calculated
                 data_out['od550aer'].append(
@@ -230,12 +256,6 @@ class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
                     data_out['od500gt1aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
                 data_out['od550lt1aer'].append(
                     data_out['od500lt1aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
-
-
-                # # apply the lower limit for od550aer
-                # if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
-                #     data_out['od550aer'][-1] = np.nan
-                data_line_no += 1
 
         # convert the vars in vars_to_retrieve to pandas time series
         # and delete the other ones
@@ -316,3 +336,12 @@ class ReadAeronetSdaV3(ReadUngriddedBaseMulti):
 
         # shorten self.data to the right number of points
         self.data = self.data[0:end_index]
+        
+if __name__=="__main__":
+    read = ReadAeronetSdaV3()
+    read.verbosity_level = 'debug'
+    
+    #first_ten = read.read(last_file=10)
+    
+    data_first = read.read_first_file()
+    print(data_first)

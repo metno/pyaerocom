@@ -3,9 +3,9 @@
 
 import pandas as pd
 import numpy as np
-from pyaerocom.utils import dict_to_str, list_to_shortstr
+from pyaerocom.utils import dict_to_str, list_to_shortstr, BrowseDict
 
-class TimeSeriesFileData(dict):
+class TimeSeriesFileData(BrowseDict):
     """Low level dict-like class for results from timeseries file reads
     
     The idea is to provide a common interface for storage of time-series data
@@ -148,20 +148,6 @@ class TimeSeriesFileData(dict):
         ax = s.plot(**kwargs)
         return ax
     
-    def __getattr__(self, key):
-        return self[key]
-    
-    def __setattr__(self, key, val):
-        self[key] = val
-        
-# =============================================================================
-#     def __str__(self):
-#         s = ''
-#         for k, v in self.items():
-#             s += '{}: {}'.format(k, v)
-#         return s
-#         
-# =============================================================================
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")

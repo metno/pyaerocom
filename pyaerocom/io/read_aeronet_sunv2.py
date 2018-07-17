@@ -66,6 +66,9 @@ class ReadAeronetSunV2(ReadUngriddedBase):
     __version__ = "0.09"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     
+    # List of all datasets that are supported by this interface
+    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME]
+    
     #value corresponding to invalid measurement
     NAN_VAL = np.float_(-9999)
 
@@ -149,14 +152,6 @@ class ReadAeronetSunV2(ReadUngriddedBase):
         >>> files = obj.get_file_list()
         >>> filedata = obj.read_file(files[0])
         """
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.PROVIDES_VARIABLES
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
-            raise AttributeError("One or more of the desired variables is not "
-                                 "supported by this dataset.")
-        
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
@@ -171,8 +166,8 @@ class ReadAeronetSunV2(ReadUngriddedBase):
         self.logger.info("Reading file {}".format(filename))
         with open(filename, 'rt') as in_file:
             #added to output
-            data_out.head_line = in_file.readline()
-            data_out.algorithm = in_file.readline()
+            data_out.head_line = in_file.readline().strip()
+            data_out.algorithm = in_file.readline().strip()
             c_dummy = in_file.readline()
             # re.split(r'=|\,',c_dummy)
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
@@ -185,7 +180,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
             data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()
             #added to output
-            data_out.data_header = in_file.readline()
+            data_out.data_header = in_file.readline().strip()
             
             for line in in_file:
                 # process line
@@ -333,7 +328,7 @@ if __name__=="__main__":
     
     read = ReadAeronetSunV2()
     
-    read.verbosity_level = 'warning'
+    read.verbosity_level = 'debug'
     first_ten = read.read(last_file=10)
     
     data = read.read_first_file()

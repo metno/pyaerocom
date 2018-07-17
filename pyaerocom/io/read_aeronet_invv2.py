@@ -39,11 +39,11 @@ import pandas as pd
 from collections import OrderedDict as od
 
 from pyaerocom import const
-from pyaerocom.io.readungriddedbase import ReadUngriddedBaseMulti
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.timeseriesfiledata import TimeSeriesFileData
 from pyaerocom import UngriddedData
 
-class ReadAeronetInvV2(ReadUngriddedBaseMulti):
+class ReadAeronetInvV2(ReadUngriddedBase):
     """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
 
     Attributes
@@ -87,7 +87,7 @@ class ReadAeronetInvV2(ReadUngriddedBaseMulti):
     METADATA_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
     METADATA_COLNAMES['time'] = 'Time(hh:mm:ss)'
     METADATA_COLNAMES['day_of_year'] = 'Julian_Day'
-
+    
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
 
     def __init__(self, dataset_to_read=None):
@@ -138,6 +138,12 @@ class ReadAeronetInvV2(ReadUngriddedBaseMulti):
         vars_as_series : bool
             if True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects
+            
+        Returns
+        -------
+        TimeSeriesFileData 
+            dict-like object containing results
+        
 
         Example
         -------
@@ -146,14 +152,6 @@ class ReadAeronetInvV2(ReadUngriddedBaseMulti):
         >>> files = obj.get_file_list()
         >>> filedata = obj.read_file(files[0])
         """
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.PROVIDES_VARIABLES
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        if not all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve]):
-            raise IOError("Some of the specified variables are not supported "
-                          "by this dataset")
-            
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
@@ -231,7 +229,8 @@ class ReadAeronetInvV2(ReadUngriddedBaseMulti):
                 for var in self.METADATA_COLNAMES:
                     data_out[var].append(dummy_arr[col_index[self.METADATA_COLNAMES[var]]])
 
-                # copy the data fields (array type np.float_; will be converted to pandas.Series later)
+                # copy the data fields that are available (rest will be filled
+                # below)
                 for var, idx in vars_available.items():
                     val = np.float_(dummy_arr[idx])
                     if val == self.NAN_VAL: 
@@ -266,8 +265,6 @@ class ReadAeronetInvV2(ReadUngriddedBaseMulti):
                     del data_out[var]
 
         return data_out
-
-    ###################################################################################
 
     def read(self, vars_to_retrieve=['ssa675aer','ssa440aer'], first_file=None, 
              last_file=None):

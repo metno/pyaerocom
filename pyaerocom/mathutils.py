@@ -5,8 +5,33 @@ Mathematical low level utility methods ofcd pyaerocom
 """
 
 import numpy as np
-from pyaerocom import const
+from pyaerocom import const, logger
 
+def od_wavelength_from_varstr(var_str):
+    """Extracts AOD wavelength from Aerocom variable name
+    
+    Parameters
+    ----------
+    var_str : str
+        Aerocom variable string (must start with od)
+       
+    Returns
+    -------
+    int
+        wavelength in nm
+       
+    Raises
+    ------
+    ValueError
+        if input string is invalid
+    Example
+    -------
+    >>> od_wavelength_from_varstr('od500aer')
+    500
+    """
+    raise NotImplementedError('Not sure if we will need this...')
+    
+    
 def calc_ang4487aer(data):
     """Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs
     
@@ -27,56 +52,85 @@ def calc_ang4487aer(data):
     -------
     ndarray
         array containing computed angstrom coefficients
+    
+    Raises 
+    ------
+    AttributError
+        if either 'od440aer' or 'od870aer' are not available in data object
     """
+    if not all([x in data for x in ['od440aer','od870aer']]):
+        raise AttributeError("Either of the two (or both) required variables "
+                             "(od440aer, od870aer) are not available in data")
     od440aer, od870aer = data['od440aer'], data['od870aer']
     return compute_angstrom_coeff(od440aer, od870aer, .44, .87)
-    
 
 def calc_od550aer(data):
-    """Compute AOD at 550 nm using Angstrom coefficients and 
+    """Compute AOD at 550 nm using Angstrom coefficient and 500 nm AOD
         
-        Parameters
-        ----------
-        data : dict-like
-            data object containing imported results
-        
-        Returns
-        -------
-        dict
-            updated data object
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+    
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
     """
-    od550aer = compute_aod_from_angstromexp(to_lambda=.55, 
-                                            aod_ref=data['od500aer'],
-                                            lambda_ref=.50, 
-                                            angstrom_coeff=data['ang4487aer'])
-    
-    # ;fill up time steps of the now calculated od550_aer that are nans with values calculated from the
-    # ;440nm wavelength to minimise gaps in the time series
-    mask = np.argwhere(np.isnan(od550aer))
-    
-    if len(mask) > 0: #there are nans
-        od440aer = data['od440aer'][mask]
-        ang4487aer = data['ang4487aer'][mask]
-        replace = compute_aod_from_angstromexp(to_lambda=.55, 
-                                                aod_ref=od440aer,
-                                                lambda_ref=.44, 
-                                                angstrom_coeff=ang4487aer)
-        od550aer[mask] = replace
+    return _calc_od_helper(data=data, 
+                           var_name='od550aer', 
+                           to_lambda=.55, 
+                           od_ref='od500aer', 
+                           lambda_ref=.50, 
+                           od_ref_alt='od440aer', 
+                           lambda_ref_alt=.44)
+
+def calc_od550gt1aer(data):
+    """Compute coarse mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD
         
-    # now replace all values with NaNs that are below the global lower threshold
-    below_thresh = od550aer < const.VAR_PARAM['od550aer']['lower_limit']
-    od550aer[below_thresh] = np.nan
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+    
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
+    """
+    return _calc_od_helper(data=data, 
+                           var_name='od550gt1aer', 
+                           to_lambda=.55, 
+                           od_ref='od500gt1aer', 
+                           lambda_ref=.50)
 
-    return od550aer
-
-def compute_angstrom_coeff(aod1, aod2, lambda1, lambda2):
+def calc_od550lt1aer(data):
+    """Compute fine mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD
+        
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+    
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
+    """
+    return _calc_od_helper(data=data, 
+                           var_name='od550lt1aer', 
+                           to_lambda=.55, 
+                           od_ref='od500lt1aer', 
+                           lambda_ref=.50)
+        
+def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
     """Compute Angstrom coefficient based on 2 optical densities
     
     Parameters
     ----------
-    aod1 : :obj:`float` or :obj:`ndarray`
+    od1 : :obj:`float` or :obj:`ndarray`
         AOD at wavelength 1
-    aod2 : :obj:`float` or :obj:`ndarray`
+    od2 : :obj:`float` or :obj:`ndarray`
         AOD at wavelength 2
     lambda1 : :obj:`float` or :obj:`ndarray`
         wavelength 1
@@ -88,9 +142,9 @@ def compute_angstrom_coeff(aod1, aod2, lambda1, lambda2):
     :obj:`float` or :obj:`ndarray`
         Angstrom exponent(s)
     """
-    return -np.log(aod1 / aod2) / np.log(lambda1 / lambda2)
+    return -np.log(od1 / od2) / np.log(lambda1 / lambda2)
 
-def compute_aod_from_angstromexp(to_lambda, aod_ref, lambda_ref, 
+def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref, 
                                  angstrom_coeff):
     """Compute AOD at specified wavelength 
     
@@ -101,7 +155,7 @@ def compute_aod_from_angstromexp(to_lambda, aod_ref, lambda_ref,
     ----------
     to_lambda : :obj:`float` or :obj:`ndarray`
         wavelength for which AOD is calculated
-    aod_ref : :obj:`float` or :obj:`ndarray`
+    od_ref : :obj:`float` or :obj:`ndarray`
         reference AOD
     lambda_ref : :obj:`float` or :obj:`ndarray`
         wavelength corresponding to reference AOD
@@ -114,8 +168,78 @@ def compute_aod_from_angstromexp(to_lambda, aod_ref, lambda_ref,
         AOD(s) at shifted wavelength
     
     """
-    return aod_ref * (lambda_ref / to_lambda) ** angstrom_coeff
+    return od_ref * (lambda_ref / to_lambda) ** angstrom_coeff
 
+def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref, 
+                    od_ref_alt=None, lambda_ref_alt=None):
+    """Helper method for computing ODs
+    
+    Parameters
+    ----------
+    data : dict-like
+        data object containing loaded results used to compute the ODs at a new
+        wavelength
+    var_name : str
+        name of variable that is supposed to be computed (is used in order to 
+        see whether a global lower threshold is defined for this variable and
+        if this is the case, all computed values that are below this threshold
+        are replaced with NaNs)
+    to_lambda : float
+        wavelength of computed AOD
+    od_ref : :obj:`float` or :obj:`ndarray`
+        reference AOD
+    lambda_ref : :obj:`float` or :obj:`ndarray`
+        wavelength corresponding to reference AOD
+    od_ref_alt : :obj:`float` or :obj:`ndarray`, optional
+        alternative reference AOD (is used for datapoints where former is 
+        invalid)
+    lambda_ref_alt : :obj:`float` or :obj:`ndarray`, optional
+        wavelength corresponding to alternative reference AOD
+        
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
+        
+    Raises
+    ------
+    AttributeError
+        if ``od_ref`` or "ang4487aer" not available in data
+    """
+    if not od_ref in data:
+        raise AttributeError("Reference OD at {} nm data is not available in "
+                             "provided data".format(lambda_ref))
+    elif not 'ang4487aer' in data:
+        raise AttributeError("Angstrom coefficient (440-870 nm) is not "
+                             "available in provided data")
+    result = compute_od_from_angstromexp(to_lambda=to_lambda, 
+                                          od_ref=data[od_ref],
+                                          lambda_ref=lambda_ref, 
+                                          angstrom_coeff=data['ang4487aer'])
+    # optional if available
+    if od_ref_alt in data:
+        # fill up time steps that are nans with values calculated from the
+        # alternative wavelength to minimise gaps in the time series
+        mask = np.argwhere(np.isnan(result))
+        
+        if len(mask) > 0: #there are nans
+            ods_alt = data[od_ref_alt][mask]
+            ang4487aer = data['ang4487aer'][mask]
+            replace = compute_od_from_angstromexp(to_lambda=to_lambda, 
+                                                    od_ref=ods_alt,
+                                                    lambda_ref=lambda_ref_alt, 
+                                                    angstrom_coeff=ang4487aer)
+            result[mask] = replace
+    
+    try:
+        # now replace all values with NaNs that are below the global lower threshold
+        below_thresh = result < const.VAR_PARAM[var_name]['lower_limit']
+        result[below_thresh] = np.nan
+    except:
+        logger.warn("Could not access lower limit from global settings for "
+                    "variable {}".format(var_name))
+    
+    return result
 
 def exponent(num):
     """Get exponent of input number

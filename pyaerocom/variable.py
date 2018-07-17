@@ -7,8 +7,9 @@ from os.path import join, exists
 from ast import literal_eval
 from configparser import ConfigParser
 from pyaerocom import __dir__
+from pyaerocom.utils import BrowseDict
 
-class Variable(object):
+class Variable(BrowseDict):
     """Interface that specifies default settings for a variable
     
     See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
@@ -56,6 +57,7 @@ class Variable(object):
     def __init__(self, var_name="od550aer", **kwargs):
         self.var_name = var_name
         
+        self.aliases = []
         self.unit = None
         self.map_vmin = None
         self.map_vmax = None

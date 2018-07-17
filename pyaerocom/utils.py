@@ -2,7 +2,22 @@
 # -*- coding: utf-8 -*-
 """
 Small helper utility functions for pyaerocom
-"""    
+"""   
+class BrowseDict(dict):
+    """Dictionary with get / set attribute methods
+    
+    Example
+    -------
+    >>> d = BrowseDict(bla = 3, blub = 4)
+    >>> print(d.bla)
+    3
+    """
+    def __getattr__(self, key):
+        return self[key]
+    
+    def __setattr__(self, key, val):
+        self[key] = val
+        
 def list_to_shortstr(lst, indent=3):
     """Custom function to convert a list into a short string representation"""
     if len(lst) == 0:
