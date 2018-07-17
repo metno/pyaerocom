@@ -200,7 +200,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
             # be filled below, with vectors containing NaNs after the file 
             # reading loop
             vars_available = {}
-            for var in vars_to_retrieve:
+            for var in vars_to_read:
                 var_id = self.DATA_COLNAMES[var]
                 if var_id in col_index:
                     vars_available[var] = col_index[var_id]
@@ -226,8 +226,9 @@ class ReadAeronetInvV2(ReadUngriddedBase):
                 data_out['dtime'].append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
-                for var in self.METADATA_COLNAMES:
-                    data_out[var].append(dummy_arr[col_index[self.METADATA_COLNAMES[var]]])
+                for meta_var in self.METADATA_COLNAMES:
+                    meta_val = dummy_arr[col_index[self.METADATA_COLNAMES[meta_var]]]
+                    data_out[meta_var].append(meta_val)
 
                 # copy the data fields that are available (rest will be filled
                 # below)
@@ -243,7 +244,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         for item in self.METADATA_COLNAMES:
             data_out[item] = np.asarray(data_out[item])
             
-        for var in vars_to_retrieve:
+        for var in vars_to_read:
             if var in vars_available:
                 array = np.asarray(data_out[var])
             else:

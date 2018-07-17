@@ -3,6 +3,7 @@
 import abc
 import glob, os
 import logging
+import numpy as np
 
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
@@ -334,7 +335,15 @@ class ReadUngriddedBase(abc.ABC):
             updated data object
         """
         for var in vars_to_compute:
-            data[var] = self.AUX_FUNS[var](data)
+            required = self.AUX_REQUIRES[var]
+            if all([req_var in data for req_var in required]):
+                data[var] = self.AUX_FUNS[var](data)
+            else:
+                data[var] = np.ones(len(data['dtime']))*np.nan
+                self.logger.warning("Could not compute variable {}. One or "
+                                    "more of the required variables {} is "
+                                    "missing in data. Filling with NaNs"
+                                    .format(var, required))
         return data
     
     def get_file_list(self):

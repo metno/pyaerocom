@@ -32,9 +32,9 @@
 # MA 02110-1301, USA
 
 """
-read Aeronet SDA V3 data
+Read Aeronet SDA V3 data
 """
-import sys, os
+import os
 
 import numpy as np
 import pandas as pd
@@ -100,9 +100,9 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
     # that are NOT in Aeronet files but are computed within this class. 
     # For instance, the computation of the AOD at 550nm requires import of
     # the AODs at 440, 500 and 870 nm. 
-    AUX_REQUIRES = {'od550aer'      :   ['od500aer'],
-                    'od550gt1aer'   :   ['od500gt1aer'],
-                    'od550lt1aer'   :   ['od500lt1aer']}
+    AUX_REQUIRES = {'od550aer'      :   ['od500aer', 'ang4487aer'],
+                    'od550gt1aer'   :   ['od500gt1aer', 'ang4487aer'],
+                    'od550lt1aer'   :   ['od500lt1aer', 'ang4487aer']}
                     
     # Functions that are used to compute additional variables (i.e. one 
     # for each variable defined in AUX_REQUIRES)
@@ -134,9 +134,18 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
         """Current column index dictionary"""
         return self._col_index
     
+    def _update_col_index(self, col_index_str):
+        """Update column information for fast access during read_file"""
+        cols = col_index_str.strip().split(',')
+        col_index = od()
+        for idx, info_str in enumerate(cols):
+            col_index[info_str] = idx
+        self._col_index = col_index
+        self._last_col_index_str = col_index_str
+        return col_index
+    
     def read_file(self, filename, 
-                  vars_to_retrieve=['od500gt1aer','od550aer', 'od550gt1aer',
-                                    'od550lt1aer'],
+                  vars_to_retrieve=['od550aer', 'od550gt1aer','od550lt1aer'],
                   vars_as_series=False):
         """Read Aeronet SDA V3 file and return it in a dictionary
 
@@ -154,14 +163,6 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
         -------
         TimeSeriesFileData 
             dict-like object containing results
-
-        Example
-        -------
-        >>> import pyaerocom.io as pio
-        >>> obj = pio.read_aeronet_sdav3.ReadAeronetSdaV3()
-        >>> filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed/Karlsruhe.lev30'
-        >>> filedata = obj.read_file(filename)
-        >>> print(filedata)
         """
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
@@ -193,7 +194,7 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
             data_out['PI_email'] = dummy_arr[1].split('=')[1]
 
             data_type_comment = in_file.readline()
-            #delete later
+            # TODO: delete later
             self.logger.info("Data type comment: {}".format(data_type_comment))
             # line_7 = in_file.readline()
             # put together a dict with the header string as key and the index number as value so that we can access
@@ -210,7 +211,7 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
             # be filled below, with vectors containing NaNs after the file 
             # reading loop
             vars_available = {}
-            for var in vars_to_retrieve:
+            for var in vars_to_read:
                 var_id = self.DATA_COLNAMES[var]
                 if var_id in col_index:
                     vars_available[var] = col_index[var_id]
@@ -240,6 +241,11 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
                 # copy the meta data (array of type string)
                 for var in self.METADATA_COLNAMES:
                     val = dummy_arr[col_index[self.METADATA_COLNAMES[var]]]
+                    try:
+                        # e.g. lon, lat, altitude
+                        val = float(val)
+                    except:
+                        pass
                     data_out[var].append(val)
 
                 # copy the data fields 
@@ -249,99 +255,145 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
                         val = np.nan
                     data_out[var].append(val)
 
-                # some stuff needs to be calculated
-                data_out['od550aer'].append(
-                    data_out['od500aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
-                data_out['od550gt1aer'].append(
-                    data_out['od500gt1aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
-                data_out['od550lt1aer'].append(
-                    data_out['od500lt1aer'][-1] * (0.55 / 0.50) ** (np.float_(-1.) * data_out['ang4487aer'][-1]))
-
-        # convert the vars in vars_to_retrieve to pandas time series
-        # and delete the other ones
-        for var in self.PROVIDES_VARIABLES:
-            if var in vars_to_retrieve:
-                data_out[var] = pd.Series(data_out[var], index=dtime)
+        # convert all lists to numpy arrays
+        data_out['dtime'] = np.asarray(data_out['dtime'])
+        
+        for item in self.METADATA_COLNAMES:
+            data_out[item] = np.asarray(data_out[item])
+            
+        for var in vars_to_read:
+            if var in vars_available:
+                array = np.asarray(data_out[var])
             else:
-                del data_out[var]
+                array = np.zeros(len(data_out['dtime'])) * np.nan
+            data_out[var] = array
+        
+        # compute additional variables (if applicable)
+        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        
+        if vars_as_series:
+            # convert the vars in vars_to_retrieve to pandas time series
+            # and delete the other ones
+            for var in self.PROVIDES_VARIABLES:
+                # if var not in data_out: continue
+                if var in vars_to_retrieve:
+                    data_out[var] = pd.Series(data_out[var], 
+                                              index=data_out['time'])
+                else:
+                    del data_out[var]
 
         return data_out
 
     ###################################################################################
 
-    def read(self, vars_to_retrieve=['od500gt1aer','od550gt1aer'], verbose=False):
-        """method to read all files in self.files into self.data and self.metadata
-
+    def read(self, vars_to_retrieve=['od550aer', 'od550gt1aer','od550lt1aer'], 
+             first_file=None, last_file=None):
+        """Read all data files into instance of :class:`UngriddedData` object
+        
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            list of variables that are supposed to be imported
+        first_file : int
+            index of first file in file list to read. If None, the very first
+            file in the list is used
+        last_file : int
+            index of last file in list to read. If None, the very last file 
+            in the list is used
+            
         Example
         -------
-        >>> import pyaerocom.io as pio
-        >>> obj = pio.read_aeronet_sdav3.ReadAeronetSdaV3(verbose=True)
-        >>> obj.read(verbose=True)
+        >>> from pyaerocom.io import ReadAeronetSdaV3
+        >>> obj = ReadAeronetSdaV3()
+        >>> obj.read()
         """
+        if len(self.files) == 0:
+            self.get_file_list()
+        files = sorted(self.files)
+        
+        if first_file is None:
+            first_file = 0
+        if last_file is None:
+            last_file = len(files)
+        
+        files = files[first_file:last_file]
+        
+        self.read_failed = []
+        
+        data_obj = UngriddedData()
+        meta_key = 0.0
+        idx = 0
+        
+        #assign metadata object
+        metadata = data_obj.metadata
+        
+        num_vars = len(vars_to_retrieve)
 
-        # Metadata key is float because the numpy array holding it is float
-
-        meta_key = 0.
-        self.files = self.get_file_list()
-        self.data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
-
-        for _file in sorted(self.files):
-            if self.verbose:
-                sys.stdout.write(_file + "\n")
-            stat_obs_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+        for _file in files:
+            station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            self.metadata[meta_key] = {}
-            self.metadata[meta_key]['station_name'] = stat_obs_data['station_name'][-1]
-            self.metadata[meta_key]['latitude'] = stat_obs_data['latitude'][-1]
-            self.metadata[meta_key]['longitude'] = stat_obs_data['longitude'][-1]
-            self.metadata[meta_key]['altitude'] = stat_obs_data['altitude'][-1]
-            self.metadata[meta_key]['PI'] = stat_obs_data['PI']
-            self.metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key] = {}
+            metadata[meta_key]['station_name'] = station_data['station_name'][-1]
+            metadata[meta_key]['latitude'] = station_data['latitude'][-1]
+            metadata[meta_key]['longitude'] = station_data['longitude'][-1]
+            metadata[meta_key]['altitude'] = station_data['altitude'][-1]
+            metadata[meta_key]['PI'] = station_data['PI']
+            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
 
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            self.metadata[meta_key]['indexes'] = {}
-            start_index = self.index_pointer
-            # variable index
-            obs_var_index = 0
-            for var in sorted(vars_to_retrieve):
-                for time, val in stat_obs_data[var].iteritems():
-                    self.data[self.index_pointer, self._DATAINDEX] = val
-                    # pd.TimeStamp.value is nano seconds since the epoch!
-                    self.data[self.index_pointer, self._TIMEINDEX] = np.float64(time.value / 1.E9)
-                    self.index_pointer += 1
-                    if self.index_pointer >= self._ROWNO:
-                        # add another array chunk to self.data
-                        self.data = np.append(self.data, np.zeros([self._CHUNKSIZE, self._COLNO], dtype=np.float64),
-                                              axis=0)
-                        self._ROWNO += self._CHUNKSIZE
-
-                # end_index = self.index_pointer - 1
-                # This is right because numpy leaves out the lat index number at array ops
-                end_index = self.index_pointer
-                # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
-                # NOTE THAT THE LOCATION KEPT THE TIME STEP DEPENDENCY HERE
-                self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
-                self.data[start_index:end_index, self._VARINDEX] = obs_var_index
-                self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
-                self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']
-                self.data[start_index:end_index, self._ALTITUDEINDEX] = stat_obs_data['altitude']
-                self.data[start_index:end_index, self._METADATAKEYINDEX] = meta_key
-                start_index = self.index_pointer
-                obs_var_index += 1
+            metadata[meta_key]['indexes'] = {}
+            
+            num_times = station_data.num_timestamps
+            totnum = station_data.len_flat(num_vars)
+            
+            #check if size of data object needs to be extended
+            if (idx + totnum) >= data_obj._ROWNO:
+                #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                data_obj.add_chunk(totnum)
+            
+            #access array containing time stamps
+            times = np.float64(station_data['dtime'])
+            
+            for var_idx, var in enumerate(vars_to_retrieve):
+                values = station_data[var]
+                start = idx + var_idx * num_times
+                stop = start + num_times
+                
+                
+                #write common meta info for this station
+                data_obj._data[start:stop, 
+                               data_obj._LATINDEX] = station_data['latitude']
+                data_obj._data[start:stop, 
+                               data_obj._LONINDEX] = station_data['longitude']
+                data_obj._data[start:stop, 
+                               data_obj._ALTITUDEINDEX] = station_data['altitude']
+                data_obj._data[start:stop, 
+                               data_obj._METADATAKEYINDEX] = meta_key
+                               
+                # write data to data object
+                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
+                data_obj._data[start:stop, data_obj._DATAINDEX] = values
+                data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
+                
+                metadata[meta_key]['indexes'][var] = np.arange(start, stop)
+            
+            idx += totnum  
             meta_key = meta_key + 1.
-
-        # shorten self.data to the right number of points
-        self.data = self.data[0:end_index]
         
+        # shorten data_obj._data to the right number of points
+        data_obj._data = data_obj._data[:idx]
+        self.data = data_obj
+        return data_obj
+    
 if __name__=="__main__":
     read = ReadAeronetSdaV3()
     read.verbosity_level = 'debug'
     
-    #first_ten = read.read(last_file=10)
+    first_ten = read.read(last_file=10)
     
     data_first = read.read_first_file()
     print(data_first)
