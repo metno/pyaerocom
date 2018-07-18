@@ -95,16 +95,16 @@ class ReadAeronetSunV3:
 
     # meta data vars
     # will be stored as array of strings
-    METADATA_COLNAMES = {}
-    METADATA_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
-    METADATA_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
-    METADATA_COLNAMES['station_name'] = 'AERONET_Site'
-    METADATA_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
-    METADATA_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
-    METADATA_COLNAMES['altitude'] = 'Site_Elevation(m)'
-    METADATA_COLNAMES['date'] = 'Date(dd:mm:yyyy)'
-    METADATA_COLNAMES['time'] = 'Time(hh:mm:ss)'
-    METADATA_COLNAMES['day_of_year'] = 'Day_of_Year'
+    META_COLNAMES = {}
+    META_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
+    META_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
+    META_COLNAMES['station_name'] = 'AERONET_Site'
+    META_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
+    META_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
+    META_COLNAMES['altitude'] = 'Site_Elevation(m)'
+    META_COLNAMES['date'] = 'Date(dd:mm:yyyy)'
+    META_COLNAMES['time'] = 'Time(hh:mm:ss)'
+    META_COLNAMES['day_of_year'] = 'Day_of_Year'
 
     # additional vars
     # calculated
@@ -267,7 +267,7 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
             for var in self.PROVIDES_VARIABLES:
                 data_out[var] = []
             # add time variable location
-            for var in self.METADATA_COLNAMES:
+            for var in self.META_COLNAMES:
                 data_out[var] = []
 
             for line in in_file:
@@ -279,16 +279,16 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[index_str[self.METADATA_COLNAMES['date']]].split(':')
+                day, month, year = dummy_arr[index_str[self.META_COLNAMES['date']]].split(':')
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[index_str[self.METADATA_COLNAMES['time']]]])
+                datestring = 'T'.join([datestring, dummy_arr[index_str[self.META_COLNAMES['time']]]])
                 datestring = '+'.join([datestring, '00:00'])
                 dtime.append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
-                for var in self.METADATA_COLNAMES:
-                    if len(self.METADATA_COLNAMES[var]) == 0: continue
-                    data_out[var].append(dummy_arr[index_str[self.METADATA_COLNAMES[var]]])
+                for var in self.META_COLNAMES:
+                    if len(self.META_COLNAMES[var]) == 0: continue
+                    data_out[var].append(dummy_arr[index_str[self.META_COLNAMES[var]]])
 
                 # copy the data fields (array type np.float_; will be converted to pandas.Series later)
                 for var in self.DATA_COLNAMES:

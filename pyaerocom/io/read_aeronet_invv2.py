@@ -75,11 +75,11 @@ class ReadAeronetInvV2(ReadUngriddedBase):
 
     # meta data vars
     # will be stored as array of strings
-    METADATA_COLNAMES = {}
-    METADATA_COLNAMES['data_quality_level'] = 'DATA_TYPE'
-    METADATA_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
-    METADATA_COLNAMES['time'] = 'Time(hh:mm:ss)'
-    METADATA_COLNAMES['day_of_year'] = 'Julian_Day'
+    META_COLNAMES = {}
+    META_COLNAMES['data_quality_level'] = 'DATA_TYPE'
+    META_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
+    META_COLNAMES['time'] = 'Time(hh:mm:ss)'
+    META_COLNAMES['day_of_year'] = 'Julian_Day'
     
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
 
@@ -152,7 +152,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         data_out = StationData() 
         
         # create empty arrays for meta information
-        for item in self.METADATA_COLNAMES:
+        for item in self.META_COLNAMES:
             data_out[item] = []
             
         # create empty arrays for all variables that are supposed to be read
@@ -210,8 +210,8 @@ class ReadAeronetInvV2(ReadUngriddedBase):
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                date = col_index[self.METADATA_COLNAMES['date']]
-                time = col_index[self.METADATA_COLNAMES['time']]
+                date = col_index[self.META_COLNAMES['date']]
+                time = col_index[self.META_COLNAMES['time']]
                 day, month, year = dummy_arr[date].split(':')
                 datestring = '-'.join([year, month, day])
                 datestring = 'T'.join([datestring, dummy_arr[time]])
@@ -219,8 +219,8 @@ class ReadAeronetInvV2(ReadUngriddedBase):
                 data_out['dtime'].append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
-                for meta_var in self.METADATA_COLNAMES:
-                    meta_val = dummy_arr[col_index[self.METADATA_COLNAMES[meta_var]]]
+                for meta_var in self.META_COLNAMES:
+                    meta_val = dummy_arr[col_index[self.META_COLNAMES[meta_var]]]
                     data_out[meta_var].append(meta_val)
 
                 # copy the data fields that are available (rest will be filled
@@ -234,7 +234,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
         
-        for item in self.METADATA_COLNAMES:
+        for item in self.META_COLNAMES:
             data_out[item] = np.asarray(data_out[item])
             
         for var in vars_to_read:

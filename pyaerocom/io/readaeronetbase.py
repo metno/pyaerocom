@@ -12,7 +12,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     :class:`ReadUngriddedBase` that contains some more functionality
     """
     DATA_COLNAMES = {}
-    METADATA_COLNAMES = {}
+    META_COLNAMES = {}
     @abc.abstractproperty
     def DEFAULT_VARS(self):
         """List containing default variables to read"""

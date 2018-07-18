@@ -85,16 +85,16 @@ class ReadAeronetSdaV3(ReadAeronetBase):
 
     # meta data vars
     # will be stored as array of strings
-    METADATA_COLNAMES = {}
-    METADATA_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
-    METADATA_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
-    METADATA_COLNAMES['station_name'] = 'AERONET_Site'
-    METADATA_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
-    METADATA_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
-    METADATA_COLNAMES['altitude'] = 'Site_Elevation(m)'
-    METADATA_COLNAMES['date'] = 'Date_(dd:mm:yyyy)'
-    METADATA_COLNAMES['time'] = 'Time_(hh:mm:ss)'
-    METADATA_COLNAMES['day_of_year'] = 'Day_of_Year'
+    META_COLNAMES = {}
+    META_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
+    META_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
+    META_COLNAMES['station_name'] = 'AERONET_Site'
+    META_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
+    META_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
+    META_COLNAMES['altitude'] = 'Site_Elevation(m)'
+    META_COLNAMES['date'] = 'Date_(dd:mm:yyyy)'
+    META_COLNAMES['time'] = 'Time_(hh:mm:ss)'
+    META_COLNAMES['day_of_year'] = 'Day_of_Year'
     
     # specify required dependencies for auxiliary variables, i.e. variables 
     # that are NOT in Aeronet files but are computed within this class. 
@@ -171,7 +171,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         data_out = StationData() 
         
         # create empty arrays for meta information
-        for item in self.METADATA_COLNAMES:
+        for item in self.META_COLNAMES:
             data_out[item] = []
             
         # create empty arrays for all variables that are supposed to be read
@@ -228,8 +228,8 @@ class ReadAeronetSdaV3(ReadAeronetBase):
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                date = col_index[self.METADATA_COLNAMES['date']]
-                time = col_index[self.METADATA_COLNAMES['time']]
+                date = col_index[self.META_COLNAMES['date']]
+                time = col_index[self.META_COLNAMES['time']]
                 
                 day, month, year = dummy_arr[date].split(':')
                 datestring = '-'.join([year, month, day])
@@ -239,8 +239,8 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                 data_out['dtime'].append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
-                for var in self.METADATA_COLNAMES:
-                    val = dummy_arr[col_index[self.METADATA_COLNAMES[var]]]
+                for var in self.META_COLNAMES:
+                    val = dummy_arr[col_index[self.META_COLNAMES[var]]]
                     try:
                         # e.g. lon, lat, altitude
                         val = float(val)
@@ -258,7 +258,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
         
-        for item in self.METADATA_COLNAMES:
+        for item in self.META_COLNAMES:
             data_out[item] = np.asarray(data_out[item])
             
         for var in vars_to_read:
