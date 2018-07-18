@@ -31,25 +31,6 @@ class ReadUngriddedBase(abc.ABC):
     # Functions that are used to compute additional variables (i.e. one 
     # for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {}
-    
-    def __init__(self, dataset_to_read=None):
-        self.data = None #object that holds the loaded data
-        self.files = []
-        # list that will be updated in read method to store all files that
-        # could not be read. It is the responsibility of developers of derived
-        # classes to include a try / except block in method read, where the 
-        # method read_file is called, and in case of an Exception, append the
-        # corresponding file path to this list.
-        self.read_failed = []
-        # 
-        self.logger = logging.getLogger(__name__)
-        self._add_aux_variables()
-        
-        if dataset_to_read is not None:
-            if not dataset_to_read in self.SUPPORTED_DATASETS:
-                raise AttributeError("Dataset {} not supported by this "
-                                     "interface".format(dataset_to_read))
-            self.DATASET_NAME = dataset_to_read
             
     @abc.abstractproperty
     def SUPPORTED_DATASETS(self):
@@ -131,6 +112,7 @@ class ReadUngriddedBase(abc.ABC):
         that each variable is available in all files or the column definition
         may differ between different stations (see )
         """
+        pass
     
     @property
     def DATASET_PATH(self):
@@ -185,6 +167,25 @@ class ReadUngriddedBase(abc.ABC):
 
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
+    def __init__(self, dataset_to_read=None):
+        self.data = None #object that holds the loaded data
+        self.files = []
+        # list that will be updated in read method to store all files that
+        # could not be read. It is the responsibility of developers of derived
+        # classes to include a try / except block in method read, where the 
+        # method read_file is called, and in case of an Exception, append the
+        # corresponding file path to this list.
+        self.read_failed = []
+        # 
+        self.logger = logging.getLogger(__name__)
+        self._add_aux_variables()
+        
+        if dataset_to_read is not None:
+            if not dataset_to_read in self.SUPPORTED_DATASETS:
+                raise AttributeError("Dataset {} not supported by this "
+                                     "interface".format(dataset_to_read))
+            self.DATASET_NAME = dataset_to_read
+            
     @property
     def AUX_VARS(self):
         return list(self.AUX_REQUIRES.keys())

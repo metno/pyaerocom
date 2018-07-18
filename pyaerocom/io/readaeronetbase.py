@@ -2,21 +2,94 @@
 # -*- coding: utf-8 -*-
 import abc
 import numpy as np
+from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.exceptions import DataExtractionError, MetaDataError
 
 class ReadAeronetBase(ReadUngriddedBase):
     """Abstract base class template for reading of Aeronet data
     
     Extended abstract base class, derived from low-level base class
-    :class:`ReadUngriddedBase` that contains some more functionality
+    :class:`ReadUngriddedBase` that contains some more functionality.
+    
+    Attributes
+    ----------
+    
     """
+    
     DATA_COLNAMES = {}
+    
     META_COLNAMES = {}
+    
     @abc.abstractproperty
     def DEFAULT_VARS(self):
         """List containing default variables to read"""
+        pass
+    
+    def __init__(self, dataset_to_read=None):
+        super(ReadAeronetBase, self).__init__(dataset_to_read)
         
+        # dictionary that contains information about the file columns
+        # is written in method _update_col_index
+        self._col_index = od()
+        
+        # header string referring to the content in attr. col_index. Is 
+        # updated whenever the former is updated (i.e. when method
+        # _update_col_index is called). Can be used to check if
+        # file structure changed between subsequent files so that 
+        # col_index is only recomputed when the file structure changes 
+        # and not for each file individually
+        self._last_col_index_str = None
+    
+    @property
+    def col_index(self):
+        """Current column index dictionary"""
+        return self._col_index
+    
+    def _update_col_index(self, col_index_str):
+        """Update column information for fast access during read_file
+        
+        Note
+        ----
+        If successful (no exceptions raised), then this methods overwrites the 
+        current column index information stored in :attr:`col_index`.
+        
+        Parameters
+        ----------
+        col_index_str : str
+            header string of data table in files
+            
+        Returns
+        -------
+        dict
+            dictionary containing indices (values) for each data /
+            metadata key specified in ``DATA_COLNAMES`` and ``META_COLNAMES``.
+            
+        Raises
+        ------
+        MetaDataError
+            if one of the specified meta data columns does not exist in data
+        """
+        cols = col_index_str.strip().split(',')
+        mapping = od()
+        for idx, info_str in enumerate(cols):
+            mapping[info_str] = idx
+        col_index = od()
+        # find meta indices
+        for key, val in self.META_COLNAMES.items():
+            if not val in mapping:
+                raise MetaDataError("Required meta-information string {} could "
+                                    "not be found in file header".format(val))
+            col_index[key] = mapping[val]
+        for key, val in self.DATA_COLNAMES.items():
+            if val in mapping:
+                col_index[key] = mapping[val]    
+        self._col_index = col_index
+        self._last_col_index_str = col_index_str
+        return col_index
+    
+    
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """Read all data files into instance of :class:`UngriddedData` object
         

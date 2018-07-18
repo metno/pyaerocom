@@ -38,7 +38,6 @@ import os
 
 import numpy as np
 import pandas as pd
-from collections import OrderedDict as od
 
 from pyaerocom import const
 from pyaerocom.mathutils import (calc_od550aer,
@@ -48,23 +47,15 @@ from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom import StationData
 
 class ReadAeronetSdaV3(ReadAeronetBase):
-    """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
-
-    Attributes
-    ----------
-    data : numpy array of dtype np.float64 initially of shape (10000,8)
-        data point array
-    metadata : dict
-        meta data dictionary
-
-    Parameters
-    ----------
-    verbose : Bool
-        if True some running information is printed
-
+    """Interface for reading Aeronet Sun SDA V3 Level 1.5 and 2.0 data
+    
+    .. seealso::
+        
+        Base classes :class:`ReadAeronetBase` and :class:`ReadUngriddedBase`
+        
     """
     _FILEMASK = '*.lev30'
-    __version__ = "0.04"
+    __version__ = "0.05"
     
     DATASET_NAME = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
     
@@ -75,8 +66,8 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     NAN_VAL = np.float_(-9999.)
     
     REVISION_FILE = const.REVISION_FILE
-    # data vars
-    # will be stored as pandas time series
+    
+    # column names of supported variables
     DATA_COLNAMES = {}
     DATA_COLNAMES['od500gt1aer'] = 'Coarse_Mode_AOD_500nm[tau_c]'
     DATA_COLNAMES['od500lt1aer'] = 'Fine_Mode_AOD_500nm[tau_f]'
@@ -113,36 +104,6 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     # will be extended by auxiliary variables on class init, for details see
     # base class ReadUngriddedBase
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
-
-    def __init__(self, dataset_to_read=None):
-        super(ReadAeronetSdaV3, self).__init__(dataset_to_read)
-        
-        # dictionary that contains information about the file columns
-        # is written in method _update_col_index
-        self._col_index = od()
-        
-        # header string referring to the content in attr. col_index. Is 
-        # updated whenever the former is updated (i.e. when method
-        # _update_col_index is called). Can be used to check if
-        # file structure changed between subsequent files so that 
-        # col_index is only recomputed when the file structure changes 
-        # and not for each file individually
-        self._last_col_index_str = None
-    
-    @property
-    def col_index(self):
-        """Current column index dictionary"""
-        return self._col_index
-    
-    def _update_col_index(self, col_index_str):
-        """Update column information for fast access during read_file"""
-        cols = col_index_str.strip().split(',')
-        col_index = od()
-        for idx, info_str in enumerate(cols):
-            col_index[info_str] = idx
-        self._col_index = col_index
-        self._last_col_index_str = col_index_str
-        return col_index
     
     def read_file(self, filename, 
                   vars_to_retrieve=['od550aer', 'od550gt1aer','od550lt1aer'],
@@ -195,7 +156,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
 
             data_type_comment = in_file.readline()
             # TODO: delete later
-            self.logger.info("Data type comment: {}".format(data_type_comment))
+            self.logger.debug("Data type comment: {}".format(data_type_comment))
             # line_7 = in_file.readline()
             # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string
@@ -212,9 +173,8 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             # reading loop
             vars_available = {}
             for var in vars_to_read:
-                var_id = self.DATA_COLNAMES[var]
-                if var_id in col_index:
-                    vars_available[var] = col_index[var_id]
+                if var in col_index:
+                    vars_available[var] = col_index[var]
                 else:
                     self.logger.warning("Variable {} not available in file {}"
                                         .format(var, os.path.basename(filename)))
@@ -222,31 +182,27 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             for line in in_file:
                 # process line
                 dummy_arr = line.split(',')
-                # the following uses the standard python datetime functions
-                # date_index = col_index[COLNAMES['date']]
-                # hour, minute, second = dummy_arr[col_index[COLNAMES['time']].split(':')
-
-                # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
-                # Build a proper ISO 8601 UTC date string
-                date = col_index[self.META_COLNAMES['date']]
-                time = col_index[self.META_COLNAMES['time']]
                 
-                day, month, year = dummy_arr[date].split(':')
-                datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[time]])
-                datestring = '+'.join([datestring, '00:00'])
-                
-                data_out['dtime'].append(np.datetime64(datestring))
-
                 # copy the meta data (array of type string)
                 for var in self.META_COLNAMES:
-                    val = dummy_arr[col_index[self.META_COLNAMES[var]]]
+                    val = dummy_arr[col_index[var]]
                     try:
                         # e.g. lon, lat, altitude
                         val = float(val)
                     except:
                         pass
                     data_out[var].append(val)
+                    
+                
+                # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
+                # Build a proper ISO 8601 UTC date string
+
+                day, month, year = dummy_arr[col_index['date']].split(':')
+                datestring = '-'.join([year, month, day])
+                datestring = 'T'.join([datestring, dummy_arr[col_index['time']]])
+                datestring = '+'.join([datestring, '00:00'])
+                
+                data_out['dtime'].append(np.datetime64(datestring))
 
                 # copy the data fields 
                 for var, idx in vars_available.items():
