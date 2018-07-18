@@ -38,10 +38,10 @@ import re
 
 from pyaerocom import const
 from pyaerocom.mathutils import (calc_ang4487aer, calc_od550aer)
-from pyaerocom.io import ReadUngriddedBase
-from pyaerocom import UngriddedData, StationData
+from pyaerocom.io.readaeronetbase import ReadAeronetBase
+from pyaerocom import StationData
 
-class ReadAeronetSunV2(ReadUngriddedBase):
+class ReadAeronetSunV2(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
     
     .. seealso::
@@ -54,16 +54,19 @@ class ReadAeronetSunV2(ReadUngriddedBase):
         class containing information about what can be imported from the files
     """
     _FILEMASK = '*.lev20'
-    __version__ = "0.09"
+    __version__ = "0.10"
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     
     # List of all datasets that are supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME]
     
+    # default variables for read method
+    DEFAULT_VARS = ['od550aer']
+    
     #value corresponding to invalid measurement
     NAN_VAL = np.float_(-9999)
 
-    #file column information
+    #file column information 
     COL_INDEX = od(date           = 0,
                    time           = 1,
                    julien_day     = 2,
@@ -208,112 +211,6 @@ class ReadAeronetSunV2(ReadUngriddedBase):
                     del data_out[var]
             
         return data_out
-    
-    def read(self, vars_to_retrieve=['od550aer'], first_file=None, 
-             last_file=None):
-        """Read all data files into instance of :class:`UngriddedData` object
-        
-        Parameters
-        ----------
-        vars_to_retrieve : list
-            list of variables that are supposed to be read from the files
-            (cf. :class:`_col_index`) or computed during import 
-            (cf. class attributes ``AUX_REQUIRES`` and 
-            ``AUX_FUNS``)
-        first_file : int
-            index of first file in file list to read. If None, the very first
-            file in the list is used
-        last_file : int
-            index of last file in list to read. If None, the very last file 
-            in the list is used
-
-        
-        Example
-        -------
-        >>> import pyaerocom.io.read_aeronet_sunv2
-        >>> obj = pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2()
-        >>> obj.read()
-        """
-        
-        if len(self.files) == 0:
-            self.get_file_list()
-        files = sorted(self.files)
-        
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
-        
-        files = files[first_file:last_file]
-        # initialisations
-        self.read_failed = []
-        data_obj = UngriddedData()
-        meta_key = 0.0
-        idx = 0
-        
-        #assign metadata object
-        metadata = data_obj.metadata
-        
-        num_vars = len(vars_to_retrieve)
-        for _file in files:
-            try:
-                station_data = self.read_file(_file, vars_to_retrieve)
-                
-                # Fill the metatdata dict
-                metadata[meta_key] = {}
-                metadata[meta_key]['station_name'] = station_data['station_name']
-                metadata[meta_key]['latitude'] = station_data['latitude']
-                metadata[meta_key]['longitude'] = station_data['longitude']
-                metadata[meta_key]['altitude'] = station_data['altitude']
-                metadata[meta_key]['PI'] = station_data['PI']
-                metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-    
-                # this is a list with indexes of this station for each variable
-                # not sure yet, if we really need that or if it speeds up things
-                metadata[meta_key]['indexes'] = {}
-                
-                num_times = station_data.num_timestamps
-                totnum = station_data.len_flat(num_vars)
-                
-                #check if size of data object needs to be extended
-                if (idx + totnum) >= data_obj._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                    data_obj.add_chunk(totnum)
-                
-                #write common meta info for this station
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._LATINDEX] = station_data['latitude']
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._LONINDEX] = station_data['longitude']
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._ALTITUDEINDEX] = station_data['altitude']
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._METADATAKEYINDEX] = meta_key
-                
-                #access array containing time stamps
-                times = np.float64(station_data['dtime'])
-                for var_idx, var in enumerate(vars_to_retrieve):
-                    values = station_data[var]
-                    start = idx + var_idx * num_times
-                    stop = start + num_times
-                    # write to data object
-                    data_obj._data[start:stop, data_obj._TIMEINDEX] = times
-                    data_obj._data[start:stop, data_obj._DATAINDEX] = values
-                    data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-                    
-                    #assign indices in metadata dictionary
-                    metadata[meta_key]['indexes'][var] = np.arange(start, stop)
-                                       
-                idx += totnum
-                meta_key += 1
-            except:
-                self.read_failed.append(_file)
-                self.logger.exception("Failed to read file %s")
-        
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-        self.data = data_obj
-        return data_obj
     
 if __name__=="__main__":
     

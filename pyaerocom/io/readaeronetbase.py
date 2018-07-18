@@ -5,17 +5,13 @@ import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.exceptions import DataExtractionError, MetaDataError
+from pyaerocom.exceptions import MetaDataError
 
 class ReadAeronetBase(ReadUngriddedBase):
     """Abstract base class template for reading of Aeronet data
     
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
-    
-    Attributes
-    ----------
-    
     """
     
     DATA_COLNAMES = {}
@@ -144,7 +140,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key] = {}
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_coords())
-
+            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             # this is a list with indexes of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             metadata[meta_key]['indexes'] = {}
@@ -198,6 +194,7 @@ if __name__=="__main__":
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
         _FILEMASK = ".txt"
         DATASET_NAME = "Blaaa"
+        SUPPORTED_DATASETS = ['Blaaa', 'Blub']
         __version__ = "0.01"
         PROVIDES_VARIABLES = ["od550aer"]
         REVISION_FILE = const.REVISION_FILE
@@ -206,6 +203,10 @@ if __name__=="__main__":
             if dataset_to_read is not None:
                 self.DATASET_NAME = dataset_to_read
         
+        @property
+        def col_index(self):
+            raise NotImplementedError
+            
         def read(self):
             raise NotImplementedError
             

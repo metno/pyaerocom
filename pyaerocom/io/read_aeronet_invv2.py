@@ -36,13 +36,11 @@ import os, re
 import numpy as np
 import pandas as pd
 
-from collections import OrderedDict as od
-
 from pyaerocom import const
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom import UngriddedData, StationData
+from pyaerocom.io.readaeronetbase import ReadAeronetBase
+from pyaerocom import StationData
 
-class ReadAeronetInvV2(ReadUngriddedBase):
+class ReadAeronetInvV2(ReadAeronetBase):
     """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
 
     Parameters
@@ -59,6 +57,8 @@ class ReadAeronetInvV2(ReadUngriddedBase):
     
     SUPPORTED_DATASETS = [const.AERONET_INV_V2L2_DAILY_NAME,
                           const.AERONET_INV_V2L15_DAILY_NAME]
+    
+    DEFAULT_VARS = ['ssa675aer','ssa440aer']
     
     NAN_VAL = np.float_(-9999.)
     
@@ -83,37 +83,6 @@ class ReadAeronetInvV2(ReadUngriddedBase):
     
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
 
-    def __init__(self, dataset_to_read=None):
-        #init base class
-        super(ReadAeronetInvV2, self).__init__(dataset_to_read)
-        
-        # dictionary that contains information about the file columns
-        # is written in method _update_col_index
-        self._col_index = od()
-        
-        # header string referring to the content in attr. col_index. Is 
-        # updated whenever the former is updated (i.e. when method
-        # _update_col_index is called). Can be used to check if
-        # file structure changed between subsequent files so that 
-        # col_index is only recomputed when the file structure changes 
-        # and not for each file individually
-        self._last_col_index_str = None
-        
-    @property
-    def col_index(self):
-        """Current column index dictionary"""
-        return self._col_index
-    
-    def _update_col_index(self, col_index_str):
-        """Update column information for fast access during read_file"""
-        cols = col_index_str.strip().split(',')
-        col_index = od()
-        for idx, info_str in enumerate(cols):
-            col_index[info_str] = idx
-        self._col_index = col_index
-        self._last_col_index_str = col_index_str
-        return col_index
-    
     # TODO: currently every file is read, regardless of whether it actually
     # contains the desired variables or not. Do we need that? Slows stuff down..
     # Also: Quick check reading all files in the database showed that only 
@@ -194,9 +163,8 @@ class ReadAeronetInvV2(ReadUngriddedBase):
             # reading loop
             vars_available = {}
             for var in vars_to_read:
-                var_id = self.DATA_COLNAMES[var]
-                if var_id in col_index:
-                    vars_available[var] = col_index[var_id]
+                if var in col_index:
+                    vars_available[var] = col_index[var]
                 else:
                     self.logger.warning("Variable {} not available in file {}"
                                         .format(var, os.path.basename(filename)))
@@ -210,17 +178,23 @@ class ReadAeronetInvV2(ReadUngriddedBase):
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                date = col_index[self.META_COLNAMES['date']]
-                time = col_index[self.META_COLNAMES['time']]
-                day, month, year = dummy_arr[date].split(':')
+                day, month, year = dummy_arr[col_index['date']].split(':')
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[time]])
+                datestring = 'T'.join([datestring, dummy_arr[col_index['time']]])
                 datestring = '+'.join([datestring, '00:00'])
                 data_out['dtime'].append(np.datetime64(datestring))
-
+                
+                for var in self.META_COLNAMES:
+                    val = dummy_arr[col_index[var]]
+                    try:
+                        # e.g. lon, lat, altitude
+                        val = float(val)
+                    except:
+                        pass
+                    data_out[var].append(val)
                 # copy the meta data (array of type string)
                 for meta_var in self.META_COLNAMES:
-                    meta_val = dummy_arr[col_index[self.META_COLNAMES[meta_var]]]
+                    meta_val = dummy_arr[col_index[meta_var]]
                     data_out[meta_var].append(meta_val)
 
                 # copy the data fields that are available (rest will be filled
@@ -260,126 +234,11 @@ class ReadAeronetInvV2(ReadUngriddedBase):
 
         return data_out
 
-    def read(self, vars_to_retrieve=['ssa675aer','ssa440aer'], first_file=None, 
-             last_file=None):
-        """Read all data files into instance of :class:`UngriddedData` object
-        
-        Parameters
-        ----------
-        vars_to_retrieve : list
-            list of variables that are supposed to be imported
-        first_file : int
-            index of first file in file list to read. If None, the very first
-            file in the list is used
-        last_file : int
-            index of last file in list to read. If None, the very last file 
-            in the list is used
-            
-        Example
-        -------
-        >>> from pyaerocom.io import ReadAeronetInvV2
-        >>> obj = ReadAeronetSunV2()
-        >>> obj.read()
-        """
-        if len(self.files) == 0:
-            self.get_file_list()
-        files = sorted(self.files)
-        
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
-        
-        files = files[first_file:last_file]
-        
-        self.read_failed = []
-        
-        data_obj = UngriddedData()
-        meta_key = 0.0
-        idx = 0
-        
-        #assign metadata object
-        metadata = data_obj.metadata
-        
-        num_vars = len(vars_to_retrieve)
-
-        for _file in files:
-            try:
-                station_data = self.read_file(_file, vars_to_retrieve)
-                
-                
-                # Fill the metatdata dict
-                # the location in the data set is time step dependant!
-                # use the lat location here since we have to choose one location
-                # in the time series plot
-                metadata[meta_key] = {}
-                metadata[meta_key].update(station_data.get_meta())
-                metadata[meta_key].update(station_data.get_coords())
-                
-                
-# =============================================================================
-#                 
-#                 metadata[meta_key]['station_name'] = station_data['station_name']
-#                 metadata[meta_key]['latitude'] = station_data['latitude']
-#                 metadata[meta_key]['longitude'] = station_data['longitude']
-#                 metadata[meta_key]['altitude'] = station_data['altitude']
-#                 metadata[meta_key]['PI'] = station_data['PI']
-#                 metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-# =============================================================================
-    
-                # this is a list with indexes of this station for each variable
-                # not sure yet, if we really need that or if it speeds up things
-                metadata[meta_key]['indexes'] = {}
-                
-                num_times = station_data.num_timestamps
-                totnum = station_data.len_flat(num_vars)
-                
-                #check if size of data object needs to be extended
-                if (idx + totnum) >= data_obj._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                    data_obj.add_chunk(totnum)
-                
-                #write common meta info for this station
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._LATINDEX] = station_data['latitude']
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._LONINDEX] = station_data['longitude']
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._ALTITUDEINDEX] = station_data['altitude']
-                data_obj._data[idx:(idx+totnum), 
-                               data_obj._METADATAKEYINDEX] = meta_key
-                
-                #access array containing time stamps
-                times = np.float64(station_data['dtime'])
-                
-                for var_idx, var in enumerate(vars_to_retrieve):
-                    values = station_data[var]
-                    start = idx + var_idx * num_times
-                    stop = start + num_times
-                    
-                    # write to data object
-                    data_obj._data[start:stop, data_obj._TIMEINDEX] = times
-                    data_obj._data[start:stop, data_obj._DATAINDEX] = values
-                    data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-                    
-                    metadata[meta_key]['indexes'][var] = np.arange(start, stop)
-                
-                idx += totnum  
-                meta_key = meta_key + 1.
-            except:
-                self.read_failed.append(_file)
-                self.logger.exception("Failed to read file %s")
-
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-        self.data = data_obj
-        return data_obj
-
 if __name__=="__main__":
     read = ReadAeronetInvV2(const.AERONET_INV_V2L15_DAILY_NAME)
     read.verbosity_level = 'debug'
     
-    first_ten = read.read(last_file=10)
+    data = read.read(last_file=2)
     
     data_first = read.read_first_file()
     print(data_first)
