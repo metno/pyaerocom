@@ -34,7 +34,6 @@
 # =============================================================================
 # from .read_aeronet_sdav2 import ReadAeronetSDAV2
 from .readungriddedbase import ReadUngriddedBase
-from .timeseriesfiledata import TimeSeriesFileData
 
 from .read_aeronet_invv2 import ReadAeronetInvV2
 from .read_aeronet_sdav3 import ReadAeronetSdaV3

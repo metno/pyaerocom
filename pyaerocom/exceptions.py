@@ -20,6 +20,11 @@
 """
 Module containing pyaerocom custom exceptions
 """
+class CoordinateError(ValueError):
+    pass
+
+class MetaDataError(AttributeError):
+    pass
 
 class IllegalArgumentError(ValueError):
     pass

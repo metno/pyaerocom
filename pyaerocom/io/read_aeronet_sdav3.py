@@ -44,11 +44,10 @@ from pyaerocom import const
 from pyaerocom.mathutils import (calc_od550aer,
                                  calc_od550gt1aer,
                                  calc_od550lt1aer)
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.timeseriesfiledata import TimeSeriesFileData
-from pyaerocom import UngriddedData
+from pyaerocom.io.readaeronetbase import ReadAeronetBase
+from pyaerocom import StationData
 
-class ReadAeronetSdaV3(ReadUngriddedBase):
+class ReadAeronetSdaV3(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
 
     Attributes
@@ -72,6 +71,7 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
                           const.AERONET_SUN_V3L2_SDA_DAILY_NAME]
     
+    DEFAULT_VARS = ['od550aer', 'od550gt1aer','od550lt1aer']
     NAN_VAL = np.float_(-9999.)
     
     REVISION_FILE = const.REVISION_FILE
@@ -161,14 +161,14 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
             
         Returns
         -------
-        TimeSeriesFileData 
+        StationData 
             dict-like object containing results
         """
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         #create empty data object (is dictionary with extended functionality)
-        data_out = TimeSeriesFileData() 
+        data_out = StationData() 
         
         # create empty arrays for meta information
         for item in self.METADATA_COLNAMES:
@@ -283,111 +283,6 @@ class ReadAeronetSdaV3(ReadUngriddedBase):
                     del data_out[var]
 
         return data_out
-
-    ###################################################################################
-
-    def read(self, vars_to_retrieve=['od550aer', 'od550gt1aer','od550lt1aer'], 
-             first_file=None, last_file=None):
-        """Read all data files into instance of :class:`UngriddedData` object
-        
-        Parameters
-        ----------
-        vars_to_retrieve : list
-            list of variables that are supposed to be imported
-        first_file : int
-            index of first file in file list to read. If None, the very first
-            file in the list is used
-        last_file : int
-            index of last file in list to read. If None, the very last file 
-            in the list is used
-            
-        Example
-        -------
-        >>> from pyaerocom.io import ReadAeronetSdaV3
-        >>> obj = ReadAeronetSdaV3()
-        >>> obj.read()
-        """
-        if len(self.files) == 0:
-            self.get_file_list()
-        files = sorted(self.files)
-        
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
-        
-        files = files[first_file:last_file]
-        
-        self.read_failed = []
-        
-        data_obj = UngriddedData()
-        meta_key = 0.0
-        idx = 0
-        
-        #assign metadata object
-        metadata = data_obj.metadata
-        
-        num_vars = len(vars_to_retrieve)
-
-        for _file in files:
-            station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
-            # Fill the metatdata dict
-            # the location in the data set is time step dependant!
-            # use the lat location here since we have to choose one location
-            # in the time series plot
-            metadata[meta_key] = {}
-            metadata[meta_key]['station_name'] = station_data['station_name'][-1]
-            metadata[meta_key]['latitude'] = station_data['latitude'][-1]
-            metadata[meta_key]['longitude'] = station_data['longitude'][-1]
-            metadata[meta_key]['altitude'] = station_data['altitude'][-1]
-            metadata[meta_key]['PI'] = station_data['PI']
-            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-
-            # this is a list with indexes of this station for each variable
-            # not sure yet, if we really need that or if it speeds up things
-            metadata[meta_key]['indexes'] = {}
-            
-            num_times = station_data.num_timestamps
-            totnum = station_data.len_flat(num_vars)
-            
-            #check if size of data object needs to be extended
-            if (idx + totnum) >= data_obj._ROWNO:
-                #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                data_obj.add_chunk(totnum)
-            
-            #access array containing time stamps
-            times = np.float64(station_data['dtime'])
-            
-            for var_idx, var in enumerate(vars_to_retrieve):
-                values = station_data[var]
-                start = idx + var_idx * num_times
-                stop = start + num_times
-                
-                
-                #write common meta info for this station
-                data_obj._data[start:stop, 
-                               data_obj._LATINDEX] = station_data['latitude']
-                data_obj._data[start:stop, 
-                               data_obj._LONINDEX] = station_data['longitude']
-                data_obj._data[start:stop, 
-                               data_obj._ALTITUDEINDEX] = station_data['altitude']
-                data_obj._data[start:stop, 
-                               data_obj._METADATAKEYINDEX] = meta_key
-                               
-                # write data to data object
-                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
-                data_obj._data[start:stop, data_obj._DATAINDEX] = values
-                data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-                
-                metadata[meta_key]['indexes'][var] = np.arange(start, stop)
-            
-            idx += totnum  
-            meta_key = meta_key + 1.
-        
-        # shorten data_obj._data to the right number of points
-        data_obj._data = data_obj._data[:idx]
-        self.data = data_obj
-        return data_obj
     
 if __name__=="__main__":
     read = ReadAeronetSdaV3()

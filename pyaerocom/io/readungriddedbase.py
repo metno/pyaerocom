@@ -9,7 +9,21 @@ from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
 
 class ReadUngriddedBase(abc.ABC):
-    """Abstract base class template for reading of ungridded data"""
+    """Abstract base class template for reading of ungridded data
+    
+    .. note::
+    
+        Even though this is a template for a reading class, it prodides the 
+        option to compute variables during import, that are not contained in 
+        the actual data files. These can be specified for each auxiliary 
+        parameter using the two class attributes ``AUX_REQUIRES`` (what 
+        additional variables are required to perform the computation) and 
+        ``AUX_FUNS`` (functions used to perform the computations). 
+        See, for instance, the class :class:`ReadAeronetSunV2`, which includes 
+        the computation of the AOD at 550nm and the Angstrom coefficient 
+        (in 440-870 nm range).
+    
+    """
     # dictionary containing information about additionally required variables
     # for each auxiliary variable (i.e. each variable that is not provided
     # by the original data but computed on import)
@@ -125,7 +139,9 @@ class ReadUngriddedBase(abc.ABC):
         
     @abc.abstractmethod
     def read_file(self, filename, vars_to_retrieve=None):
-        """Method that reads a single data file and returns the result
+        """Read single file as instance of :class:`TimeSeriesFileData`
+        
+        
         
         Parameters
         ----------
@@ -144,7 +160,9 @@ class ReadUngriddedBase(abc.ABC):
     
     @abc.abstractmethod
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
-        """Method that reads a single data file and returns the result
+        """Method that reads list of files as instance of :class:`UngriddedData`
+        
+        
         
         Parameters
         ----------

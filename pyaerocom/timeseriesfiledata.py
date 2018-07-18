@@ -21,7 +21,7 @@ class TimeSeriesFileData(BrowseDict):
     def __init__(self, *args, **kwargs):
         super(TimeSeriesFileData, self).__init__(*args, **kwargs)
         self.dtime = []
-    
+        
     @property
     def num_timestamps(self):
         """Total number of timestamps in this object"""
@@ -166,7 +166,7 @@ class TimeSeriesFileData(BrowseDict):
                 s += "\n%s: %s" %(k,v)
         s += arrays
         return s
-    
+
 if __name__=="__main__":
     
     d = TimeSeriesFileData()

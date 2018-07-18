@@ -40,8 +40,7 @@ from collections import OrderedDict as od
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.timeseriesfiledata import TimeSeriesFileData
-from pyaerocom import UngriddedData
+from pyaerocom import UngriddedData, StationData
 
 class ReadAeronetInvV2(ReadUngriddedBase):
     """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
@@ -135,7 +134,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
             
         Returns
         -------
-        TimeSeriesFileData 
+        StationData 
             dict-like object containing results
         
 
@@ -150,7 +149,7 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         #create empty data object (is dictionary with extended functionality)
-        data_out = TimeSeriesFileData() 
+        data_out = StationData() 
         
         # create empty arrays for meta information
         for item in self.METADATA_COLNAMES:
@@ -307,17 +306,26 @@ class ReadAeronetInvV2(ReadUngriddedBase):
         for _file in files:
             try:
                 station_data = self.read_file(_file, vars_to_retrieve)
+                
+                
                 # Fill the metatdata dict
                 # the location in the data set is time step dependant!
                 # use the lat location here since we have to choose one location
                 # in the time series plot
                 metadata[meta_key] = {}
-                metadata[meta_key]['station_name'] = station_data['station_name']
-                metadata[meta_key]['latitude'] = station_data['latitude']
-                metadata[meta_key]['longitude'] = station_data['longitude']
-                metadata[meta_key]['altitude'] = station_data['altitude']
-                metadata[meta_key]['PI'] = station_data['PI']
-                metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+                metadata[meta_key].update(station_data.get_meta())
+                metadata[meta_key].update(station_data.get_coords())
+                
+                
+# =============================================================================
+#                 
+#                 metadata[meta_key]['station_name'] = station_data['station_name']
+#                 metadata[meta_key]['latitude'] = station_data['latitude']
+#                 metadata[meta_key]['longitude'] = station_data['longitude']
+#                 metadata[meta_key]['altitude'] = station_data['altitude']
+#                 metadata[meta_key]['PI'] = station_data['PI']
+#                 metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+# =============================================================================
     
                 # this is a list with indexes of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things

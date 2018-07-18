@@ -38,24 +38,15 @@ import re
 
 from pyaerocom import const
 from pyaerocom.mathutils import (calc_ang4487aer, calc_od550aer)
-from pyaerocom.io import ReadUngriddedBase, TimeSeriesFileData
-from pyaerocom import UngriddedData
+from pyaerocom.io import ReadUngriddedBase
+from pyaerocom import UngriddedData, StationData
 
 class ReadAeronetSunV2(ReadUngriddedBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
     
-    
-    Note
-    ----
-    Even though this is a reading class, it also includes the option to 
-    compute variables during import, that are not contained in the actual 
-    data files. These are, for instance, the AOD at 550nm or the Angstrom 
-    coefficient (corresponding to 440-870 nm range), where the latter is 
-    required to compute the former. These additional computations are 
-    specified in the two header dictionaries ``AUX_REQUIRES`` (what
-    variables are required to perform the computation) and 
-    ``AUX_FUNS`` (functions used to perform the computations).
-    
+    .. seealso::
+        
+        Base class :class:`ReadUngriddedBase` 
     
     Attributes
     ----------
@@ -142,7 +133,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
         
         Returns
         -------
-        TimeSeriesFileData 
+        StationData 
             dict-like object containing results
             
         Example
@@ -156,7 +147,7 @@ class ReadAeronetSunV2(ReadUngriddedBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
         #create empty data object (is dictionary with extended functionality)
-        data_out = TimeSeriesFileData() 
+        data_out = StationData() 
         
         #create empty array for all variables that are supposed to be read
         for var in vars_to_read:
