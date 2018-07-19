@@ -6,4 +6,4 @@ Created on Fri Apr 27 09:29:23 2018
 @author: jonasg
 """
 
-TEST_RTOL = 1e-7
+TEST_RTOL = 1e-5

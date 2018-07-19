@@ -1,0 +1,470 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.io.readaeronetbase &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.io.readaeronetbase</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.io.readaeronetbase</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readungriddedbase</span> <span class="k">import</span> <span class="n">ReadUngriddedBase</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.ungriddeddata</span> <span class="k">import</span> <span class="n">UngriddedData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">MetaDataError</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+
+<div class="viewcode-block" id="ReadAeronetBase"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadAeronetBase">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetBase</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;TEMPLATE: Abstract base class template for reading of Aeronet data</span>
+<span class="sd">    </span>
+<span class="sd">    Extended abstract base class, derived from low-level base class</span>
+<span class="sd">    :class:`ReadUngriddedBase` that contains some more functionality.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#: column delimiter in data block of files</span>
+    <span class="n">COL_DELIM</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span>
+    
+    <span class="c1">#: dictionary specifying the file column names (values) for each Aerocom </span>
+    <span class="c1">#: variable (keys)</span>
+    <span class="n">DATA_COLNAMES</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="c1">#: dictionary specifying the file column names (values) for each </span>
+    <span class="c1">#: metadata key (cf. attributes of :class:`StationData`, e.g.</span>
+    <span class="c1">#: &#39;station_name&#39;, &#39;longitude&#39;, &#39;latitude&#39;, &#39;altitude&#39;)</span>
+    <span class="n">META_COLNAMES</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">DEFAULT_VARS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List containing default variables to read&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
+        
+        <span class="c1"># dictionary that contains information about the file columns</span>
+        <span class="c1"># is written in method _update_col_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_col_index</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        
+        <span class="c1"># header string referring to the content in attr. col_index. Is </span>
+        <span class="c1"># updated whenever the former is updated (i.e. when method</span>
+        <span class="c1"># _update_col_index is called). Can be used to check if</span>
+        <span class="c1"># file structure changed between subsequent files so that </span>
+        <span class="c1"># col_index is only recomputed when the file structure changes </span>
+        <span class="c1"># and not for each file individually</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dictionary that specifies the index for each data column</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        When writing an implementation of this class, you may automise the </span>
+<span class="sd">        column index retrieval by providing the header names for each meta and</span>
+<span class="sd">        data column you want to extract using the attribute dictionaries</span>
+<span class="sd">        :attr:`META_COLNAMES` and :attr:`DATA_COLNAMES` by calling </span>
+<span class="sd">        :func:`_update_col_index` in your implementation of :func:`read_file`</span>
+<span class="sd">        when you reach the line that contains the header information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_col_index</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">REVISION_FILE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Name of revision file located in data directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span>
+    
+    <span class="k">def</span> <span class="nf">_update_col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index_str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update column information for fast access during read_file</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        If successful (no exceptions raised), then this methods overwrites the </span>
+<span class="sd">        current column index information stored in :attr:`col_index`.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        col_index_str : str</span>
+<span class="sd">            header string of data table in files</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            dictionary containing indices (values) for each data /</span>
+<span class="sd">            metadata key specified in ``DATA_COLNAMES`` and ``META_COLNAMES``.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        MetaDataError</span>
+<span class="sd">            if one of the specified meta data columns does not exist in data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">col_index_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COL_DELIM</span><span class="p">)</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">info_str</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="n">mapping</span><span class="p">[</span><span class="n">info_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">col_index</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="c1"># find meta indices</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_COLNAMES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MetaDataError</span><span class="p">(</span><span class="s2">&quot;Required meta-information string </span><span class="si">{}</span><span class="s2"> could &quot;</span>
+                                    <span class="s2">&quot;not be found in file header&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+            <span class="n">col_index</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">val</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATA_COLNAMES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">:</span>
+                <span class="n">col_index</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">val</span><span class="p">]</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">_col_index</span> <span class="o">=</span> <span class="n">col_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span> <span class="o">=</span> <span class="n">col_index_str</span>
+        <span class="k">return</span> <span class="n">col_index</span>
+    
+    
+<div class="viewcode-block" id="ReadAeronetBase.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadAeronetBase.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">first_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+             <span class="n">last_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method that reads list of files as instance of :class:`UngriddedData`</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vars_to_retrieve : :obj:`list` or similar, optional,</span>
+<span class="sd">            list containing variable IDs that are supposed to be read. If None, </span>
+<span class="sd">            all variables in :attr:`PROVIDES_VARIABLES` are loaded</span>
+<span class="sd">        files : :obj:`list`, optional</span>
+<span class="sd">            list of files to be read. If None, then the file list is used that</span>
+<span class="sd">            is returned on :func:`get_file_list`.</span>
+<span class="sd">        first_file : :obj:`int`, optional</span>
+<span class="sd">            index of first file in file list to read. If None, the very first</span>
+<span class="sd">            file in the list is used</span>
+<span class="sd">        last_file : :obj:`int`, optional</span>
+<span class="sd">            index of last file in list to read. If None, the very last file </span>
+<span class="sd">            in the list is used</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        UngriddedData</span>
+<span class="sd">            data object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_VARS</span>
+        <span class="k">if</span> <span class="n">files</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span>
+    
+        <span class="k">if</span> <span class="n">first_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">first_file</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">last_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">last_file</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+        
+        <span class="n">files</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">first_file</span><span class="p">:</span><span class="n">last_file</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_failed</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="n">data_obj</span> <span class="o">=</span> <span class="n">UngriddedData</span><span class="p">()</span>
+        <span class="n">meta_key</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1">#assign metadata object</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">metadata</span>
+        
+        <span class="n">num_vars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">station_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
+            <span class="c1"># Fill the metatdata dict</span>
+            <span class="c1"># the location in the data set is time step dependant!</span>
+            <span class="c1"># use the lat location here since we have to choose one location</span>
+            <span class="c1"># in the time series plot</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">station_data</span><span class="o">.</span><span class="n">get_meta</span><span class="p">())</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">station_data</span><span class="o">.</span><span class="n">get_coords</span><span class="p">())</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
+            <span class="c1"># this is a list with indexes of this station for each variable</span>
+            <span class="c1"># not sure yet, if we really need that or if it speeds up things</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;indexes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            
+            <span class="n">num_times</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">num_timestamps</span>
+            <span class="n">totnum</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">len_flat</span><span class="p">(</span><span class="n">num_vars</span><span class="p">)</span>
+            
+            <span class="c1">#check if size of data object needs to be extended</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="n">totnum</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">:</span>
+                <span class="c1">#if totnum &lt; data_obj._CHUNKSIZE, then the latter is used</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">add_chunk</span><span class="p">(</span><span class="n">totnum</span><span class="p">)</span>
+            
+            <span class="c1">#access array containing time stamps</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
+            
+            <span class="k">for</span> <span class="n">var_idx</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">):</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">var_idx</span> <span class="o">*</span> <span class="n">num_times</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">num_times</span>
+                
+                
+                <span class="c1">#write common meta info for this station</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
+                               <span class="n">data_obj</span><span class="o">.</span><span class="n">_LATINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
+                               <span class="n">data_obj</span><span class="o">.</span><span class="n">_LONINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
+                               <span class="n">data_obj</span><span class="o">.</span><span class="n">_ALTITUDEINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> 
+                               <span class="n">data_obj</span><span class="o">.</span><span class="n">_METADATAKEYINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta_key</span>
+                               
+                <span class="c1"># write data to data object</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">times</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+                <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_VARINDEX</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
+                
+                <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+            
+            <span class="n">idx</span> <span class="o">+=</span> <span class="n">totnum</span>  
+            <span class="n">meta_key</span> <span class="o">=</span> <span class="n">meta_key</span> <span class="o">+</span> <span class="mf">1.</span>
+        
+        <span class="c1"># shorten data_obj._data to the right number of points</span>
+        <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">_data</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data_obj</span>
+        <span class="k">return</span> <span class="n">data_obj</span></div></div>
+    
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">ReadUngriddedImplementationExample</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
+        <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s2">&quot;.txt&quot;</span>
+        <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="s2">&quot;Blaaa&quot;</span>
+        <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Blaaa&#39;</span><span class="p">,</span> <span class="s1">&#39;Blub&#39;</span><span class="p">]</span>
+        <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.01&quot;</span>
+        <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
+        <span class="n">REVISION_FILE</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span>
+        
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
+        
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            
+        <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            
+        <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            
+    <span class="n">c</span> <span class="o">=</span> <span class="n">ReadUngriddedImplementationExample</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="o">=</span><span class="s1">&#39;AeronetSunV2Lev1.5.daily&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

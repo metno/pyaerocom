@@ -48,28 +48,35 @@ class ReadAeronetSunV2(ReadAeronetBase):
         
         Base classes :class:`ReadAeronetBase` and :class:`ReadUngriddedBase`
     
-    Attributes
+    Todo
+    ----
+    Check level 1.5 data and include
+        
+    Parameters
     ----------
-    col_index : dict
-        class containing information about what can be imported from the files
+    dataset_to_read
+        string specifying either of the supported datasets that are defined 
+        in ``SUPPORTED_DATASETS``.
     """
+    #: Mask for identifying datafiles 
     _FILEMASK = '*.lev20'
-    __version__ = "0.10"
     
-    REVISION_FILE = const.REVISION_FILE
+    #: version log of this class (for caching)
+    __version__ = "0.11"
     
+    #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     
-    # List of all datasets that are supported by this interface
+    #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME]
     
-    # default variables for read method
+    #: default variables for read method
     DEFAULT_VARS = ['od550aer']
     
-    #value corresponding to invalid measurement
-    NAN_VAL = np.float_(-9999)
+    #: value corresponding to invalid measurement
+    NAN_VAL = -9999.
     
-    #file column information 
+    #: Dictionary that specifies the index for each data column
     COL_INDEX = od(date           = 0,
                    time           = 1,
                    julien_day     = 2,
@@ -87,40 +94,30 @@ class ReadAeronetSunV2(ReadAeronetBase):
                    od380aer       = 17,
                    od340aer       = 18)
     
-    # Variables provided by this interface. Note that some of them are not 
-    # contained in the original data files but are computed in this class
-    # during data import. For each of the latter, please provide the required 
-    # information in attributes ``AUX_REQUIRES`` and ``AUX_FUNS``
-    PROVIDES_VARIABLES = ['od500aer', 
-                          'od440aer', 
-                          'od870aer']
-
-    
-    
-    # specify required dependencies for auxiliary variables, i.e. variables 
-    # that are NOT in Aeronet files but are computed within this class. 
-    # For instance, the computation of the AOD at 550nm requires import of
-    # the AODs at 440, 500 and 870 nm. 
+    #: dictionary containing information about additionally required variables
+    #: for each auxiliary variable (i.e. each variable that is not provided
+    #: by the original data but computed on import)
     AUX_REQUIRES = {'od550aer'   :   ['od440aer', 
                                       'od500aer',
                                       'ang4487aer'],
                     'ang4487aer' :   ['od440aer',
                                       'od870aer']}
                     
-    # Functions that are used to compute additional variables (i.e. one 
-    # for each variable defined in AUX_REQUIRES)
+    #: Functions that are used to compute additional variables (i.e. one 
+    #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {'od550aer'   :   calc_od550aer,
                 'ang4487aer' :   calc_ang4487aer}
     
-    # Level 2.0. Quality Assured Data.<p>The following data are pre and post field calibrated, automatically cloud cleared and manually inspected.
-    # Version 2 Direct Sun Algorithm
-    # Location=Zvenigorod,long=36.775,lat=55.695,elev=200,Nmeas=11,PI=Brent_Holben,Email=Brent.N.Holben@nasa.gov
-    # AOD Level 2.0,Daily Averages,UNITS can be found at,,, http://aeronet.gsfc.nasa.gov/data_menu.html
-    # Date(dd-mm-yy),Time(hh:mm:ss),Julian_Day,AOT_1640,AOT_1020,AOT_870,AOT_675,AOT_667,AOT_555,AOT_551,AOT_532,AOT_531,AOT_500,AOT_490,AOT_443,AOT_440,AOT_412,AOT_380,AOT_340,Water(cm),%TripletVar_1640,%TripletVar_1020,%TripletVar_870,%TripletVar_675,%TripletVar_667,%TripletVar_555,%TripletVar_551,%TripletVar_532,%TripletVar_531,%TripletVar_500,%TripletVar_490,%TripletVar_443,%TripletVar_440,%TripletVar_412,%TripletVar_380,%TripletVar_340,%WaterError,440-870Angstrom,380-500Angstrom,440-675Angstrom,500-870Angstrom,340-440Angstrom,440-675Angstrom(Polar),N[AOT_1640],N[AOT_1020],N[AOT_870],N[AOT_675],N[AOT_667],N[AOT_555],N[AOT_551],N[AOT_532],N[AOT_531],N[AOT_500],N[AOT_490],N[AOT_443],N[AOT_440],N[AOT_412],N[AOT_380],N[AOT_340],N[Water(cm)],N[440-870Angstrom],N[380-500Angstrom],N[440-675Angstrom],N[500-870Angstrom],N[340-440Angstrom],N[440-675Angstrom(Polar)]
-    # 16:09:2006,00:00:00,259.000000,-9999.,0.036045,0.036734,0.039337,-9999.,-9999.,-9999.,-9999.,-9999.,0.064670,-9999.,-9999.,0.069614,-9999.,0.083549,0.092204,0.973909,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,-9999.,1.126095,0.973741,1.474242,1.135232,1.114550,-9999.,-9999.,11,11,11,-9999.,-9999.,-9999.,-9999.,-9999.,11,-9999.,-9999.,11,-9999.,11,11,11,11,11,11,11,11,-9999.
-    
+    #: List of variables that are provided by this dataset (will be extended 
+    #: by auxiliary variables on class init, for details see __init__ method of
+    #: base class ReadUngriddedBase)
+    PROVIDES_VARIABLES = ['od500aer', 
+                          'od440aer', 
+                          'od870aer']
+
     @property
     def col_index(self):
+        """Dictionary that specifies the index for each data column"""
         return self.COL_INDEX
     
     def read_file(self, filename, vars_to_retrieve=None,
@@ -185,7 +182,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
             
             for line in in_file:
                 # process line
-                dummy_arr = line.split(',')
+                dummy_arr = line.split(self.COL_DELIM)
                 
                 day, month, year = dummy_arr[self.col_index['date']].split(':')
                 

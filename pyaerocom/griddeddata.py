@@ -375,6 +375,8 @@ class GriddedData(object):
             are: ``longitude, latitude, var_name``
             
         """
+        raise NotImplementedError
+        
     def to_time_series(self, sample_points=None, scheme="nearest", 
                     collapse_scalar=True, **coords):
 
@@ -624,7 +626,7 @@ class GriddedData(object):
         try:
             itp_cube = self.grid.interpolate(sample_points, scheme, 
                                              collapse_scalar)
-        except MemoryError as e:
+        except MemoryError:
             raise MemoryError("Interpolation failed since grid of interpolated "
                               "Cube is too large")
         return GriddedData(itp_cube, **self.suppl_info)
@@ -683,7 +685,6 @@ class GriddedData(object):
             (365, 4)
         
         """
-        raise NotImplementedError
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))

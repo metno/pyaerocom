@@ -45,27 +45,41 @@ from pyaerocom.io.readaeronetbase import ReadAeronetBase
 
 
 class ReadAeronetSDAV2(ReadAeronetBase):
-    """Read Aeronet SDA data class"""
-    # FILEMASK = '*_A*.ONEILL_20'
+    """Interface for reading Aeronet Sun V2 Level 2 data
+    
+    Todo
+    ----
+    Check if also level 1.5 works and include
+
+    Parameters
+    ----------
+    dataset_to_read
+        string specifying either of the supported datasets that are defined 
+        in ``SUPPORTED_DATASETS``.
+
+    """    
+    #: Mask for identifying datafiles 
     _FILEMASK = '*.ONEILL_20'
-    __version__ = '0.04'
     
-    REVISION_FILE = const.REVISION_FILE
+    #: version log of this class (for caching)
+    __version__ = '0.05'
     
+    #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V2L2_SDA_DAILY_NAME
     
-    # List of all datasets that are supported by this interface
+    #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
     
-    # default variables for read method
+    #: default variables for read method
     DEFAULT_VARS = ['od550aer', 'od550gt1aer','od550lt1aer']
     
-    #value corresponding to invalid measurement
-    NAN_VAL = np.float_(-9999)
+    #: value corresponding to invalid measurement
+    NAN_VAL = -9999.
     
     # Comment jgliss 20180719: translated most varname to Aerocom convention.
     # Those, for which no defined name is known were named with a leading 
     # underscore (e.g. _eta500lt1 for fine mode fraction at 500nm)
+    #: Dictionary that specifies the index for each data column
     COL_INDEX = od(date                 = 0, # Date(dd:mm:yyyy)
                    time                 = 1, # Time(hh:mm:ss),
                    julien_day           = 2, # Julian_Day
@@ -107,24 +121,29 @@ class ReadAeronetSDAV2(ReadAeronetBase):
     # that are NOT in Aeronet files but are computed within this class. 
     # For instance, the computation of the AOD at 550nm requires import of
     # the AODs at 440, 500 and 870 nm. 
+    
+    #: dictionary containing information about additionally required variables
+    #: for each auxiliary variable (i.e. each variable that is not provided
+    #: by the original data but computed on import)
     AUX_REQUIRES = {'ang4487aer'    :   ['od440aer',
                                          'od870aer'],
                     'od550aer'      :   ['od500aer', 'ang4487aer'],
                     'od550gt1aer'   :   ['od500gt1aer', 'ang4487aer'],
                     'od550lt1aer'   :   ['od500lt1aer', 'ang4487aer']}   
     
-    # Functions that are used to compute additional variables (i.e. one 
-    # for each variable defined in AUX_REQUIRES)
+    #: Functions that are used to compute additional variables (i.e. one 
+    #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {'ang4487aer'    :   calc_ang4487aer,
                 'od550aer'      :   calc_od550aer,
                 'od550gt1aer'   :   calc_od550gt1aer,
                 'od550lt1aer'   :   calc_od550lt1aer}
     
-    # will be extended by auxiliary variables on class init, for details see
-    # base class ReadUngriddedBase
+    #: List of variables that are provided by this dataset (will be extended 
+    #: by auxiliary variables on class init, for details see __init__ method of
+    #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(COL_INDEX.keys())
     
-    # This how the beginning of data file lookes like
+    # This how the beginning of data file looks like
 
     # Level 2.0 Quality Assured Data. The following AERONET-SDA data are
     # derived from AOD data which are pre and post-field calibrated and
@@ -160,6 +179,12 @@ class ReadAeronetSDAV2(ReadAeronetBase):
     
     @property
     def col_index(self):
+        """Dictionary that specifies the index for each data column
+        
+        Note
+        ----
+        Pointer to :attr:`COL_INDEX`
+        """
         return self.COL_INDEX
     
     def read_file(self, filename, vars_to_retrieve=None,
@@ -239,7 +264,7 @@ class ReadAeronetSDAV2(ReadAeronetBase):
 
             for line in in_file:
                 # process line
-                dummy_arr = line.split(',')
+                dummy_arr = line.split(self.COL_DELIM)
                 
                 # This uses the numpy datestring64 functions that e.g. also
                 # support Months as a time step for timedelta

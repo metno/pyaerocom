@@ -41,31 +41,35 @@ from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom import StationData
 
 class ReadAeronetInvV2(ReadAeronetBase):
-    """Interface for reading Aeronet inversion version 2 Level 1.5 and 2.0 data
+    """Interface for reading Aeronet inversion V2 Level 1.5 and 2.0 data
 
     Parameters
     ----------
     dataset_to_read
         string specifying either of the supported datasets that are defined 
-        in ``SUPPORTED_DATASETS``.
-
+        in ``SUPPORTED_DATASETS``
     """
+    #: Mask for identifying datafiles 
     _FILEMASK = '*.dubovikday'
-    __version__ = "0.03"
-    #
+    
+    #: version log of this class (for caching)
+    __version__ = "0.04"
+    
+    #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
     
+    #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_INV_V2L2_DAILY_NAME,
                           const.AERONET_INV_V2L15_DAILY_NAME]
     
+    #: default variables for read method
     DEFAULT_VARS = ['ssa675aer','ssa440aer']
     
-    NAN_VAL = np.float_(-9999.)
+    #: value corresponding to invalid measurement
+    NAN_VAL = -9999.
     
-    REVISION_FILE = const.REVISION_FILE
-    
-    # data vars
-    # will be stored as pandas time series
+    #: dictionary specifying the file column names (values) for each Aerocom 
+    #: variable (keys)
     DATA_COLNAMES = {}
     DATA_COLNAMES['ssa439aer'] = 'SSA439-T'
     DATA_COLNAMES['ssa440aer'] = 'SSA440-T'
@@ -73,14 +77,18 @@ class ReadAeronetInvV2(ReadAeronetBase):
     DATA_COLNAMES['ssa870aer'] = 'SSA870-T'
     DATA_COLNAMES['ssa1018aer'] = 'SSA1018-T'
 
-    # meta data vars
-    # will be stored as array of strings
+    #: dictionary specifying the file column names (values) for each 
+    #: metadata key (cf. attributes of :class:`StationData`, e.g.
+    #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_COLNAMES = {}
     META_COLNAMES['data_quality_level'] = 'DATA_TYPE'
     META_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
     META_COLNAMES['time'] = 'Time(hh:mm:ss)'
     META_COLNAMES['day_of_year'] = 'Julian_Day'
     
+    #: List of variables that are provided by this dataset (will be extended 
+    #: by auxiliary variables on class init, for details see __init__ method of
+    #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
 
     # TODO: currently every file is read, regardless of whether it actually
@@ -171,12 +179,10 @@ class ReadAeronetInvV2(ReadAeronetBase):
                 
             for line in in_file:
                 # process line
-                dummy_arr = line.strip().split(',')
-                # the following uses the standard python datetime functions
-                # date_index = col_index[COLNAMES['date']]
-                # hour, minute, second = dummy_arr[col_index[COLNAMES['time']].split(':')
+                dummy_arr = line.strip().split(self.COL_DELIM)
 
-                # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
+                # This uses the numpy datestring64 functions that i.e. also 
+                # support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
                 day, month, year = dummy_arr[col_index['date']].split(':')
                 datestring = '-'.join([year, month, day])

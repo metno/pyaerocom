@@ -48,24 +48,29 @@ class ReadAeronetSunV3(ReadAeronetBase):
         Base classes :class:`ReadAeronetBase` and :class:`ReadUngriddedBase`
 
     """
+    #: Mask for identifying datafiles 
     _FILEMASK = '*.lev30'
-    __version__ = '0.02'
-    REVISION_FILE = const.REVISION_FILE
     
+    #: version log of this class (for caching)
+    __version__ = '0.02'
+    
+    #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V3L15_AOD_DAILY_NAME
     
+    #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME,
                           const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]
     
-    # default variables for read method
+    #: default variables for read method
     DEFAULT_VARS = ['od550aer']
     
-    #value corresponding to invalid measurement
-    NAN_VAL = np.float_(-9999)
+    #: value corresponding to invalid measurement
+    NAN_VAL = -9999.
     
-    # column names of supported variables
+    #: dictionary specifying the file column names (values) for each Aerocom 
+    #: variable (keys)
     DATA_COLNAMES = {}
     DATA_COLNAMES['od340aer'] = 'AOD_340nm'
     DATA_COLNAMES['od440aer'] = 'AOD_440nm'
@@ -74,8 +79,9 @@ class ReadAeronetSunV3(ReadAeronetBase):
     DATA_COLNAMES['od870aer'] = 'AOD_870nm'
     DATA_COLNAMES['ang4487aer'] = '440-870_Angstrom_Exponent'
 
-    # meta data vars
-    # will be stored as array of strings
+    #: dictionary specifying the file column names (values) for each 
+    #: metadata key (cf. attributes of :class:`StationData`, e.g.
+    #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_COLNAMES = {}
     META_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
     META_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
@@ -87,21 +93,23 @@ class ReadAeronetSunV3(ReadAeronetBase):
     META_COLNAMES['time'] = 'Time(hh:mm:ss)'
     META_COLNAMES['day_of_year'] = 'Day_of_Year'
     
-    # specify required dependencies for auxiliary variables, i.e. variables 
-    # that are NOT in Aeronet files but are computed within this class. 
-    # For instance, the computation of the AOD at 550nm requires import of
-    # the AODs at 440, 500 and 870 nm. 
+    #: dictionary containing information about additionally required variables
+    #: for each auxiliary variable (i.e. each variable that is not provided
+    #: by the original data but computed on import)
     AUX_REQUIRES = {'ang4487aer_calc'   :   ['od440aer',
                                              'od870aer'],
                     'od550aer'          :     ['od440aer', 
                                                'od500aer',
                                                'ang4487aer']}
                     
-    # Functions that are used to compute additional variables (i.e. one 
-    # for each variable defined in AUX_REQUIRES)
+    #: Functions that are used to compute additional variables (i.e. one 
+    #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {'ang4487aer_calc'   :   calc_ang4487aer,
                 'od550aer'          :   calc_od550aer}
     
+    #: List of variables that are provided by this dataset (will be extended 
+    #: by auxiliary variables on class init, for details see __init__ method of
+    #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
 
     def read_file(self, filename, vars_to_retrieve=None, 
@@ -180,7 +188,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
             for line in in_file:
                 # process line
-                dummy_arr = line.split(',')
+                dummy_arr = line.split(self.COL_DELIM)
                 
                 # copy the meta data (array of type string)
                 for var in self.META_COLNAMES:
@@ -242,15 +250,17 @@ if __name__=="__main__":
     
     first_ten = read.read(last_file=10)
     
-    data_first = read.read_first_file(vars_to_retrieve=['ang4487aer_calc',
-                                                        'ang4487aer'])
-    print(data_first)
+    files_berlin = read.find_in_file_list('*Berlin*')
+    berlin = read.read_file(files_berlin[0],
+                            vars_to_retrieve=['ang4487aer_calc',
+                                              'ang4487aer'])
+    print(berlin)
     
     
     import matplotlib.pyplot as plt
     plt.close('all')
     plt.figure(figsize=(12,8))
-    plt.plot(data_first.ang4487aer, data_first.ang4487aer_calc, ' *')
+    plt.plot(berlin.ang4487aer, berlin.ang4487aer_calc, ' *')
     plt.xlabel("Angstrom coeff 440-870 nm (from data)")
     plt.ylabel("Angstrom coeff 440-870 nm (calculated)")
     plt.grid()

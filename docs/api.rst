@@ -41,21 +41,54 @@ Aeronet
 
 	The following includes only reading routines that were already shipped to the new API for ungridded data, that is, which are based on the abstract base class :class:`ReadUngriddedBase` (for details see :ref:`ungriddedbase`) and that use the new ungridded data class :class:`UngriddedData` (cf. :ref:`ungriddeddata`).
 
+Aeronet (base template)
+++++++++++++++++++++++++
+
 .. automodule:: pyaerocom.io.readaeronetbase
    :members:
    :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+Aeronet Version 2
+++++++++++++++++++
+
+.. automodule:: pyaerocom.io.read_aeronet_sunv2
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+.. automodule:: pyaerocom.io.read_aeronet_sdav2
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
    
 .. automodule:: pyaerocom.io.read_aeronet_invv2
    :members:
    :undoc-members:
-   
-.. automodule:: pyaerocom.io.read_aeronet_sunv2
+   :inherited-members:
+   :show-inheritance:
+
+Aeronet Version 3
+++++++++++++++++++
+
+.. todo::
+
+	Implementation of level 3 inversions follows soon
+	
+.. automodule:: pyaerocom.io.read_aeronet_sunv3
    :members:
    :undoc-members:
+   :inherited-members:
+   :show-inheritance:
 
 .. automodule:: pyaerocom.io.read_aeronet_sdav3
    :members:
    :undoc-members:
+   :inherited-members:
+   :show-inheritance:
    
 Further networks
 """"""""""""""""

@@ -14,7 +14,7 @@ Official website of Pyaerocom, a Python package containing reading, post analysi
   :align: center
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 6
    :caption: Contents:
 
    readme      

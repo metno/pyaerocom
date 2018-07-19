@@ -165,20 +165,182 @@
 <span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">fnmatch</span> <span class="k">import</span> <span class="n">fnmatch</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">get_obsnetwork_dir</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">LOGLEVELS</span>
 
-<div class="viewcode-block" id="ReadUngriddedBase"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase">[docs]</a><span class="k">class</span> <span class="nc">ReadUngriddedBase</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Abstract base class template for reading of ungridded data&quot;&quot;&quot;</span>
-    <span class="c1"># dictionary containing information about additionally required variables</span>
-    <span class="c1"># for each auxiliary variable (i.e. each variable that is not provided</span>
-    <span class="c1"># by the original data but computed on import)</span>
+<div class="viewcode-block" id="ReadUngriddedBase"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase">[docs]</a><span class="k">class</span> <span class="nc">ReadUngriddedBase</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;TEMPLATE: Abstract base class template for reading of ungridded data</span>
+<span class="sd">    </span>
+<span class="sd">    .. note::</span>
+<span class="sd">    </span>
+<span class="sd">        Even though this is a template for a reading class, it prodides the </span>
+<span class="sd">        option to compute variables during import, that are not contained in </span>
+<span class="sd">        the actual data files. These can be specified for each auxiliary </span>
+<span class="sd">        parameter using the two class attributes ``AUX_REQUIRES`` (what </span>
+<span class="sd">        additional variables are required to perform the computation) and </span>
+<span class="sd">        ``AUX_FUNS`` (functions used to perform the computations). </span>
+<span class="sd">        See, for instance, the class :class:`ReadAeronetSunV2`, which includes </span>
+<span class="sd">        the computation of the AOD at 550nm and the Angstrom coefficient </span>
+<span class="sd">        (in 440-870 nm range).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#: dictionary containing information about additionally required variables</span>
+    <span class="c1">#: for each auxiliary variable (i.e. each variable that is not provided</span>
+    <span class="c1">#: by the original data but computed on import)</span>
     <span class="n">AUX_REQUIRES</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="c1"># Functions that are used to compute additional variables (i.e. one </span>
-    <span class="c1"># for each variable defined in AUX_REQUIRES)</span>
+    
+    <span class="c1">#: Functions that are used to compute additional variables (i.e. one </span>
+    <span class="c1">#: for each variable defined in AUX_REQUIRES)</span>
     <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{}</span>
     
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">_FILEMASK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mask for identifying datafiles (e.g. &#39;*.txt&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        May be implemented as global constant in header</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">__version__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Version of reading class</span>
+<span class="sd">        </span>
+<span class="sd">        Keeps track of changes in derived reading class (e.g. to assess whether </span>
+<span class="sd">        potential cache-files are outdated).</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        May be implemented as global constant in header</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">REVISION_FILE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Name of data revision file located in data directory</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        </span>
+<span class="sd">        May be implemented as global constant in header of derieved class</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">DATASET_NAME</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Name of dataset (OBS_ID)</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        </span>
+<span class="sd">        - May be implemented as global constant in header of derieved class</span>
+<span class="sd">        - May be multiple that can be specified on init (see example below)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>        
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">SUPPORTED_DATASETS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all datasets supported by this interface</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        </span>
+<span class="sd">        - best practice to specify in header of class definition</span>
+<span class="sd">        - needless to mention that :attr:`DATASET_NAME` needs to be in this list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">PROVIDES_VARIABLES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of variables that are provided by this dataset</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        May be implemented as global constant in header</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dictionary that specifies the index for each data column</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        </span>
+<span class="sd">        Implementation depends on the data. For instance, if the variable </span>
+<span class="sd">        information is provided in all files (of all stations) and always in </span>
+<span class="sd">        the same column, then this can be set as a fixed dictionary in the </span>
+<span class="sd">        __init__ function of the implementation (see e.g. class</span>
+<span class="sd">        :class:`ReadAeronetSunV2`). </span>
+<span class="sd">        In other cases, it may not be ensured</span>
+<span class="sd">        that each variable is available in all files or the column definition</span>
+<span class="sd">        may differ between different stations (see )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">DATASET_PATH</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Path to datafiles of specified dataset </span>
+<span class="sd">        </span>
+<span class="sd">        Is retrieved automatically based on network ID (:attr:`DATASET_NAME`)</span>
+<span class="sd">        using :func:`get_obsnetwork_dir` (which uses the information in </span>
+<span class="sd">        ``pyaerocom.const``).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">get_obsnetwork_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span><span class="p">)</span>
+     
+        
+<div class="viewcode-block" id="ReadUngriddedBase.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.read_file">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read single file </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            string specifying filename</span>
+<span class="sd">        vars_to_retrieve : :obj:`list` or similar, optional,</span>
+<span class="sd">            list containing variable IDs that are supposed to be read. If None, </span>
+<span class="sd">            all variables in :attr:`PROVIDES_VARIABLES` are loaded</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :obj:`dict` or :obj:`TimeSeriesFileData` or :obj:`StationData`</span>
+<span class="sd">            imported data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+    
+<div class="viewcode-block" id="ReadUngriddedBase.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.read">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">files</span><span class="o">=</span><span class="p">[],</span> <span class="n">first_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+             <span class="n">last_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method that reads list of files as instance of :class:`UngriddedData`</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vars_to_retrieve : :obj:`list` or similar, optional,</span>
+<span class="sd">            list containing variable IDs that are supposed to be read. If None, </span>
+<span class="sd">            all variables in :attr:`PROVIDES_VARIABLES` are loaded</span>
+<span class="sd">        files : :obj:`list`, optional</span>
+<span class="sd">            list of files to be read. If None, then the file list is used that</span>
+<span class="sd">            is returned on :func:`get_file_list`.</span>
+<span class="sd">        first_file : :obj:`int`, optional</span>
+<span class="sd">            index of first file in file list to read. If None, the very first</span>
+<span class="sd">            file in the list is used</span>
+<span class="sd">        last_file : :obj:`int`, optional</span>
+<span class="sd">            index of last file in list to read. If None, the very last file </span>
+<span class="sd">            in the list is used</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        UngriddedData</span>
+<span class="sd">            data object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="c1">### Concrete implementations of methods that are the same for all (or most)</span>
+    <span class="c1"># of the derived reading classes</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#object that holds the loaded data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
@@ -198,147 +360,18 @@
                                      <span class="s2">&quot;interface&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
             
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">SUPPORTED_DATASETS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;List of strings specifying datasets supported by this interface</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        </span>
-<span class="sd">        - best practice to specify in header of class definition</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-                
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">REVISION_FILE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Location of data revision file</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        </span>
-<span class="sd">        - May be implemented as global constant in header of derieved class</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">DATASET_NAME</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Name of dataset (OBS_ID)</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        </span>
-<span class="sd">        - May be implemented as global constant in header of derieved class</span>
-<span class="sd">        - May be multiple that can be specified on init (see example below)</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">PROVIDES_VARIABLES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;List of variables that are provided by this dataset</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        May be implemented as global constant in header</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">_FILEMASK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Mask for identifying datafiles (e.g. &#39;*.txt&#39;)</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        May be implemented as global constant in header</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">__version__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Version of reading class</span>
-<span class="sd">        </span>
-<span class="sd">        Keep track of changes in derived reading class (e.g. to assess whether </span>
-<span class="sd">        potential cache-files are outdated)</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        May be implemented as global constant in header</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Dictionary that specifies the index for each data column</span>
-<span class="sd">        </span>
-<span class="sd">        Implementation depends on the data. For instance, if the variable </span>
-<span class="sd">        information is provided in all files (of all stations) and always in </span>
-<span class="sd">        the same column, then this can be set as a fixed dictionary in the </span>
-<span class="sd">        __init__ function of the implementation (see class </span>
-<span class="sd">        ReadAeronetSunV2 for an example). In other cases, it may not be ensured</span>
-<span class="sd">        that each variable is available in all files or the column definition</span>
-<span class="sd">        may differ between different stations (see )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-    
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">DATASET_PATH</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">get_obsnetwork_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span><span class="p">)</span>
-     
-        
-<div class="viewcode-block" id="ReadUngriddedBase.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.read_file">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Method that reads a single data file and returns the result</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        filename : str</span>
-<span class="sd">            string specifying filename</span>
-<span class="sd">        vars_to_retrieve : :obj:`list` or similar, optional,</span>
-<span class="sd">            list containing variable IDs that are supposed to be read. If None, </span>
-<span class="sd">            all variables in :attr:`PROVIDES_VARIABLES` are loaded</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            dictionary containing results </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-    
-<div class="viewcode-block" id="ReadUngriddedBase.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.read">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">first_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">last_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Method that reads a single data file and returns the result</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        vars_to_retrieve : :obj:`list` or similar, optional,</span>
-<span class="sd">            list containing variable IDs that are supposed to be read. If None, </span>
-<span class="sd">            all variables in :attr:`PROVIDES_VARIABLES` are loaded</span>
-<span class="sd">        first_file : int</span>
-<span class="sd">            index of first file in file list to read. If None, the very first</span>
-<span class="sd">            file in the list is used</span>
-<span class="sd">        last_file : int</span>
-<span class="sd">            index of last file in list to read. If None, the very last file </span>
-<span class="sd">            in the list is used</span>
-<span class="sd">            </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        UngriddedData</span>
-<span class="sd">            data object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-    <span class="c1">### Concrete implementations of methods that are the same for all (or most)</span>
-    <span class="c1"># of the derived reading classes</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">AUX_VARS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of auxiliary variables (keys of attr. :attr:`AUX_REQUIRES`)</span>
+<span class="sd">        </span>
+<span class="sd">        Auxiliary variables are those that are not included in original files</span>
+<span class="sd">        but are computed from other variables during import</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Revision string from the file Revision.txt in the main data directory</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        </span>
+        <span class="sd">&quot;&quot;&quot;Revision string from file Revision.txt in the main data directory</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">revision_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">REVISION_FILE</span><span class="p">)</span>
@@ -411,7 +444,7 @@
                         <span class="n">added</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">added</span><span class="p">,</span> <span class="n">added_vars</span><span class="p">)</span>
     
-<div class="viewcode-block" id="ReadUngriddedBase.check_vars_to_retrieve"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.check_vars_to_retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">check_vars_to_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadUngriddedBase.check_vars_to_retrieve"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.check_vars_to_retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">check_vars_to_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Separate variables that are in file from those that are computed</span>
 <span class="sd">        </span>
 <span class="sd">        Some of the provided variables by this interface are not included in</span>
@@ -473,13 +506,15 @@
         <span class="n">vars_to_compute</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid variable </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">:</span>
                 <span class="n">vars_to_compute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">vars_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">vars_to_read</span><span class="p">,</span> <span class="n">vars_to_compute</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="ReadUngriddedBase.compute_additional_vars"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.compute_additional_vars">[docs]</a>    <span class="k">def</span> <span class="nf">compute_additional_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">vars_to_compute</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadUngriddedBase.compute_additional_vars"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.compute_additional_vars">[docs]</a>    <span class="k">def</span> <span class="nf">compute_additional_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">vars_to_compute</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute all additional variables</span>
 <span class="sd">        </span>
 <span class="sd">        The computations for each additional parameter are done using the </span>
@@ -507,13 +542,85 @@
                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">required</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">data</span></div>
     
-<div class="viewcode-block" id="ReadUngriddedBase.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Search all files to be read&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Fetching data files. This might take a while...&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FILEMASK</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span></div>
+<div class="viewcode-block" id="ReadUngriddedBase.find_in_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.find_in_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">find_in_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find all files that match a certain wildcard pattern</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pattern : :obj:`str`, optional</span>
+<span class="sd">            wildcard pattern that may be used to narrow down the search (e.g.</span>
+<span class="sd">            use ``pattern=*Berlin*`` to find only files that contain Berlin </span>
+<span class="sd">            in their filename)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list containing all files in :attr:`files` that match pattern</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        IOError</span>
+<span class="sd">            if no matches can be found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="k">if</span> <span class="n">fnmatch</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be detected that match the &quot;</span>
+                          <span class="s2">&quot;pattern&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">files</span></div>
     
-<div class="viewcode-block" id="ReadUngriddedBase.read_first_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.read_first_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_first_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadUngriddedBase.get_file_list"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.get_file_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Search all files to be read</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            list containing retrieved file locations</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        IOError</span>
+<span class="sd">            if no files can be found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Fetching data files. This might take a while...&#39;</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> 
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">_FILEMASK</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be detected...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="n">files</span>
+        <span class="k">return</span> <span class="n">files</span></div>
+    
+<div class="viewcode-block" id="ReadUngriddedBase.read_station"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.read_station">[docs]</a>    <span class="k">def</span> <span class="nf">read_station</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_id_filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read data from a single station into :class:`UngriddedData`</span>
+<span class="sd">        </span>
+<span class="sd">        Find all files that contain the station ID in their filename and then</span>
+<span class="sd">        call :func:`read`, providing the reduced filelist as input, in order </span>
+<span class="sd">        to read all files from this station into data object.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        station_id_filename : str</span>
+<span class="sd">            name of station (MUST be encrypted in filename)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional keyword args passed to :func:`read` </span>
+<span class="sd">            (e.g. ``vars_to_retrieve``)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        UngriddedData</span>
+<span class="sd">            loaded data</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        IOError</span>
+<span class="sd">            if no files can be found for this station ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_in_file_list</span><span class="p">(</span><span class="s1">&#39;*</span><span class="si">{}</span><span class="s1">*&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station_id_filename</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="ReadUngriddedBase.read_first_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.read_first_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_first_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read first file returned from :func:`get_file_list`</span>
 <span class="sd">        </span>
 <span class="sd">        This method may be used for test purposes. It calls :func:`get</span>

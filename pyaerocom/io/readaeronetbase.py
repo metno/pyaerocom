@@ -6,17 +6,26 @@ from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.exceptions import MetaDataError
+from pyaerocom import const
 
 class ReadAeronetBase(ReadUngriddedBase):
-    """Abstract base class template for reading of Aeronet data
+    """TEMPLATE: Abstract base class template for reading of Aeronet data
     
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
+    #: column delimiter in data block of files
+    COL_DELIM = ','
     
+    #: dictionary specifying the file column names (values) for each Aerocom 
+    #: variable (keys)
     DATA_COLNAMES = {}
     
+    #: dictionary specifying the file column names (values) for each 
+    #: metadata key (cf. attributes of :class:`StationData`, e.g.
+    #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_COLNAMES = {}
+    
     
     @abc.abstractproperty
     def DEFAULT_VARS(self):
@@ -40,8 +49,23 @@ class ReadAeronetBase(ReadUngriddedBase):
     
     @property
     def col_index(self):
-        """Current column index dictionary"""
+        """Dictionary that specifies the index for each data column
+        
+        Note
+        ----
+        When writing an implementation of this class, you may automise the 
+        column index retrieval by providing the header names for each meta and
+        data column you want to extract using the attribute dictionaries
+        :attr:`META_COLNAMES` and :attr:`DATA_COLNAMES` by calling 
+        :func:`_update_col_index` in your implementation of :func:`read_file`
+        when you reach the line that contains the header information.
+        """
         return self._col_index
+    
+    @property
+    def REVISION_FILE(self):
+        """Name of revision file located in data directory"""
+        return const.REVISION_FILE
     
     def _update_col_index(self, col_index_str):
         """Update column information for fast access during read_file
@@ -67,7 +91,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         MetaDataError
             if one of the specified meta data columns does not exist in data
         """
-        cols = col_index_str.strip().split(',')
+        cols = col_index_str.strip().split(self.COL_DELIM)
         mapping = od()
         for idx, info_str in enumerate(cols):
             mapping[info_str] = idx
@@ -86,33 +110,37 @@ class ReadAeronetBase(ReadUngriddedBase):
         return col_index
     
     
-    def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
-        """Read all data files into instance of :class:`UngriddedData` object
+    def read(self, vars_to_retrieve=None, files=None, first_file=None, 
+             last_file=None):
+        """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
         ----------
-        vars_to_retrieve : list
-            list of variables that are supposed to be imported
-        first_file : int
+        vars_to_retrieve : :obj:`list` or similar, optional,
+            list containing variable IDs that are supposed to be read. If None, 
+            all variables in :attr:`PROVIDES_VARIABLES` are loaded
+        files : :obj:`list`, optional
+            list of files to be read. If None, then the file list is used that
+            is returned on :func:`get_file_list`.
+        first_file : :obj:`int`, optional
             index of first file in file list to read. If None, the very first
             file in the list is used
-        last_file : int
+        last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file 
             in the list is used
             
-        Example
+        Returns
         -------
-        >>> from pyaerocom.io import ReadAeronetSdaV3
-        >>> obj = ReadAeronetSdaV3()
-        >>> obj.read()
+        UngriddedData
+            data object
         """
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
-            
-        if len(self.files) == 0:
-            self.get_file_list()
-        files = sorted(self.files)
-        
+        if files is None:
+            if len(self.files) == 0:
+                self.get_file_list()
+            files = self.files
+    
         if first_file is None:
             first_file = 0
         if last_file is None:
@@ -189,8 +217,6 @@ class ReadAeronetBase(ReadUngriddedBase):
     
 
 if __name__=="__main__":
-    
-    from pyaerocom import const
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
         _FILEMASK = ".txt"
         DATASET_NAME = "Blaaa"
