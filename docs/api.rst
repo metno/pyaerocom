@@ -33,14 +33,18 @@ Factory class (high level)
 .. automodule:: pyaerocom.io.readungridded
    :members:
    :undoc-members:
-  
-Individual Obsnetworks
-""""""""""""""""""""""
+
+Aeronet
+"""""""
 
 .. note::
 
 	The following includes only reading routines that were already shipped to the new API for ungridded data, that is, which are based on the abstract base class :class:`ReadUngriddedBase` (for details see :ref:`ungriddedbase`) and that use the new ungridded data class :class:`UngriddedData` (cf. :ref:`ungriddeddata`).
 
+.. automodule:: pyaerocom.io.readaeronetbase
+   :members:
+   :undoc-members:
+   
 .. automodule:: pyaerocom.io.read_aeronet_invv2
    :members:
    :undoc-members:
@@ -52,6 +56,11 @@ Individual Obsnetworks
 .. automodule:: pyaerocom.io.read_aeronet_sdav3
    :members:
    :undoc-members:
+   
+Further networks
+""""""""""""""""
+
+Nothing to show yet
    
 .. _ungriddedbase:
 

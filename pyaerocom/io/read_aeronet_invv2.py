@@ -221,17 +221,14 @@ class ReadAeronetInvV2(ReadAeronetBase):
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
         
-        if vars_as_series:
-            # convert the vars in vars_to_retrieve to pandas time series
-            # and delete the other ones
-            for var in self.PROVIDES_VARIABLES:
-                # if var not in data_out: continue
+        if vars_as_series:        
+            for var in (vars_to_read + vars_to_compute):
                 if var in vars_to_retrieve:
                     data_out[var] = pd.Series(data_out[var], 
-                                              index=data_out['time'])
+                                              index=data_out['dtime'])
                 else:
                     del data_out[var]
-
+            
         return data_out
 
 if __name__=="__main__":

@@ -46,9 +46,10 @@ class StationData(TimeSeriesFileData):
         super(StationData, self).__init__(*args, **kwargs)
         
         # meta data (strings, lists or arrays)
+        self.dataset_name = ''
         self.station_name = ''
         self.PI = ''
-        self.dataset_name = ''
+        
         
         # coordinate data (floats, lists or arrays)
         self.latitude = np.nan

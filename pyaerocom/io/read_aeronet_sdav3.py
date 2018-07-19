@@ -56,6 +56,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     """
     _FILEMASK = '*.lev30'
     __version__ = "0.05"
+    REVISION_FILE = const.REVISION_FILE
     
     DATASET_NAME = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
     
@@ -64,8 +65,6 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     
     DEFAULT_VARS = ['od550aer', 'od550gt1aer','od550lt1aer']
     NAN_VAL = np.float_(-9999.)
-    
-    REVISION_FILE = const.REVISION_FILE
     
     # column names of supported variables
     DATA_COLNAMES = {}
@@ -105,8 +104,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     # base class ReadUngriddedBase
     PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
     
-    def read_file(self, filename, 
-                  vars_to_retrieve=['od550aer', 'od550gt1aer','od550lt1aer'],
+    def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet SDA V3 file and return it in a dictionary
 
@@ -114,8 +112,9 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         ----------
         filename : str
             absolute path to filename to read
-        vars_to_retrieve : list
-            list of str with variable names to read
+        vars_to_retrieve : :obj:`list`, optional
+            list of str with variable names to read. If None, use
+            :attr:`DEFAULT_VARS`
         vars_as_series : bool
             if True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects
@@ -125,6 +124,8 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         StationData 
             dict-like object containing results
         """
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
@@ -227,17 +228,15 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
         
-        if vars_as_series:
-            # convert the vars in vars_to_retrieve to pandas time series
-            # and delete the other ones
-            for var in self.PROVIDES_VARIABLES:
-                # if var not in data_out: continue
+        # convert data vectors to pandas.Series (if applicable)
+        if vars_as_series:        
+            for var in (vars_to_read + vars_to_compute):
                 if var in vars_to_retrieve:
                     data_out[var] = pd.Series(data_out[var], 
-                                              index=data_out['time'])
+                                              index=data_out['dtime'])
                 else:
                     del data_out[var]
-
+            
         return data_out
     
 if __name__=="__main__":

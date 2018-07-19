@@ -23,6 +23,7 @@ class ReadUngriddedBase(abc.ABC):
         the computation of the AOD at 550nm and the Angstrom coefficient 
         (in 440-870 nm range).
     
+    A
     """
     # dictionary containing information about additionally required variables
     # for each auxiliary variable (i.e. each variable that is not provided
@@ -331,7 +332,9 @@ class ReadUngriddedBase(abc.ABC):
         vars_to_compute = []
         
         for var in vars_to_retrieve:
-            if var in self.AUX_REQUIRES:
+            if not var in self.PROVIDES_VARIABLES:
+                raise ValueError("Invalid variable {}".format(var))
+            elif var in self.AUX_REQUIRES:
                 vars_to_compute.append(var)
             else:
                 vars_to_read.append(var)

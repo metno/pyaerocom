@@ -46,7 +46,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     
     .. seealso::
         
-        Base class :class:`ReadUngriddedBase` 
+        Base classes :class:`ReadAeronetBase` and :class:`ReadUngriddedBase`
     
     Attributes
     ----------
@@ -55,6 +55,9 @@ class ReadAeronetSunV2(ReadAeronetBase):
     """
     _FILEMASK = '*.lev20'
     __version__ = "0.10"
+    
+    REVISION_FILE = const.REVISION_FILE
+    
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     
     # List of all datasets that are supported by this interface
@@ -65,7 +68,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     
     #value corresponding to invalid measurement
     NAN_VAL = np.float_(-9999)
-
+    
     #file column information 
     COL_INDEX = od(date           = 0,
                    time           = 1,
@@ -92,7 +95,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
                           'od440aer', 
                           'od870aer']
 
-    REVISION_FILE = const.REVISION_FILE
+    
     
     # specify required dependencies for auxiliary variables, i.e. variables 
     # that are NOT in Aeronet files but are computed within this class. 
@@ -120,7 +123,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     def col_index(self):
         return self.COL_INDEX
     
-    def read_file(self, filename, vars_to_retrieve=['od550aer'],
+    def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet Sun V2 level 2 file 
 
@@ -128,8 +131,9 @@ class ReadAeronetSunV2(ReadAeronetBase):
         ----------
         filename : str
             absolute path to filename to read
-        vars_to_retrieve : list
-            list of str with variable names to read; defaults to ['od550aer']
+        vars_to_retrieve : :obj:`list`, optional
+            list of str with variable names to read. If None, use
+            :attr:`DEFAULT_VARS`
         vars_as_series : bool
             if True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects
@@ -146,11 +150,14 @@ class ReadAeronetSunV2(ReadAeronetBase):
         >>> files = obj.get_file_list()
         >>> filedata = obj.read_file(files[0])
         """
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData() 
+        data_out.dataset_name = self.DATASET_NAME
         
         #create empty array for all variables that are supposed to be read
         for var in vars_to_read:
@@ -219,6 +226,7 @@ if __name__=="__main__":
     read.verbosity_level = 'debug'
     first_ten = read.read(last_file=10)
     
+    data0 = read.read_first_file(vars_as_series=True)
     data = read.read_first_file()
     print(data)
 
