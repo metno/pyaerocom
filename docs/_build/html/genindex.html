@@ -93,7 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">API test-suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
 </ul>
 
@@ -427,6 +427,8 @@
         <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.data">(pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api_testsuite.html#pyaerocom.test.test_griddeddata.data_cci">data_cci() (in module pyaerocom.test.test_griddeddata)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.DATA_COLNAMES">DATA_COLNAMES (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
 
       <ul>
@@ -445,6 +447,8 @@
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.data_header">data_header (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
 </li>
+      <li><a href="api_testsuite.html#pyaerocom.test.test_griddeddata.data_osuite">data_osuite() (in module pyaerocom.test.test_griddeddata)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.data_revision">data_revision (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
 
       <ul>
@@ -461,6 +465,16 @@
         <li><a href="api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.data_revision">(pyaerocom.io.readungriddedbase.ReadUngriddedBase attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_read_aeronet_sunv2.dataset">dataset() (in module pyaerocom.io.test.test_read_aeronet_sunv2)</a>
+
+      <ul>
+        <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.dataset">(in module pyaerocom.io.test.test_readgridded)</a>
+</li>
+        <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgriddedmulti.dataset">(in module pyaerocom.io.test.test_readgriddedmulti)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.DATASET_NAME">DATASET_NAME (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
 
       <ul>
@@ -477,8 +491,6 @@
         <li><a href="api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.DATASET_NAME">(pyaerocom.io.readungriddedbase.ReadUngriddedBase attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.DATASET_PATH">DATASET_PATH (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
 
       <ul>
@@ -879,12 +891,12 @@
 </li>
       <li><a href="api.html#module-pyaerocom.io.fileconventions">pyaerocom.io.fileconventions (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#module-pyaerocom.io.helpers">pyaerocom.io.helpers (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.read_aeronet_invv2">pyaerocom.io.read_aeronet_invv2 (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#module-pyaerocom.io.read_aeronet_sdav2">pyaerocom.io.read_aeronet_sdav2 (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.read_aeronet_sdav3">pyaerocom.io.read_aeronet_sdav3 (module)</a>
@@ -901,6 +913,12 @@
 </li>
       <li><a href="api.html#module-pyaerocom.io.readungriddedbase">pyaerocom.io.readungriddedbase (module)</a>
 </li>
+      <li><a href="api_testsuite.html#module-pyaerocom.io.test.test_read_aeronet_sunv2">pyaerocom.io.test.test_read_aeronet_sunv2 (module)</a>
+</li>
+      <li><a href="api_testsuite.html#module-pyaerocom.io.test.test_readgridded">pyaerocom.io.test.test_readgridded (module)</a>
+</li>
+      <li><a href="api_testsuite.html#module-pyaerocom.io.test.test_readgriddedmulti">pyaerocom.io.test.test_readgriddedmulti (module)</a>
+</li>
       <li><a href="api.html#module-pyaerocom.io.testfiles">pyaerocom.io.testfiles (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.mathutils">pyaerocom.mathutils (module)</a>
@@ -912,6 +930,8 @@
       <li><a href="api.html#module-pyaerocom.plot.plotscatter">pyaerocom.plot.plotscatter (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.region">pyaerocom.region (module)</a>
+</li>
+      <li><a href="api_testsuite.html#module-pyaerocom.test.test_griddeddata">pyaerocom.test.test_griddeddata (module)</a>
 </li>
       <li><a href="api_testsuite.html#module-pyaerocom.test.test_mathutils">pyaerocom.test.test_mathutils (module)</a>
 </li>
@@ -1145,7 +1165,33 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgriddedmulti.test_data_available">test_data_available() (in module pyaerocom.io.test.test_readgriddedmulti)</a>
+</li>
       <li><a href="api_testsuite.html#pyaerocom.test.test_mathutils.test_exponent">test_exponent() (in module pyaerocom.test.test_mathutils)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgriddedmulti.test_info_available">test_info_available() (in module pyaerocom.io.test.test_readgriddedmulti)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.test.test_griddeddata.test_latitude">test_latitude() (in module pyaerocom.test.test_griddeddata)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_read_aeronet_sunv2.test_load_berlin">test_load_berlin() (in module pyaerocom.io.test.test_read_aeronet_sunv2)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.test.test_griddeddata.test_longitude">test_longitude() (in module pyaerocom.test.test_griddeddata)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.test_meta">test_meta() (in module pyaerocom.io.test.test_readgridded)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.test_read_var">test_read_var() (in module pyaerocom.io.test.test_readgridded)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.test_read_vars">test_read_vars() (in module pyaerocom.io.test.test_readgridded)</a>
+
+      <ul>
+        <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgriddedmulti.test_read_vars">(in module pyaerocom.io.test.test_readgriddedmulti)</a>
+</li>
+      </ul></li>
+      <li><a href="api_testsuite.html#pyaerocom.test.test_griddeddata.test_time">test_time() (in module pyaerocom.test.test_griddeddata)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.test_variables">test_variables() (in module pyaerocom.io.test.test_readgridded)</a>
+</li>
+      <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.test_years_available">test_years_available() (in module pyaerocom.io.test.test_readgridded)</a>
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.time">time (pyaerocom.griddeddata.GriddedData attribute)</a>
 
@@ -1155,6 +1201,8 @@
         <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.time">(pyaerocom.ungriddeddata.UngriddedData attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.time_stamps">time_stamps (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.time_stamps">time_stamps() (pyaerocom.griddeddata.GriddedData method)</a>
@@ -1165,8 +1213,6 @@
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">to_dataframe() (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.to_dict">to_dict() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 
       <ul>

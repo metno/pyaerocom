@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.test.test_griddeddata &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">Tests (for developers)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.test.test_griddeddata</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.test.test_griddeddata</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Apr 12 14:45:43 2018</span>
+
+<span class="sd">@author: jonasg</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">import</span> <span class="nn">numpy.testing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.test.settings</span> <span class="k">import</span> <span class="n">TEST_RTOL</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GriddedData</span>
+
+<div class="viewcode-block" id="data_cci"><a class="viewcode-back" href="../../../api_testsuite.html#pyaerocom.test.test_griddeddata.data_cci">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s1">&#39;module&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">data_cci</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;import example data from Aerosol CCI</span>
+<span class="sd">    </span>
+<span class="sd">    The fixture property makes sure that this &quot;variable&quot; is only created once</span>
+<span class="sd">    for the entire scope of this test session within this module</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
+    <span class="n">test_file</span> <span class="o">=</span> <span class="n">get</span><span class="p">()[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="data_osuite"><a class="viewcode-back" href="../../../api_testsuite.html#pyaerocom.test.test_griddeddata.data_osuite">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s1">&#39;module&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">data_osuite</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;import example data from ECMWF_OSUITE</span>
+<span class="sd">    </span>
+<span class="sd">    The fixture property makes sure that this &quot;variable&quot; is only created once</span>
+<span class="sd">    for the entire scope of this test session within this module</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">from</span> <span class="nn">pyaerocom.io.testfiles</span> <span class="k">import</span> <span class="n">get</span>
+    <span class="n">test_file</span> <span class="o">=</span> <span class="n">get</span><span class="p">()[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;ecmwf_osuite&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_longitude"><a class="viewcode-back" href="../../../api_testsuite.html#pyaerocom.test.test_griddeddata.test_longitude">[docs]</a><span class="k">def</span> <span class="nf">test_longitude</span><span class="p">(</span><span class="n">data_cci</span><span class="p">,</span> <span class="n">data_osuite</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test if longitudes are defined right&quot;&quot;&quot;</span>
+    <span class="n">lons_cci</span> <span class="o">=</span> <span class="n">data_cci</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span>
+    <span class="n">lons_osuite</span> <span class="o">=</span> <span class="n">data_osuite</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span>
+    <span class="n">nominal</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">179.5</span><span class="p">,</span> <span class="mf">179.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">180.0</span><span class="p">,</span> <span class="mf">179.6</span><span class="p">]</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">lons_cci</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">lons_cci</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span>
+            <span class="n">lons_osuite</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">lons_osuite</span><span class="o">.</span><span class="n">max</span><span class="p">()]</span>
+    <span class="n">npt</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">actual</span><span class="o">=</span><span class="n">vals</span><span class="p">,</span> <span class="n">desired</span><span class="o">=</span><span class="n">nominal</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">TEST_RTOL</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="test_latitude"><a class="viewcode-back" href="../../../api_testsuite.html#pyaerocom.test.test_griddeddata.test_latitude">[docs]</a><span class="k">def</span> <span class="nf">test_latitude</span><span class="p">(</span><span class="n">data_cci</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;test latitude array&quot;&quot;&quot;</span>
+    <span class="n">nominal_eq</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;arc_degree&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">vals_eq</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_cci</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+               <span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">data_cci</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span><span class="p">))]</span>
+    <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">nominal_eq</span><span class="p">,</span> <span class="n">vals_eq</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="test_time"><a class="viewcode-back" href="../../../api_testsuite.html#pyaerocom.test.test_griddeddata.test_time">[docs]</a><span class="k">def</span> <span class="nf">test_time</span><span class="p">(</span><span class="n">data_cci</span><span class="p">,</span> <span class="n">data_osuite</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test time dimension access and values&quot;&quot;&quot;</span>
+    <span class="n">time_cci</span> <span class="o">=</span> <span class="n">data_cci</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">time_osuite</span> <span class="o">=</span> <span class="n">data_osuite</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">nominal_eq</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;gregorian&quot;</span><span class="p">,</span> 
+                  <span class="s2">&quot;julian&quot;</span><span class="p">,</span>
+                  <span class="s1">&#39;day since 2018-01-01 00:00:00.00000000 UTC&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;day since 2008-01-01 00:00:00.00000000 UTC&#39;</span><span class="p">,</span> 
+                  <span class="kc">True</span><span class="p">,</span> 
+                  <span class="kc">False</span><span class="p">]</span>
+    <span class="n">vals_eq</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_osuite</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">calendar</span><span class="p">,</span> 
+               <span class="n">time_cci</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">calendar</span><span class="p">,</span>
+               <span class="n">time_osuite</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
+               <span class="n">time_cci</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+               <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_osuite</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">,</span> <span class="n">datetime</span><span class="p">),</span>
+               <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_cci</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)]</span>
+    <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">nominal_eq</span><span class="p">,</span> <span class="n">vals_eq</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+    <span class="n">pytest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+    
+    
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

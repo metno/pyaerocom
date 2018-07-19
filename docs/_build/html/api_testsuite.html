@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API test-suite &mdash; pyaerocom  documentation</title>
+  <title>Tests (for developers) &mdash; pyaerocom  documentation</title>
   
 
   
@@ -94,7 +94,9 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API test-suite</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tests (for developers)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.test.test_griddeddata">Data objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.io.test.test_readgridded">I/O package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.test.test_mathutils">Low level helpers</a></li>
 </ul>
 </li>
@@ -143,7 +145,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>API test-suite</li>
+      <li>Tests (for developers)</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -181,14 +183,122 @@
     margin-right: 4px;  /* make room for the exclamation icon */
 }
 </style>
-<div class="section" id="api-test-suite">
-<h1>API test-suite<a class="headerlink" href="#api-test-suite" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="tests-for-developers">
+<h1>Tests (for developers)<a class="headerlink" href="#tests-for-developers" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <ol class="last arabic simple">
 <li>The code documentation is far from complete</li>
 <li>For developers: please use the <a class="reference external" href="http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html">NumPy docstring standard</a>.</li>
 </ol>
+</div>
+<div class="section" id="module-pyaerocom.test.test_griddeddata">
+<span id="data-objects"></span><h2>Data objects<a class="headerlink" href="#module-pyaerocom.test.test_griddeddata" title="Permalink to this headline">¶</a></h2>
+<p>Created on Thu Apr 12 14:45:43 2018</p>
+<p>&#64;author: jonasg</p>
+<dl class="function">
+<dt id="pyaerocom.test.test_griddeddata.data_cci">
+<code class="descclassname">pyaerocom.test.test_griddeddata.</code><code class="descname">data_cci</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/test/test_griddeddata.html#data_cci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.test.test_griddeddata.data_cci" title="Permalink to this definition">¶</a></dt>
+<dd><p>import example data from Aerosol CCI</p>
+<p>The fixture property makes sure that this “variable” is only created once
+for the entire scope of this test session within this module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.test.test_griddeddata.data_osuite">
+<code class="descclassname">pyaerocom.test.test_griddeddata.</code><code class="descname">data_osuite</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/test/test_griddeddata.html#data_osuite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.test.test_griddeddata.data_osuite" title="Permalink to this definition">¶</a></dt>
+<dd><p>import example data from ECMWF_OSUITE</p>
+<p>The fixture property makes sure that this “variable” is only created once
+for the entire scope of this test session within this module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.test.test_griddeddata.test_longitude">
+<code class="descclassname">pyaerocom.test.test_griddeddata.</code><code class="descname">test_longitude</code><span class="sig-paren">(</span><em>data_cci</em>, <em>data_osuite</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/test/test_griddeddata.html#test_longitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.test.test_griddeddata.test_longitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if longitudes are defined right</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.test.test_griddeddata.test_latitude">
+<code class="descclassname">pyaerocom.test.test_griddeddata.</code><code class="descname">test_latitude</code><span class="sig-paren">(</span><em>data_cci</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/test/test_griddeddata.html#test_latitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.test.test_griddeddata.test_latitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>test latitude array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.test.test_griddeddata.test_time">
+<code class="descclassname">pyaerocom.test.test_griddeddata.</code><code class="descname">test_time</code><span class="sig-paren">(</span><em>data_cci</em>, <em>data_osuite</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/test/test_griddeddata.html#test_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.test.test_griddeddata.test_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test time dimension access and values</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyaerocom.io.test.test_readgridded">
+<span id="i-o-package"></span><h2>I/O package<a class="headerlink" href="#module-pyaerocom.io.test.test_readgridded" title="Permalink to this headline">¶</a></h2>
+<p>Created on Mon Jul  9 14:14:29 2018</p>
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgridded.dataset">
+<code class="descclassname">pyaerocom.io.test.test_readgridded.</code><code class="descname">dataset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgridded.html#dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgridded.dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read ECMWF data between 2003 and 2008</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgridded.test_variables">
+<code class="descclassname">pyaerocom.io.test.test_readgridded.</code><code class="descname">test_variables</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgridded.html#test_variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgridded.test_variables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgridded.test_years_available">
+<code class="descclassname">pyaerocom.io.test.test_readgridded.</code><code class="descname">test_years_available</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgridded.html#test_years_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgridded.test_years_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgridded.test_meta">
+<code class="descclassname">pyaerocom.io.test.test_readgridded.</code><code class="descname">test_meta</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgridded.html#test_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgridded.test_meta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgridded.test_read_var">
+<code class="descclassname">pyaerocom.io.test.test_readgridded.</code><code class="descname">test_read_var</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgridded.html#test_read_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgridded.test_read_var" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgridded.test_read_vars">
+<code class="descclassname">pyaerocom.io.test.test_readgridded.</code><code class="descname">test_read_vars</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgridded.html#test_read_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgridded.test_read_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-pyaerocom.io.test.test_readgriddedmulti"></span><p>Created on Mon Jul  9 14:14:29 2018</p>
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgriddedmulti.dataset">
+<code class="descclassname">pyaerocom.io.test.test_readgriddedmulti.</code><code class="descname">dataset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgriddedmulti.html#dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgriddedmulti.dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read ECMWF data between 2003 and 2008</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgriddedmulti.test_info_available">
+<code class="descclassname">pyaerocom.io.test.test_readgriddedmulti.</code><code class="descname">test_info_available</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgriddedmulti.html#test_info_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgriddedmulti.test_info_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgriddedmulti.test_read_vars">
+<code class="descclassname">pyaerocom.io.test.test_readgriddedmulti.</code><code class="descname">test_read_vars</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgriddedmulti.html#test_read_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgriddedmulti.test_read_vars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_readgriddedmulti.test_data_available">
+<code class="descclassname">pyaerocom.io.test.test_readgriddedmulti.</code><code class="descname">test_data_available</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_readgriddedmulti.html#test_data_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_readgriddedmulti.test_data_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-pyaerocom.io.test.test_read_aeronet_sunv2"></span><p>Created on Mon Jul  9 14:14:29 2018</p>
+<dl class="function">
+<dt id="pyaerocom.io.test.test_read_aeronet_sunv2.dataset">
+<code class="descclassname">pyaerocom.io.test.test_read_aeronet_sunv2.</code><code class="descname">dataset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_read_aeronet_sunv2.html#dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_read_aeronet_sunv2.dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read ECMWF data between 2003 and 2008</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.test.test_read_aeronet_sunv2.test_load_berlin">
+<code class="descclassname">pyaerocom.io.test.test_read_aeronet_sunv2.</code><code class="descname">test_load_berlin</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/test/test_read_aeronet_sunv2.html#test_load_berlin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.test.test_read_aeronet_sunv2.test_load_berlin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-pyaerocom.test.test_mathutils">
 <span id="low-level-helpers"></span><h2>Low level helpers<a class="headerlink" href="#module-pyaerocom.test.test_mathutils" title="Permalink to this headline">¶</a></h2>
