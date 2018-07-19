@@ -131,7 +131,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
        
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData() 
-        
+        data_out.dataset_name = self.DATASET_NAME
         # create empty arrays for meta information
         for item in self.META_COLNAMES:
             data_out[item] = []
@@ -158,7 +158,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             data_type_comment = in_file.readline()
             # TODO: delete later
             self.logger.debug("Data type comment: {}".format(data_type_comment))
-            # line_7 = in_file.readline()
+            
             # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string
             col_index_str = in_file.readline()
