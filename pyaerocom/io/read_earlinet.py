@@ -31,18 +31,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 import os, fnmatch
-import sys
-
 import numpy as np
-import xarray
-
 import pandas as pd
-
+import xarray
 from pyaerocom import const
-from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationData
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom import StationProfileData
 
-class ReadEarlinet(ReadAeronetBase):
+class ReadEarlinet(ReadUngriddedBase):
     """Interface for EARLINET data 
     
     Todo
@@ -75,30 +71,39 @@ class ReadEarlinet(ReadAeronetBase):
     DEFAULT_VARS = ['zdust']
     
     Z3D_VARNAME = 'Altitude'
-    VAR_INFO = {}
-    VAR_INFO['ec5503daer'] = {}
-    VAR_INFO['ec5503daer']['file_mask'] = '*/f*/*.e5*'
-    VAR_INFO['ec5503daer']['netcdf_var_name'] = 'Extinction'
-    VAR_INFO['ec5323daer'] = {}
-    VAR_INFO['ec5323daer']['file_mask'] = '*/f*/*.e5*'
-    VAR_INFO['ec5323daer']['netcdf_var_name'] = 'Extinction'
-    VAR_INFO['ec3553daer'] = {}
-    VAR_INFO['ec3553daer']['file_mask'] = '*/f*/*.e3*'
-    VAR_INFO['ec3553daer']['netcdf_var_name'] = 'Extinction'
-    VAR_INFO['zdust'] = {}
-    VAR_INFO['zdust']['file_mask'] = '*/f*/*.e*'
-    VAR_INFO['zdust']['netcdf_var_name'] = 'DustLayerHeight'
-    VAR_INFO['zdust']['min_val'] = 0.
-    VAR_INFO['zdust']['max_val'] = 1.E4
     
+    #: dictionary specifying the file search patterns for each variable
+    VAR_PATTERNS_FILE = {'ec5503daer'   : '*/f*/*.e5*', 
+                         'ec5323daer'   : '*/f*/*.e5*', 
+                         'ec3553daer'   : '*/f*/*.e3*', 
+                         'zdust'        : '*/f*/*.e*'}
     
-
+    #: dictionary specifying the file column names (values) for each Aerocom 
+    #: variable (keys)
+    VAR_NAMES_FILE = {'ec5503daer'  : 'Extinction', 
+                      'ec5323daer'  : 'Extinction', 
+                      'ec3553daer'  : 'Extinction', 
+                      'zdust'       : 'DustLayerHeight'}
+        
+    META_NAMES_FILE = {}
 
     PROVIDES_VARIABLES = ['ec5503daer', 
                           'ec5323daer', 
                           'ec3553daer', 
                           'zdust']
 
+    def __init__(self, dataset_to_read=None):
+        # initiate base class
+        super(ReadEarlinet, self).__init__(dataset_to_read)
+        # make sure everything is properly set up
+        if not all([x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]):
+            raise AttributeError("Please specify file search masks in "
+                                 "header dict VAR_PATTERNS_FILE for each "
+                                 "variable defined in PROVIDES_VARIABLES")
+        elif not all([x in self.VAR_NAMES_FILE for x in self.PROVIDES_VARIABLES]):
+            raise AttributeError("Please specify file search masks in "
+                                 "header dict VAR_NAMES_FILE for each "
+                                 "variable defined in PROVIDES_VARIABLES")
     
     def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
@@ -144,6 +149,9 @@ class ReadEarlinet(ReadAeronetBase):
         data_out = data_in
         return (data_out)
     
+    def read(self):
+        raise NotImplementedError
+        
     def get_file_list(self, vars_to_retrieve=None):
         """Perform recusive file search for all input variables
         
@@ -165,7 +173,7 @@ class ReadEarlinet(ReadAeronetBase):
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         self.logger.info('Fetching data files. This might take a while...')
-        patterns = [self.VAR_INFO[x]['file_mask'] for x in vars_to_retrieve]
+        patterns = [self.VAR_PATTERNS_FILE[var] for var in vars_to_retrieve]
         matches = []
         for root, dirnames, files in os.walk(self.DATASET_PATH):
             for pattern in patterns:

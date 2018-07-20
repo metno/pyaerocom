@@ -67,7 +67,8 @@ if not const.READY:
 from . import mathutils
 from . import multiproc
 
-from .stationdata import StationData
+from .station import Station
+from .stationdata import StationTimeseriesData, StationProfileData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
 

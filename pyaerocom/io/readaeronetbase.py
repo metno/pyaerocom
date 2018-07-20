@@ -52,12 +52,21 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         Note
         ----
-        When writing an implementation of this class, you may automise the 
-        column index retrieval by providing the header names for each meta and
-        data column you want to extract using the attribute dictionaries
-        :attr:`META_NAMES_FILE` and :attr:`VAR_NAMES_FILE` by calling
-        :func:`_update_col_index` in your implementation of :func:`read_file`
-        when you reach the line that contains the header information.
+        
+        Implementation depends on the data. For instance, if the variable 
+        information is provided in all files (of all stations) and always in 
+        the same column, then this can be set as a fixed dictionary in the 
+        __init__ function of the implementation (see e.g. class
+        :class:`ReadAeronetSunV2`). 
+        In other cases, it may not be ensured
+        that each variable is available in all files or the column definition
+        may differ between different stations. In the latter case you may 
+        automise the column index retrieval by providing the header names for 
+        each meta and data column you want to extract using the attribute 
+        dictionaries :attr:`META_NAMES_FILE` and :attr:`VAR_NAMES_FILE` by 
+        calling :func:`_update_col_index` in your implementation of 
+        :func:`read_file` when you reach the line that contains the header 
+        information.
         """
         return self._col_index
     
@@ -167,16 +176,19 @@ class ReadAeronetBase(ReadUngriddedBase):
             # not sure yet, if we really need that or if it speeds up things
             metadata[meta_key]['indexes'] = {}
             
-            num_times = station_data.num_timestamps
-            totnum = station_data.len_flat(num_vars)
+            num_times = len(station_data)
+            
+            #access array containing time stamps
+            times = np.float64(station_data['dtime'])
+            
+            totnum = len(station_data) * num_vars
             
             #check if size of data object needs to be extended
             if (idx + totnum) >= data_obj._ROWNO:
                 #if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
             
-            #access array containing time stamps
-            times = np.float64(station_data['dtime'])
+            
             
             for var_idx, var in enumerate(vars_to_retrieve):
                 values = station_data[var]

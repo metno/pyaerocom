@@ -92,24 +92,6 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
     
-    @abc.abstractproperty
-    def col_index(self):
-        """Dictionary that specifies the index for each data column
-        
-        Note
-        ----
-        
-        Implementation depends on the data. For instance, if the variable 
-        information is provided in all files (of all stations) and always in 
-        the same column, then this can be set as a fixed dictionary in the 
-        __init__ function of the implementation (see e.g. class
-        :class:`ReadAeronetSunV2`). 
-        In other cases, it may not be ensured
-        that each variable is available in all files or the column definition
-        may differ between different stations (see )
-        """
-        pass
-    
     @property
     def DATASET_PATH(self):
         """Path to datafiles of specified dataset 

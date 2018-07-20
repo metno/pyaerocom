@@ -38,7 +38,7 @@ import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationData
+from pyaerocom import StationTimeseriesData
 
 class ReadAeronetInvV2(ReadAeronetBase):
     """Interface for reading Aeronet inversion V2 Level 1.5 and 2.0 data
@@ -78,7 +78,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
     VAR_NAMES_FILE['ssa1018aer'] = 'SSA1018-T'
 
     #: dictionary specifying the file column names (values) for each 
-    #: metadata key (cf. attributes of :class:`StationData`, e.g.
+    #: metadata key (cf. attributes of :class:`StationTimeseriesData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
     META_NAMES_FILE['data_quality_level'] = 'DATA_TYPE'
@@ -111,7 +111,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
             
         Returns
         -------
-        StationData 
+        StationTimeseriesData 
             dict-like object containing results
         
 
@@ -126,7 +126,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         #create empty data object (is dictionary with extended functionality)
-        data_out = StationData() 
+        data_out = StationTimeseriesData() 
         
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
@@ -198,10 +198,6 @@ class ReadAeronetInvV2(ReadAeronetBase):
                     except:
                         pass
                     data_out[var].append(val)
-                # copy the meta data (array of type string)
-                for meta_var in self.META_NAMES_FILE:
-                    meta_val = dummy_arr[col_index[meta_var]]
-                    data_out[meta_var].append(meta_val)
 
                 # copy the data fields that are available (rest will be filled
                 # below)

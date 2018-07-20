@@ -39,7 +39,7 @@ import re
 from pyaerocom import const
 from pyaerocom.mathutils import (calc_ang4487aer, calc_od550aer)
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationData
+from pyaerocom import StationTimeseriesData
 
 class ReadAeronetSunV2(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
@@ -117,7 +117,12 @@ class ReadAeronetSunV2(ReadAeronetBase):
 
     @property
     def col_index(self):
-        """Dictionary that specifies the index for each data column"""
+        """Dictionary that specifies the index for each data column
+        
+        Note
+        ----
+        Overload of method in base class
+        """
         return self.COL_INDEX
     
     def read_file(self, filename, vars_to_retrieve=None,
@@ -137,7 +142,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
         
         Returns
         -------
-        StationData 
+        StationTimeseriesData 
             dict-like object containing results
             
         Example
@@ -153,7 +158,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
         #create empty data object (is dictionary with extended functionality)
-        data_out = StationData() 
+        data_out = StationTimeseriesData() 
         data_out.dataset_name = self.DATASET_NAME
         
         #create empty array for all variables that are supposed to be read

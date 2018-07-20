@@ -8,9 +8,28 @@ import pandas as pd
 class UngriddedData(object):
     """Class representing ungridded data
     
-    The data is organised in a 2-dimensional numpy array where the first index
-    axis corresponds to individual measurements and the second dimension 
-    contains addit
+    The data is organised in a 2-dimensional numpy array where the first index 
+    (rows) axis corresponds to individual measurements (i.e. one timestamp of 
+    one variable) and along the second dimension (containing 11 columns) the 
+    actual values are stored (in column 6) along with additional information,
+    such as metadata index (can be used as key in :attr:`metadata` to access
+    additional information related to this measurement), timestamp, latitude, 
+    longitude, altitude of instrument, variable index and, in case of 3D 
+    data (e.g. LIDAR profiles), also the altitude corresponding to the data 
+    value.
+        
+    Note
+    ----
+    
+    That said, let's look at two examples.
+    
+    **Example 1**: Suppose you load 3 variables from 5 files, each of which 
+    contains 30 timestamps. This corresponds to a total of 3*5*30=450 data 
+    points and hence, the shape of the underlying numpy array will be 450x11.
+    
+    **Example 2**: 3 variables, 5 files, 30 timestamps, but each variable 
+    is height resolved, containing 100 altitudes => 3*5*30*100=4500 data points, 
+    thus, the final shape will be 4500x11.
     
     Attributes
     ----------
@@ -20,13 +39,15 @@ class UngriddedData(object):
     metadata : dict
         dictionary containing meta information about the data
     """
+    
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
     _LONINDEX = 3
-    _ALTITUDEINDEX = 4
+    _ALTITUDEINDEX = 4 # altitude of measurement device
     _VARINDEX = 5
     _DATAINDEX = 6
+    _DATAHEIGHTINDEX = 7
 
     _COLNO = 11
     _ROWNO = 10000

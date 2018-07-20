@@ -38,7 +38,7 @@ import pandas as pd
 from pyaerocom import const
 from pyaerocom.mathutils import (calc_ang4487aer, calc_od550aer)
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationData
+from pyaerocom.stationdata import StationTimeseriesData
 
 class ReadAeronetSunV3(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
@@ -80,7 +80,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     VAR_NAMES_FILE['ang4487aer'] = '440-870_Angstrom_Exponent'
 
     #: dictionary specifying the file column names (values) for each 
-    #: metadata key (cf. attributes of :class:`StationData`, e.g.
+    #: metadata key (cf. attributes of :class:`StationTimeseriesData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
     META_NAMES_FILE['data_quality_level'] = 'Data_Quality_Level'
@@ -129,7 +129,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             
         Returns
         -------
-        StationData 
+        StationTimeseriesData 
             dict-like object containing results
         """
         if vars_to_retrieve is None:
@@ -138,7 +138,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         #create empty data object (is dictionary with extended functionality)
-        data_out = StationData() 
+        data_out = StationTimeseriesData() 
         data_out.dataset_name = self.DATASET_NAME
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
