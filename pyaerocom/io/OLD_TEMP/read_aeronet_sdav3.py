@@ -81,24 +81,24 @@ class ReadAeronetSdaV3:
 
     # data vars
     # will be stored as pandas time series
-    DATA_COLNAMES = {}
-    DATA_COLNAMES['od500gt1aer'] = 'Coarse_Mode_AOD_500nm[tau_c]'
-    DATA_COLNAMES['od500lt1aer'] = 'Fine_Mode_AOD_500nm[tau_f]'
-    DATA_COLNAMES['od500aer'] = 'Total_AOD_500nm[tau_a]'
-    DATA_COLNAMES['ang4487aer'] = 'Angstrom_Exponent(AE)-Total_500nm[alpha]'
+    VAR_NAMES_FILE = {}
+    VAR_NAMES_FILE['od500gt1aer'] = 'Coarse_Mode_AOD_500nm[tau_c]'
+    VAR_NAMES_FILE['od500lt1aer'] = 'Fine_Mode_AOD_500nm[tau_f]'
+    VAR_NAMES_FILE['od500aer'] = 'Total_AOD_500nm[tau_a]'
+    VAR_NAMES_FILE['ang4487aer'] = 'Angstrom_Exponent(AE)-Total_500nm[alpha]'
 
     # meta data vars
     # will be stored as array of strings
-    META_COLNAMES = {}
-    META_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
-    META_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
-    META_COLNAMES['station_name'] = 'AERONET_Site'
-    META_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
-    META_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
-    META_COLNAMES['altitude'] = 'Site_Elevation(m)'
-    META_COLNAMES['date'] = 'Date_(dd:mm:yyyy)'
-    META_COLNAMES['time'] = 'Time_(hh:mm:ss)'
-    META_COLNAMES['day_of_year'] = 'Day_of_Year'
+    META_NAMES_FILE = {}
+    META_NAMES_FILE['data_quality_level'] = 'Data_Quality_Level'
+    META_NAMES_FILE['instrument_number'] = 'AERONET_Instrument_Number'
+    META_NAMES_FILE['station_name'] = 'AERONET_Site'
+    META_NAMES_FILE['latitude'] = 'Site_Latitude(Degrees)'
+    META_NAMES_FILE['longitude'] = 'Site_Longitude(Degrees)'
+    META_NAMES_FILE['altitude'] = 'Site_Elevation(m)'
+    META_NAMES_FILE['date'] = 'Date_(dd:mm:yyyy)'
+    META_NAMES_FILE['time'] = 'Time_(hh:mm:ss)'
+    META_NAMES_FILE['day_of_year'] = 'Day_of_Year'
 
     # additional vars
     # calculated
@@ -107,7 +107,7 @@ class ReadAeronetSdaV3:
     AUX_COLNAMES.append('od550lt1aer')
     AUX_COLNAMES.append('od550aer')
 
-    PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
     for col in AUX_COLNAMES:
         PROVIDES_VARIABLES.append(col)
 
@@ -228,7 +228,7 @@ class ReadAeronetSdaV3:
             for var in self.PROVIDES_VARIABLES:
                 data_out[var] = []
             # add time variable location
-            for var in self.META_COLNAMES:
+            for var in self.META_NAMES_FILE:
                 data_out[var] = []
 
             for line in in_file:
@@ -240,20 +240,20 @@ class ReadAeronetSdaV3:
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[index_str[self.META_COLNAMES['date']]].split(':')
+                day, month, year = dummy_arr[index_str[self.META_NAMES_FILE['date']]].split(':')
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[index_str[self.META_COLNAMES['time']]]])
+                datestring = 'T'.join([datestring, dummy_arr[index_str[self.META_NAMES_FILE['time']]]])
                 datestring = '+'.join([datestring, '00:00'])
                 dtime.append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
-                for var in self.META_COLNAMES:
-                    if len(self.META_COLNAMES[var]) == 0: continue
-                    data_out[var].append(dummy_arr[index_str[self.META_COLNAMES[var]]])
+                for var in self.META_NAMES_FILE:
+                    if len(self.META_NAMES_FILE[var]) == 0: continue
+                    data_out[var].append(dummy_arr[index_str[self.META_NAMES_FILE[var]]])
 
                 # copy the data fields (array type np.float_; will be converted to pandas.Series later)
-                for var in self.DATA_COLNAMES:
-                    data_out[var].append(np.float_(dummy_arr[index_str[self.DATA_COLNAMES[var]]]))
+                for var in self.VAR_NAMES_FILE:
+                    data_out[var].append(np.float_(dummy_arr[index_str[self.VAR_NAMES_FILE[var]]]))
                     if data_out[var][-1] == nan_val: data_out[var][-1] = np.nan
 
                 # some stuff needs to be calculated

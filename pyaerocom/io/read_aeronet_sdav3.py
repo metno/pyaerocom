@@ -75,25 +75,25 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
-    DATA_COLNAMES = {}
-    DATA_COLNAMES['od500gt1aer'] = 'Coarse_Mode_AOD_500nm[tau_c]'
-    DATA_COLNAMES['od500lt1aer'] = 'Fine_Mode_AOD_500nm[tau_f]'
-    DATA_COLNAMES['od500aer'] = 'Total_AOD_500nm[tau_a]'
-    DATA_COLNAMES['ang4487aer'] = 'Angstrom_Exponent(AE)-Total_500nm[alpha]'
+    VAR_NAMES_FILE = {}
+    VAR_NAMES_FILE['od500gt1aer'] = 'Coarse_Mode_AOD_500nm[tau_c]'
+    VAR_NAMES_FILE['od500lt1aer'] = 'Fine_Mode_AOD_500nm[tau_f]'
+    VAR_NAMES_FILE['od500aer'] = 'Total_AOD_500nm[tau_a]'
+    VAR_NAMES_FILE['ang4487aer'] = 'Angstrom_Exponent(AE)-Total_500nm[alpha]'
 
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
-    META_COLNAMES = {}
-    META_COLNAMES['data_quality_level'] = 'Data_Quality_Level'
-    META_COLNAMES['instrument_number'] = 'AERONET_Instrument_Number'
-    META_COLNAMES['station_name'] = 'AERONET_Site'
-    META_COLNAMES['latitude'] = 'Site_Latitude(Degrees)'
-    META_COLNAMES['longitude'] = 'Site_Longitude(Degrees)'
-    META_COLNAMES['altitude'] = 'Site_Elevation(m)'
-    META_COLNAMES['date'] = 'Date_(dd:mm:yyyy)'
-    META_COLNAMES['time'] = 'Time_(hh:mm:ss)'
-    META_COLNAMES['day_of_year'] = 'Day_of_Year'
+    META_NAMES_FILE = {}
+    META_NAMES_FILE['data_quality_level'] = 'Data_Quality_Level'
+    META_NAMES_FILE['instrument_number'] = 'AERONET_Instrument_Number'
+    META_NAMES_FILE['station_name'] = 'AERONET_Site'
+    META_NAMES_FILE['latitude'] = 'Site_Latitude(Degrees)'
+    META_NAMES_FILE['longitude'] = 'Site_Longitude(Degrees)'
+    META_NAMES_FILE['altitude'] = 'Site_Elevation(m)'
+    META_NAMES_FILE['date'] = 'Date_(dd:mm:yyyy)'
+    META_NAMES_FILE['time'] = 'Time_(hh:mm:ss)'
+    META_NAMES_FILE['day_of_year'] = 'Day_of_Year'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -111,7 +111,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
     
     def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
@@ -142,7 +142,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         data_out = StationData() 
         data_out.dataset_name = self.DATASET_NAME
         # create empty arrays for meta information
-        for item in self.META_COLNAMES:
+        for item in self.META_NAMES_FILE:
             data_out[item] = []
             
         # create empty arrays for all variables that are supposed to be read
@@ -194,7 +194,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                 dummy_arr = line.split(self.COL_DELIM)
                 
                 # copy the meta data (array of type string)
-                for var in self.META_COLNAMES:
+                for var in self.META_NAMES_FILE:
                     val = dummy_arr[col_index[var]]
                     try:
                         # e.g. lon, lat, altitude
@@ -224,7 +224,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
         
-        for item in self.META_COLNAMES:
+        for item in self.META_NAMES_FILE:
             data_out[item] = np.asarray(data_out[item])
             
         for var in vars_to_read:

@@ -83,20 +83,20 @@ class ReadAeronetInvV2:
 
     # data vars
     # will be stored as pandas time series
-    DATA_COLNAMES = {}
-    DATA_COLNAMES['ssa439aer'] = 'SSA439-T'
-    DATA_COLNAMES['ssa440aer'] = 'SSA440-T'
-    DATA_COLNAMES['ssa675aer'] = 'SSA675-T'
-    DATA_COLNAMES['ssa870aer'] = 'SSA870-T'
-    DATA_COLNAMES['ssa1018aer'] = 'SSA1018-T'
+    VAR_NAMES_FILE = {}
+    VAR_NAMES_FILE['ssa439aer'] = 'SSA439-T'
+    VAR_NAMES_FILE['ssa440aer'] = 'SSA440-T'
+    VAR_NAMES_FILE['ssa675aer'] = 'SSA675-T'
+    VAR_NAMES_FILE['ssa870aer'] = 'SSA870-T'
+    VAR_NAMES_FILE['ssa1018aer'] = 'SSA1018-T'
 
     # meta data vars
     # will be stored as array of strings
-    META_COLNAMES = {}
-    META_COLNAMES['data_quality_level'] = 'DATA_TYPE'
-    META_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
-    META_COLNAMES['time'] = 'Time(hh:mm:ss)'
-    META_COLNAMES['day_of_year'] = 'Julian_Day'
+    META_NAMES_FILE = {}
+    META_NAMES_FILE['data_quality_level'] = 'DATA_TYPE'
+    META_NAMES_FILE['date'] = 'Date(dd-mm-yyyy)'
+    META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
+    META_NAMES_FILE['day_of_year'] = 'Julian_Day'
 
     # additional vars
     # calculated
@@ -105,7 +105,7 @@ class ReadAeronetInvV2:
     # AUX_COLNAMES.append('od550lt1aer')
     # AUX_COLNAMES.append('od550aer')
 
-    PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
     for col in AUX_COLNAMES:
         PROVIDES_VARIABLES.append(col)
 
@@ -229,7 +229,7 @@ class ReadAeronetInvV2:
             for var in self.PROVIDES_VARIABLES:
                 data_out[var] = []
             # add time variable location
-            for var in self.META_COLNAMES:
+            for var in self.META_NAMES_FILE:
                 data_out[var] = []
 
             for line in in_file:
@@ -241,21 +241,21 @@ class ReadAeronetInvV2:
 
                 # This uses the numpy datestring64 functions that e.g. also support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[index_str[self.META_COLNAMES['date']]].split(':')
+                day, month, year = dummy_arr[index_str[self.META_NAMES_FILE['date']]].split(':')
                 datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[index_str[self.META_COLNAMES['time']]]])
+                datestring = 'T'.join([datestring, dummy_arr[index_str[self.META_NAMES_FILE['time']]]])
                 datestring = '+'.join([datestring, '00:00'])
                 dtime.append(np.datetime64(datestring))
 
                 # copy the meta data (array of type string)
-                for var in self.META_COLNAMES:
-                    if len(self.META_COLNAMES[var]) == 0: continue
-                    data_out[var].append(dummy_arr[index_str[self.META_COLNAMES[var]]])
+                for var in self.META_NAMES_FILE:
+                    if len(self.META_NAMES_FILE[var]) == 0: continue
+                    data_out[var].append(dummy_arr[index_str[self.META_NAMES_FILE[var]]])
 
                 # copy the data fields (array type np.float_; will be converted to pandas.Series later)
-                for var in self.DATA_COLNAMES:
-                    if self.DATA_COLNAMES[var] in index_str:
-                        data_out[var].append(np.float_(dummy_arr[index_str[self.DATA_COLNAMES[var]]]))
+                for var in self.VAR_NAMES_FILE:
+                    if self.VAR_NAMES_FILE[var] in index_str:
+                        data_out[var].append(np.float_(dummy_arr[index_str[self.VAR_NAMES_FILE[var]]]))
                         if data_out[var][-1] == nan_val: data_out[var][-1] = np.nan
                     else:
                         pass

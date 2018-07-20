@@ -6,6 +6,7 @@ import logging
 import numpy as np
 from fnmatch import fnmatch
 
+from pyaerocom import const
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
 
@@ -53,18 +54,6 @@ class ReadUngriddedBase(abc.ABC):
         Note
         ----
         May be implemented as global constant in header
-        """
-        pass
-    
-    @abc.abstractproperty
-    def REVISION_FILE(self):
-        """Name of data revision file located in data directory
-        
-        Note
-        ----
-        
-        May be implemented as global constant in header of derieved class
-        
         """
         pass
     
@@ -198,6 +187,11 @@ class ReadUngriddedBase(abc.ABC):
                 raise AttributeError("Dataset {} not supported by this "
                                      "interface".format(dataset_to_read))
             self.DATASET_NAME = dataset_to_read
+    
+    @property
+    def REVISION_FILE(self):
+        """Name of revision file located in data directory"""
+        return const.REVISION_FILE
             
     @property
     def AUX_VARS(self):
@@ -480,8 +474,7 @@ class ReadUngriddedBase(abc.ABC):
         return self.read_file(files[0], **kwargs)
 
 if __name__=="__main__":
-    
-    from pyaerocom import const
+
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
         _FILEMASK = ".txt"
         DATASET_NAME = "Blaaa"

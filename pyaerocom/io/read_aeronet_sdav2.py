@@ -217,7 +217,7 @@ class ReadAeronetSDAV2(ReadAeronetBase):
         
         data_out.dataset_name = self.DATASET_NAME
         # create empty arrays for meta information
-        for item in self.META_COLNAMES:
+        for item in self.META_NAMES_FILE:
             data_out[item] = []
             
         # create empty arrays for all variables that are supposed to be read

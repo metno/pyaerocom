@@ -70,26 +70,26 @@ class ReadAeronetInvV2(ReadAeronetBase):
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
-    DATA_COLNAMES = {}
-    DATA_COLNAMES['ssa439aer'] = 'SSA439-T'
-    DATA_COLNAMES['ssa440aer'] = 'SSA440-T'
-    DATA_COLNAMES['ssa675aer'] = 'SSA675-T'
-    DATA_COLNAMES['ssa870aer'] = 'SSA870-T'
-    DATA_COLNAMES['ssa1018aer'] = 'SSA1018-T'
+    VAR_NAMES_FILE = {}
+    VAR_NAMES_FILE['ssa439aer'] = 'SSA439-T'
+    VAR_NAMES_FILE['ssa440aer'] = 'SSA440-T'
+    VAR_NAMES_FILE['ssa675aer'] = 'SSA675-T'
+    VAR_NAMES_FILE['ssa870aer'] = 'SSA870-T'
+    VAR_NAMES_FILE['ssa1018aer'] = 'SSA1018-T'
 
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
-    META_COLNAMES = {}
-    META_COLNAMES['data_quality_level'] = 'DATA_TYPE'
-    META_COLNAMES['date'] = 'Date(dd-mm-yyyy)'
-    META_COLNAMES['time'] = 'Time(hh:mm:ss)'
-    META_COLNAMES['day_of_year'] = 'Julian_Day'
+    META_NAMES_FILE = {}
+    META_NAMES_FILE['data_quality_level'] = 'DATA_TYPE'
+    META_NAMES_FILE['date'] = 'Date(dd-mm-yyyy)'
+    META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
+    META_NAMES_FILE['day_of_year'] = 'Julian_Day'
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(DATA_COLNAMES.keys())
+    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
     # TODO: currently every file is read, regardless of whether it actually
     # contains the desired variables or not. Do we need that? Slows stuff down..
@@ -129,7 +129,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
         data_out = StationData() 
         
         # create empty arrays for meta information
-        for item in self.META_COLNAMES:
+        for item in self.META_NAMES_FILE:
             data_out[item] = []
             
         # create empty arrays for all variables that are supposed to be read
@@ -190,7 +190,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
                 datestring = '+'.join([datestring, '00:00'])
                 data_out['dtime'].append(np.datetime64(datestring))
                 
-                for var in self.META_COLNAMES:
+                for var in self.META_NAMES_FILE:
                     val = dummy_arr[col_index[var]]
                     try:
                         # e.g. lon, lat, altitude
@@ -199,7 +199,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
                         pass
                     data_out[var].append(val)
                 # copy the meta data (array of type string)
-                for meta_var in self.META_COLNAMES:
+                for meta_var in self.META_NAMES_FILE:
                     meta_val = dummy_arr[col_index[meta_var]]
                     data_out[meta_var].append(meta_val)
 
@@ -214,7 +214,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
         
-        for item in self.META_COLNAMES:
+        for item in self.META_NAMES_FILE:
             data_out[item] = np.asarray(data_out[item])
             
         for var in vars_to_read:

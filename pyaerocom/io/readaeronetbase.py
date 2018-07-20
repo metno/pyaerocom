@@ -6,7 +6,6 @@ from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.exceptions import MetaDataError
-from pyaerocom import const
 
 class ReadAeronetBase(ReadUngriddedBase):
     """TEMPLATE: Abstract base class template for reading of Aeronet data
@@ -19,12 +18,12 @@ class ReadAeronetBase(ReadUngriddedBase):
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
-    DATA_COLNAMES = {}
+    VAR_NAMES_FILE = {}
     
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
-    META_COLNAMES = {}
+    META_NAMES_FILE = {}
     
     
     @abc.abstractproperty
@@ -56,16 +55,11 @@ class ReadAeronetBase(ReadUngriddedBase):
         When writing an implementation of this class, you may automise the 
         column index retrieval by providing the header names for each meta and
         data column you want to extract using the attribute dictionaries
-        :attr:`META_COLNAMES` and :attr:`DATA_COLNAMES` by calling 
+        :attr:`META_NAMES_FILE` and :attr:`VAR_NAMES_FILE` by calling
         :func:`_update_col_index` in your implementation of :func:`read_file`
         when you reach the line that contains the header information.
         """
         return self._col_index
-    
-    @property
-    def REVISION_FILE(self):
-        """Name of revision file located in data directory"""
-        return const.REVISION_FILE
     
     def _update_col_index(self, col_index_str):
         """Update column information for fast access during read_file
@@ -84,7 +78,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         -------
         dict
             dictionary containing indices (values) for each data /
-            metadata key specified in ``DATA_COLNAMES`` and ``META_COLNAMES``.
+            metadata key specified in ``VAR_NAMES_FILE`` and ``META_NAMES_FILE``.
             
         Raises
         ------
@@ -97,12 +91,12 @@ class ReadAeronetBase(ReadUngriddedBase):
             mapping[info_str] = idx
         col_index = od()
         # find meta indices
-        for key, val in self.META_COLNAMES.items():
+        for key, val in self.META_NAMES_FILE.items():
             if not val in mapping:
                 raise MetaDataError("Required meta-information string {} could "
                                     "not be found in file header".format(val))
             col_index[key] = mapping[val]
-        for key, val in self.DATA_COLNAMES.items():
+        for key, val in self.VAR_NAMES_FILE.items():
             if val in mapping:
                 col_index[key] = mapping[val]    
         self._col_index = col_index
@@ -223,7 +217,6 @@ if __name__=="__main__":
         SUPPORTED_DATASETS = ['Blaaa', 'Blub']
         __version__ = "0.01"
         PROVIDES_VARIABLES = ["od550aer"]
-        REVISION_FILE = const.REVISION_FILE
         
         def __init__(self, dataset_to_read=None):
             if dataset_to_read is not None:
