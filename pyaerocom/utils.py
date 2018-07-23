@@ -3,7 +3,9 @@
 """
 Small helper utility functions for pyaerocom
 """   
-class BrowseDict(dict):
+import numpy as np
+from collections import OrderedDict
+class BrowseDict(OrderedDict):
     """Dictionary with get / set attribute methods
     
     Example
@@ -22,6 +24,8 @@ def list_to_shortstr(lst, indent=3):
     """Custom function to convert a list into a short string representation"""
     if len(lst) == 0:
         return "\n" + indent*" " + "[]\n"
+    elif len(lst) == 1:
+        return "\n" + indent*" " + "[%s]\n" %lst[0]
     
     s = "\n" + indent*" " + "[%s\n" %lst[0]
     if len(lst) > 4:
@@ -65,10 +69,16 @@ def dict_to_str(dictionary, s="", indent=3):
     """
     for k, v in dictionary.items():
         if isinstance(v, dict):
-            s += "\n" + indent*" " + "%s (dict)" %k
+            s += "\n" + indent*" " + "{} ({})".format(k, type(v))
             s = dict_to_str(v, s, indent+1)
+        elif isinstance(v, list):
+            s += "\n" + indent*" " + "{} (list, {} items)".format(k, len(v))
+            s += list_to_shortstr(v)
+        elif isinstance(v, np.ndarray) and v.ndim==1:
+            s += "\n" + indent*" " + "{} (array, {} items)".format(k, len(v))
+            s += list_to_shortstr(v)
         else:
-            s += "\n" + indent*" " + "%s: %s" %(k,v)
+            s += "\n" + indent*" " + "{}: {}".format(k, v)
     return s
 
 def str_underline(s):

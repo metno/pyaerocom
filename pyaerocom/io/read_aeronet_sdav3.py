@@ -44,7 +44,7 @@ from pyaerocom.mathutils import (calc_od550aer,
                                  calc_od550gt1aer,
                                  calc_od550lt1aer)
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationTimeseriesData
+from pyaerocom import StationData
 
 class ReadAeronetSdaV3(ReadAeronetBase):
     """Interface for reading Aeronet Sun SDA V3 Level 1.5 and 2.0 data
@@ -82,7 +82,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     VAR_NAMES_FILE['ang4487aer'] = 'Angstrom_Exponent(AE)-Total_500nm[alpha]'
 
     #: dictionary specifying the file column names (values) for each 
-    #: metadata key (cf. attributes of :class:`StationTimeseriesData`, e.g.
+    #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
     META_NAMES_FILE['data_quality_level'] = 'Data_Quality_Level'
@@ -130,7 +130,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             
         Returns
         -------
-        StationTimeseriesData 
+        StationData
             dict-like object containing results
         """
         if vars_to_retrieve is None:
@@ -139,7 +139,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         #create empty data object (is dictionary with extended functionality)
-        data_out = StationTimeseriesData() 
+        data_out = StationData()
         data_out.dataset_name = self.DATASET_NAME
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:

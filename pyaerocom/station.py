@@ -83,15 +83,18 @@ class Station(BrowseDict):
         for key in self.COORD_KEYS:
             val = self[key]
             std = 0.0
-            if force_single_value and not isinstance(val, float):
-                if not any([isinstance(val, x) for x in [list, np.ndarray]]):
+            if force_single_value and not isinstance(val, (float, np.floating)):
+                if isinstance(val, (int, np.integer)):
+                    val = np.float64(val)
+                elif isinstance(val, (list, np.ndarray)):
+                    val = np.mean(val)
+                    std = np.std(val)
+                    if std > 0:
+                        _check_var = True
+                else:
                     raise AttributeError("Invalid value encountered for coord "
-                                         "{}, need float, list or ndarray, "
+                                         "{}, need float, int, list or ndarray, "
                                          "got {}".format(key, type(val)))
-                val = np.mean(val)
-                std = np.std(val)
-                if std > 0:
-                    _check_var = True
             vals[key] = val
             stds[key] = std
         if _check_var:
@@ -165,8 +168,10 @@ class Station(BrowseDict):
         s = "\n{}\n{}".format(head, len(head)*"-")
         arrays = ''
         for k, v in self.items():
+            if k[0] == '_':
+                continue
             if isinstance(v, dict):
-                s += "\n{} (dict)".format(k)
+                s += "\n{} ({})".format(k, type(v))
                 s = dict_to_str(v, s)
             elif isinstance(v, list):
                 s += "\n{} (list, {} items)".format(k, len(v))
@@ -178,13 +183,10 @@ class Station(BrowseDict):
                 s += "\n%s: %s" %(k,v)
         s += arrays
         return s
-              
-class StationData(Station):
-    pass
       
 if __name__=="__main__":
     
-    d = StationData()
+    d = Station()
     print(d)
         
         

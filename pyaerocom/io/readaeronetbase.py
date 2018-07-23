@@ -176,12 +176,14 @@ class ReadAeronetBase(ReadUngriddedBase):
             # not sure yet, if we really need that or if it speeds up things
             metadata[meta_key]['indexes'] = {}
             
-            num_times = len(station_data)
+            num_times = len(station_data['dtime'])
             
             #access array containing time stamps
+            # TODO: check using index instead (even though not a problem here 
+            # since all Aerocom data files are of type timeseries)
             times = np.float64(station_data['dtime'])
             
-            totnum = len(station_data) * num_vars
+            totnum = num_times * num_vars
             
             #check if size of data object needs to be extended
             if (idx + totnum) >= data_obj._ROWNO:

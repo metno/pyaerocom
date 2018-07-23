@@ -1,52 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Collection of station data classes
-
-Currently:
-    
-    1. :class:`StationTimeseriesData`
-    2. :class:`StationProfileData`
-"""
 import pandas as pd
 import numpy as np
-import abc
 from pyaerocom.station import Station
+from pyaerocom import VerticalProfile
 
-class StationData(abc.ABC, Station):
-    """TEMPLATE: Dict-like base class for single station data
+class StationData(Station):
+    """Dict-like base class for single station data
     
     .. seealso::
         
         Base class :class:`Station`
         
-    Note
-    ----
-    Implementations require specification of the key that should be used for
-    indexing (e.g. dtime, or altitude z).
-        
     Attributes
     ----------
-    index : list
+    dtime : list
         list / array containing index values
+    
     """
     def __init__(self, *args, **kwargs):
         super(StationData, self).__init__(*args, **kwargs)
         self.dtime = []
-        self.z = []
     
-    @abc.abstractproperty
-    def index_key(self):
-        pass
-    
-    @property
-    def index(self):
-        return self[self.index_key]
-    
-    def check_index(self):
-        """Check if time dimension is valid"""
-        if not len(self.index) > 0:
-            raise ValueError("No data points available")
-               
+    def check_dtime(self):
+        """Checks if dtime attribute is array or list"""
+        if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
+            raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
+        elif not len(self.dtime) > 0:
+            raise AttributeError("No timestamps available")
     @property
     def data_columns(self):
         """List containing all data columns
@@ -61,14 +42,18 @@ class StationData(abc.ABC, Station):
             list containing N arrays, where N is the total number of 
             datacolumns found. 
         """
-        self.check_index()
-        num = len(self.index)
+        self.check_dtime()
+        num = len(self.dtime)
         cols = {}
         for k, v in self.items():
-            if k is self.index_key:
+            if k is 'dtime':
                 continue
             elif isinstance(v, list):
                 v = np.asarray(v)
+            elif isinstance(v, VerticalProfile):
+                raise NotImplementedError("This feature is not yet supported "
+                                          "for data objects that contain also "
+                                          "profile data")
             if isinstance(v, np.ndarray) and len(v) == num:
                 cols[k] = v
         if not cols:
@@ -83,14 +68,14 @@ class StationData(abc.ABC, Station):
         ``time``)
         
         """
-        return pd.DataFrame(data=self.data_columns, index=self.index)
+        return pd.DataFrame(data=self.data_columns, index=self.dtime)
     
-    def to_timeseries(self, varname):
+    def to_timeseries(self, var_name):
         """Get pandas.Series object for one of the data columns
         
         Parameters
         ----------
-        varname : str
+        var_name : str
             name of variable (e.g. "od550aer")
         
         Returns
@@ -105,23 +90,23 @@ class StationData(abc.ABC, Station):
         ValueError
             if length of data array does not equal the length of the time array
         """
-        if not varname in self:
-            raise KeyError("Variable {} does not exist".format(varname))
-        self.check_index()
-        data = self[varname]
+        if not var_name in self:
+            raise KeyError("Variable {} does not exist".format(var_name))
+        self.check_dtime()
+        data = self[var_name]
         if not len(data) == len(self.index):
             raise ValueError("Mismatch between length of data array for "
                              "variable {} (length: {}) and time array  "
-                             "(length: {}).".format(varname, len(data), 
-                               len(self.index)))
-        return pd.Series(data, index=self.index)
+                             "(length: {}).".format(var_name, len(data), 
+                               len(self.dtime)))
+        return pd.Series(data, index=self.dtime)
     
-    def plot_variable(self, varname, **kwargs):
+    def plot_variable(self, var_name, **kwargs):
         """Plot timeseries for variable
         
         Parameters
         ----------
-        varname : str
+        var_name : str
             name of variable (e.g. "od550aer")
         **kwargs
             additional keyword args passed to ``Series.plot`` method
@@ -138,26 +123,13 @@ class StationData(abc.ABC, Station):
         ValueError
             if length of data array does not equal the length of the time array
         """
-        s = self.to_timeseries(varname)
+        s = self.to_timeseries(var_name)
         ax = s.plot(**kwargs)
         return ax
     
-    def __len__(self):
-        return len(self.index)
-    
-class StationTimeseriesData(StationData):
-    @property
-    def index_key(self):
-        return 'dtime'
-
-class StationProfileData(StationData):
-    @property
-    def index_key(self):
-        return 'z'
-    
 if __name__=="__main__":
     
-    d = StationTimeseriesData()
+    d = StationData()
 
     print(d)
         

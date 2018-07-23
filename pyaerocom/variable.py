@@ -38,6 +38,7 @@ class Variable(BrowseDict):
         self.aliases = []
         self.wavelength_nm = None
         self.lower_limit = -9e30
+        self.upper_limit = 9e30
         
         # settings for scatter plots
         self.scat_xlim = None
