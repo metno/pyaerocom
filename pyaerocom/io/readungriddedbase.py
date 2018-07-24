@@ -92,6 +92,11 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass
     
+    @abc.abstractproperty
+    def DEFAULT_VARS(self):
+        """List containing default variables to read"""
+        pass
+    
     @property
     def DATASET_PATH(self):
         """Path to datafiles of specified dataset 
@@ -289,7 +294,7 @@ class ReadUngriddedBase(abc.ABC):
             - list: list containing all variables to be computed
         """
         if vars_to_retrieve is None:
-            vars_to_retrieve = self.PROVIDES_VARIABLES
+            vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):

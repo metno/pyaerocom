@@ -105,13 +105,13 @@ class UngriddedData(object):
         temp_dict['dataset_name'] = val['dataset_name']
         if 'files' in val:
             temp_dict['files'] = val['files']
-        for var in val['indexes']:
+        for var in val['idx']:
             if var in self.vars_to_retrieve:
                 data_found_flag = True
-                temp_dict[var] = pd.Series(self._data[val['indexes'][var], self._DATAINDEX],
+                temp_dict[var] = pd.Series(self._data[val['idx'][var], self._DATAINDEX],
                                            index=pd.to_datetime(
                                                self._data[
-                                                   val['indexes'][var], self._TIMEINDEX],
+                                                   val['idx'][var], self._TIMEINDEX],
                                                unit='s'))
 
                 temp_dict[var] = temp_dict[var][start_date:end_date].drop_duplicates()
@@ -250,4 +250,8 @@ class UngriddedData(object):
     def time(self, value):
         raise AttributeError("Time array cannot be changed, please check "
                              "underlying data type stored in attribute grid")
+        
+    def __getitem__(self, key, val):
+        raise NotImplementedError
+        
     

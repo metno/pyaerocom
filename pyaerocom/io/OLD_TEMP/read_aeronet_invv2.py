@@ -310,9 +310,9 @@ class ReadAeronetInvV2:
             self.metadata[meta_key]['PI'] = stat_obs_data['PI']
             self.metadata[meta_key]['dataset_name'] = self.DATASET_NAME
 
-            # this is a list with indexes of this station for each variable
+            # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            self.metadata[meta_key]['indexes'] = {}
+            self.metadata[meta_key]['idx'] = {}
             start_index = self.index_pointer
             # variable index
             obs_var_index = 0
@@ -333,7 +333,7 @@ class ReadAeronetInvV2:
                 end_index = self.index_pointer
                 # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
                 # NOTE THAT THE LOCATION KEPT THE TIME STEP DEPENDENCY HERE
-                self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
+                self.metadata[meta_key]['idx'][var] = np.arange(start_index, end_index)
                 self.data[start_index:end_index, self._VARINDEX] = obs_var_index
                 self.data[start_index:end_index, self._LATINDEX] = stat_obs_data['latitude']
                 self.data[start_index:end_index, self._LONINDEX] = stat_obs_data['longitude']

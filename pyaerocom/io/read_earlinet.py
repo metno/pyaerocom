@@ -41,7 +41,7 @@ from pyaerocom import UngriddedData
 
 # TODO: Include backscatter signal ???
 # TODO: Check file order 
-# TODO: Check staion names -> they are NOT UNIQUE (e.g. Potenza...)
+# TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
 class ReadEarlinet(ReadUngriddedBase):
     """Interface for EARLINET data 
     
@@ -148,9 +148,6 @@ class ReadEarlinet(ReadUngriddedBase):
         StationData 
             dict-like object containing results
         """
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
@@ -173,7 +170,7 @@ class ReadEarlinet(ReadUngriddedBase):
             
         
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
+        self.logger.debug("Reading file {}".format(filename))
         
         data_in = xarray.open_dataset(filename)
         
@@ -284,6 +281,9 @@ class ReadEarlinet(ReadUngriddedBase):
         """
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+            
         if files is None:
             if len(self.files) == 0:
                 self.get_file_list()
@@ -306,61 +306,74 @@ class ReadEarlinet(ReadUngriddedBase):
         metadata = data_obj.metadata
         
         last_stat_code = ''
-        for _file in files:
-            station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
-            stat_code = station_data['stat_code']
-            if last_stat_code != stat_code:
-                meta_key += 1
-                # Fill the metatdata dict
-                # the location in the data set is time step dependant!
-                # use the lat location here since we have to choose one location
-                # in the time series plot
-                metadata[meta_key] = {}
-                metadata[meta_key].update(station_data.get_meta())
-                metadata[meta_key].update(station_data.get_coords())
-                metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-                # this is a list with indexes of this station for each variable
-                # not sure yet, if we really need that or if it speeds up things
-                metadata[meta_key]['indexes'] = {}
-                last_stat_code = stat_code
-            
-            # Is floating point single value
-            time = station_data.dtime
-            for var_idx, var in enumerate(station_data.contains_vars):
-                val = station_data[var]
-                if isinstance(val, VerticalProfile):
-                    add = len(val)
-                    altitude = val.altitude
-                    data = val.data
-                else:
-                    add = 1
-                    altitude = np.nan
-                    data = val
-                stop = idx + add
-                #check if size of data object needs to be extended
-                if stop >= data_obj._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                    data_obj.add_chunk(add)
+        num_files = len(files)
+        for i, _file in enumerate(files):
+            self.logger.info('File {} ({})'.format(i, num_files))
+            try:
+                station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+                if not any([var in station_data.contains_vars for var in vars_to_retrieve]):
+                    self.logger.info("Station {} contains none of the desired "
+                                     "variables. Skipping "
+                                     "station...".format(station_data.station_name))
+                    continue
+                stat_code = station_data['stat_code']
+                if last_stat_code != stat_code:
+                    meta_key += 1
+                    # Fill the metatdata dict
+                    # the location in the data set is time step dependant!
+                    # use the lat location here since we have to choose one location
+                    # in the time series plot
+                    metadata[meta_key] = {}
+                    metadata[meta_key].update(station_data.get_meta())
+                    metadata[meta_key].update(station_data.get_coords())
+                    metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+                    # this is a list with indices of this station for each variable
+                    # not sure yet, if we really need that or if it speeds up things
+                    metadata[meta_key]['idx'] = {}
+                    last_stat_code = stat_code
                 
-                #write common meta info for this station
-                data_obj._data[idx:stop, 
-                               data_obj._LATINDEX] = station_data['latitude']
-                data_obj._data[idx:stop, 
-                               data_obj._LONINDEX] = station_data['longitude']
-                data_obj._data[idx:stop, 
-                               data_obj._ALTITUDEINDEX] = station_data['altitude']
-                data_obj._data[idx:stop, 
-                               data_obj._METADATAKEYINDEX] = meta_key
-                               
-                # write data to data object
-                data_obj._data[idx:stop, data_obj._TIMEINDEX] = time
-                data_obj._data[idx:stop, data_obj._DATAINDEX] = data
-                data_obj._data[idx:stop, data_obj._DATAHEIGHTINDEX] = altitude
-                data_obj._data[idx:stop, data_obj._VARINDEX] = var_idx
+                # Is floating point single value
+                time = station_data.dtime
+                for var_idx, var in enumerate(station_data.contains_vars):
+                    val = station_data[var]
+                    if isinstance(val, VerticalProfile):
+                        add = len(val)
+                        altitude = val.altitude
+                        data = val.data
+                    else:
+                        add = 1
+                        altitude = np.nan
+                        data = val
+                    stop = idx + add
+                    #check if size of data object needs to be extended
+                    if stop >= data_obj._ROWNO:
+                        #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                        data_obj.add_chunk(add)
+                    
+                    #write common meta info for this station
+                    data_obj._data[idx:stop, 
+                                   data_obj._LATINDEX] = station_data['latitude']
+                    data_obj._data[idx:stop, 
+                                   data_obj._LONINDEX] = station_data['longitude']
+                    data_obj._data[idx:stop, 
+                                   data_obj._ALTITUDEINDEX] = station_data['altitude']
+                    data_obj._data[idx:stop, 
+                                   data_obj._METADATAKEYINDEX] = meta_key
+                                   
+                    # write data to data object
+                    data_obj._data[idx:stop, data_obj._TIMEINDEX] = time
+                    data_obj._data[idx:stop, data_obj._DATAINDEX] = data
+                    data_obj._data[idx:stop, data_obj._DATAHEIGHTINDEX] = altitude
+                    data_obj._data[idx:stop, data_obj._VARINDEX] = var_idx
+                    
+                    if not var in metadata[meta_key]['idx']:
+                        metadata[meta_key]['idx'][var] = []
+                    metadata[meta_key]['idx'][var].extend(list(range(idx, stop)))
                 
-                metadata[meta_key]['indexes'][var] = np.arange(idx, stop)
-            
-                idx += add
+                    idx += add
+            except:
+                self.read_failed.append(_file)
+                self.logger.exception('Failed to read file {}'.format(os.path.basename(_file)))
                 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
@@ -409,8 +422,10 @@ if __name__=="__main__":
     dat = read.read_file(F150, vars_to_retrieve=read.PROVIDES_VARIABLES)
     print(dat)
     
-    data = read.read(vars_to_retrieve=read.PROVIDES_VARIABLES, first_file=345,
-                     last_file=360)
+    from time import time
+    t0=time()
+    data = read.read(vars_to_retrieve='zdust', first_file=345, last_file=1000)
+    print("Elapsed time read all zdust: {} s".format(time() - t0))
     stat_test = False
     if stat_test:
         all_stats = []

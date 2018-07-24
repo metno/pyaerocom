@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import abc
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -24,12 +23,6 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
-    
-    
-    @abc.abstractproperty
-    def DEFAULT_VARS(self):
-        """List containing default variables to read"""
-        pass
     
     def __init__(self, dataset_to_read=None):
         super(ReadAeronetBase, self).__init__(dataset_to_read)
@@ -172,9 +165,9 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_coords())
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-            # this is a list with indexes of this station for each variable
+            # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            metadata[meta_key]['indexes'] = {}
+            metadata[meta_key]['idx'] = {}
             
             num_times = len(station_data['dtime'])
             
@@ -213,7 +206,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
-                metadata[meta_key]['indexes'][var] = np.arange(start, stop)
+                metadata[meta_key]['idx'][var] = np.arange(start, stop)
             
             idx += totnum  
             meta_key = meta_key + 1.

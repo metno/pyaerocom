@@ -90,7 +90,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
         df_time = df_time.append(pd.DataFrame(df_time_temp, 
                                               columns=df_time_temp.columns))
 
-    # remove all indexes where either one of the data pairs is NaN
+    # remove all indices where either one of the data pairs is NaN
     # mainly done to get the number of days right.
     # df_time.corr() gets it right without
     df_time = df_time.dropna(axis=0, how='any')

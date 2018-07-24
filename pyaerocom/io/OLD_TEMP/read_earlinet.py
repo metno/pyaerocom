@@ -246,9 +246,9 @@ Attributes:
                 self.metadata[meta_key]['PI'] = ''
                 self.metadata[meta_key]['dataset_name'] = self.DATASET_NAME
                 self.metadata[meta_key]['has_zdust'] = False
-                # this is a list with indexes of this station for each variable
+                # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                self.metadata[meta_key]['indexes'] = {}
+                self.metadata[meta_key]['idx'] = {}
                 self.metadata[meta_key]['files'] = []
                 last_stat_code = stat_code
 
@@ -305,12 +305,12 @@ Attributes:
                     end_index = self.index_pointer - 1
                     # print(','.join([stat_obs_data['station_name'], str(start_index), str(end_index), str(end_index - start_index)]))
                     try:
-                        self.metadata[meta_key]['indexes'][var].append(end_index)
+                        self.metadata[meta_key]['idx'][var].append(end_index)
                     except KeyError:
-                        self.metadata[meta_key]['indexes'][var] = []
-                        self.metadata[meta_key]['indexes'][var].append(end_index)
+                        self.metadata[meta_key]['idx'][var] = []
+                        self.metadata[meta_key]['idx'][var].append(end_index)
 
-                    # self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
+                    # self.metadata[meta_key]['idx'][var] = np.arange(start_index, end_index)
                     self.data[end_index, self._TIMEINDEX] = np.float64(time.value / 1.E9)
                     self.data[end_index, self._VARINDEX] = obs_var_index
                     self.data[end_index, self._LATINDEX] = stat_obs_data.attrs['Latitude_degrees_north']
@@ -332,7 +332,7 @@ Attributes:
                             # add another array chunk to self.data
                             self.data = np.append(self.data, np.zeros([self._CHUNKSIZE, self._COLNO], dtype=np.float64), axis=0)
                             self._ROWNO += self._CHUNKSIZE
-                    # self.metadata[meta_key]['indexes'][var] = np.arange(start_index, end_index)
+                    # self.metadata[meta_key]['idx'][var] = np.arange(start_index, end_index)
                     end_index = self.index_pointer
                     self.data[start_index:end_index, self._TIMEINDEX] = np.float64(time.value / 1.E9)
                     self.data[start_index:end_index, self._VARINDEX] = obs_var_index
@@ -344,7 +344,7 @@ Attributes:
 
                 start_index = self.index_pointer
                 obs_var_index += 1
-            # TODO check self.metadata[meta_key]['indexes'] for reference
+            # TODO check self.metadata[meta_key]['idx'] for reference
             # if none is found, remove the last metadata entry again since the station did not provide data
 
         # shorten self.data to the right number of points

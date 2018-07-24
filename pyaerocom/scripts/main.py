@@ -324,7 +324,7 @@ def cli():
             #     df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))
             #     df_time = df_time.append(pd.DataFrame(df_time_temp, columns=df_time_temp.columns))
             #
-            # # remove all indexes where either one of the data pairs is NaN
+            # # remove all indices where either one of the data pairs is NaN
             # # df_time = df_time.dropna(axis=0, how='any')
             #
             # filter_name = 'WORLD'
