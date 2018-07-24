@@ -131,6 +131,8 @@ class ReadEarlinet(ReadUngriddedBase):
             raise AttributeError("Please specify file search masks in "
                                  "header dict VAR_NAMES_FILE for each "
                                  "variable defined in PROVIDES_VARIABLES")
+        #: private dictionary containing loaded Variable instances, 
+        self._var_info = {}
     
     def read_file(self, filename, vars_to_retrieve=None):
         """Read EARLINET file and return it as instance of :class:`StationData`
@@ -160,13 +162,13 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out = StationData()
         data_out['stat_code'] = filename.split('/')[-3]
         data_out['dataset_name'] = self.DATASET_NAME
-            
-        var_info = {}
+           
         # create empty arrays for all variables that are supposed to be read
         # from file
         for var in vars_to_read:
-            # import Aerocom variable information
-            var_info[var] = Variable(var)
+            if not var in self._var_info:
+                self._var_info[var] = Variable(var)
+        var_info = self._var_info
             
         
         # Iterate over the lines of the file
@@ -304,6 +306,7 @@ class ReadEarlinet(ReadUngriddedBase):
         
         #assign metadata object
         metadata = data_obj.metadata
+        meta_idx = data_obj.meta_idx
         
         last_stat_code = ''
         num_files = len(files)
@@ -323,13 +326,14 @@ class ReadEarlinet(ReadUngriddedBase):
                     # the location in the data set is time step dependant!
                     # use the lat location here since we have to choose one location
                     # in the time series plot
-                    metadata[meta_key] = {}
+                    metadata[meta_key] = od()
                     metadata[meta_key].update(station_data.get_meta())
                     metadata[meta_key].update(station_data.get_coords())
                     metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+                    metadata[meta_key]['variables'] = []
                     # this is a list with indices of this station for each variable
                     # not sure yet, if we really need that or if it speeds up things
-                    metadata[meta_key]['idx'] = {}
+                    meta_idx[meta_key] = od()
                     last_stat_code = stat_code
                 
                 # Is floating point single value
@@ -366,10 +370,12 @@ class ReadEarlinet(ReadUngriddedBase):
                     data_obj._data[idx:stop, data_obj._DATAHEIGHTINDEX] = altitude
                     data_obj._data[idx:stop, data_obj._VARINDEX] = var_idx
                     
-                    if not var in metadata[meta_key]['idx']:
-                        metadata[meta_key]['idx'][var] = []
-                    metadata[meta_key]['idx'][var].extend(list(range(idx, stop)))
-                
+                    if not var in meta_idx[meta_key]:
+                        meta_idx[meta_key][var] = []
+                    meta_idx[meta_key][var].extend(list(range(idx, stop)))
+                    
+                    if not var in metadata[meta_key]['variables']:
+                        metadata[meta_key]['variables'].append(var)
                     idx += add
             except:
                 self.read_failed.append(_file)

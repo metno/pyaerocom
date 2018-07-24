@@ -37,7 +37,15 @@ class UngriddedData(object):
         (private) numpy array of dtype np.float64 initially of shape (10000,8)
         data point array
     metadata : dict
-        dictionary containing meta information about the data
+        dictionary containing meta information about the data. Keys are 
+        floating point numbers corresponding to each station, values are 
+        corresponding dictionaries containing station information.
+    mata_idx : dict
+        dictionary containing index mapping for each station and variable. Keys
+        correspond to metadata key (float -> station, see :attr:`metadata`) and 
+        variables are dictionaries containing keys specifying variable name and 
+        values are arrays or lists, specifying indices (rows) of these 
+        station / variable information in :attr:`_data`.
     """
     
     _METADATAKEYINDEX = 0
@@ -62,6 +70,7 @@ class UngriddedData(object):
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([self._ROWNO, self._COLNO])*np.nan
         self.metadata = od()
+        self.meta_idx = od()
         
         self.logger = logging.getLogger(__name__)
     
@@ -210,9 +219,7 @@ class UngriddedData(object):
     @property
     def longitude(self):
         """Longitudes of data"""
-
-        lons = [self.metadata[np.float(x)]['longitude'] for x in range(len(self.metadata))]
-        return lons
+        return [stat['longitude'] for stat in self.metadata.values()]
 
     @longitude.setter
     def longitude(self, value):
@@ -222,8 +229,7 @@ class UngriddedData(object):
     @property
     def latitude(self):
         """Latitudes of data"""
-        lats = [self.metadata[np.float(x)]['latitude'] for x in range(len(self.metadata))]
-        return lats
+        return [stat['longitude'] for stat in self.metadata.values()]
 
     @latitude.setter
     def latitude(self, value):

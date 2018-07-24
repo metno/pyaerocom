@@ -152,6 +152,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         #assign metadata object
         metadata = data_obj.metadata
+        meta_idx = data_obj.meta_idx
         
         num_vars = len(vars_to_retrieve)
 
@@ -161,13 +162,14 @@ class ReadAeronetBase(ReadUngriddedBase):
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            metadata[meta_key] = {}
+            metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_coords())
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key]['variables'] = vars_to_retrieve
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            metadata[meta_key]['idx'] = {}
+            meta_idx[meta_key] = od()
             
             num_times = len(station_data['dtime'])
             
@@ -206,7 +208,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
-                metadata[meta_key]['idx'][var] = np.arange(start, stop)
+                meta_idx[meta_key][var] = np.arange(start, stop)
             
             idx += totnum  
             meta_key = meta_key + 1.
