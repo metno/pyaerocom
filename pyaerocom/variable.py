@@ -5,7 +5,10 @@ This module contains functionality related to regions in pyaerocom
 """
 from os.path import join, exists
 from ast import literal_eval
-from configparser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except: 
+    from configparser import ConfigParser
 from pyaerocom import __dir__, logger
 from pyaerocom.utils import BrowseDict, list_to_shortstr, dict_to_str
 

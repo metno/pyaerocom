@@ -1,0 +1,2230 @@
+@aerocom_general_include
+
+i_DaysPerYear=366
+iC_DaysPerYear=366
+i_MonthsPerYear=12
+iC_MonthsPerYear=12
+iC_MinDays=366
+
+f_DayArray=fltarr(i_DaysPerYear)
+f_DayArray[*]=!values.f_nan
+d_DayArray=dblarr(i_DaysPerYear)
+d_DayArray[*]=!values.d_nan
+i_DayArray=intarr(i_DaysPerYear)
+
+f_MonthArray=fltarr(i_MonthsPerYear)
+f_MonthArray[*]=!values.f_nan
+d_MonthArray=dblarr(i_MonthsPerYear)
+d_MonthArray[*]=!values.d_nan
+i_MonthArray=intarr(i_MonthsPerYear)
+
+;how should the stddev fields be named after the original field name
+c_SigmaExt='SIGMA'	;old name
+cC_SigmaExt='SIGMA'	;new name
+
+;Name of subvar if subvar is unused (in strmatch syntax)
+cC_SubVarUnused='DUMMY*'
+
+;varname to indicate that there's 3d model data...
+;will be carried over to t_3DModelStationDataXXX
+;cC_3DHeightVars=['PRESNIVS','LEV']
+cC_3DHeightVars=['Z','Z3D','PMID','PMID3D']
+cC_LatNames=['LAT','LATITUDE','Y']
+cC_LonNames=['LON','LONGITUDE','X']
+
+
+;definitions of the obs network numbers and a short description.
+;the description should not contain any blanks because it is used for file naming
+iC_MaxObsNetworkNo=50
+iC_ObsNet_None=0
+iC_ObsNet_AeronetSun=1
+iC_ObsNet_AeronetSky=2
+iC_ObsNet_AEROCE=3
+iC_ObsNet_EMEPIMPROVE=4
+iC_ObsNet_Coord=5
+iC_ObsNet_DustGinoux=6
+iC_ObsNet_DustDepo=6
+iC_ObsNet_EMEPOrig=7
+iC_ObsNet_EBAS=7
+iC_ObsNet_AeronetForcing=8
+iC_ObsNet_Earlinet=9
+iC_ObsNet_NCDC=10
+iC_ObsNet_SCDustProspero=11
+iC_ObsNet_AeronetMan=12
+iC_ObsNet_DustDepoFlorida=13
+iC_ObsNet_SCDustMahowald=14
+iC_ObsNet_EUSAAR=15
+iC_ObsNet_AIRBASE=16
+Ic_ObsNet_AeronetSunOrig=17
+iC_ObsNet_AeronetSunNRT=17
+iC_ObsNet_AeronetSunRaw20=18
+iC_ObsNet_AeronetSunRaw15=19
+iC_ObsNet_Aethalometer=20
+;the follwing obs network is used for 'cheating purposes'
+;It is used e.g. for model-model plots that are initially intended as model-obs
+;comparisons.
+;So far this is used to get a nice result when using aerocom_plot_scatterlog.pro
+;to plot a scatterlog of modelX vs. MODIS5.1terra at Aeronet locations
+iC_ObsNet_Cheating=21
+iC_ObsNet_EBASNRT=22
+iC_ObsNet_AeronetSun20AllPoints=23
+iC_ObsNet_EBASMultiColumn=24
+iC_ObsNet_WOUDCOzoneSonds=25
+iC_ObsNet_AeronetSunSDADaily=26
+iC_ObsNet_SecondaryDatasets=27
+iC_ObsNet_AirbaseEEA=28
+iC_ObsNet_AeronetSunV3L15Daily=29
+iC_ObsNet_AeronetSunV3L15AllPoints=30
+iC_ObsNet_EVAAssim=31
+iC_ObsNet_EVAVal=32
+iC_ObsNet_AeronetINVV2L15=33
+iC_ObsNet_AeronetINVV2L20=34
+iC_ObsNet_AeronetSunV3L20Daily=35
+iC_ObsNet_AeronetSunV3L20AllPoints=36
+iC_ObsNet_AeronetINVV3L15=37
+iC_ObsNet_AeronetINVV3L20=38
+iC_ObsNet_AeronetSDAV3L15=39
+iC_ObsNet_AeronetSDAV3L20=40
+
+
+cC_ObsNetworkAbbreviation=strarr(iC_MaxObsNetworkNo)
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSun]='AERONETSun'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSky]='AERONETSky'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AEROCE]='AEROCE'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EMEPIMPROVE]='EMEPIMPROVE'
+cC_ObsNetworkAbbreviation[iC_ObsNet_Coord]='StatCoords'
+cC_ObsNetworkAbbreviation[iC_ObsNet_DustDepo]='DustDepo'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EBAS]='EBAS'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetForcing]='Forcing'
+cC_ObsNetworkAbbreviation[iC_ObsNet_Earlinet]='EARLINET'
+cC_ObsNetworkAbbreviation[iC_ObsNet_NCDC]='NCDC'
+cC_ObsNetworkAbbreviation[iC_ObsNet_SCDustProspero]='SCDustProspero'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetMAN]='AERONET-MAN'
+cC_ObsNetworkAbbreviation[iC_ObsNet_DustDepoFlorida]='DustDepoFlorida'
+cC_ObsNetworkAbbreviation[iC_ObsNet_SCDustMahowald]='SCDustMahowald'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EUSAAR]='EUSAAR'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AIRBASE]='Airbase'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunNRT]='AERONETSunNRT'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunRaw20]='AERONETSun2.0'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunRaw15]='AERONETSun1.5'
+cC_ObsNetworkAbbreviation[iC_ObsNet_Aethalometer]='EUSAAR-Aeth'
+cC_ObsNetworkAbbreviation[iC_ObsNet_Cheating]='CHEATING!'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EBASNRT]='EBASNRT'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSun20AllPoints]='AERONETSun2.0.AP'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EBASMultiColumn]='EBASMC'
+cC_ObsNetworkAbbreviation[iC_ObsNet_WOUDCOzoneSonds]='NDACCOzoneSonde'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunSDADaily]='AERONET.SDA.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_SecondaryDatasets]='EEA'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AirbaseEEA]='Airbase'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunV3L15Daily]='AeronetSunV3Lev1.5.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunV3L15AllPoints]='AeronetSunV3Lev1.5.AP'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EVAAssim]='EVAAssimilation'
+cC_ObsNetworkAbbreviation[iC_ObsNet_EVAVal]='EVAValidation'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetINVV2L20]='AeronetInvV2L2.0.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetINVV2L15]='AeronetInvV2L1.5.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunV3L20Daily]='AeronetSunV3Lev2.0.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSunV3L20AllPoints]='AeronetSunV3Lev2.0.AP'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetINVV3L20]='AeronetInvV3L2.0.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetINVV3L15]='AeronetInvV3L1.5.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSDAV3L20]='AeronetSDAV3L2.0.daily'
+cC_ObsNetworkAbbreviation[iC_ObsNet_AeronetSDAV3L15]='AeronetSDAV3L1.5.daily'
+;cC_ObsNetworkAbbreviation[]=''
+
+
+
+cC_ObsNetworkDescription=strarr(iC_MaxObsNetworkNo)
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSun]='Obs: AERONETSun'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSky]='Obs: AERONETSky'
+cC_ObsNetworkDescription[iC_ObsNet_AEROCE]='Obs: AEROCE'
+cC_ObsNetworkDescription[iC_ObsNet_EMEPIMPROVE]='Obs: EMEPIMPROVE'
+cC_ObsNetworkDescription[iC_ObsNet_Coord]='Obs: StationCoords'
+cC_ObsNetworkDescription[iC_ObsNet_DustDepo]='Obs: DustDepo'
+cC_ObsNetworkDescription[iC_ObsNet_EBAS]='Obs: EBAS'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetForcing]='Obs: Forcing'
+cC_ObsNetworkDescription[iC_ObsNet_Earlinet]='Obs: EARLINET'
+cC_ObsNetworkDescription[iC_ObsNet_NCDC]='Obs: NCDC'
+cC_ObsNetworkDescription[iC_ObsNet_SCDustProspero]='Obs: SCDustProspero'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetMAN]='Obs: AERONET-MAN'
+cC_ObsNetworkDescription[iC_ObsNet_DustDepoFlorida]='Obs: DustDepoFlorida'
+cC_ObsNetworkDescription[iC_ObsNet_SCDustMahowald]='Obs: SCDustMahowald'
+cC_ObsNetworkDescription[iC_ObsNet_EUSAAR]='Obs: EUSAAR'
+cC_ObsNetworkDescription[iC_ObsNet_AIRBASE]='Obs: Airbase'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunNRT]='Obs: AERONETSun NRT'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunRaw20]='Obs: AERONETSun lev 2.0'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunRaw15]='Obs: AERONETSun lev 1.5'
+cC_ObsNetworkDescription[iC_ObsNet_Aethalometer]='Obs: EUSAAR-Aeth.'
+cC_ObsNetworkDescription[iC_ObsNet_Cheating]='Obs: CHEATING!!!!!'
+cC_ObsNetworkDescription[iC_ObsNet_EBASNRT]='Obs: EBAS-NRT'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSun20AllPoints]='Obs: AERONETSun lev 2.0 ap'
+cC_ObsNetworkDescription[iC_ObsNet_EBASMultiColumn]='Obs: EBAS'
+cC_ObsNetworkDescription[iC_ObsNet_WOUDCOzoneSonds]='Obs: NDACC Ozone Sonde'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunSDADaily]='Obs: AERONET SDA daily'
+cC_ObsNetworkDescription[iC_ObsNet_SecondaryDatasets]='Obs: EEA'
+cC_ObsNetworkDescription[iC_ObsNet_AirbaseEEA]='Obs: Airbase'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunV3L15Daily]='Obs: AeronetSunV3 lev 1.5 daily'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunV3L15AllPoints]='Obs: AeronetSunV3 lev 1.5 AP'
+cC_ObsNetworkDescription[iC_ObsNet_EVAAssim]='Obs: EVA assimilation'
+cC_ObsNetworkDescription[iC_ObsNet_EVAVal]='Obs: EVA validation'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetINVV2L20]='Obs: AeronetInvV2 lev 2.0 daily'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetINVV2L15]='Obs: AeronetInvV2 lev 1.5 daily'
+
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunV3L20Daily]='Obs: AeronetSunV3 lev 2.0 daily'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSunV3L20AllPoints]='Obs: AeronetSunV3 lev 2.0 AP'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetINVV3L20]='Obs: AeronetInvV3 lev 2.0 daily'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetINVV3L15]='Obs: AeronetInvV3 lev 1.5 daily'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSDAV3L20]='Obs: AeronetSDAV3 lev 2.0 daily'
+cC_ObsNetworkDescription[iC_ObsNet_AeronetSDAV3L15]='Obs: AeronetSDAV3 lev 1.5 daily'
+
+iC_ObsNetworkPreliminaryFlag=intarr(iC_MaxObsNetworkNo)
+iC_ObsNetworkPreliminaryFlag[iC_ObsNet_EBASNRT]=1
+iC_ObsNetworkPreliminaryFlag[iC_ObsNet_AeronetSunNRT]=1
+iC_ObsNetworkPreliminaryFlag[iC_ObsNet_AeronetSunV3L15Daily]=1
+iC_ObsNetworkPreliminaryFlag[iC_ObsNet_AeronetSunV3L15AllPoints]=1
+iC_ObsNetworkPreliminaryFlag[iC_ObsNet_AeronetINVV2L15]=1
+iC_ObsNetworkPreliminaryFlag[iC_ObsNet_AeronetSDAV3L15]=1
+
+
+
+cC_ModelDirs=[$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/C3S-Aerosol/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/ACCMIP/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM_EMISSIONS/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-I/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-II/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-III/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-III/OsloCTM3_TEST/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-II-IND2/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-II-IND3/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-I-IND/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AEROCOM-PHASE-II-PRESCRIBED-2013/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/AMAP/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase1/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/ECLIPSE/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/ECMWF/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/HTAP-PHASE-I/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/HTAP-PHASE-II/',$
+cC_ObsNetworkDataDirPrefix+'aerocom-users-database/SATELLITE-DATA/',$
+cC_ObsNetworkDataDirPrefix+'htap/ECMWF/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/ECLIPSE/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/CCI_AEROSOL_Phase2/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/ACCMIP/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/NorESM/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/EMEP_COPERNICUS/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/EMEP/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/EMEP_GLOBAL/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/EMEP_SVN_TEST/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/NorESM_SVN_TEST/',$
+cC_ObsNetworkDataDirPrefix+'aerocom2/INCA/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/HTAP-PHASE-II/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM-PHASE-I/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM-PHASE-II/',$
+cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM-PHASE-III/',$
+'/lustre/aerocom/work/aerocom2/EMEP_SVN_TEST/',$
+'/Users/mschulz/DATA/aerocom1/',$
+'/home/aerocom1/',$
+'/home/incaipcc/schulz/incaruns/',$
+'/home/incaipcc/schulz/sds/',$
+'/home/aerocom0/',$
+'./']
+
+
+
+cC_ObsNetworkDataDir=strarr(iC_MaxObsNetworkNo)
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSun]=cC_ObsNetworkDataDirPrefix+'aerocom1/AERONET/day/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSky]=cC_ObsNetworkDataDirPrefix+'aerocom1/AERONET/day/'
+cC_ObsNetworkDataDir[iC_ObsNet_AEROCE]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AEROCE/'
+cC_ObsNetworkDataDir[iC_ObsNet_EMEPIMPROVE]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/EMEP_IMPROVE/'
+cC_ObsNetworkDataDir[iC_ObsNet_Coord]=cC_ObsNetworkDataDirPrefix+'./'
+cC_ObsNetworkDataDir[iC_ObsNet_DustDepo]=cC_ObsNetworkDataDirPrefix+''
+cC_ObsNetworkDataDir[iC_ObsNet_EBAS]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/EBAS/data/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetForcing]=cC_ObsNetworkDataDirPrefix+'aerocom1/AERONET/'
+cC_ObsNetworkDataDir[iC_ObsNet_Earlinet]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_LIDARDATA/data/'
+cC_ObsNetworkDataDir[iC_ObsNet_NCDC]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/VISIBILITY/daily/'
+cC_ObsNetworkDataDir[iC_ObsNet_SCDustProspero]=cC_ObsNetworkDataDirPrefix+''
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetMAN]=cC_ObsNetworkDataDirPrefix+'aerocom1/AERONET/MAN/'
+cC_ObsNetworkDataDir[iC_ObsNet_DustDepoFlorida]=cC_ObsNetworkDataDirPrefix+''
+cC_ObsNetworkDataDir[iC_ObsNet_SCDustMahowald]=cC_ObsNetworkDataDirPrefix+''
+cC_ObsNetworkDataDir[iC_ObsNet_EUSAAR]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/EUSAAR/'
+cC_ObsNetworkDataDir[iC_ObsNet_AIRBASE]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AirBaseAll/data/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunOrig]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSunNRT/data/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunRaw20]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunRaw15]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetRaw1.5/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_Aethalometer]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/aethalometer/'
+cC_ObsNetworkDataDir[iC_ObsNet_EBASNRT]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/EBAS_NRT/'
+cC_ObsNetworkDataDir[iC_ObsNet_SecondaryDatasets]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/SecondayDataSets/EEA_2015/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSun20AllPoints]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSun2.0AllPoints/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_EBASMultiColumn]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/'
+;cC_ObsNetworkDataDir[iC_ObsNet_WOUDCOzoneSonds]='/fou/emep/People/semeena/Measurements/Sondes/NOAA/'
+cC_ObsNetworkDataDir[iC_ObsNet_WOUDCOzoneSonds]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/NDACC.Ozone.Sondes/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunSDADaily]=$
+	cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AirbaseEEA]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/SecondayDataSets/AirbaseEEA/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunV3L15Daily]=$
+	cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunV3L15AllPoints]=$
+	cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed/'
+
+
+cC_ObsNetworkDataDir[iC_ObsNet_EVAAssim]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/SecondayDataSets/EVA_assimilation/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_EVAVal]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/SecondayDataSets/EVA_validation/renamed/'
+
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetINVV2L20]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetINVV2L15]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L1.5.daily/renamed/'
+
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunV3L20Daily]=$
+	cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSunV3L20AllPoints]=$
+	cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetINVV3L20]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L2.0.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetINVV3L15]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L1.5.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSDAV3L20]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L2.0.daily/renamed/'
+cC_ObsNetworkDataDir[iC_ObsNet_AeronetSDAV3L15]=cC_ObsNetworkDataDirPrefix+'aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed/'
+
+cC_ObsNetworkFileaddition=strarr(iC_MaxObsNetworkNo)
+cC_ObsNetworkFileaddition[iC_ObsNet_AeronetMAN]='_AERONET-MAN'
+
+;which year is used to indicate climatological data
+cC_ClimYear='9999'
+;unfortunately idl can't cope with the year 9999 as plotrange
+;use 2999 instead
+iC_ClimYear=2999
+
+;list of model vars that are used for forcing
+cC_AeronetForcingVars=['SWTOACS_AER','SWTOACS_ANT','SWTOAAS_AER','SWTOAAS_ANT']
+cC_AeronetForcingDir='/home/aerocom1/AERONET/forcing/'
+
+; STEPS TO ADD A NEW VARIABLE
+; 1) add c_ObsVarSynonymArr
+; 2) add networkdefinition eg tC_EBASVars
+; 3) put DO_NOT_CACHE file in data directory, so that new data are read
+
+;synonyms for the mapping between model var name and obs network var name
+;i_MaxObsNetworkNumber=8
+i_MaxObsVars=120
+iC_MaxObsSubVars=7
+;The follwong will provide the default obs network for the main var listed in 
+;c_ObsVarSynonymArr[*,0,0]
+iC_DefaultObsNetworkNo=intarr(i_MaxObsVars)
+iC_DefaultObsNetworkNo[*]=-1
+;Array to make a connection between model vars and obs network variables
+;and vice versa. ATM, there needs to be a 1:1 relationship!!
+c_ObsVarSynonymArr=strarr(i_MaxObsVars, iC_MaxObsNetworkNo+1,iC_MaxObsSubVars)
+;the 1st line element ist the model var name, the others are obs var names
+;with the index according to the obs network number from aerocom_main
+;e.g. 1 =aeronet sun, 2=aeronet sky etc.
+;if the ground network doesn't provide the data, set the name to ''
+;the 3rd dimension is 0: data, 1: stddev, 
+;2 to i_MaxObsSubVars: additional vars to keep e.g. for later
+;calculation (right now used for WET_SO4) or as additional data to plot
+;(right now used for AFI_SUN with aeronet sun data)
+;
+;set the options either like this
+;c_ObsVarSynonymArr[0,*,0]=['ANG4487_AER','f_ANG4487_AER','f_ANG4487SKY_AER','','','','','']
+;c_ObsVarSynonymArr[0,*,1]=['ANG4487_AER','f_ANG4487_AERSIGMA','f_ANG4487SKY_AERSIGMA','','','','','']
+;
+;or like this
+i_SetAirbaseAsPriorityNetwork=0
+i_SetEBASMCAsPriorityNetwork=1
+if size(t_act, /type) eq 8 then begin
+	i_DummyArr=where(tag_names(t_act) eq strupcase('i_SetAirbaseAsPriorityNetwork'), i_Dummy)
+	if i_Dummy gt 0 then i_SetAirbaseAsPriorityNetwork=t_act.i_SetAirbaseAsPriorityNetwork
+endif
+c_ObsVarSynonymArr[0,0,0]='ANG4487_AER'				;model var
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSun,0]='f_ANG4487_AER'				;aeronet sun name
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSun,1]='f_ANG4487_AERSIGMA'		;aeronet sun name for stddev
+c_ObsVarSynonymArr[0,0,1]='ANG4487_AER'				;model var
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSky,0]='f_ANG4487SKY_AER'			;aeronet sky name
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSky,1]='f_ANG4487SKY_AERSIGMA'	;aeronet sky name for stddev
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetMan,0]='f_Angstroem'			
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetMan,1]='f_AngstroemSIGMA'	
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunNRT,0]='f_ANG4487_AER'				;aeronet sun NRT
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunNRT,1]='f_ANG4487_AERSIGMA'		;aeronet sun NRT
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunRaw15,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunRaw15,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunRaw20,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunRaw20,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSun20AllPoints,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSun20AllPoints,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunV3L15Daily,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunV3L15Daily,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunV3L20Daily,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSunV3L20Daily,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSDAV3L20,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[0,iC_ObsNet_AeronetSDAV3L20,1]='f_ANG4487_AERSIGMA'
+iC_DefaultObsNetworkNo[0]=iC_ObsNet_AeronetSunRaw20
+;
+;c_ObsVarSynonymArr[1,*,0]=['OD550_AER','f_OD550_AER','f_OD550SKY_AER','','','','','']
+;c_ObsVarSynonymArr[1,*,1]=['OD550_AER','f_OD550_AERSIGMA','f_OD550SKY_AERSIGMA','','','','','']
+c_ObsVarSynonymArr[1,0,0]='OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSun,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSun,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,0,1]='OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSky,0]='f_OD550SKY_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSky,1]='f_OD550SKY_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetMan,0]='f_OD500'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetMan,1]='f_OD500SIGMA'
+;c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunNRT,0]='f_OD500_AER'
+;c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunNRT,1]='f_OD500_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunNRT,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunNRT,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunNRT,2]='f_ANG4487_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunRaw15,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunRaw15,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunRaw20,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunRaw20,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSun20AllPoints,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSun20AllPoints,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSun20AllPoints,2]='f_ANG4487_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunV3L15Daily,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunV3L15Daily,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunV3L20Daily,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSunV3L20Daily,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSDAV3L20,0]='f_OD550_AER'
+c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSDAV3L20,1]='f_OD550_AERSIGMA'
+;also read in AFI_SUN for AERONET sun and var OD550_AER
+;c_ObsVarSynonymArr[1,iC_ObsNet_AeronetSun,2]='F_AFI_SUN'
+iC_DefaultObsNetworkNo[1]=iC_ObsNet_AeronetSun
+;iC_DefaultObsNetworkNo[1]=iC_ObsNet_AeronetSunNRT
+
+c_ObsVarSynonymArr[2,0,0]='OD550LT1_AER'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSky,0]='f_OD550LT1_AER'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSky,1]='f_OD550LT1_AERSIGMA'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSun,0]='F_AFI_SUN'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSun,1]='F_AFI_SUNSIGMA'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSunSDADaily,0]='f_OD550LT1_AER'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSunSDADaily,1]='f_OD550LT1_AERSIGMA'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSDAV3L20,0]='f_OD550LT1_AER'
+c_ObsVarSynonymArr[2,iC_ObsNet_AeronetSDAV3L20,1]='f_OD550LT1_AERSIGMA'
+iC_DefaultObsNetworkNo[2]=iC_ObsNet_AeronetSky
+c_ObsVarSynonymArr[3,0,0]='OD550_SS'
+c_ObsVarSynonymArr[3,0,1]='OD550_SS'
+c_ObsVarSynonymArr[4,0,0]='OD550_POM'
+c_ObsVarSynonymArr[4,0,1]='OD550_POM'
+c_ObsVarSynonymArr[5,0,0]='OD550_BC'
+c_ObsVarSynonymArr[5,0,1]='OD550_BC'
+c_ObsVarSynonymArr[6,0,0]='OD550_SO4'
+c_ObsVarSynonymArr[6,0,1]='OD550_SO4'
+c_ObsVarSynonymArr[7,0,0]='OD550_DUST'
+c_ObsVarSynonymArr[7,0,1]='OD550_DUST'
+;c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSunSDADaily,0]='f_OD550_DUST'
+;_ObsVarSynonymArr[7,iC_ObsNet_AeronetSunSDADaily,1]='f_OD550_DUSTSIGMA'
+c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSunSDADaily,0]='f_OD550_SimpleDUST'
+c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSunSDADaily,1]='f_OD550_SimpleDUSTSIGMA'
+;c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSunSDADaily,0]='F_COARSE_MODE_AOD_500NM_TAU_C'
+;c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSunSDADaily,1]='F_COARSE_MODE_AOD_500NM_TAU_CSIGMA'
+c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSky,0]='f_OD550_DUST'
+c_ObsVarSynonymArr[7,iC_ObsNet_AeronetSky,1]='f_OD550_DUSTSIGMA'
+iC_DefaultObsNetworkNo[7]=iC_ObsNet_AeronetSunSDADaily
+c_ObsVarSynonymArr[8,0,0]='SCONC_SS'
+c_ObsVarSynonymArr[8,0,1]='SCONC_SS'
+c_ObsVarSynonymArr[8,iC_ObsNet_EMEPIMPROVE,0]='F_SCONC_SS'
+c_ObsVarSynonymArr[8,iC_ObsNet_EMEPIMPROVE,1]='F_SCONC_SSSIGMA'
+c_ObsVarSynonymArr[8,iC_ObsNet_EBAS,0]='SCONC_SS'
+c_ObsVarSynonymArr[8,iC_ObsNet_EBAS,1]='SCONC_SSSIGMA'
+c_ObsVarSynonymArr[8,iC_ObsNet_EBASMultiColumn,0]='SCONC_SS'
+c_ObsVarSynonymArr[8,iC_ObsNet_EBASMultiColumn,1]='SCONC_SSSIGMA'
+iC_DefaultObsNetworkNo[8]=iC_ObsNet_EBASMultiColumn
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[8]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[9,0,0]='SCONC_POM'
+c_ObsVarSynonymArr[9,0,1]='SCONC_POM'
+c_ObsVarSynonymArr[9,iC_ObsNet_EMEPIMPROVE,0]='F_SCONC_POM'
+c_ObsVarSynonymArr[9,iC_ObsNet_EMEPIMPROVE,1]='F_SCONC_POMSIGMA'
+c_ObsVarSynonymArr[9,iC_ObsNet_EBAS,0]='SCONC_POM'
+c_ObsVarSynonymArr[9,iC_ObsNet_EBAS,1]='SCONC_POMSIGMA'
+c_ObsVarSynonymArr[9,iC_ObsNet_EBASMultiColumn,0]='SCONC_POM'
+c_ObsVarSynonymArr[9,iC_ObsNet_EBASMultiColumn,1]='SCONC_POMSIGMA'
+iC_DefaultObsNetworkNo[9]=iC_ObsNet_EBASMultiColumn
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[9]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[10,0,0]='SCONC_BC'
+c_ObsVarSynonymArr[10,0,1]='SCONC_BC'
+c_ObsVarSynonymArr[10,iC_ObsNet_EMEPIMPROVE,0]='F_SCONC_BC'
+c_ObsVarSynonymArr[10,iC_ObsNet_EMEPIMPROVE,1]='F_SCONC_BCSIGMA'
+c_ObsVarSynonymArr[10,iC_ObsNet_EBAS,0]='SCONC_BC'
+c_ObsVarSynonymArr[10,iC_ObsNet_EBAS,1]='SCONC_BCSIGMA'
+c_ObsVarSynonymArr[10,iC_ObsNet_EBASMultiColumn,0]='SCONC_BC'
+c_ObsVarSynonymArr[10,iC_ObsNet_EBASMultiColumn,1]='SCONC_BCSIGMA'
+iC_DefaultObsNetworkNo[10]=iC_ObsNet_EBASMultiColumn
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[10]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[11,0,0]='SCONC_SO4'
+c_ObsVarSynonymArr[11,0,1]='SCONC_SO4'
+c_ObsVarSynonymArr[11,iC_ObsNet_EMEPIMPROVE,0]='F_SCONC_SO4'
+c_ObsVarSynonymArr[11,iC_ObsNet_EMEPIMPROVE,1]='F_SCONC_SO4SIGMA'
+c_ObsVarSynonymArr[11,iC_ObsNet_EBAS,0]='SCONC_SO4'
+c_ObsVarSynonymArr[11,iC_ObsNet_EBAS,1]='SCONC_SO4SIGMA'
+c_ObsVarSynonymArr[11,iC_ObsNet_EBASMultiColumn,0]='SCONC_SO4'
+c_ObsVarSynonymArr[11,iC_ObsNet_EBASMultiColumn,1]='SCONC_SO4SIGMA'
+c_ObsVarSynonymArr[11,iC_ObsNet_AIRBASE,0]='SCONC_SO4'
+c_ObsVarSynonymArr[11,iC_ObsNet_AIRBASE,1]='SCONC_SO4SIGMA'
+iC_DefaultObsNetworkNo[11]=iC_ObsNet_EBASMultiColumn
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[11]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[11]=iC_ObsNet_AIRBASE
+
+;c_ObsVarSynonymArr[12,*,0]=['SCONC_DUST','','','f_DUST_MEAN','','','','']
+;c_ObsVarSynonymArr[12,*,1]=['SCONC_DUST','','','f_DUST_STDEV','','','','']
+c_ObsVarSynonymArr[12,0,0]='SCONC_DUST'
+c_ObsVarSynonymArr[12,0,1]='SCONC_DUST'
+c_ObsVarSynonymArr[12,iC_ObsNet_AEROCE,0]='f_DUST_MEAN'
+c_ObsVarSynonymArr[12,iC_ObsNet_AEROCE,1]='f_DUST_STDEV'
+c_ObsVarSynonymArr[12,iC_ObsNet_SCDustProspero,0]='f_DUST_MEAN'
+c_ObsVarSynonymArr[12,iC_ObsNet_SCDustProspero,1]='f_DUST_STDEV'
+c_ObsVarSynonymArr[12,iC_ObsNet_SCDustMahowald,0]='f_DUST_MEAN'
+c_ObsVarSynonymArr[12,iC_ObsNet_SCDustMahowald,1]='f_DUST_STDEV'
+;iC_DefaultObsNetworkNo[12]=iC_ObsNet_SCDustProspero
+iC_DefaultObsNetworkNo[12]=iC_ObsNet_AEROCE
+c_ObsVarSynonymArr[13,0,0]='WSGT5_METEO'
+c_ObsVarSynonymArr[13,0,1]='WSGT5_METEO'
+c_ObsVarSynonymArr[14,0,0]='WSGT8_METEO'
+c_ObsVarSynonymArr[14,0,1]='WSGT8_METEO'
+c_ObsVarSynonymArr[15,0,0]='WSGT10_METEO'
+c_ObsVarSynonymArr[15,0,1]='WSGT10_METEO'
+c_ObsVarSynonymArr[16,0,0]='EMI_ASSSM'
+c_ObsVarSynonymArr[16,0,1]='EMI_ASSSM'
+c_ObsVarSynonymArr[17,0,0]='EMI_CSSSM'
+c_ObsVarSynonymArr[17,0,1]='EMI_CSSSM'
+c_ObsVarSynonymArr[18,0,0]='EMI_SSSSM'
+c_ObsVarSynonymArr[18,0,1]='EMI_SSSSM'
+c_ObsVarSynonymArr[19,0,0]='DEP_SS'
+c_ObsVarSynonymArr[19,0,1]='DEP_SS'
+c_ObsVarSynonymArr[20,0,0]='DEP_POM'
+c_ObsVarSynonymArr[20,0,1]='DEP_POM'
+c_ObsVarSynonymArr[21,0,0]='DEP_BC'
+c_ObsVarSynonymArr[21,0,1]='DEP_BC'
+c_ObsVarSynonymArr[22,0,0]='DEP_SO4'
+c_ObsVarSynonymArr[22,0,1]='DEP_SO4'
+;c_ObsVarSynonymArr[23,*,0]='DEP_DUST','','','','','','f_DEP_DUST','']
+c_ObsVarSynonymArr[23,0,0]='DEP_DUST'
+c_ObsVarSynonymArr[23,0,1]='DEP_DUST'
+c_ObsVarSynonymArr[23,iC_ObsNet_DustDepo,0]='f_DEP_DUST'
+c_ObsVarSynonymArr[23,iC_ObsNet_DustDepo,1]='f_DEP_STDEV'
+c_ObsVarSynonymArr[23,iC_ObsNet_DustDepoFlorida,0]='f_DEP_DUST'
+c_ObsVarSynonymArr[23,iC_ObsNet_DustDepoFlorida,1]='f_DEP_STDEV'
+;iC_DefaultObsNetworkNo[23]=iC_ObsNet_DustDepo
+iC_DefaultObsNetworkNo[23]=iC_ObsNet_DustDepoFlorida
+c_ObsVarSynonymArr[24,0,0]='WET_SS'
+c_ObsVarSynonymArr[24,0,1]='WET_SS'
+c_ObsVarSynonymArr[25,0,0]='WET_POM'
+c_ObsVarSynonymArr[25,0,1]='WET_POM'
+c_ObsVarSynonymArr[26,0,0]='WET_BC'
+c_ObsVarSynonymArr[26,0,1]='WET_BC'
+c_ObsVarSynonymArr[27,0,0]='WET_SO4'
+c_ObsVarSynonymArr[27,0,1]='WET_SO4'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBAS,0]='WET_SO4'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBAS,1]='WET_SO4SIGMA'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBAS,2]='CONCPRCP_SO4'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBASMultiColumn,0]='WET_SO4'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBASMultiColumn,1]='WET_SO4SIGMA'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_SO4'
+c_ObsVarSynonymArr[27,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+c_ObsVarSynonymArr[27,iC_ObsNet_AIRBASE,0]='WET_SO4'
+c_ObsVarSynonymArr[27,iC_ObsNet_AIRBASE,1]='WET_SO4SIGMA'
+;iC_DefaultObsNetworkNo[27]=iC_ObsNet_EBAS
+iC_DefaultObsNetworkNo[27]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[27]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[28,0,0]='WET_DUST'
+c_ObsVarSynonymArr[28,0,1]='WET_DUST'
+c_ObsVarSynonymArr[28,iC_ObsNet_DustDepoFlorida,0]='f_DEP_DUST'
+c_ObsVarSynonymArr[28,iC_ObsNet_DustDepoFlorida,1]='f_DEP_STDEV'
+c_ObsVarSynonymArr[29,0,0]='DRY_SS'
+c_ObsVarSynonymArr[29,0,1]='DRY_SS'
+c_ObsVarSynonymArr[30,0,0]='DRY_POM'
+c_ObsVarSynonymArr[30,0,1]='DRY_POM'
+c_ObsVarSynonymArr[31,0,0]='DRY_BC'
+c_ObsVarSynonymArr[31,0,1]='DRY_BC'
+c_ObsVarSynonymArr[32,0,0]='DRY_SO4'
+c_ObsVarSynonymArr[32,0,1]='DRY_SO4'
+c_ObsVarSynonymArr[33,0,0]='DRY_DUST'
+c_ObsVarSynonymArr[33,0,1]='DRY_DUST'
+c_ObsVarSynonymArr[34,0,0]='SED_SS'
+c_ObsVarSynonymArr[34,0,1]='SED_SS'
+c_ObsVarSynonymArr[35,0,0]='SED_POM'
+c_ObsVarSynonymArr[35,0,1]='SED_POM'
+c_ObsVarSynonymArr[36,0,0]='SED_BC'
+c_ObsVarSynonymArr[36,0,1]='SED_BC'
+c_ObsVarSynonymArr[37,0,0]='SED_SO4'
+c_ObsVarSynonymArr[37,0,1]='SED_SO4'
+c_ObsVarSynonymArr[38,0,0]='SED_DUST'
+c_ObsVarSynonymArr[38,0,1]='SED_DUST'
+c_ObsVarSynonymArr[39,0,0]='SEDDRY_SS'
+c_ObsVarSynonymArr[39,0,1]='SEDDRY_SS'
+c_ObsVarSynonymArr[40,0,0]='SEDDRY_POM'
+c_ObsVarSynonymArr[40,0,1]='SEDDRY_POM'
+c_ObsVarSynonymArr[41,0,0]='SEDDRY_BC'
+c_ObsVarSynonymArr[41,0,1]='SEDDRY_BC'
+c_ObsVarSynonymArr[42,0,0]='SEDDRY_SO4'
+c_ObsVarSynonymArr[42,0,1]='SEDDRY_SO4'
+c_ObsVarSynonymArr[43,0,0]='SEDDRY_DUST'
+c_ObsVarSynonymArr[43,0,1]='SEDDRY_DUST'
+
+c_ObsVarSynonymArr[44,0,0]='VMR_O3'
+c_ObsVarSynonymArr[44,0,1]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_EBAS,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_EBAS,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[44,iC_ObsNet_EBASMultiColumn,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_EBASMultiColumn,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[44,iC_ObsNet_AIRBASE,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_AIRBASE,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[44,iC_ObsNet_SecondaryDatasets,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_SecondaryDatasets,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[44,iC_ObsNet_AirbaseEEA,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_AirbaseEEA,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[44,iC_ObsNet_EVAAssim,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_EVAAssim,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[44,iC_ObsNet_EVAVal,0]='VMR_O3'
+c_ObsVarSynonymArr[44,iC_ObsNet_EVAVal,1]='VMR_O3SIGMA'
+
+iC_DefaultObsNetworkNo[44]=iC_ObsNet_EBAS
+;iC_DefaultObsNetworkNo[44]=iC_ObsNet_EBASMultiColumn
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[44]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[44]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[45,0,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,0,1]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_EBAS,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_EBAS,1]='SCONC_PM10SIGMA'
+c_ObsVarSynonymArr[45,iC_ObsNet_EBASMultiColumn,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_EBASMultiColumn,1]='SCONC_PM10SIGMA'
+c_ObsVarSynonymArr[45,iC_ObsNet_AIRBASE,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_AIRBASE,1]='SCONC_PM10SIGMA'
+c_ObsVarSynonymArr[45,iC_ObsNet_SecondaryDatasets,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_SecondaryDatasets,1]='SCONC_PM10SIGMA'
+c_ObsVarSynonymArr[45,iC_ObsNet_AirbaseEEA,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_AirbaseEEA,1]='SCONC_PM10SIGMA'
+c_ObsVarSynonymArr[45,iC_ObsNet_EVAAssim,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_EVAAssim,1]='SCONC_PM10SIGMA'
+c_ObsVarSynonymArr[45,iC_ObsNet_EVAVal,0]='SCONC_PM10'
+c_ObsVarSynonymArr[45,iC_ObsNet_EVAVal,1]='SCONC_PM10SIGMA'
+
+iC_DefaultObsNetworkNo[45]=iC_ObsNet_EBAS
+;iC_DefaultObsNetworkNo[45]=iC_ObsNet_EBASMultiColumn
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[45]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[45]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[46,0,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,0,1]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_EBAS,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_EBAS,1]='SCONC_PM25SIGMA'
+c_ObsVarSynonymArr[46,iC_ObsNet_EBASMultiColumn,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_EBASMultiColumn,1]='SCONC_PM25SIGMA'
+c_ObsVarSynonymArr[46,iC_ObsNet_AIRBASE,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_AIRBASE,1]='SCONC_PM25SIGMA'
+c_ObsVarSynonymArr[46,iC_ObsNet_SecondaryDatasets,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_SecondaryDatasets,1]='SCONC_PM25SIGMA'
+c_ObsVarSynonymArr[46,iC_ObsNet_AirbaseEEA,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_AirbaseEEA,1]='SCONC_PM25SIGMA'
+iC_DefaultObsNetworkNo[46]=iC_ObsNet_EBAS
+c_ObsVarSynonymArr[46,iC_ObsNet_EVAAssim,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_EVAAssim,1]='SCONC_PM25SIGMA'
+c_ObsVarSynonymArr[46,iC_ObsNet_EVAVal,0]='SCONC_PM25'
+c_ObsVarSynonymArr[46,iC_ObsNet_EVAVal,1]='SCONC_PM25SIGMA'
+
+
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[46]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[46]=iC_ObsNet_AIRBASE
+c_ObsVarSynonymArr[47,0,0]='CONCPRCP_SO4'
+c_ObsVarSynonymArr[47,0,1]='CONCPRCP_SO4'
+c_ObsVarSynonymArr[47,iC_ObsNet_EBAS,0]='CONCPRCP_SO4'
+c_ObsVarSynonymArr[47,iC_ObsNet_EBAS,1]='CONCPRCP_SO4SIGMA'
+c_ObsVarSynonymArr[47,iC_ObsNet_EBASMultiColumn,0]='CONCPRCP_SO4'
+c_ObsVarSynonymArr[47,iC_ObsNet_EBASMultiColumn,1]='CONCPRCP_SO4SIGMA'
+iC_DefaultObsNetworkNo[47]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[47]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[48,0,0]='METEO_PREC'
+c_ObsVarSynonymArr[48,0,1]='METEO_PREC'
+c_ObsVarSynonymArr[48,iC_ObsNet_EBAS,0]='METEO_PREC'
+c_ObsVarSynonymArr[48,iC_ObsNet_EBAS,1]='METEO_PRECSIGMA'
+c_ObsVarSynonymArr[48,iC_ObsNet_EBASMultiColumn,0]='METEO_PREC'
+c_ObsVarSynonymArr[48,iC_ObsNet_EBASMultiColumn,1]='METEO_PRECSIGMA'
+iC_DefaultObsNetworkNo[48]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[48]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[49,0,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,0,1]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_EBAS,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_EBAS,1]='SCONC_SO2SIGMA'
+c_ObsVarSynonymArr[49,iC_ObsNet_EBASMultiColumn,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_EBASMultiColumn,1]='SCONC_SO2SIGMA'
+c_ObsVarSynonymArr[49,iC_ObsNet_AIRBASE,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_AIRBASE,1]='SCONC_SO2SIGMA'
+c_ObsVarSynonymArr[49,iC_ObsNet_AirbaseEEA,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_AirbaseEEA,1]='SCONC_SO2SIGMA'
+c_ObsVarSynonymArr[49,iC_ObsNet_EVAAssim,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_EVAAssim,1]='SCONC_SO2SIGMA'
+c_ObsVarSynonymArr[49,iC_ObsNet_EVAVal,0]='SCONC_SO2'
+c_ObsVarSynonymArr[49,iC_ObsNet_EVAVal,1]='SCONC_SO2SIGMA'
+
+
+iC_DefaultObsNetworkNo[49]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[49]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[49]=iC_ObsNet_Airbase
+c_ObsVarSynonymArr[50,0,0]='OD670_AER'
+c_ObsVarSynonymArr[50,iC_ObsNet_AeronetSun,0]='f_OD670_AER'
+c_ObsVarSynonymArr[50,0,1]='OD670_AER'
+c_ObsVarSynonymArr[50,iC_ObsNet_AeronetSun,1]='f_OD670_AERSIGMA'
+iC_DefaultObsNetworkNo[50]=iC_ObsNet_AeronetSun
+c_ObsVarSynonymArr[51,0,0]='OD550GT1_AER'
+c_ObsVarSynonymArr[51,iC_ObsNet_AeronetSunSDADaily,0]='f_OD550GT1_AER'
+c_ObsVarSynonymArr[51,iC_ObsNet_AeronetSunSDADaily,1]='f_OD550GT1_AERSIGMA'
+c_ObsVarSynonymArr[51,iC_ObsNet_AeronetSDAV3L20,0]='f_OD550GT1_AER'
+c_ObsVarSynonymArr[51,iC_ObsNet_AeronetSDAV3L20,1]='f_OD550GT1_AERSIGMA'
+iC_DefaultObsNetworkNo[51]=iC_ObsNet_AeronetSunSDADaily
+c_ObsVarSynonymArr[52,0,0]='SCONC_SO4C'
+c_ObsVarSynonymArr[52,0,1]='SCONC_SO4C'
+c_ObsVarSynonymArr[52,iC_ObsNet_EBAS,0]='SCONC_SO4C'
+c_ObsVarSynonymArr[52,iC_ObsNet_EBAS,1]='SCONC_SO4CSIGMA'
+c_ObsVarSynonymArr[52,iC_ObsNet_EBASMultiColumn,0]='SCONC_SO4C'
+c_ObsVarSynonymArr[52,iC_ObsNet_EBASMultiColumn,1]='SCONC_SO4CSIGMA'
+iC_DefaultObsNetworkNo[52]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[52]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[53,0,0]='SCONC_SO4T'
+c_ObsVarSynonymArr[53,0,1]='SCONC_SO4T'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBAS,0]='SCONC_SO4T'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBAS,1]='SCONC_SO4TSIGMA'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBASMultiColumn,0]='SCONC_SO4T'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBASMultiColumn,1]='SCONC_SO4TSIGMA'
+iC_DefaultObsNetworkNo[53]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[53]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[54,0,0]='WETCONC_SO4'
+c_ObsVarSynonymArr[54,0,1]='WETCONC_SO4'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBAS,0]='SCONC_SO4T'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBAS,1]='SCONC_SO4TSIGMA'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBASMultiColumn,0]='SCONC_SO4T'
+c_ObsVarSynonymArr[53,iC_ObsNet_EBASMultiColumn,1]='SCONC_SO4TSIGMA'
+iC_DefaultObsNetworkNo[54]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[54]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[55,0,0]='PRECIP_METEO'
+c_ObsVarSynonymArr[55,0,1]='PRECIP_METEO'
+c_ObsVarSynonymArr[55,iC_ObsNet_EBAS,0]='PRECIP_METEO'
+c_ObsVarSynonymArr[55,iC_ObsNet_EBAS,1]='PRECIP_METEOSIGMA'
+c_ObsVarSynonymArr[55,iC_ObsNet_EBASMultiColumn,0]='PRECIP_METEO'
+c_ObsVarSynonymArr[55,iC_ObsNet_EBASMultiColumn,1]='PRECIP_METEOSIGMA'
+iC_DefaultObsNetworkNo[55]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[55]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[56,0,0]='SWTOACS_AER'
+c_ObsVarSynonymArr[56,0,1]='SWTOACS_AER'
+c_ObsVarSynonymArr[56,iC_ObsNet_AeronetForcing,0]='F_SWTOACS_AER'
+c_ObsVarSynonymArr[56,iC_ObsNet_AeronetForcing,1]='f_SWTOACS_AERSIGMA'
+iC_DefaultObsNetworkNo[56]=iC_ObsNet_AeronetForcing
+c_ObsVarSynonymArr[56,iC_ObsNet_AeronetSky,0]='f_BBTOACS_AER'
+c_ObsVarSynonymArr[56,iC_ObsNet_AeronetSky,1]='f_BBTOACS_AERSIGMA'
+
+c_ObsVarSynonymArr[57,0,0]='SWTOACS_ANT'
+c_ObsVarSynonymArr[57,0,1]='SWTOACS_ANT'
+c_ObsVarSynonymArr[57,iC_ObsNet_AeronetForcing,0]='F_SWTOACS_ANT'
+c_ObsVarSynonymArr[57,iC_ObsNet_AeronetForcing,1]='f_SWTOACS_ANTSIGMA'
+iC_DefaultObsNetworkNo[57]=iC_ObsNet_AeronetForcing
+c_ObsVarSynonymArr[58,0,0]='SWTOAAS_ANT'
+c_ObsVarSynonymArr[58,0,1]='SWTOAAS_ANT'
+c_ObsVarSynonymArr[58,iC_ObsNet_AeronetForcing,0]='F_SWTOAAS_ANT'
+c_ObsVarSynonymArr[58,iC_ObsNet_AeronetForcing,1]='f_SWTOAAS_ANTSIGMA'
+iC_DefaultObsNetworkNo[58]=iC_ObsNet_AeronetForcing
+c_ObsVarSynonymArr[59,0,0]='EC550_AER'
+c_ObsVarSynonymArr[59,0,1]='EC550_AER'
+c_ObsVarSynonymArr[59,iC_ObsNet_EBAS,0]='EC550_AER'
+c_ObsVarSynonymArr[59,iC_ObsNet_EBAS,1]='EC550_AERSIGMA'
+c_ObsVarSynonymArr[59,iC_ObsNet_EBASMultiColumn,0]='EC550_AER'
+c_ObsVarSynonymArr[59,iC_ObsNet_EBASMultiColumn,1]='EC550_AERSIGMA'
+c_ObsVarSynonymArr[59,iC_ObsNet_EBASNRT,0]='EC550_AER'
+c_ObsVarSynonymArr[59,iC_ObsNet_EBASNRT,1]='EC550_AERSIGMA'
+iC_DefaultObsNetworkNo[59]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[59]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[60,0,0]='EC5503D_AER'
+c_ObsVarSynonymArr[60,0,1]='EC5503D_AER'
+c_ObsVarSynonymArr[60,iC_ObsNet_EBAS,0]='EC5503D_AER'
+c_ObsVarSynonymArr[60,iC_ObsNet_EBAS,1]='EC5503D_AERSIGMA'
+c_ObsVarSynonymArr[60,iC_ObsNet_EBASMultiColumn,0]='EC5503D_AER'
+c_ObsVarSynonymArr[60,iC_ObsNet_EBASMultiColumn,1]='EC5503D_AERSIGMA'
+c_ObsVarSynonymArr[60,iC_ObsNet_EARLINET,0]='F_EXTINCTION'
+c_ObsVarSynonymArr[60,iC_ObsNet_EARLINET,1]='F_EXTINCTIONSIGMA'
+iC_DefaultObsNetworkNo[60]=iC_ObsNet_EARLINET
+;iC_DefaultObsNetworkNo[60]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[61,0,0]='VISIB_METEO'
+c_ObsVarSynonymArr[61,0,1]='VISIB_METEO'
+c_ObsVarSynonymArr[61,iC_ObsNet_NCDC,0]='F_VISIBILITY'
+c_ObsVarSynonymArr[61,iC_ObsNet_NCDC,1]='F_VISIBILITYSIGMA'
+c_ObsVarSynonymArr[61,iC_ObsNet_NCDC,2]='F_RELATIVEHUMIDITY'
+iC_DefaultObsNetworkNo[61]=iC_ObsNet_NCDC
+
+c_ObsVarSynonymArr[62,0,0]='ABS550_AER'
+c_ObsVarSynonymArr[62,iC_ObsNet_AeronetSky,0]='F_ABS550_AER'
+c_ObsVarSynonymArr[62,iC_ObsNet_AeronetSky,1]='F_ABS550_AERSIGMA'
+c_ObsVarSynonymArr[62,iC_ObsNet_AeronetSky,2]='F_OD550SKY_AER'
+c_ObsVarSynonymArr[62,iC_ObsNet_AeronetSky,3]='F_ANG4487SKY_AER'
+c_ObsVarSynonymArr[62,iC_ObsNet_EBASNRT,0]='ABS550_AER'
+c_ObsVarSynonymArr[62,iC_ObsNet_EBASNRT,1]='ABS550_AERSIGMA'
+iC_DefaultObsNetworkNo[62]=iC_ObsNet_AeronetSky
+
+c_ObsVarSynonymArr[63,0,0]='ABSC550_AER'
+c_ObsVarSynonymArr[63,iC_ObsNet_EBAS,0]='ABSC550_AER'
+c_ObsVarSynonymArr[63,iC_ObsNet_EBAS,1]='ABSC550_AERSIGMA'
+c_ObsVarSynonymArr[63,iC_ObsNet_EBASMultiColumn,0]='ABSC550_AER'
+c_ObsVarSynonymArr[63,iC_ObsNet_EBASMultiColumn,1]='ABSC550_AERSIGMA'
+iC_DefaultObsNetworkNo[63]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[63]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[64,0,0]='LOAD_BC'
+c_ObsVarSynonymArr[64,iC_ObsNet_AeronetSky,0]='f_LOAD_BC'
+c_ObsVarSynonymArr[64,iC_ObsNet_AeronetSky,1]='f_LOAD_BCSIGMA'
+iC_DefaultObsNetworkNo[64]=iC_ObsNet_AeronetSky
+
+c_ObsVarSynonymArr[65,0,0]='MAC_BC'
+c_ObsVarSynonymArr[65,iC_ObsNet_AeronetSky,0]='f_MAC_BC'
+c_ObsVarSynonymArr[65,iC_ObsNet_AeronetSky,1]='f_MAC_BCSIGMA'
+iC_DefaultObsNetworkNo[65]=iC_ObsNet_AeronetSky
+
+c_ObsVarSynonymArr[66,0,0]='WET_SO4C'
+c_ObsVarSynonymArr[66,0,1]='WET_SO4C'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBAS,0]='WET_SO4C'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBAS,1]='WET_SO4CSIGMA'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBAS,2]='CONCPRCP_SO4C'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBASMultiColumn,0]='WET_SO4C'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBASMultiColumn,1]='WET_SO4CSIGMA'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_SO4C'
+c_ObsVarSynonymArr[66,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+iC_DefaultObsNetworkNo[66]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[66]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[67,0,0]='WET_SO4T'
+c_ObsVarSynonymArr[67,0,1]='WET_SO4T'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBAS,0]='WET_SO4T'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBAS,1]='WET_SO4TSIGMA'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBAS,2]='CONCPRCP_SO4T'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBASMultiColumn,0]='WET_SO4T'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBASMultiColumn,1]='WET_SO4TSIGMA'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_SO4T'
+c_ObsVarSynonymArr[67,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+iC_DefaultObsNetworkNo[67]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[67]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[68,0,0]='EC550DRY_AER'
+c_ObsVarSynonymArr[68,0,1]='EC550DRY_AER'
+c_ObsVarSynonymArr[68,iC_ObsNet_EUSAAR,0]='EC550DRY_AER'
+c_ObsVarSynonymArr[68,iC_ObsNet_EUSAAR,1]='EC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[68,iC_ObsNet_EBAS,0]='EC550DRY_AER'
+c_ObsVarSynonymArr[68,iC_ObsNet_EBAS,1]='EC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[68,iC_ObsNet_EBASMultiColumn,0]='EC550DRY_AER'
+c_ObsVarSynonymArr[68,iC_ObsNet_EBASMultiColumn,1]='EC550DRY_AERSIGMA'
+;iC_DefaultObsNetworkNo[68]=iC_ObsNet_EUSAAR
+iC_DefaultObsNetworkNo[68]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[68]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[69,0,0]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,0,1]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,0,2]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,iC_ObsNet_EUSAAR,0]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,iC_ObsNet_EUSAAR,1]='ABSC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[69,iC_ObsNet_EBAS,0]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,iC_ObsNet_EBAS,1]='ABSC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[69,iC_ObsNet_EBASNRT,0]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,iC_ObsNet_EBASNRT,1]='ABSC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[69,iC_ObsNet_EBASMultiColumn,0]='ABSC550DRY_AER'
+c_ObsVarSynonymArr[69,iC_ObsNet_EBASMultiColumn,1]='ABSC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[69,iC_ObsNet_Aethalometer,0]='MEANABS550'
+c_ObsVarSynonymArr[69,iC_ObsNet_Aethalometer,1]='MEANABS550SIGMA'
+iC_DefaultObsNetworkNo[69]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[69]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[70,0,0]='SCATC550DRY_AER'
+c_ObsVarSynonymArr[70,0,1]='SCATC550DRY_AER'
+c_ObsVarSynonymArr[70,iC_ObsNet_EUSAAR,0]='SCATC550DRY_AER'
+c_ObsVarSynonymArr[70,iC_ObsNet_EUSAAR,1]='SCATC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[70,iC_ObsNet_EBAS,0]='SCATC550DRY_AER'
+c_ObsVarSynonymArr[70,iC_ObsNet_EBAS,1]='SCATC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[70,iC_ObsNet_EBASNRT,0]='SCATC550DRY_AER'
+c_ObsVarSynonymArr[70,iC_ObsNet_EBASNRT,1]='SCATC550DRY_AERSIGMA'
+c_ObsVarSynonymArr[70,iC_ObsNet_EBASMultiColumn,0]='SCATC550DRY_AER'
+c_ObsVarSynonymArr[70,iC_ObsNet_EBASMultiColumn,1]='SCATC550DRY_AERSIGMA'
+iC_DefaultObsNetworkNo[70]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[70]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[71,0,0]='VMR_CO'
+c_ObsVarSynonymArr[71,0,1]='VMR_CO'
+c_ObsVarSynonymArr[71,iC_ObsNet_EBAS,0]='VMR_CO'
+c_ObsVarSynonymArr[71,iC_ObsNet_EBAS,1]='VMR_COSIGMA'
+c_ObsVarSynonymArr[71,iC_ObsNet_EBASMultiColumn,0]='VMR_CO'
+c_ObsVarSynonymArr[71,iC_ObsNet_EBASMultiColumn,1]='VMR_COSIGMA'
+iC_DefaultObsNetworkNo[71]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[71]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[72,0,0]='SCONC_NH3'
+c_ObsVarSynonymArr[72,0,1]='SCONC_NH3'
+c_ObsVarSynonymArr[72,iC_ObsNet_EBAS,0]='SCONC_NH3'
+c_ObsVarSynonymArr[72,iC_ObsNet_EBAS,1]='SCONC_NH3SIGMA'
+c_ObsVarSynonymArr[72,iC_ObsNet_EBASMultiColumn,0]='SCONC_NH3'
+c_ObsVarSynonymArr[72,iC_ObsNet_EBASMultiColumn,1]='SCONC_NH3SIGMA'
+c_ObsVarSynonymArr[72,iC_ObsNet_AIRBASE,0]='SCONC_NH3'
+c_ObsVarSynonymArr[72,iC_ObsNet_AIRBASE,1]='SCONC_NH3SIGMA'
+iC_DefaultObsNetworkNo[72]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[72]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[72]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[73,0,0]='OD865_AER'
+c_ObsVarSynonymArr[73,0,1]='OD865_AER'
+c_ObsVarSynonymArr[73,iC_ObsNet_AeronetSun,0]='f_OD870_AER'
+c_ObsVarSynonymArr[73,iC_ObsNet_AeronetSun,1]='f_OD870_AERSIGMA'
+iC_DefaultObsNetworkNo[73]=iC_ObsNet_AeronetSun
+
+c_ObsVarSynonymArr[74,0,0]='SCONC_NO3'
+c_ObsVarSynonymArr[74,0,1]='SCONC_NO3'
+c_ObsVarSynonymArr[74,iC_ObsNet_EBAS,0]='SCONC_NO3'
+c_ObsVarSynonymArr[74,iC_ObsNet_EBAS,1]='SCONC_NO3SIGMA'
+c_ObsVarSynonymArr[74,iC_ObsNet_EBASMultiColumn,0]='SCONC_NO3'
+c_ObsVarSynonymArr[74,iC_ObsNet_EBASMultiColumn,1]='SCONC_NO3SIGMA'
+c_ObsVarSynonymArr[74,iC_ObsNet_AIRBASE,0]='SCONC_NO3'
+c_ObsVarSynonymArr[74,iC_ObsNet_AIRBASE,1]='SCONC_NO3SIGMA'
+iC_DefaultObsNetworkNo[74]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[74]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[74]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[75,0,0]='WETCONC_PH'
+c_ObsVarSynonymArr[75,0,1]='WETCONC_PH'
+c_ObsVarSynonymArr[75,iC_ObsNet_EBAS,0]='WETCONC_PH'
+c_ObsVarSynonymArr[75,iC_ObsNet_EBAS,1]='WETCONC_PHSIGMA'
+c_ObsVarSynonymArr[75,iC_ObsNet_EBASMultiColumn,0]='WETCONC_PH'
+c_ObsVarSynonymArr[75,iC_ObsNet_EBASMultiColumn,1]='WETCONC_PHSIGMA'
+iC_DefaultObsNetworkNo[75]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[75]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[76,0,0]='VMR_O3MAX'
+c_ObsVarSynonymArr[76,0,1]='VMR_O3MAX'
+c_ObsVarSynonymArr[76,iC_ObsNet_EBAS,0]='VMR_O3MAX'
+c_ObsVarSynonymArr[76,iC_ObsNet_EBAS,1]='VMR_O3MAXSIGMA'
+c_ObsVarSynonymArr[76,iC_ObsNet_EBASMultiColumn,0]='VMR_O3MAX'
+c_ObsVarSynonymArr[76,iC_ObsNet_EBASMultiColumn,1]='VMR_O3MAXSIGMA'
+c_ObsVarSynonymArr[76,iC_ObsNet_AIRBASE,0]='VMR_O3MAX'
+c_ObsVarSynonymArr[76,iC_ObsNet_AIRBASE,1]='VMR_O3MAXSIGMA'
+iC_DefaultObsNetworkNo[76]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[76]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[76]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[77,0,0]='OD550ERR_AER'
+c_ObsVarSynonymArr[77,0,1]='OD550ERR_AER'
+
+c_ObsVarSynonymArr[78,0,0]='SCAVRATIO_SO4'
+c_ObsVarSynonymArr[78,0,1]='SCAVRATIO_SO4'
+c_ObsVarSynonymArr[78,iC_ObsNet_EBAS,0]='SCAVRATIO_SO4'
+c_ObsVarSynonymArr[78,iC_ObsNet_EBAS,1]='SCAVRATIO_SO4SIGMA'
+c_ObsVarSynonymArr[78,iC_ObsNet_EBASMultiColumn,0]='SCAVRATIO_SO4'
+c_ObsVarSynonymArr[78,iC_ObsNet_EBASMultiColumn,1]='SCAVRATIO_SO4SIGMA'
+iC_DefaultObsNetworkNo[78]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[78]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[79,0,0]='WET_NO3'
+c_ObsVarSynonymArr[79,0,1]='WET_NO3'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBAS,0]='WET_NO3'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBAS,1]='WET_NO3SIGMA'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBAS,2]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBASMultiColumn,0]='WET_NO3'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBASMultiColumn,1]='WET_NO3SIGMA'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[79,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+c_ObsVarSynonymArr[79,iC_ObsNet_AIRBASE,0]='WET_NO3'
+c_ObsVarSynonymArr[79,iC_ObsNet_AIRBASE,1]='WET_NO3SIGMA'
+iC_DefaultObsNetworkNo[79]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[79]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[79]=iC_ObsNet_AIRBASE
+
+
+
+c_ObsVarSynonymArr[80,0,0]='SCONC_NH4'
+c_ObsVarSynonymArr[80,0,1]='SCONC_NH4'
+c_ObsVarSynonymArr[80,iC_ObsNet_EBAS,0]='SCONC_NH4'
+c_ObsVarSynonymArr[80,iC_ObsNet_EBAS,1]='SCONC_NH4SIGMA'
+c_ObsVarSynonymArr[80,iC_ObsNet_EBASMultiColumn,0]='SCONC_NH4'
+c_ObsVarSynonymArr[80,iC_ObsNet_EBASMultiColumn,1]='SCONC_NH4SIGMA'
+c_ObsVarSynonymArr[80,iC_ObsNet_AIRBASE,0]='SCONC_NH4'
+c_ObsVarSynonymArr[80,iC_ObsNet_AIRBASE,1]='SCONC_NH4SIGMA'
+iC_DefaultObsNetworkNo[80]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[80]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[72]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[81,0,0]='WET_NH4'
+c_ObsVarSynonymArr[81,0,1]='WET_NH4'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBAS,0]='WET_NH4'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBAS,1]='WET_NH4SIGMA'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBAS,2]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBASMultiColumn,0]='WET_NH4'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBASMultiColumn,1]='WET_NH4SIGMA'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[81,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+c_ObsVarSynonymArr[81,iC_ObsNet_AIRBASE,0]='WET_NH4'
+c_ObsVarSynonymArr[81,iC_ObsNet_AIRBASE,1]='WET_NH4SIGMA'
+iC_DefaultObsNetworkNo[81]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[63]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[81]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[82,0,0]='SCONC_HNO3'
+c_ObsVarSynonymArr[82,0,1]='SCONC_HNO3'
+c_ObsVarSynonymArr[82,iC_ObsNet_EBAS,0]='SCONC_HNO3'
+c_ObsVarSynonymArr[82,iC_ObsNet_EBAS,1]='SCONC_HNO3SIGMA'
+c_ObsVarSynonymArr[82,iC_ObsNet_EBASMultiColumn,0]='SCONC_HNO3'
+c_ObsVarSynonymArr[82,iC_ObsNet_EBASMultiColumn,1]='SCONC_HNO3SIGMA'
+c_ObsVarSynonymArr[82,iC_ObsNet_AIRBASE,0]='SCONC_HNO3'
+c_ObsVarSynonymArr[82,iC_ObsNet_AIRBASE,1]='SCONC_HNO3SIGMA'
+iC_DefaultObsNetworkNo[82]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[82]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[82]=iC_ObsNet_AIRBASE
+
+
+
+
+c_ObsVarSynonymArr[83,0,0]='SCONC_TNO3'
+c_ObsVarSynonymArr[83,0,1]='SCONC_TNO3'
+c_ObsVarSynonymArr[83,iC_ObsNet_EBAS,0]='SCONC_TNO3'
+c_ObsVarSynonymArr[83,iC_ObsNet_EBAS,1]='SCONC_TNO3SIGMA'
+c_ObsVarSynonymArr[83,iC_ObsNet_EBASMultiColumn,0]='SCONC_TNO3'
+c_ObsVarSynonymArr[83,iC_ObsNet_EBASMultiColumn,1]='SCONC_TNO3SIGMA'
+c_ObsVarSynonymArr[83,iC_ObsNet_AIRBASE,0]='SCONC_TNO3'
+c_ObsVarSynonymArr[83,iC_ObsNet_AIRBASE,1]='SCONC_TNO3SIGMA'
+iC_DefaultObsNetworkNo[83]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[83]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[83]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[84,0,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,0,1]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_EBAS,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_EBAS,1]='SCONC_NO2SIGMA'
+c_ObsVarSynonymArr[84,iC_ObsNet_EBASMultiColumn,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_EBASMultiColumn,1]='SCONC_NO2SIGMA'
+c_ObsVarSynonymArr[84,iC_ObsNet_AIRBASE,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_AIRBASE,1]='SCONC_NO2SIGMA'
+c_ObsVarSynonymArr[84,iC_ObsNet_SecondaryDatasets,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_SecondaryDatasets,1]='SCONC_NO2SIGMA'
+c_ObsVarSynonymArr[84,iC_ObsNet_AirbaseEEA,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_AirbaseEEA,1]='SCONC_NO2SIGMA'
+c_ObsVarSynonymArr[84,iC_ObsNet_EVAAssim,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_EVAAssim,1]='SCONC_NO2SIGMA'
+c_ObsVarSynonymArr[84,iC_ObsNet_EVAVal,0]='SCONC_NO2'
+c_ObsVarSynonymArr[84,iC_ObsNet_EVAVal,1]='SCONC_NO2SIGMA'
+;iC_DefaultObsNetworkNo[84]=iC_ObsNet_EBAS
+iC_DefaultObsNetworkNo[84]=iC_ObsNet_EBASMultiColumn
+;if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[84]=iC_ObsNet_EBASMultiColumn
+
+
+c_ObsVarSynonymArr[85,0,0]='OD550CS_AER'
+c_ObsVarSynonymArr[85,iC_ObsNet_AeronetSun,0]='f_OD550_AER'
+c_ObsVarSynonymArr[85,iC_ObsNet_AeronetSun,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[85,iC_ObsNet_AeronetSunRaw20,0]='f_OD550_AER'
+c_ObsVarSynonymArr[85,iC_ObsNet_AeronetSunRaw20,1]='f_OD550_AERSIGMA'
+iC_DefaultObsNetworkNo[85]=iC_ObsNet_AeronetSunRaw20
+
+c_ObsVarSynonymArr[86,0,0]='WET_OXN'
+c_ObsVarSynonymArr[86,0,1]='WET_OXN'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBAS,0]='WET_OXN'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBAS,1]='WET_OXNSIGMA'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBAS,2]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBASMultiColumn,0]='WET_OXN'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBASMultiColumn,1]='WET_OXNSIGMA'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[86,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+iC_DefaultObsNetworkNo[86]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[86]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[87,0,0]='WET_RDN'
+c_ObsVarSynonymArr[87,0,1]='WET_RDN'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBAS,0]='WET_RDN'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBAS,1]='WET_RDNSIGMA'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBAS,2]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBAS,3]='METEO_PREC'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBASMultiColumn,0]='WET_RDN'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBASMultiColumn,1]='WET_RDNSIGMA'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBASMultiColumn,2]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[87,iC_ObsNet_EBASMultiColumn,3]='METEO_PREC'
+iC_DefaultObsNetworkNo[87]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[87]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[88,0,0]='ABSC550AETH_AER'
+c_ObsVarSynonymArr[88,iC_ObsNet_Aethalometer,0]='MEANABS550'
+c_ObsVarSynonymArr[88,iC_ObsNet_Aethalometer,1]='MEANABS550SIGMA'
+iC_DefaultObsNetworkNo[88]=iC_ObsNet_Aethalometer
+
+c_ObsVarSynonymArr[89,0,0]='OD550MIN5_AER'
+;c_ObsVarSynonymArr[89,iC_ObsNet_AeronetSun,0]='f_OD550_AER'
+;c_ObsVarSynonymArr[89,iC_ObsNet_AeronetSun,1]='f_OD550_AERSIGMA'
+iC_DefaultObsNetworkNo[89]=iC_ObsNet_AeronetSunNRT
+c_ObsVarSynonymArr[89,iC_ObsNet_AeronetSunNRT,0]='f_OD550_AER'
+c_ObsVarSynonymArr[89,iC_ObsNet_AeronetSunNRT,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[89,iC_ObsNet_AeronetSunNRT,2]='f_ANG4487_AER'
+
+c_ObsVarSynonymArr[90,0,0]='OD550MAXSIGMA_AER'
+;c_ObsVarSynonymArr[90,iC_ObsNet_AeronetSun,0]='f_OD550_AER'
+;c_ObsVarSynonymArr[90,iC_ObsNet_AeronetSun,1]='f_OD550_AERSIGMA'
+iC_DefaultObsNetworkNo[90]=iC_ObsNet_AeronetSunNRT
+c_ObsVarSynonymArr[90,iC_ObsNet_AeronetSunNRT,0]='f_OD550_AER'
+c_ObsVarSynonymArr[90,iC_ObsNet_AeronetSunNRT,1]='f_OD550_AERSIGMA'
+c_ObsVarSynonymArr[90,iC_ObsNet_AeronetSunNRT,2]='f_ANG4487_AER'
+
+c_ObsVarSynonymArr[91,0,0]='SCONC_PM10RH50'
+c_ObsVarSynonymArr[91,0,1]='SCONC_PM10RH50'
+c_ObsVarSynonymArr[91,iC_ObsNet_EBAS,0]='SCONC_PM10RH50'
+c_ObsVarSynonymArr[91,iC_ObsNet_EBAS,1]='SCONC_PM10RH50SIGMA'
+c_ObsVarSynonymArr[91,iC_ObsNet_EBASMultiColumn,0]='SCONC_PM10RH50'
+c_ObsVarSynonymArr[91,iC_ObsNet_EBASMultiColumn,1]='SCONC_PM10RH50SIGMA'
+c_ObsVarSynonymArr[91,iC_ObsNet_AIRBASE,0]='SCONC_PM10RH50'
+c_ObsVarSynonymArr[91,iC_ObsNet_AIRBASE,1]='SCONC_PM10RH50SIGMA'
+iC_DefaultObsNetworkNo[91]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[91]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[91]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[92,0,0]='EC5323D_AER'
+;c_ObsVarSynonymArr[92,iC_ObsNet_EARLINET,0]='EC5323D_AER'
+c_ObsVarSynonymArr[92,iC_ObsNet_EARLINET,0]='F_EXTINCTION'
+c_ObsVarSynonymArr[92,iC_ObsNet_EARLINET,1]='F_EXTINCTIONSIGMA'
+c_ObsVarSynonymArr[92,iC_ObsNet_EARLINET,2]='Z3D'
+iC_DefaultObsNetworkNo[92]=iC_ObsNet_EARLINET
+
+c_ObsVarSynonymArr[93,0,0]='SCONCURB_NO2'
+c_ObsVarSynonymArr[93,0,1]='SCONCURB_NO2'
+c_ObsVarSynonymArr[93,iC_ObsNet_AIRBASE,0]='SCONCURB_NO2'
+c_ObsVarSynonymArr[93,iC_ObsNet_AIRBASE,1]='SCONCURB_NO2SIGMA'
+c_ObsVarSynonymArr[93,iC_ObsNet_AirbaseEEA,0]='SCONCURB_NO2'
+c_ObsVarSynonymArr[93,iC_ObsNet_AirbaseEEA,1]='SCONCURB_NO2SIGMA'
+iC_DefaultObsNetworkNo[93]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[94,0,0]='SCONCURB_SO2'
+c_ObsVarSynonymArr[94,0,1]='SCONCURB_SO2'
+c_ObsVarSynonymArr[94,iC_ObsNet_AIRBASE,0]='SCONCURB_SO2'
+c_ObsVarSynonymArr[94,iC_ObsNet_AIRBASE,1]='SCONCURB_SO2SIGMA'
+c_ObsVarSynonymArr[94,iC_ObsNet_AirbaseEEA,0]='SCONCURB_SO2'
+c_ObsVarSynonymArr[94,iC_ObsNet_AirbaseEEA,1]='SCONCURB_SO2SIGMA'
+iC_DefaultObsNetworkNo[94]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[95,0,0]='SCONCURB_PM25'
+c_ObsVarSynonymArr[95,0,1]='SCONCURB_PM25'
+c_ObsVarSynonymArr[95,iC_ObsNet_AIRBASE,0]='SCONCURB_PM25'
+c_ObsVarSynonymArr[95,iC_ObsNet_AIRBASE,1]='SCONCURB_PM25SIGMA'
+c_ObsVarSynonymArr[95,iC_ObsNet_AirbaseEEA,0]='SCONCURB_PM25'
+c_ObsVarSynonymArr[95,iC_ObsNet_AirbaseEEA,1]='SCONCURB_PM25SIGMA'
+iC_DefaultObsNetworkNo[95]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[96,0,0]='SCONCURB_PM10'
+c_ObsVarSynonymArr[96,0,1]='SCONCURB_PM10'
+c_ObsVarSynonymArr[96,iC_ObsNet_AIRBASE,0]='SCONCURB_PM10'
+c_ObsVarSynonymArr[96,iC_ObsNet_AIRBASE,1]='SCONCURB_PM10SIGMA'
+c_ObsVarSynonymArr[96,iC_ObsNet_AirbaseEEA,0]='SCONCURB_PM10'
+c_ObsVarSynonymArr[96,iC_ObsNet_AirbaseEEA,1]='SCONCURB_PM10SIGMA'
+iC_DefaultObsNetworkNo[96]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[97,0,0]='VMRURB_O3'
+c_ObsVarSynonymArr[97,0,1]='VMRURB_O3'
+c_ObsVarSynonymArr[97,iC_ObsNet_AIRBASE,0]='VMRURB_O3'
+c_ObsVarSynonymArr[97,iC_ObsNet_AIRBASE,1]='VMRURB_O3SIGMA'
+c_ObsVarSynonymArr[97,iC_ObsNet_AirbaseEEA,0]='VMRURB_O3'
+c_ObsVarSynonymArr[97,iC_ObsNet_AirbaseEEA,1]='VMRURB_O3SIGMA'
+iC_DefaultObsNetworkNo[93]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[98,0,0]='VMRURB_O3MAX'
+c_ObsVarSynonymArr[98,0,1]='VMRURB_O3MAX'
+c_ObsVarSynonymArr[98,iC_ObsNet_AIRBASE,0]='VMRURB_O3MAX'
+c_ObsVarSynonymArr[98,iC_ObsNet_AIRBASE,1]='VMRURB_O3MAXSIGMA'
+c_ObsVarSynonymArr[98,iC_ObsNet_AirbaseEEA,0]='VMRURB_O3MAX'
+c_ObsVarSynonymArr[98,iC_ObsNet_AirbaseEEA,1]='VMRURB_O3MAXSIGMA'
+iC_DefaultObsNetworkNo[98]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[99,0,0]='EC3553D_AER'
+c_ObsVarSynonymArr[99,iC_ObsNet_EARLINET,0]='F_EXTINCTION'
+c_ObsVarSynonymArr[99,iC_ObsNet_EARLINET,1]='F_EXTINCTIONSIGMA'
+c_ObsVarSynonymArr[99,iC_ObsNet_EARLINET,2]='Z3D'
+iC_DefaultObsNetworkNo[99]=iC_ObsNet_EARLINET
+;c_ObsVarSynonymArr[99,0,0]='CONCPRCP_SO4'
+;c_ObsVarSynonymArr[99,0,1]='CONCPRCP_SO4'
+;c_ObsVarSynonymArr[99,iC_ObsNet_EMEPOrig,0]='GRIESIETEST'
+;c_ObsVarSynonymArr[99,iC_ObsNet_EMEPOrig,1]='GRIESIETESTSIGMA'
+c_ObsVarSynonymArr[100,0,0]='VMR3D_O3'
+c_ObsVarSynonymArr[100,iC_ObsNet_WOUDCOzoneSonds,0]='VMR3D_O3'
+c_ObsVarSynonymArr[100,iC_ObsNet_WOUDCOzoneSonds,1]='VMR3D_O3SIGMA'
+;c_ObsVarSynonymArr[100,iC_ObsNet_WOUDCOzoneSonds,2]='Z3D'
+c_ObsVarSynonymArr[100,iC_ObsNet_WOUDCOzoneSonds,2]='PMID'
+iC_DefaultObsNetworkNo[100]=iC_ObsNet_WOUDCOzoneSonds
+
+c_ObsVarSynonymArr[101,0,0]='VMR_O32M'
+c_ObsVarSynonymArr[101,0,1]='VMR_O32M'
+c_ObsVarSynonymArr[101,iC_ObsNet_EBAS,0]='VMR_O3'
+c_ObsVarSynonymArr[101,iC_ObsNet_EBAS,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[101,iC_ObsNet_EBASMultiColumn,0]='VMR_O3'
+c_ObsVarSynonymArr[101,iC_ObsNet_EBASMultiColumn,1]='VMR_O3SIGMA'
+c_ObsVarSynonymArr[101,iC_ObsNet_AIRBASE,0]='VMR_O32M'
+c_ObsVarSynonymArr[101,iC_ObsNet_AIRBASE,1]='VMR_O3SIGMA'
+iC_DefaultObsNetworkNo[101]=iC_ObsNet_EBAS
+if i_SetEBASMCAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[101]=iC_ObsNet_EBASMultiColumn
+if i_SetAirbaseAsPriorityNetwork gt 0 then iC_DefaultObsNetworkNo[101]=iC_ObsNet_AIRBASE
+
+c_ObsVarSynonymArr[102,0,0]='SCATC_RH'
+c_ObsVarSynonymArr[102,0,1]='SCATC_RH'
+c_ObsVarSynonymArr[102,iC_ObsNet_EBASMultiColumn,0]='SCATC_RH'
+c_ObsVarSynonymArr[102,iC_ObsNet_EBASMultiColumn,1]='SCATC_RHSIGMA'
+iC_DefaultObsNetworkNo[102]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[103,0,0]='SCONC_EQBC'
+c_ObsVarSynonymArr[103,0,1]='SCONC_EQBC'
+c_ObsVarSynonymArr[103,iC_ObsNet_EBASMultiColumn,0]='SCONC_EQBC'
+c_ObsVarSynonymArr[103,iC_ObsNet_EBASMultiColumn,1]='SCONC_EQBCSIGMA'
+iC_DefaultObsNetworkNo[103]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr=strupcase(c_ObsVarSynonymArr)
+
+c_ObsVarSynonymArr[104,0,0]='CONCPRCP_SO4T'
+c_ObsVarSynonymArr[104,0,1]='CONCPRCP_SO4T'
+c_ObsVarSynonymArr[104,iC_ObsNet_EBASMultiColumn,0]='CONCPRCP_SO4T'
+c_ObsVarSynonymArr[104,iC_ObsNet_EBASMultiColumn,1]='CONCPRCP_SO4TSIGMA'
+iC_DefaultObsNetworkNo[104]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr=strupcase(c_ObsVarSynonymArr)
+
+c_ObsVarSynonymArr[105,0,0]='CONCPRCP_SO4C'
+c_ObsVarSynonymArr[105,0,1]='CONCPRCP_SO4C'
+c_ObsVarSynonymArr[105,iC_ObsNet_EBASMultiColumn,0]='CONCPRCP_SO4C'
+c_ObsVarSynonymArr[105,iC_ObsNet_EBASMultiColumn,1]='CONCPRCP_SO4CSIGMA'
+iC_DefaultObsNetworkNo[105]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr=strupcase(c_ObsVarSynonymArr)
+
+c_ObsVarSynonymArr[106,0,0]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[106,0,1]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[106,iC_ObsNet_EBASMultiColumn,0]='CONCPRCP_NO3'
+c_ObsVarSynonymArr[106,iC_ObsNet_EBASMultiColumn,1]='CONCPRCP_NO3SIGMA'
+iC_DefaultObsNetworkNo[106]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr=strupcase(c_ObsVarSynonymArr)
+
+c_ObsVarSynonymArr[107,0,0]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[107,0,1]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[107,iC_ObsNet_EBASMultiColumn,0]='CONCPRCP_NH4'
+c_ObsVarSynonymArr[107,iC_ObsNet_EBASMultiColumn,1]='CONCPRCP_NH4SIGMA'
+iC_DefaultObsNetworkNo[107]=iC_ObsNet_EBASMultiColumn
+c_ObsVarSynonymArr[108,0,0]='OD500GT1_AER'
+c_ObsVarSynonymArr[108,0,1]='OD500GT1_AER'
+c_ObsVarSynonymArr[108,iC_ObsNet_AeronetSunSDADaily,0]='F_COARSE_MODE_AOD_500NM_TAU_C'
+c_ObsVarSynonymArr[108,iC_ObsNet_AeronetSunSDADaily,1]='F_COARSE_MODE_AOD_500NM_TAU_CSIGMA'
+iC_DefaultObsNetworkNo[108]=iC_ObsNet_AeronetSunSDADaily
+c_ObsVarSynonymArr[109,0,0]='OD500LT1_AER'
+c_ObsVarSynonymArr[109,0,1]='OD500LT1_AER'
+c_ObsVarSynonymArr[109,iC_ObsNet_AeronetSunSDADaily,0]='F_COARSE_MODE_AOD_500NM_TAU_C'
+c_ObsVarSynonymArr[109,iC_ObsNet_AeronetSunSDADaily,1]='F_COARSE_MODE_AOD_500NM_TAU_CSIGMA'
+iC_DefaultObsNetworkNo[109]=iC_ObsNet_AeronetSunSDADaily
+
+c_ObsVarSynonymArr[110,0,0]='SCONC_PM10NOSS'
+c_ObsVarSynonymArr[110,0,1]='SCONC_PM10NOSS'
+c_ObsVarSynonymArr[110,iC_ObsNet_EBASMultiColumn,0]='SCONC_PM10'
+c_ObsVarSynonymArr[110,iC_ObsNet_EBASMultiColumn,1]='SCONC_PM10SIGMA'
+iC_DefaultObsNetworkNo[110]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[111,0,0]='ANG4487CS_AER'
+c_ObsVarSynonymArr[111,0,1]='ANG4487CS_AER'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSun,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSun,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSunRaw20,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSunRaw20,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSun20AllPoints,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSun20AllPoints,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSunV3L15Daily,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSunV3L15Daily,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSunV3L20Daily,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[111,iC_ObsNet_AeronetSunV3L20Daily,1]='f_ANG4487_AERSIGMA'
+
+iC_DefaultObsNetworkNo[111]=iC_ObsNet_AeronetSun
+
+c_ObsVarSynonymArr[112,0,0]='SCONC_OA'
+c_ObsVarSynonymArr[112,0,1]='SCONC_OA'
+c_ObsVarSynonymArr[112,iC_ObsNet_EBASMultiColumn,0]='SCONC_OA'
+c_ObsVarSynonymArr[112,iC_ObsNet_EBASMultiColumn,1]='SCONC_OASIGMA'
+iC_DefaultObsNetworkNo[112]=iC_ObsNet_EBASMultiColumn
+
+c_ObsVarSynonymArr[113,0,0]='ABS550CS_AER'
+c_ObsVarSynonymArr[113,iC_ObsNet_AeronetSky,0]='F_ABS550_AER'
+c_ObsVarSynonymArr[113,iC_ObsNet_AeronetSky,1]='F_ABS550_AERSIGMA'
+c_ObsVarSynonymArr[113,iC_ObsNet_AeronetSky,2]='F_OD550SKY_AER'
+c_ObsVarSynonymArr[113,iC_ObsNet_AeronetSky,3]='F_ANG4487SKY_AER'
+c_ObsVarSynonymArr[113,iC_ObsNet_EBASNRT,0]='ABS550_AER'
+c_ObsVarSynonymArr[113,iC_ObsNet_EBASNRT,1]='ABS550_AERSIGMA'
+iC_DefaultObsNetworkNo[113]=iC_ObsNet_AeronetSky
+
+c_ObsVarSynonymArr[114,0,0]='ABS550_AERCS'
+c_ObsVarSynonymArr[114,iC_ObsNet_AeronetSky,0]='F_ABS550_AER'
+c_ObsVarSynonymArr[114,iC_ObsNet_AeronetSky,1]='F_ABS550_AERSIGMA'
+c_ObsVarSynonymArr[114,iC_ObsNet_AeronetSky,2]='F_OD550SKY_AER'
+c_ObsVarSynonymArr[114,iC_ObsNet_AeronetSky,3]='F_ANG4487SKY_AER'
+c_ObsVarSynonymArr[114,iC_ObsNet_EBASNRT,0]='ABS550_AER'
+c_ObsVarSynonymArr[114,iC_ObsNet_EBASNRT,1]='ABS550_AERSIGMA'
+iC_DefaultObsNetworkNo[114]=iC_ObsNet_AeronetSky
+
+c_ObsVarSynonymArr[115,0,0]='ANG6787_AER'				;model var
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSun,0]='f_ANG4487_AER'				;aeronet sun name
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSun,1]='f_ANG4487_AERSIGMA'		;aeronet sun name for stddev
+c_ObsVarSynonymArr[115,0,1]='ANG6787_AER'				;model var
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSky,0]='f_ANG4487SKY_AER'			;aeronet sky name
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSky,1]='f_ANG4487SKY_AERSIGMA'	;aeronet sky name for stddev
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetMan,0]='f_Angstroem'			
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetMan,1]='f_AngstroemSIGMA'	
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunNRT,0]='f_ANG4487_AER'				;aeronet sun NRT
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunNRT,1]='f_ANG4487_AERSIGMA'		;aeronet sun NRT
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunRaw15,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunRaw15,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunRaw20,0]='f_ANG6787_AER'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunRaw20,1]='f_ANG6787_AERSIGMA'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSun20AllPoints,0]='f_ANG4487_AER'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSun20AllPoints,1]='f_ANG4487_AERSIGMA'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunV3L15Daily,0]='f_ANG6787_AER'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunV3L15Daily,1]='f_ANG6787_AERSIGMA'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunV3L20Daily,0]='f_ANG6787_AER'
+c_ObsVarSynonymArr[115,iC_ObsNet_AeronetSunV3L20Daily,1]='f_ANG6787_AERSIGMA'
+iC_DefaultObsNetworkNo[115]=iC_ObsNet_AeronetSunRaw20
+
+c_ObsVarSynonymArr[116,0,0]='SSA440_AER'
+c_ObsVarSynonymArr[116,iC_ObsNet_AeronetINVV2L20,0]='SSA440AER'
+c_ObsVarSynonymArr[116,iC_ObsNet_AeronetINVV2L20,1]='SSA440AERSIGMA'
+c_ObsVarSynonymArr[116,iC_ObsNet_AeronetINVV2L15,0]='SSA440AER'
+c_ObsVarSynonymArr[116,iC_ObsNet_AeronetINVV2L15,1]='SSA440AERSIGMA'
+iC_DefaultObsNetworkNo[116]=iC_ObsNet_AeronetINVV2L20
+
+c_ObsVarSynonymArr[117,0,0]='SSA670_AER'
+c_ObsVarSynonymArr[117,iC_ObsNet_AeronetINVV2L20,0]='SSA676AER'
+c_ObsVarSynonymArr[117,iC_ObsNet_AeronetINVV2L20,1]='SSA676AERSIGMA'
+c_ObsVarSynonymArr[117,iC_ObsNet_AeronetINVV2L15,0]='SSA676AER'
+c_ObsVarSynonymArr[117,iC_ObsNet_AeronetINVV2L15,1]='SSA676AERSIGMA'
+iC_DefaultObsNetworkNo[117]=iC_ObsNet_AeronetINVV2L20
+
+c_ObsVarSynonymArr=strupcase(c_ObsVarSynonymArr)
+
+
+;constant for special programming in aerocom_Read_EBASData
+iC_EBASSP_WET_SO4_Flag=1
+iC_EBASSP_EC550DRYFlag=2
+iC_EBASSP_WET_NO3_Flag=3
+;negative values handle simple cases 
+iC_EBASSP_SCAVRATIO_SO4_Flag=-1
+iC_EBASSP_Divide1stBy2nd_Flag=-1	;1st additional divided by the 2nd result in the desired value
+iC_EBASSP_Multiply1stBy2nd_Flag=-2	;1st additional variable multiplied by the 2nd result in the desired value
+
+;structure to define the EBAS Component and Matrix strings to
+;make a connection between model variable and EBAS data files
+;PLEASE NOTE THAT THE ORDER OF c_Component AND c_Matrix IS THE 
+;ORDER THE FILES ARE SEARCHED FOR
+
+iC_EBASMaxComponentsPerVariable=20
+iC_EBASMaxAddionalVars=3
+iC_EBASMaxVars=100
+iC_EBASMaxVarSearchStrings=50
+tC_EBASVarsTemplate={$
+	c_ModelVar:'',$
+	c_Component:strarr(iC_EBASMaxComponentsPerVariable),$
+	c_Matrix:strarr(iC_EBASMaxComponentsPerVariable),$
+	c_Instrument:strarr(iC_EBASMaxComponentsPerVariable),$
+	f_ScaleFactor:fltarr(iC_EBASMaxComponentsPerVariable),$ ; FILE based (for BAS) or variable based (EBAS Multicolumn) scale factor
+	i_AdditionalVarNo:0,$
+	c_AdditionalVarNames:strarr(iC_EBASMaxAddionalVars),$	;names of other needed variables for calculation
+	i_AdditionalVarIndex:intarr(iC_EBASMaxAddionalVars),$	;indexes of those to make programming easier
+	;the following 3 arrays tell if a file var is to accumulated or put to zero for averaging
+	;difference e.g. for precipitation and a concentration
+	;they have the shape of an array for programming convinience
+	i_AccumulationFlag:0,$
+	i_FluxFlag:0,$
+	i_NaNToZeroFlag:0,$	;flag to tell aerocom_read_EBASStationData.pro to replace the NaNs with zero
+	i_SpecialProgFlag:0,$
+	i_VarNumber:0,$
+	;list of strings in strmatch notation to note the variable names from the nasa ames file
+	c_VarSearchStrings:strarr(50),$ 
+	;rank of importance of the different variables
+	;the higher the value, the lower the importance
+	;this is used to return only the instruments with the highest importance if a station
+	;provides data of that importance
+	i_VarRank:intarr(iC_EBASMaxVarSearchStrings),$ 
+	i_ReadOnly1stInstrumentFlag:0,$
+	;note strings for EBASD variables that should not be resampled in time here
+	;used for numflag etc.
+	;these variable will not appear in the resampled output of aerocom_read_EbasResampleColumnData
+	c_NoInterpolationVarSearchStrings:strarr(10)}
+
+
+
+;explanation of i_AdditionalVarIndex:
+;This two indexes just point to tag name indexes of the struct t_EBASTimeDataTemplate
+;in the file aerocom_read_ebasspecialprogs.pro
+;They avoid another where clause, their lowest value will always be 3
+;
+;THE ORDER OF INTEREST OF THE DIFFERENT EBAS VARIABLES IS 1ST DETERMINED BY THE ORDER IN 
+;tC_EBASVars.c_VarSearchStrings AND THE (SINCE THERE ARE NO VARIBALE NAMES IN SINGLE COLUMN FILES)
+;BY THE ORDER IN tC_EBASVars.c_Component
+;SO ALWAYS PUT THE VARIABLE NAMES OF THE MULTICOLUMN FILES 1ST IN tC_EBASVars.c_VarSearchStrings
+
+tC_EBASVarsTemplate.i_AdditionalVarIndex[*]=-1
+tC_EBASVarsTemplate.c_NoInterpolationVarSearchStrings[0]=[idl_validname('numflag',/convert_all)+'*']
+tC_EBASVarsTemplate.f_ScaleFactor[*]=1.
+
+tC_EBASVars=replicate(tC_EBASVarsTemplate,iC_EBASMaxVars)
+tC_EBASVars[0].c_ModelVar='SCONC_SO4'
+;tC_EBASVars[0].c_Component[0:5]=['main-air-chem','main-air-chem','pm25-chem','sulphate_corrected', 'sulphate_total', 'sulphate_total']
+tC_EBASVars[0].c_Component[0:1]=['sulphate_corrected', 'sulphate_total']
+tC_EBASVars[0].c_Matrix[0:1]=['aerosol','pm25']
+tC_EBASVars[0].c_VarSearchStrings[0:1]=[idl_validname('sulphate_corrected, ug S/m3',/convert_all)+'*',$
+idl_validname('sulphate_total, ug S/m3',/convert_all)+'*']
+;idl_validname('sulphate_corrected',/convert_all),$
+;idl_validname('sulphate_total',/convert_all),$
+;idl_validname('value, ug S/m3',/convert_all)];,$
+tC_EBASVars[0].i_VarRank[0:4]=[0,1,1,1,1]
+
+tC_EBASVars[1].c_ModelVar='SCONC_SO2'
+tC_EBASVars[1].c_Component[0:1]=['main-air-chem','sulphur_dioxide']
+tC_EBASVars[1].c_Matrix[0:1]=['air','air']
+tC_EBASVars[1].f_ScaleFactor[0:1]=[1.,1.]
+tC_EBASVars[1].c_VarSearchStrings[0:2]=[$
+idl_validname('sulphur_dioxide, ug S/m3',/convert_all)+'*',$
+idl_validname('sulphur_dioxide',/convert_all)+'*',$
+idl_validname('value, ug S/m3',/convert_all)];,$
+
+tC_EBASVars[2].c_ModelVar='VMR_O3'
+tC_EBASVars[2].c_Component[0]=['ozone']
+tC_EBASVars[2].c_Matrix[0]=['air']
+tC_EBASVars[2].f_ScaleFactor[0:2]=[0.5,0.5,0.5]
+tC_EBASVars[2].c_VarSearchStrings[0:2]=[$
+idl_validname('ozone, ug/m3, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('ozone, ug/m3',/convert_all)+'*',$
+idl_validname('value, ug/m3',/convert_all)+'*']
+
+
+tC_EBASVars[3].c_ModelVar='METEO_PREC'
+tC_EBASVars[3].c_Component[0:2]=['prec-chem','precipitation_amount_off', 'precipitation_amount']
+tC_EBASVars[3].c_Matrix[0:2]=['precip', 'precip', 'precip']
+tC_EBASVars[3].f_ScaleFactor[0:2]=[1., 1., 1.]
+tC_EBASVars[3].i_AccumulationFlag=1
+tC_EBASVars[3].i_FluxFlag=1
+tC_EBASVars[3].c_VarSearchStrings[0:6]=[$
+idl_validname('precipitation_amount_off,  , mm',/convert_all)+'*',$
+idl_validname('precipitation_amount_off, mm',/convert_all)+'*',$
+idl_validname('precipitation_amount_off',/convert_all)+'*',$
+idl_validname('precipitation_amount,  , mm',/convert_all)+'*',$
+idl_validname('precipitation_amount, mm',/convert_all)+'*',$
+idl_validname('precipitation_amount',/convert_all)+'*',$
+idl_validname('value, mm',/convert_all)+'*'$
+]
+
+;same as WETCONC_SO4, but with different units for WET_SO4
+tC_EBASVars[4].c_ModelVar='CONCPRCP_SO4'
+tC_EBASVars[4].c_Component[0:2]=['prec-chem','sulphate_corrected','sulphate_total']
+tC_EBASVars[4].c_Matrix[0:2]=['precip','precip','precip']
+tC_EBASVars[4].f_ScaleFactor[0:2]=[1.,1.,1.]
+;tC_EBASVars[4].i_NaNToZeroFlag=1
+tC_EBASVars[4].c_VarSearchStrings[0:4]=[$
+idl_validname('sulphate_corrected, mg S/l',/convert_all)+'*',$
+idl_validname('sulphate_corrected',/convert_all)+'*',$
+idl_validname('sulphate_total, mg S/l',/convert_all)+'*',$
+idl_validname('sulphate_total',/convert_all)+'*',$
+idl_validname('value, mg S/l',/convert_all)$
+];,$
+tC_EBASVars[4].i_VarRank[0:4]=[0,0,1,1,1]
+
+tC_EBASVars[5].c_ModelVar='SCONC_PM10'
+tC_EBASVars[5].c_Component[0:3]=['pm10-chem','pm10_mass', 'pm10_mass', 'pm10_mass_statistics']
+tC_EBASVars[5].c_Matrix[0:3]=['pm10', 'aerosol', 'pm10', 'pm10']
+tC_EBASVars[5].f_ScaleFactor[0:3]=[1., 1., 1., 1.]
+tC_EBASVars[5].c_VarSearchStrings[0:2]=[$
+idl_validname('pm10_mass, ug/m3',/convert_all)+'*',$
+idl_validname('pm10_mass_statistics',/convert_all)+'*',$
+;idl_validname('pm10_mass',/convert_all),$
+idl_validname('value, ug/m3',/convert_all)$
+];,$
+
+tC_EBASVars[6].c_ModelVar='SCONC_PM25'
+tC_EBASVars[6].c_Component[0:2]=['pm25-chem','pm25_mass', 'pm25_mass']
+tC_EBASVars[6].c_Matrix[0:2]=['pm25','aerosol', 'pm25']
+tC_EBASVars[6].f_ScaleFactor[0:2]=[1., 1., 1.]
+tC_EBASVars[6].c_VarSearchStrings[0:2]=[$
+idl_validname('pm25_mass, ug/m3',/convert_all)+'*',$
+idl_validname('pm25_mass',/convert_all)+'*',$
+idl_validname('value, ug/m3',/convert_all)$
+];,$
+
+tC_EBASVars[7].c_ModelVar='SCONC_SO4T'
+tC_EBASVars[7].c_Component[0:1]=['sulphate_total']
+tC_EBASVars[7].c_Matrix[0:1]=['aerosol','pm25']
+tC_EBASVars[7].f_ScaleFactor[0:4]=[1.,1., 1., 1., 1.]
+tC_EBASVars[7].c_VarSearchStrings[0]=[$
+idl_validname('sulphate_total, ug S/m3',/convert_all)+'*'];,$
+;idl_validname('sulphate_total',/convert_all)+'*',$
+;idl_validname('value, ug S/m3',/convert_all)];,$
+
+tC_EBASVars[8].c_ModelVar='SCONC_SO4C'
+tC_EBASVars[8].c_Component[0:1]=['sulphate_corrected']
+tC_EBASVars[8].c_Matrix[0:1]=['aerosol','pm25']
+tC_EBASVars[8].f_ScaleFactor[0:3]=[1., 1., 1., 1.]
+tC_EBASVars[8].c_VarSearchStrings[0]=[$
+idl_validname('sulphate_corrected, ug S/m3',/convert_all)+'*']
+;idl_validname('sulphate_corrected',/convert_all),$
+;idl_validname('value, ug S/m3',/convert_all)];,$
+
+tC_EBASVars[9].c_ModelVar='WET_SO4'
+tC_EBASVars[9].i_AdditionalVarNo=2
+;tC_EBASVars[9].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_SO4']
+;tC_EBASVars[9].i_AdditionalVarIndex[0:1]=[3,4]
+tC_EBASVars[9].c_AdditionalVarNames[0:1]=['CONCPRCP_SO4','METEO_PREC']
+tC_EBASVars[9].i_AdditionalVarIndex[0:1]=[4,3]
+tC_EBASVars[9].f_ScaleFactor[0]=[100./365.]
+tC_EBASVars[9].i_NaNToZeroFlag=1
+tC_EBASVars[9].i_AccumulationFlag=1
+tC_EBASVars[9].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[10].c_ModelVar='SCONC_BC'
+;tC_EBASVars[10].c_Component[0:9]=['pm25-chem','pm10-chem','elemental_carbon', 'elemental_carbon','elemental_carbon',$
+	;'elemental_carbon','black_carbon','black_carbon','black_carbon','black_carbon']
+tC_EBASVars[10].c_Component[0:1]=['elemental_carbon','black_carbon']
+tC_EBASVars[10].c_Matrix[0:3]=['pm25','pm10','pm1','aerosol']
+tC_EBASVars[10].f_ScaleFactor[0:9]=[1., 1.,1., 1., 1., 1., 1., 1., 1., 1.]
+tC_EBASVars[10].c_Instrument[0:13]=[$
+'denuder',$
+'ecoc_monitor',$
+'filter_1pack',$
+'filter_2pack',$
+'high_vol_sampler',$
+'impactor',$
+'kfg',$
+'low_vol_sampler',$
+'lvs_denuder_single',$
+'lvs_denuder_tandem',$
+'lvs_QBQ',$
+'lvs_single',$
+'lvs_single_twin',$
+'lvs_teflon'$
+]
+tC_EBASVars[10].i_ReadOnly1stInstrumentFlag=0
+tC_EBASVars[10].c_VarSearchStrings[0:14]=[$
+idl_validname('elemental_carbon, ug/m3, Revision date=20120314000000, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Revision date=20130630000000, Matrix=pm25, Method ref=DE08L_IFT_THERMOGRAPHY',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Revision date=20130630000000, Matrix=pm10, Method ref=DE08L_IFT_THERMOGRAPHY',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Revision date=20070101000000, Matrix=pm1, Method ref=NO01L_Thermo_Optical-Sunset_Lab',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Comment=Measurement procedure and data quality unknown',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Method ref=DE08L_thermo_optical_analyser',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Statistics=arithmetic mean, Matrix=pm25',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Statistics=arithmetic mean, Matrix=pm10',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Matrix=pm25',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3, Matrix=pm10',/convert_all)+'*',$
+idl_validname('elemental_carbon, ug/m3',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+idl_validname('elemental_carbon',/convert_all)+'*',$
+idl_validname('black_carbon',/convert_all),$
+idl_validname('value, ug/m3',/convert_all)$
+];,$
+
+tC_EBASVars[11].c_ModelVar='WETCONC_SO4'
+tC_EBASVars[11].c_Component[0]=['sulphate_corrected']
+tC_EBASVars[11].c_Matrix[0]=['precip']
+tC_EBASVars[11].f_ScaleFactor[0]=[1.] ;; has been 10 in initial phase, not clear why.. MS May2012
+tC_EBASVars[11].i_NaNToZeroFlag=0
+tC_EBASVars[11].c_VarSearchStrings[0]=[idl_validname('value, mg S/l',/convert_all)];,$
+
+;tC_EBASVars[12].c_ModelVar='EC550_AER'
+;tC_EBASVars[12].c_Component[0]=['aerosol_light_scattering_coefficient_550']
+;tC_EBASVars[12].c_Component[0:1]=['aerosol_light_scattering_coefficient_550','aerosol_light_scattering_coefficient']
+;tC_EBASVars[12].c_Matrix[0:1]=['aerosol','aerosol']
+;tC_EBASVars[12].f_ScaleFactor[0:1]=[1.,1.]
+;tC_EBASVars[12].c_VarSearchStrings[0:2]=[idl_validname('aerosol_light_scattering_coefficient, 532 nm, 1/Mm',/convert_all),$
+;idl_validname('value, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 450 nm, 1/Mm',/convert_all)]
+
+tC_EBASVars[12].c_ModelVar='EC550_AER'
+tC_EBASVars[12].c_Component[0:3]=['nephelometer','nephelometer','nephelometer','nephelometer']
+tC_EBASVars[12].c_Matrix[0:3]=['aerosol','pm10','pm1','pm25']
+tC_EBASVars[12].f_ScaleFactor[0:3]=[1.,1.,1.,1.]
+;tC_EBASNRTVars[0].c_VarSearchStrings[0:3]=[idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all)]
+tC_EBASVars[12].c_VarSearchStrings[0:3]=[idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 532 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('value, 1/Mm',/convert_all),$
+idl_validname('aerosol_light_scattering_coefficient, 450 nm, 1/Mm',/convert_all)+'*']
+
+
+tC_EBASVars[13].c_ModelVar='PRECIP_METEO'
+tC_EBASVars[13].c_Component[0:1]=['precipitation_amount_off', 'precipitation_amount']
+tC_EBASVars[13].c_Matrix[0:1]=['precip', 'precip']
+tC_EBASVars[13].f_ScaleFactor[0:1]=[1., 1.]
+tC_EBASVars[13].i_AccumulationFlag=1
+tC_EBASVars[13].c_VarSearchStrings[0:1]=[idl_validname('value, mm',/convert_all),$
+idl_validname('precipitation_amount,  , mm',/convert_all)]
+
+tC_EBASVars[14].c_ModelVar='EC5503D_AER'
+;tC_EBASVars[14].c_Component[0]=['aerosol_light_scattering_coefficient_550']
+tC_EBASVars[14].c_Component[0]=['aerosol_light_scattering_coefficient']
+tC_EBASVars[14].c_Matrix[0]=['aerosol']
+tC_EBASVars[14].f_ScaleFactor[0]=[1.]
+tC_EBASVars[14].c_VarSearchStrings[0:2]=[idl_validname('aerosol_light_scattering_coefficient, 532 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('value, 1/Mm',/convert_all),$
+idl_validname('aerosol_light_scattering_coefficient, 450 nm, 1/Mm',/convert_all)+'*']
+
+tC_EBASVars[15].c_ModelVar='ABSC550_AER'
+tC_EBASVars[15].c_Component[0]=['aerosol_absorption_coefficient']
+tC_EBASVars[15].c_Matrix[0]=['aerosol']
+tC_EBASVars[15].c_Instrument[0]=['filter_absorption_photometer']
+tC_EBASVars[15].f_ScaleFactor[0]=[1.]
+tC_EBASVars[15].c_VarSearchStrings[0:2]=[idl_validname('aerosol_absorption_coefficient, 550 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 525 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 670 nm, 1/Mm',/convert_all)+'*']
+
+tC_EBASVars[16].c_ModelVar='WET_SO4T'
+tC_EBASVars[16].i_AdditionalVarNo=2
+tC_EBASVars[16].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_SO4T']
+tC_EBASVars[16].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_SO4T']
+tC_EBASVars[16].i_AdditionalVarIndex[0:1]=[3,18]
+tC_EBASVars[16].f_ScaleFactor[0]=[100./365.]
+tC_EBASVars[16].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[17].c_ModelVar='WET_SO4C'
+tC_EBASVars[17].i_AdditionalVarNo=2
+tC_EBASVars[17].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_SO4C']
+tC_EBASVars[17].i_AdditionalVarIndex[0:1]=[3,19]
+tC_EBASVars[17].f_ScaleFactor[0]=[100./365.]
+tC_EBASVars[17].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[18].c_ModelVar='CONCPRCP_SO4T'
+;same as WETCONC_SO4, but with different units for WET_SO4
+tC_EBASVars[18].c_Component[0]=['sulphate_total']
+tC_EBASVars[18].c_Matrix[0]=['precip']
+tC_EBASVars[18].f_ScaleFactor[0:2]=[1.,1.,1.]
+tC_EBASVars[18].i_NaNToZeroFlag=1
+tC_EBASVars[18].c_VarSearchStrings[0:1]=[$
+idl_validname('sulphate_total, mg S/l',/convert_all)+'*',$
+idl_validname('sulphate_total',/convert_all)+'*']
+
+
+tC_EBASVars[19].c_ModelVar='CONCPRCP_SO4C'
+;same as WETCONC_SO4, but with different units for WET_SO4
+tC_EBASVars[19].c_Component[0]=['sulphate_corrected']
+tC_EBASVars[19].c_Matrix[0]=['precip']
+tC_EBASVars[19].f_ScaleFactor[0:2]=[1.,1.,1.]
+tC_EBASVars[19].i_NaNToZeroFlag=1
+tC_EBASVars[19].c_VarSearchStrings[0:1]=[$
+idl_validname('sulphate_corrected, mg S/l',/convert_all)+'*',$
+idl_validname('sulphate_corrected',/convert_all)+'*']
+
+tC_EBASVars[20].c_ModelVar='SCONC_SS'
+tC_EBASVars[20].c_Component[0]=['sodium']
+tC_EBASVars[20].c_Matrix[0:4]=['pm10', 'aerosol', 'pm25','pm1','air']
+tC_EBASVars[20].f_ScaleFactor[0:7]=[3.26, 3.26, 3.26, 3.26, 3.26, 3.26, 3.26, 3.26]
+tC_EBASVars[20].c_VarSearchStrings[0:1]=[$
+idl_validname('sodium, ug/m3',/convert_all)+'*',$
+idl_validname('value, ug/m3',/convert_all)]
+
+
+tC_EBASVars[21].c_ModelVar='SCONC_POM'
+tC_EBASVars[21].c_Component[0:1]=['organic_carbon','total_carbon']
+tC_EBASVars[21].c_Matrix[0:2]=['aerosol', 'pm25','pm10']
+tC_EBASVars[21].f_ScaleFactor[0:7]=[1., 1., 1., 1., 1., 1.,1.,1.]
+tC_EBASVars[21].c_VarSearchStrings[0:2]=[$
+idl_validname('organic_carbon, ug/m3',/convert_all)+'*',$
+idl_validname('total_carbon, ug/m3',/convert_all)+'*',$
+idl_validname('value, ug/m3',/convert_all)]
+
+tC_EBASVars[22].c_ModelVar='ABSC550DRY_AER'
+tC_EBASVars[22].c_Component[0:3]=['aerosol_absorption_coefficient','aerosol_absorption_coefficient','aerosol_absorption_coefficient','aerosol_absorption_coefficient']
+tC_EBASVars[22].c_Matrix[0:3]=['pm10', 'pm25','pm1','aerosol']
+;tC_EBASVars[22].f_ScaleFactor[0:3]=[1.,1.,1.,1.]
+;tC_EBASVars[22].i_ReadOnly1stInstrumentFlag=1
+tC_EBASVars[22].c_Instrument=['filter_absorption_photometer']
+tC_EBASVars[22].c_VarSearchStrings[0:18]=[idl_validname('aerosol_absorption_coefficient, 550 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 530 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 525 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 660 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 670 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 467 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=530.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=528.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=637.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=637.0 nm, Measurement uncertainty=6.0 %',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=670.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=880.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=550.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=670.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=524.3 nm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=522.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=520.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm, Wavelength=525.0 nm',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 1/Mm',/convert_all)+'*']
+
+
+tC_EBASVars[23].c_ModelVar='SCATC550DRY_AER'
+;tC_EBASVars[23].c_Component[0:1]=['aerosol_light_scattering_coefficient_550','aerosol_scattering_coefficient_550']
+tC_EBASVars[23].c_Component[0:3]=['aerosol_light_scattering_coefficient','aerosol_scattering_coefficient',$
+	'aerosol_light_scattering_coefficient','aerosol_scattering_coefficient']
+;tC_EBASVars[23].c_Matrix[0:1]=['aerosol','aerosol']
+tC_EBASVars[23].c_Matrix[0:3]=['pm10', 'pm25','pm1','aerosol']
+tC_EBASVars[23].f_ScaleFactor[0:3]=[1.,1.,1.,1.]
+tC_EBASVars[23].c_Instrument=['nephelometer']
+tC_EBASVars[23].c_VarSearchStrings[0:12]=[$
+idl_validname('aerosol_light_scattering_coefficient, 450 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 532 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 550 nm; Measurement uncertainty 10%, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=550.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=550.0 nm, Measurement uncertainty=10.0 %',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=550.0 nm, Matrix=aerosol, Measurement uncertainty=10.0 %',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=550.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=532.0 nm',/convert_all)+'*',$
+;idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=550.0 nm, Statistics=percentile:84.13',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=520.0 nm, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=520.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm, Wavelength=525.0 nm',/convert_all)+'*',$
+idl_validname('aerosol_light_scattering_coefficient, 1/Mm',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+idl_validname('value, 1/Mm',/convert_all)]
+;relative_humidity, %, Location=outlet, Statistics=arithmetic mean
+;relative_humidity, %, Location=instrument internal, Matrix=instrument
+
+tC_EBASVars[24].c_ModelVar='EC550DRY_AER'
+tC_EBASVars[24].i_AdditionalVarNo=2
+tC_EBASVars[24].c_AdditionalVarNames[0:1]=['ABSC550DRY_AER','SCATC550DRY_AER']
+tC_EBASVars[24].i_AdditionalVarIndex[0:1]=[1,2]
+tC_EBASVars[24].i_SpecialProgFlag=iC_EBASSP_EC550DRYFlag
+
+tC_EBASVars[25].c_ModelVar='VMR_CO'
+tC_EBASVars[25].c_Component[0]=['carbon_monoxide']
+tC_EBASVars[25].c_Matrix[0]=['air']
+tC_EBASVars[25].f_ScaleFactor[0]=[1.]
+tC_EBASVars[25].c_VarSearchStrings[0]=[idl_validname('carbon_monoxide, ppb',/convert_all)+'*'];,$
+
+
+tC_EBASVars[26].c_ModelVar='SCONC_NH3'
+tC_EBASVars[26].c_Component[0]=['ammonia']
+tC_EBASVars[26].c_Matrix[0]=['air']
+tC_EBASVars[26].f_ScaleFactor[0:1]=[1.,1.]
+tC_EBASVars[26].c_VarSearchStrings[0:1]=[$
+idl_validname('ammonia, ug N/m3',/convert_all)+'*',$
+idl_validname('value, ug N/m3',/convert_all) ];,$
+
+
+tC_EBASVars[27].c_ModelVar='SCONC_NO3'
+tC_EBASVars[27].c_Component[0]=['nitrate']
+tC_EBASVars[27].c_Matrix[0:3]=['aerosol','pm10','pm25','air']
+tC_EBASVars[27].f_ScaleFactor[0:3]=[1.,1.,1.,1.]
+tC_EBASVars[27].c_VarSearchStrings[0:1]=[$
+idl_validname('nitrate, ug N/m3',/convert_all)+'*',$
+idl_validname('value, ug N/m3',/convert_all)]
+
+
+tC_EBASVars[28].c_ModelVar='WETCONC_PH'
+tC_EBASVars[28].c_Component[0]=['pH']
+tC_EBASVars[28].c_Matrix[0]=['precip']
+tC_EBASVars[28].f_ScaleFactor[0]=[1.]
+tC_EBASVars[28].c_VarSearchStrings[0]=[idl_validname('value, pH units',/convert_all)];,$
+
+tC_EBASVars[29].c_ModelVar='VMR_O3MAX'
+tC_EBASVars[29].c_Component[0]=['ozone']
+tC_EBASVars[29].c_Matrix[0]=['air']
+tC_EBASVars[29].f_ScaleFactor[0:2]=[0.5,0.5,0.5]
+tC_EBASVars[29].c_VarSearchStrings[0:2]=[$
+idl_validname('ozone, ug/m3, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('ozone, ug/m3',/convert_all)+'*',$
+idl_validname('value, ug/m3',/convert_all)+'*']
+
+tC_EBASVars[30].c_ModelVar='WET_NO3'
+tC_EBASVars[30].i_AdditionalVarNo=2
+tC_EBASVars[30].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_NO3']
+tC_EBASVars[30].i_AdditionalVarIndex[0:1]=[3,31]
+tC_EBASVars[30].f_ScaleFactor[0]=[100./365.]
+;tC_EBASVars[30].i_SpecialProgFlag=iC_EBASSP_WET_NO3_Flag
+tC_EBASVars[30].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[31].c_ModelVar='CONCPRCP_NO3'
+tC_EBASVars[31].c_Component[0]=['nitrate']
+tC_EBASVars[31].c_Matrix[0]=['precip']
+tC_EBASVars[31].f_ScaleFactor[0]=[1.]
+tC_EBASVars[31].i_NaNToZeroFlag=1
+tC_EBASVars[31].c_VarSearchStrings[0]=[$
+idl_validname('nitrate, mg N/l',/convert_all)+'*'];,$
+
+tC_EBASVars[32].c_ModelVar='CONCPRCP_SO4_SCAVENGING'
+tC_EBASVars[32].c_Component[0:1]=['sulphate_corrected','sulphate_total']
+tC_EBASVars[32].c_Matrix[0:1]=['precip','precip']
+tC_EBASVars[32].f_ScaleFactor[0:1]=[1.,1.]
+tC_EBASVars[32].i_NaNToZeroFlag=1
+tC_EBASVars[32].c_VarSearchStrings[0]=[idl_validname('value, mg S/l',/convert_all)];,$
+
+tC_EBASVars[33].c_ModelVar='SCAVRATIO_SO4'
+tC_EBASVars[33].i_AdditionalVarNo=2
+tC_EBASVars[33].c_AdditionalVarNames[0:1]=['SCONC_SO4','CONCPRCP_SO4_SCAVENGING']
+tC_EBASVars[33].i_AdditionalVarIndex[0:1]=[0,32]
+tC_EBASVars[33].f_ScaleFactor[0]=[1.]
+tC_EBASVars[33].i_SpecialProgFlag=iC_EBASSP_SCAVRATIO_SO4_Flag
+
+tC_EBASVars[34].c_ModelVar='SCONC_NH4'
+tC_EBASVars[34].c_Component[0]=['ammonium']
+tC_EBASVars[34].c_Matrix[0:3]=['aerosol','pm10','pm25','air']
+tC_EBASVars[34].f_ScaleFactor[0:5]=[1.,1.,1.,1.,1.,1.]
+tC_EBASVars[34].c_VarSearchStrings[0:1]=[$
+idl_validname('ammonium, ug N/m3',/convert_all)+'*',$
+idl_validname('value, ug N/m3',/convert_all)]
+
+tC_EBASVars[35].c_ModelVar='SCONC_HNO3'
+tC_EBASVars[35].c_Component[0]=['nitric_acid']
+tC_EBASVars[35].c_Matrix[0:1]=['air']
+tC_EBASVars[35].f_ScaleFactor[0:1]=[1.,1.]
+tC_EBASVars[35].c_VarSearchStrings[0:1]=[$
+idl_validname('nitric_acid, ug N/m3',/convert_all)+'*',$
+idl_validname('value, ug N/m3',/convert_all)]
+
+
+;tC_EBASVars[36].c_ModelVar='SCONC_TNO3'
+;tC_EBASVars[36].c_Component[0:2]=['nitrate','nitrate','nitrate']
+;tC_EBASVars[36].c_Matrix[0:2]=['aerosol','pm10','air']
+;tC_EBASVars[36].f_ScaleFactor[0:2]=[1.,1.,1.]
+
+tC_EBASVars[36].c_ModelVar='SCONC_TNO3'
+tC_EBASVars[36].c_Component[0:0]=['sum_nitric_acid_and_nitrate']
+tC_EBASVars[36].c_Matrix[0:0]=['air+aerosol']
+tC_EBASVars[36].f_ScaleFactor[0:0]=[1.]
+tC_EBASVars[36].c_VarSearchStrings[0:1]=[$
+idl_validname('sum_nitric_acid_and_nitrate, ug N/m3',/convert_all)+'*',$
+idl_validname('value, ug N/m3',/convert_all)];,$
+
+tC_EBASVars[37].c_ModelVar='WET_NH4'
+tC_EBASVars[37].i_AdditionalVarNo=2
+tC_EBASVars[37].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_NH4']
+tC_EBASVars[37].i_AdditionalVarIndex[0:1]=[3,38]
+tC_EBASVars[37].f_ScaleFactor[0]=[100./365.]
+tC_EBASVars[37].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[38].c_ModelVar='CONCPRCP_NH4'
+tC_EBASVars[38].c_Component[0]=['ammonium']
+tC_EBASVars[38].c_Matrix[0]=['precip']
+tC_EBASVars[38].f_ScaleFactor[0]=[1.]
+tC_EBASVars[38].i_NaNToZeroFlag=1
+tC_EBASVars[38].c_VarSearchStrings[0:1]=[$
+idl_validname('ammonium, mg N/l',/convert_all)+'*',$
+idl_validname('value, mg N/l',/convert_all)];,$
+
+tC_EBASVars[39].c_ModelVar='SCONC_NO2'
+tC_EBASVars[39].c_Component[0]=['nitrogen_dioxide']
+tC_EBASVars[39].c_Matrix[0]=['air']
+tC_EBASVars[39].f_ScaleFactor[0]=[1.]
+tC_EBASVars[39].c_VarSearchStrings[0:1]=[$
+idl_validname('nitrogen_dioxide, ug N/m3',/convert_all)+'*',$
+idl_validname('value, ug N/m3',/convert_all)]
+
+tC_EBASVars[40].c_ModelVar='WET_OXN'
+tC_EBASVars[40].i_AdditionalVarNo=2
+tC_EBASVars[40].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_NO3']
+tC_EBASVars[40].i_AdditionalVarIndex[0:1]=[3,31]
+tC_EBASVars[40].f_ScaleFactor[0]=[100./365.]
+tC_EBASVars[40].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[41].c_ModelVar='WET_RDN'
+tC_EBASVars[41].i_AdditionalVarNo=2
+tC_EBASVars[41].c_AdditionalVarNames[0:1]=['METEO_PREC','CONCPRCP_NH4']
+tC_EBASVars[41].i_AdditionalVarIndex[0:1]=[3,38]
+tC_EBASVars[41].f_ScaleFactor[0]=[100./365.]
+tC_EBASVars[41].i_SpecialProgFlag=iC_EBASSP_WET_SO4_Flag
+
+tC_EBASVars[42].c_ModelVar='SCONC_PM10RH50'
+tC_EBASVars[42].c_Component[0:2]=['pm10_mass', 'pm10_mass', 'pm10_mass_statistics']
+tC_EBASVars[42].c_Matrix[0:2]=['aerosol', 'pm10', 'pm10']
+tC_EBASVars[42].f_ScaleFactor[0:2]=[1., 1., 1.]
+tC_EBASVars[42].c_VarSearchStrings[0]=[idl_validname('value, ug/m3',/convert_all)];,$
+
+tC_EBASVars[43].c_ModelVar='ABS550_AER'
+tC_EBASVars[43].c_Component[0:2]=['aerosol_absorption_coefficient','aerosol_absorption_coefficient',$
+'aerosol_absorption_coefficient']
+tC_EBASVars[43].c_Matrix[0:2]=['aerosol','pm10','pm1']
+;scale factor per file!
+;it might be necessary to have one based on the varible as well (SO FAR NOT NECESSARY)
+tC_EBASVars[43].f_ScaleFactor[0:2]=[1.,1.,1.]
+;Variable to search for
+;# is not depenedatnt on the # of component or Matrix
+tC_EBASVars[43].c_VarSearchStrings[0:3]=[idl_validname('aerosol_absorption_coefficient, 670 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 530 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 522 nm, 1/Mm',/convert_all)+'*',$
+idl_validname('aerosol_absorption_coefficient, 528 nm, 1/Mm',/convert_all)+'*']
+
+tC_EBASVars[44].c_ModelVar='VMR_O32M'
+tC_EBASVars[44].c_Component[0]=['ozone']
+tC_EBASVars[44].c_Matrix[0]=['air']
+tC_EBASVars[44].f_ScaleFactor[0]=[0.5]
+tC_EBASVars[44].c_VarSearchStrings[0]=[idl_validname('value, ug/m3',/convert_all)];,$
+
+tC_EBASVars[45].c_ModelVar='SCATC_RH'
+tC_EBASVars[45].c_Instrument=['nephelometer']
+tC_EBASVars[45].c_Component=['relative_humidity']
+tC_EBASVars[45].c_Matrix[0:5]=['aerosol', 'instrument', 'met', 'pm1','pm10','pm25']
+tC_EBASVars[45].c_VarSearchStrings[0:7]=[$
+idl_validname('relative_humidity, %, Location=instrument internal, Statistics=arithmetic mean, Matrix=instrument, Detection limit=, Detection limit expl.=',/convert_all)+'*',$
+idl_validname('relative_humidity, %, Location=instrument internal, Statistics=arithmetic mean, Matrix=instrument',/convert_all)+'*',$
+idl_validname('relative_humidity, %, Location=instrument internal, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('relative_humidity, %, Location=instrument internal, Matrix=instrument',/convert_all)+'*',$
+idl_validname('relative_humidity, %, Location=outlet, Statistics=arithmetic mean',/convert_all)+'*',$
+idl_validname('relative_humidity, %, Statistics=arithmetic mean',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+;idl_validname('',/convert_all)+'*',$
+idl_validname('relative_humidity, %, Location=instrument internal',/convert_all),$
+idl_validname('relative_humidity, %',/convert_all)+'*']
+
+tC_EBASVars[46].c_ModelVar='SCONC_EQBC'
+tC_EBASVars[46].c_Instrument[0]=[$
+'filter_absorption_photometer']
+tC_EBASVars[46].c_Component=['equivalent_black_carbon']
+tC_EBASVars[46].c_Matrix[0:3]=['aerosol', 'pm1','pm10','pm25']
+tC_EBASVars[46].i_ReadOnly1stInstrumentFlag=0
+tC_EBASVars[46].c_VarSearchStrings[0:14]=[$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=570.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=590.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=660.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=880.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=950.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=370.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=470.0 nm, Measurement uncertainty=100.0 %',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=520.0 nm',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=590.0 nm',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=660.0 nm',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=880.0 nm',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=950.0 nm',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=370.0 nm',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3, Wavelength=470.0 nm',/convert_all)+'*',$
+;idl_validname('equivalent_black_carbon, ug/m3, Wavelength=660.0 nm, Detection limit=0.01 ug/m3, Detection limit expl.=Determined by instrument counting statistics, no detection limit flag used, Measurement uncertainty=0.01 ug/m3, Measurement uncertainty expl.=Determined by instrument noise characteristics during dynamic zero run for 96 hours, no detection limit flag used',/convert_all)+'*',$
+idl_validname('equivalent_black_carbon, ug/m3',/convert_all)+'*']
+;idl_validname('',/convert_all)+'*',$
+
+tC_EBASVars[47].c_ModelVar='SCONC_OA'
+tC_EBASVars[47].c_Component[0:1]=['organic_carbon','total_carbon']
+tC_EBASVars[47].c_Matrix[0:2]=['aerosol', 'pm25','pm10']
+tC_EBASVars[47].f_ScaleFactor[0:2]=[1./1.4, 1./1.4, 1./1.4]
+tC_EBASVars[47].c_VarSearchStrings[0:2]=[$
+idl_validname('organic_carbon, ug C/m3',/convert_all)+'*',$
+idl_validname('total_carbon, ug C/m3',/convert_all)+'*',$
+idl_validname('value, ug C/m3',/convert_all)]
+
+
+
+;TEMPLATE
+;tC_EBASVars[0].c_ModelVar='SCONC_SO4'
+;tC_EBASVars[0].c_Component[0:2]=['SULPHATE_CORRECTED', 'SULPHATE_TOTAL', 'SULPHATE_TOTAL']
+;tC_EBASVars[0].c_Matrix[0:2]=['AEROSOL', 'AEROSOL', 'PM25']
+;tC_EBASVars[0].f_ScaleFactor[0:2]=[3., 3., 3.]
+;tC_EBASVars.c_Component=strlowcase(tC_EBASVars.c_Component)
+;tC_EBASVars.c_Matrix=strlowcase(tC_EBASVars.c_Matrix)
+
+;now do the same as for EBAS for EBASNRT
+;c_VarSearchStrings is used to tell which variables from the nasa ames file should be used.
+;the 1st variable found is returned
+tC_EBASNRTVars=replicate(tC_EBASVarsTemplate,iC_EBASMaxVars)
+tC_EBASNRTVars[0].c_ModelVar='EC550_AER'
+tC_EBASNRTVars[0].c_Component[0:3]=['nephelometer','nephelometer','nephelometer','nephelometer']
+tC_EBASNRTVars[0].c_Matrix[0:3]=['aerosol','pm10','pm1','pm25']
+tC_EBASNRTVars[0].f_ScaleFactor[0:3]=[1.,1.,1.,1.]
+;tC_EBASNRTVars[0].c_VarSearchStrings[0:3]=[idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all),$
+;idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all)]
+tC_EBASNRTVars[0].c_VarSearchStrings[0]=[idl_validname('aerosol_light_scattering_coefficient, 550 nm, 1/Mm',/convert_all)];,$
+
+
+tC_EBASNRTVars[1].c_ModelVar='ABS550_AER'
+tC_EBASNRTVars[1].c_Component[0:2]=['aerosol_absorption_coefficient','aerosol_absorption_coefficient',$
+'aerosol_absorption_coefficient']
+tC_EBASNRTVars[1].c_Matrix[0:2]=['aerosol','pm10','pm1']
+;scale factor per file!
+;it might be necessary to have one based on the varible as well (SO FAR NOT NECESSARY)
+tC_EBASNRTVars[1].f_ScaleFactor[0:2]=[1.,1.,1.]
+;Variable to search for
+;# is not depenedatnt on the # of component or Matrix
+tC_EBASNRTVars[1].c_VarSearchStrings[0:3]=[idl_validname('aerosol_absorption_coefficient, 670 nm, 1/Mm',/convert_all),$
+idl_validname('aerosol_absorption_coefficient, 530 nm, 1/Mm',/convert_all),$
+idl_validname('aerosol_absorption_coefficient, 522 nm, 1/Mm',/convert_all),$
+idl_validname('aerosol_absorption_coefficient, 528 nm, 1/Mm',/convert_all)]
+
+tC_EBASNRTVars=tC_EBASVars
+
+@aerocom_general_include
+;max length for station name in t_Obslocdata
+;iC_EBASMaxObslocStationNameLength=20
+iC_EBASMaxObslocStationNameLength=iC_MaxStationNameLength
+
+;max heightlevels for profile based obs data returned to aerocom_main
+;iC_MaxObsHeightLevels=1000
+
+;Unfortunetely we sometimes need mor height levels internally
+iC_NDACCMaxObsHeightLevels=5000
+iC_NDACCRebinHeightLevelNo=101
+;start at 50hPa
+fC_NDACCMinRebinHeight=50.
+;distance of 10hPa
+fC_NDACCRebinDist=10.
+fC_NDACCRebinHeights=reverse(findgen(iC_NDACCRebinHeightLevelNo)*fC_NDACCRebinDist)+fC_NDACCMinRebinHeight
+; and now convert to SI units (Pa)
+fC_NDACCRebinHeights=fC_NDACCRebinHeights*100.
+cC_NDACCRebinVarName='PMID'
+
+;max # of Timesteps the Obs data reading routines can handle
+;so far only used for EARLINET data
+iC_MaxObsDataTimeSteps=366*24*60	
+
+;List of variables copied from the raw earlinet data files (netCDF)
+;to the read struct.
+cC_EarlinetDataTagsToCopy=['ALTITUDE','EXTINCTION', 'ERROREXTINCTION']
+
+;variable definitions for the 2d obs data
+fC_2DMonthArray=fltarr(i_MonthsPerYear, iC_MaxObsHeightLevels)
+fC_2DMonthArray[*]=!values.f_nan
+dC_2DMonthArray=dblarr(i_MonthsPerYear, iC_MaxObsHeightLevels)
+dC_2DMonthArray[*]=!values.d_nan
+iC_2DMonthArray=intarr(i_MonthsPerYear, iC_MaxObsHeightLevels)
+
+fC_2DDayArray=fltarr(i_DaysPerYear, iC_MaxObsHeightLevels)
+fC_2DDayArray[*]=!values.f_nan
+dC_2DDayArray=dblarr(i_DaysPerYear, iC_MaxObsHeightLevels)
+dC_2DDayArray[*]=!values.d_nan
+iC_2DDayArray=intarr(i_DaysPerYear, iC_MaxObsHeightLevels)
+
+;height levels to round to for profile based obs data
+;BE AWARE THAT THE ROUNDING ALGORITHM MUST BE ADJUSTED TO THESE STEPS
+;(E.G. aerocom_Read_EarlinetData)!!!!!!!!!!!!!!!!!
+fC_2DObsHeightLevelDist=100.
+fC_2DObsHeightLevels=findgen(iC_MaxObsHeightLevels)*fC_2DObsHeightLevelDist+fC_2DObsHeightLevelDist/2.
+
+fC_EARLINETRebinDist=100.
+fC_EARLINETRebinHeights=findgen(iC_MaxObsHeightLevels)*fC_EARLINETRebinDist+fC_EARLINETRebinDist/2.
+cC_EARLINETRebinVarName='Z3D'
+
+
+;detection limit of ABS550_AER for aeronet sky
+;Be aware that this a limit for OD550 which triggers some speacial 
+;data treatment
+fC_AeronetSkyABS550DetectionLimit=0.0
+
+;The follwing is used to determine the last non data tag in e.g. obs data structures
+;used to llok for data tags without knowing their name
+;cC_LastObsNonDataTagName='I_MEASUREMENTNO'
+;cC_LastObsNonDataTagName='I_OBSNETWORKNO'
+
+;constants for EUSAAR read which very close to EBAS read
+;constant for WET_SO4 special programming in aerocom_Read_EBASData
+iC_EUSAAR_SP_EC550DRYFlag=1
+
+tC_EUSAARVars=replicate(tC_EBASVarsTemplate,iC_EBASMaxVars)
+tC_EUSAARVars[0].c_ModelVar='EC550DRY_AER'
+tC_EUSAARVars[0].i_AdditionalVarNo=2
+tC_EUSAARVars[0].c_AdditionalVarNames[0:1]=['ABSC550DRY_AER','SCATC550DRY_AER']
+tC_EUSAARVars[0].i_AdditionalVarIndex[0:1]=[1,2]
+tC_EUSAARVars[0].i_SpecialProgFlag=iC_EUSAAR_SP_EC550DRYFlag
+
+tC_EUSAARVars[1].c_ModelVar='ABSC550DRY_AER'
+tC_EUSAARVars[1].c_Component[0]=['aerosol_absorption_coefficient']
+tC_EUSAARVars[1].c_Matrix[0]=['aerosol']
+tC_EUSAARVars[1].f_ScaleFactor[0]=[1.]
+tC_EUSAARVars[1].c_VarSearchStrings=['Abs520','Abs470','Abs660','ave_abs','BCabs670',$
+	'absorption_coeff_520nm','absorption_coeff_590nm','absorption_coeff_470nm','absorption_coeff_370nm',$
+	;'absorption_coeff_370nm','absorption_coeff_470nm','absorption_coeff_520nm','absorption_coeff_590nm',$
+	'absorption_coeff_660nm','absorption_coeff_880nm','absorption_coeff_950nm','BCabs670',$
+	'abs_coeff520nm','abs_coeff590nm','abs_coeff470nm','abs_coeff660nm','abs_coeff880nm','abs_coeff950nm','abs_coeff370nm',$
+	'AbsCoeff522','Abs470','Abs520','Abs550','absorption_coeff_520nm']
+
+tC_EUSAARVars[2].c_ModelVar='SCATC550DRY_AER'
+tC_EUSAARVars[2].c_Component[0:1]=['aerosol_light_scattering_coefficient','aerosol_scattering_coefficient']
+tC_EUSAARVars[2].c_Matrix[0:1]=['aerosol','aerosol']
+tC_EUSAARVars[2].f_ScaleFactor[0:1]=[1.,1.]
+tC_EUSAARVars[2].c_VarSearchStrings=['sc550','scattering_coef_550nm','scatt_coeff_550nm','value_TSC550','ave_abs',$
+	'coefficient_550']
+
+tC_EUSAARVars.c_VarSearchStrings=strupcase(tC_EUSAARVars.c_VarSearchStrings)
+
+
+tC_AirBaseVarsTemplate={$
+	c_ModelVar:'',$
+	f_ScaleFactor:fltarr(iC_EBASMaxComponentsPerVariable),$ ; FILE based scale factor
+	i_SpecialProgFlag:0,$
+	i_VarNumber:0,$
+	c_Remarks:'',$
+	c_AirBaseStationTypesToFilter:strarr(10),$
+	c_AirBaseOzoneStationTypesToFilter:strarr(10),$
+	c_AirBaseStationAreasToFilter:strarr(10)}
+
+
+tC_AirBaseVarsTemplate.c_AirBaseStationTypesToFilter[0]='Background'
+tC_AirBaseVarsTemplate.c_AirBaseStationAreasToFilter[0]='rural'
+tC_AirBaseVarsTemplate.c_AirBaseOzoneStationTypesToFilter[0]='rural'
+iC_AirbaseSP_VMRO3MAXFlag=1
+iC_AirbaseSP_OzoneFlag=2
+
+tC_AirbaseVars=replicate(tC_AirbaseVarsTemplate,iC_EBASMaxVars)
+tC_AirbaseVars[*].f_ScaleFactor=1.
+tC_AirbaseVars[0].c_ModelVar='SCONC_SO2'
+tC_AirbaseVars[0].i_VarNumber=1
+tC_AirbaseVars[0].f_ScaleFactor[0]=[0.5]
+tC_AirbaseVars[1].c_ModelVar='SCONC_PM10'
+tC_AirbaseVars[1].i_VarNumber=5
+tC_AirbaseVars[2].c_ModelVar='VMR_O3'
+tC_AirbaseVars[2].i_VarNumber=7
+tC_AirbaseVars[2].i_SpecialProgFlag=iC_AirbaseSP_OzoneFlag
+tC_AirbaseVars[2].f_ScaleFactor[0]=[0.5]
+tC_AirbaseVars[3].c_ModelVar='SCONC_NO2'
+tC_AirbaseVars[3].i_VarNumber=8
+tC_AirbaseVars[3].f_ScaleFactor[0]=[(14./(14.+2.*16.))]
+tC_AirbaseVars[4].c_ModelVar='SCONC_NH3'
+tC_AirbaseVars[4].i_VarNumber=35
+tC_AirbaseVars[4].f_ScaleFactor[0]=[(14./17.)]
+tC_AirbaseVars[5].c_ModelVar='SCONC_NO'
+tC_AirbaseVars[5].i_VarNumber=38
+tC_AirbaseVars[5].f_ScaleFactor[0]=[(14./(14.+1.*16.))]
+tC_AirbaseVars[6].c_ModelVar='SCONC_NH4'
+tC_AirbaseVars[6].i_VarNumber=45
+tC_AirbaseVars[6].f_ScaleFactor[0]=[(14./18.)]
+tC_AirbaseVars[7].c_ModelVar='SCONC_NO3'
+tC_AirbaseVars[7].f_ScaleFactor[0]=[(14./(14.+3*16.))]
+tC_AirbaseVars[7].i_VarNumber=46
+tC_AirbaseVars[8].c_ModelVar='SCONC_SO4'
+tC_AirbaseVars[8].i_VarNumber=47
+tC_AirbaseVars[8].f_ScaleFactor[0]=[(1./3.)]
+tC_AirbaseVars[9].c_ModelVar='SCONC_HNO3'
+tC_AirbaseVars[9].f_ScaleFactor[0]=[(15./(15.+3*16.))]
+tC_AirbaseVars[9].i_VarNumber=50
+tC_AirbaseVars[10].c_ModelVar='SCONC_TNO3'
+tC_AirbaseVars[10].f_ScaleFactor[0]=[(14./(14.+3*16.))]
+tC_AirbaseVars[10].i_VarNumber=67
+tC_AirbaseVars[11].c_ModelVar='SCONC_NHX'
+tC_AirbaseVars[11].f_ScaleFactor[0]=[(14./17.)]
+tC_AirbaseVars[11].i_VarNumber=68
+tC_AirbaseVars[12].c_ModelVar='WET_NH4'
+tC_AirbaseVars[12].f_ScaleFactor[0]=[(14./17.)]
+tC_AirbaseVars[12].i_VarNumber=664
+tC_AirbaseVars[13].c_ModelVar='WET_NO3'
+tC_AirbaseVars[13].f_ScaleFactor[0]=[(14./(14.+3*16.))]
+tC_AirbaseVars[13].i_VarNumber=666
+tC_AirbaseVars[14].c_ModelVar='WET_SO4'
+tC_AirbaseVars[14].f_ScaleFactor[0]=[(1./3.)]
+tC_AirbaseVars[14].i_VarNumber=719
+tC_AirbaseVars[15].c_ModelVar='SCONC_PM25'
+tC_AirbaseVars[15].i_VarNumber=6001
+tC_AirbaseVars[16].c_ModelVar='VMR_O3MAX'
+tC_AirbaseVars[16].i_VarNumber=7
+tC_AirbaseVars[16].f_ScaleFactor[0]=[0.5]
+tC_AirbaseVars[16].i_SpecialProgFlag=iC_AirbaseSP_VMRO3MAXFlag
+tC_AirbaseVars[17].c_ModelVar='SCONC_PM10RH50'
+tC_AirbaseVars[17].i_VarNumber=5
+
+tC_AirbaseVars[18].c_ModelVar='SCONCURB_NO2'
+tC_AirbaseVars[18].i_VarNumber=8
+tC_AirbaseVars[18].c_AirBaseStationTypesToFilter[0:1]=['Background','Industrial']
+tC_AirbaseVars[18].c_AirBaseStationAreasToFilter[0:1]=['suburban','urban']
+
+tC_AirbaseVars[19].c_ModelVar='SCONCURB_SO2'
+tC_AirbaseVars[19].i_VarNumber=1
+tC_AirbaseVars[19].f_ScaleFactor[0]=[0.5]
+tC_AirbaseVars[19].c_AirBaseStationTypesToFilter[0:1]=['Background','Industrial']
+tC_AirbaseVars[19].c_AirBaseStationAreasToFilter[0:1]=['suburban','urban']
+
+tC_AirbaseVars[20].c_ModelVar='SCONCURB_PM25'
+tC_AirbaseVars[20].i_VarNumber=6001
+tC_AirbaseVars[20].c_AirBaseStationTypesToFilter[0:1]=['Background','Industrial']
+tC_AirbaseVars[20].c_AirBaseStationAreasToFilter[0:1]=['suburban','urban']
+
+tC_AirbaseVars[21].c_ModelVar='SCONCURB_PM10'
+tC_AirbaseVars[21].i_VarNumber=5
+tC_AirbaseVars[21].c_AirBaseStationTypesToFilter[0:1]=['Background','Industrial']
+tC_AirbaseVars[21].c_AirBaseStationAreasToFilter[0:1]=['suburban','urban']
+
+tC_AirbaseVars[22].c_ModelVar='VMRURB_O3'
+tC_AirbaseVars[22].i_VarNumber=7
+tC_AirbaseVars[22].f_ScaleFactor[0]=[0.5]
+tC_AirbaseVars[22].i_SpecialProgFlag=iC_AirbaseSP_OzoneFlag
+tC_AirbaseVars[22].c_AirBaseStationTypesToFilter[0:1]=['Background','Industrial']
+tC_AirbaseVars[22].c_AirBaseOzoneStationTypesToFilter[0:1]=['suburban','urban']
+
+tC_AirbaseVars[23].c_ModelVar='VMRURB_O3MAX'
+tC_AirbaseVars[23].i_VarNumber=7
+tC_AirbaseVars[23].f_ScaleFactor[0]=[0.5]
+tC_AirbaseVars[23].i_SpecialProgFlag=iC_AirbaseSP_VMRO3MAXFlag
+tC_AirbaseVars[23].c_AirBaseStationTypesToFilter[0:1]=['Background','Industrial']
+tC_AirbaseVars[23].c_AirBaseOzoneStationTypesToFilter[0:1]=['suburban','urban']
+
+;cC_AirBaseStationTypesToFilter=['Background']
+;cC_AirBaseStationAreasToFilter=['rural']
+
+cC_StandardNameTableFile='./data/cf-standard-name-table.xml'
+
+iC_EarlinetMaxVarsPerModelvar=1
+iC_MaxEarlinetVars=5
+tC_EarlinetVarsTemplate={$
+	c_ModelVar:'',$
+	f_ScaleFactor:fltarr(iC_EarlinetMaxVarsPerModelvar),$ ; FILE based scale factor
+	c_FileSearchString:strarr(iC_EarlinetMaxVarsPerModelvar)}
+
+
+tC_EarlinetVars=replicate(tC_EarlinetVarsTemplate,iC_MaxEarlinetVars)
+tC_EarlinetVars[*].f_ScaleFactor=1.
+tC_EarlinetVars[0].c_ModelVar='EC5323D_AER'
+tC_EarlinetVars[0].c_FileSearchString[0]='*.e5*'
+tC_EarlinetVars[0].f_ScaleFactor=1.E6
+
+tC_EarlinetVars[1].c_ModelVar='EC3553D_AER'
+tC_EarlinetVars[1].c_FileSearchString[0]='*.e3*'
+tC_EarlinetVars[0].f_ScaleFactor=1.E6
+
+;========================================
+;NOAA sonde data start
+
+tC_EBASVarsTemplate.i_AdditionalVarIndex[*]=-1
+tC_NOAASondeVars=replicate(tC_EBASVarsTemplate,iC_EBASMaxVars)
+tC_NOAASondeVars[0].c_ModelVar='VMR3D_O3'
+tC_NOAASondeVars[0].f_ScaleFactor[0:2]=[1000., 1000., 1000.]
+tC_NOAASondeVars[0].i_AdditionalVarNo=2
+;tC_NOAASondeVars[0].c_AdditionalVarNames[0:2]=['Z3D','O3PARTPRESSURE','PS']
+tC_NOAASondeVars[0].c_AdditionalVarNames[0:1]=['O3PARTPRESSURE','PMID']
+tC_NOAASondeVars[0].i_AdditionalVarIndex[0:1]=[2,3]
+tC_NOAASondeVars[0].c_VarSearchStrings[0:2]=[$
+idl_validname('Ozone mixing ratio per volume [ppm]',/convert_all)+'*',$
+idl_validname('(ozmr) Ozone Mixing Ratio (milligram/kilogram)',/convert_all)+'*',$
+idl_validname('Ozone mixing ratio per volume [ppm], derived',/convert_all)+'*'];,$
+;idl_validname('',/convert_all)+'*',$
+
+
+
+tC_NOAASondeVars[1].c_ModelVar='Z3D'
+tC_NOAASondeVars[1].f_ScaleFactor[0:4]=[1., 1., 1.,1.,1.]
+tC_NOAASondeVars[1].c_VarSearchStrings[0:4]=[$
+idl_validname('Geopotential height (gpm)',/convert_all)+'*',$
+idl_validname('(geop) Geopotential Height (geopotential meters)',/convert_all)+'*',$
+idl_validname('Geopotential height (gmp)',/convert_all)+'*',$
+idl_validname('Geopotential height [gpm]',/convert_all)+'*',$
+idl_validname('Geopotential height above sea level (m), Integrated from pressure and temperature',/convert_all)+'*']
+
+;Pressure has to be in Pa
+tC_NOAASondeVars[2].c_ModelVar='O3PARTPRESSURE'
+tC_NOAASondeVars[2].f_ScaleFactor[0:3]=[1.E-3, 1.E-4, 1.E-3, 1.E-3]
+tC_NOAASondeVars[2].c_VarSearchStrings[0:3]=[$
+idl_validname('Ozone partial pressure [mPa]',/convert_all)+'*',$
+idl_validname('(ozpp) Ozone Partial Pressure (nanobars)',/convert_all)+'*',$
+idl_validname('Ozone partial pressure (mPa), derived',/convert_all)+'*',$
+idl_validname('Ozone partial pressure (mPa)',/convert_all)+'*']
+
+tC_NOAASondeVars[3].c_ModelVar='PMID'
+tC_NOAASondeVars[3].f_ScaleFactor[0:2]=[1.E2, 1.E2,1.E2]
+tC_NOAASondeVars[3].c_VarSearchStrings[0:2]=[$
+idl_validname('Pressure [hPa]',/convert_all)+'*',$
+idl_validname('(pres) Pressure (hectopascals)',/convert_all)+'*',$
+idl_validname('Pressure at observation (hPa)',/convert_all)+'*']
+;idl_validname('Pressure at observation (hPa), measured using a radiosonde, Precision 0.5 hPa',/convert_all)+'*',$
+;idl_validname('Pressure (hPa)',/convert_all)+'*',$
+
+;NOAA sonde data end
+;========================================
+
+;Values to identify dust from od550gt1_aer measurements
+;at the time of this writing we consider ad550gt1_aer mesurements to occur because of dust when
+;ang4487 is lt 0.5 and od550_aer is gt 0.2
+;used in aerocom_read_aeronetsdafiledata.pro and aerocom_read_aeronetskydataraw.pro
+fC_Ang4487DustLimit=0.5
+fC_AOD550DustLimit=0.2
+
+

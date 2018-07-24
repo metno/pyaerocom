@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from pyaerocom import const as const
-from collections import OrderedDict as od
 import sqlite3
 import sys
 import os
+from pyaerocom.utils import BrowseDict
 
-class EbasSQLRequest(dict):
+class EbasSQLRequest(BrowseDict):
     """Low level dictionary like object for EBAS sqlite queries
     
     Attributes
@@ -181,12 +181,6 @@ class EbasSQLRequest(dict):
             req += 'statistics in '.format(conv(self.statistics))
             add_cond += 1      
         return (req + ";")
-
-    def __getattr__(self, key):
-        return self[key]
-    
-    def __setattr__(self, key, val):
-        self[key] = val
     
     def __str__(self):
         s=""

@@ -629,6 +629,9 @@ if __name__=="__main__":
     
     file_mc = os.path.join(DIR_MC, FILES_MC[0])
     
+    f = open(file_mc)
+    lines = f.readlines()
+    
     mc = EbasNasaAmesFile(file_mc)
     print(mc)
     
