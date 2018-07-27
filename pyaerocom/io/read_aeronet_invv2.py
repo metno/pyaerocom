@@ -147,9 +147,9 @@ class ReadAeronetInvV2(ReadAeronetBase):
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
             dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['latitude'] = float(dict_loc['lat'])
-            data_out['longitude'] = float(dict_loc['long'])
-            data_out['altitude'] = float(dict_loc['elev'])
+            data_out['stat_lat'] = float(dict_loc['lat'])
+            data_out['stat_lon'] = float(dict_loc['long'])
+            data_out['stat_alt'] = float(dict_loc['elev'])
             data_out['station_name'] = dict_loc['Locations']
             data_out['PI'] = dict_loc['PI']
             data_out['PI_email'] = dict_loc['Email']
@@ -241,3 +241,6 @@ if __name__=="__main__":
     
     data_first = read.read_first_file()
     print(data_first)
+    print(data.longitude)
+    print(data.latitude)
+    

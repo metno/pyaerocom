@@ -176,9 +176,9 @@ class ReadAeronetSunV2(ReadAeronetBase):
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
             dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['latitude'] = float(dict_loc['lat'])
-            data_out['longitude'] = float(dict_loc['long'])
-            data_out['altitude'] = float(dict_loc['elev'])
+            data_out['stat_lat'] = float(dict_loc['lat'])
+            data_out['stat_lon'] = float(dict_loc['long'])
+            data_out['stat_alt'] = float(dict_loc['elev'])
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()

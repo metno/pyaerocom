@@ -107,9 +107,9 @@ class UngriddedData(object):
         temp_dict = {}
         # do not return anything for stations without data
         temp_dict['station_name'] = val['station_name']
-        temp_dict['latitude'] = val['latitude']
-        temp_dict['longitude'] = val['longitude']
-        temp_dict['altitude'] = val['altitude']
+        temp_dict['latitude'] = val['stat_lat']
+        temp_dict['longitude'] = val['stat_lon']
+        temp_dict['altitude'] = val['stat_alt']
         temp_dict['PI'] = val['PI']
         temp_dict['dataset_name'] = val['dataset_name']
         if 'files' in val:
@@ -218,8 +218,8 @@ class UngriddedData(object):
 
     @property
     def longitude(self):
-        """Longitudes of data"""
-        return [stat['longitude'] for stat in self.metadata.values()]
+        """Longitudes of stations"""
+        return [stat['stat_lon'] for stat in self.metadata.values()]
 
     @longitude.setter
     def longitude(self, value):
@@ -229,7 +229,7 @@ class UngriddedData(object):
     @property
     def latitude(self):
         """Latitudes of data"""
-        return [stat['longitude'] for stat in self.metadata.values()]
+        return [stat['stat_lat'] for stat in self.metadata.values()]
 
     @latitude.setter
     def latitude(self, value):

@@ -164,7 +164,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             # in the time series plot
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
-            metadata[meta_key].update(station_data.get_coords())
+            metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             metadata[meta_key]['variables'] = vars_to_retrieve
             # this is a list with indices of this station for each variable
@@ -184,22 +184,21 @@ class ReadAeronetBase(ReadUngriddedBase):
             if (idx + totnum) >= data_obj._ROWNO:
                 #if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
-            
-            
-            
+        
             for var_idx, var in enumerate(vars_to_retrieve):
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
                 
                 
-                #write common meta info for this station
+                #write common meta info for this station (data lon, lat and 
+                #altitude are set to station locations)
                 data_obj._data[start:stop, 
-                               data_obj._LATINDEX] = station_data['latitude']
+                               data_obj._LATINDEX] = station_data['stat_lat']
                 data_obj._data[start:stop, 
-                               data_obj._LONINDEX] = station_data['longitude']
+                               data_obj._LONINDEX] = station_data['stat_lat']
                 data_obj._data[start:stop, 
-                               data_obj._ALTITUDEINDEX] = station_data['altitude']
+                               data_obj._ALTITUDEINDEX] = station_data['stat_alt']
                 data_obj._data[start:stop, 
                                data_obj._METADATAKEYINDEX] = meta_key
                                

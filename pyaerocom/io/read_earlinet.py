@@ -43,22 +43,7 @@ from pyaerocom import UngriddedData
 # TODO: Check file order 
 # TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
 class ReadEarlinet(ReadUngriddedBase):
-    """Interface for EARLINET data 
-    
-    Todo
-    ----
-
-        - Review file search routine: iterates currently over all variables \
-        thus, iterates over all files N-times if N is the number of req. \
-        variables. Should iterate over all files only once and check match \
-        of either variable. 
-        - Check mask for dust layer height: e.g. first file found when \
-        calling :func:`get_file_list` is: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/ev/f2010/ev1008192050.e532 \
-        and does not contain dust layer height..
-        
-        
-        
-    """
+    """Interface for reading of EARLINET data"""
     #: Mask for identifying datafiles 
     _FILEMASK = '*.e*'
     
@@ -99,9 +84,9 @@ class ReadEarlinet(ReadUngriddedBase):
                          start_date         = 'StartDate',
                          start_time_utc     = 'StartTime_UT',
                          stop_time_utc      = 'StopTime_UT',
-                         longitude          = 'Longitude_degrees_east',
-                         latitude           = 'Latitude_degrees_north',
-                         wavelength_emis     = 'EmissionWavelength_nm',
+                         stat_lon           = 'Longitude_degrees_east',
+                         stat_lat           = 'Latitude_degrees_north',
+                         wavelength_emis    = 'EmissionWavelength_nm',
                          wavelength_det     = 'DetectionWavelength_nm',
                          res_raw_m          = 'ResolutionRaw_meter',
                          zenith_ang_deg     = 'ZenithAngle_degrees',
@@ -111,7 +96,7 @@ class ReadEarlinet(ReadUngriddedBase):
                          detection_mode     = 'DetectionMode',
                          res_eval           = 'ResolutionEvaluated',
                          input_params       = 'InputParameters',
-                         altitude           = 'Altitude_meter_asl',
+                         stat_alt           = 'Altitude_meter_asl',
                          eval_method        = 'EvaluationMethod')
 
     PROVIDES_VARIABLES = ['ec5503daer', 'ec5503daer_err',
@@ -328,7 +313,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     # in the time series plot
                     metadata[meta_key] = od()
                     metadata[meta_key].update(station_data.get_meta())
-                    metadata[meta_key].update(station_data.get_coords())
+                    metadata[meta_key].update(station_data.get_station_coords())
                     metadata[meta_key]['dataset_name'] = self.DATASET_NAME
                     metadata[meta_key]['variables'] = []
                     # this is a list with indices of this station for each variable
@@ -406,6 +391,8 @@ class ReadEarlinet(ReadUngriddedBase):
         """
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
         self.logger.info('Fetching data files. This might take a while...')
         patterns = [self.VAR_PATTERNS_FILE[var] for var in vars_to_retrieve]
         matches = []
@@ -430,7 +417,7 @@ if __name__=="__main__":
     
     from time import time
     t0=time()
-    data = read.read(vars_to_retrieve='zdust', first_file=345, last_file=1000)
+    #data = read.read(vars_to_retrieve='zdust', first_file=345, last_file=1000)
     print("Elapsed time read all zdust: {} s".format(time() - t0))
     stat_test = False
     if stat_test:

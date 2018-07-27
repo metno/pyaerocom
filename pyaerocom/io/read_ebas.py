@@ -32,13 +32,16 @@
 # MA 02110-1301, USA
 
 import os, re
-
+from copy import deepcopy
 import numpy as np
 import pandas as pd
-
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData
+from pyaerocom.io.ebas_varinfo import EbasVarInfo
+from pyaerocom.io.ebas_file_index import EbasFileIndex
+from pyaerocom.io import EbasNasaAmesFile
+from pyaerocom.exceptions import VariableDefinitionError, NotInFileError
 
 class ReadEbas(ReadUngriddedBase):
     """Interface for reading EBAS data
@@ -49,9 +52,6 @@ class ReadEbas(ReadUngriddedBase):
         string specifying either of the supported datasets that are defined 
         in ``SUPPORTED_DATASETS``
     """
-    #: Mask for identifying datafiles (actually irrelevant for the implementation
-    #: since the SQL database is used to access the data)
-    _FILEMASK = '*.nas'
     
     #: version log of this class (for caching)
     __version__ = "0.01"
@@ -62,40 +62,213 @@ class ReadEbas(ReadUngriddedBase):
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EBAS_MULTICOLUMN_NAME]
     
+    # TODO: check and redefine 
     #: default variables for read method
-    DEFAULT_VARS = ['ssa675aer','ssa440aer']
-    
-    #: value corresponding to invalid measurement
-    NAN_VAL = -9999.
-    
-    #: dictionary specifying the file column names (values) for each Aerocom 
-    #: variable (keys)
-    VAR_NAMES_FILE = {}
-    VAR_NAMES_FILE['ssa439aer'] = 'SSA439-T'
-    VAR_NAMES_FILE['ssa440aer'] = 'SSA440-T'
-    VAR_NAMES_FILE['ssa675aer'] = 'SSA675-T'
-    VAR_NAMES_FILE['ssa870aer'] = 'SSA870-T'
-    VAR_NAMES_FILE['ssa1018aer'] = 'SSA1018-T'
-
-    #: dictionary specifying the file column names (values) for each 
-    #: metadata key (cf. attributes of :class:`StationData`, e.g.
-    #: 'station_name', 'longitude', 'latitude', 'altitude')
-    META_NAMES_FILE = {}
-    META_NAMES_FILE['data_quality_level'] = 'DATA_TYPE'
-    META_NAMES_FILE['date'] = 'Date(dd-mm-yyyy)'
-    META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
-    META_NAMES_FILE['day_of_year'] = 'Julian_Day'
+    DEFAULT_VARS = ['bscatc550aer', # light backscattering coefficient
+                    'absc550aer', # light absorption coefficient
+                    'scatc550aer'] # light scattering coefficient
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
-
-    # TODO: currently every file is read, regardless of whether it actually
-    # contains the desired variables or not. Do we need that? Slows stuff down..
-    # Also: Quick check reading all files in the database showed that only 
-    # about 20% of the files contain the default variables..
-    def read_file(self, filename, vars_to_retrieve=['ssa675aer','ssa440aer'],
+    def __init__(self, dataset_to_read=None):
+        super(ReadEbas, self).__init__(dataset_to_read)
+        #: loaded instances of aerocom variables (instances of 
+        #: :class:`Variable` object, is written in get_file_list
+        self.loaded_aerocom_vars = {}
+        
+        #: original file lists retrieved for each variable individually using
+        #: SQL request. Since some of the files in the lists for each variable
+        #: might occur in multiple lists, these are merged into a single list 
+        #: self.files and information about which variables are to be extracted 
+        #: for each file is stored in attribute files_contain
+        
+        #: Originally retrieved file lists from SQL database, for each variable
+        #: individually
+        self._lists_orig = {}
+        
+        #: this is filled in method get_file_list and specifies variables 
+        #: to be read from each file
+        self.files_contain = []
+        
+        #: Interface to access aerocom variable information (instance of class
+        #: AllVariables)
+        self.aerocom_vars = const.VAR_PARAM
+        
+        #: EBAS I/O variable information
+        self._ebas_vars = EbasVarInfo.PROVIDES_VARIABLES()
+        
+        #: SQL database interface class used to retrieve file paths for vars
+        self.file_index = EbasFileIndex()
+        
+    @property
+    def _FILEMASK(self):
+        raise AttributeError("Irrelevant for EBAS implementation, since SQL "
+                             "database is used for finding valid files")
+    @property
+    def NAN_VAL(self):
+        """Irrelevant for implementation of EBAS I/O"""
+        raise AttributeError("Irrelevant for EBAS implementation: Info about "
+                             "invalid measurements is extracted from header of "
+                             "NASA Ames files for each variable individually ")
+    @property
+    def PROVIDES_VARIABLES(self):
+        """List of variables provided by the interface"""
+        return self._ebas_vars
+    
+    def _merge_lists(self, lists_per_var):
+        """Merge dictionary of lists for each variable into one list
+        
+        Note
+        ----
+        In addition to writing the retrieved file list into :attr:`files`, this 
+        method also fills the list :attr:`files_contain` which (by index)
+        defines variables to read for each file path in :attr:`files`
+        
+        Parameters
+        ----------
+        lists_per_var : dict
+            dictionary containing file lists (values) for a set of variables
+            (keys)
+        
+        Returns
+        -------
+        list
+            merged file list (is also written into :attr:`files`)
+        """
+        # original lists are modified, so make a copy of them
+        lists = deepcopy(lists_per_var)
+        mapping = {}
+        for var, lst in lists.items():
+            for fpath in lst:
+                if fpath in mapping:
+                    raise Exception('FATAL: logical error -> this should not occur...')
+                mapping[fpath] = [var]
+                for other_var, other_lst in lists.items():
+                    if not var == other_var:
+                        try:
+                            other_lst.pop(other_lst.index(fpath))
+                            mapping[fpath].append(other_var)
+                        except ValueError:
+                            pass
+        self.logger.info('Number of files to read reduced to {}'.format(len(mapping)))
+        files, files_contain = [], []
+        for path, contains_vars in mapping.items():
+            files.append(path)
+            files_contain.append(contains_vars)
+        self.files = files
+        self.files_contain = files_contain
+        return files
+    
+    def get_file_list(self, vars_to_retrieve=None):
+        """Get list of files for all variables to retrieve
+        
+        Note
+        ----
+        Other than in other implementations of the base class, this 
+        implementation returns a dictionary containing file lists for each 
+        of the specified variables. This is because in EBAS, some of the 
+        variables require additional specifications to the variable name, such
+        as the EBAS matrix or the instrument used. For instance, the EBAS
+        variable *sulphate_total* specifies either sulfate concentrations in
+        precipitable water (EBAS matrix: precip) or in air (e.g. matrix aerosol,
+        pm1, pm10 ...)
+        
+        Todo
+        ----
+        After searching file list for each variable, find common files for all
+        variables and make one list ``common`` that can then be used to avoid 
+        that several files are read multiple times.
+        
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            list of variables that are supposed to be loaded
+            
+        Returns
+        -------
+        list 
+            unified list of file paths each containing either of the specified 
+            variables
+        """
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+            
+        self.logger.info('Fetching data files. This might take a while...')
+        
+        db = self.file_index
+        files_vars = {}
+        totnum = 0
+        for var in vars_to_retrieve:
+            if not var in self.PROVIDES_VARIABLES:
+                raise AttributeError('No such variable {}'.format(var))
+            info = EbasVarInfo(var)
+            if info.requires is not None:
+                raise NotImplementedError('Auxiliary variables can not yet '
+                                          'be handled / retrieved')
+            try:
+                filenames = db.get_file_names(info.make_sql_request())
+            except Exception as e:
+                self.logger.warning('Failed to retrieve files for variable '
+                                    '{}. Error: {}'.format(var, repr(e)))
+            paths = []
+            for file in filenames:
+                paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
+            files_vars[var] = sorted(paths)
+            num = len(paths)
+            totnum += num
+            self.logger.info('{} files found for variable {}'.format(num, var))
+        if len(files_vars) == 0:
+            raise IOError('No file could be retrieved for either of the '
+                          'specified input variables: {}'.format(vars_to_retrieve))
+        
+        self._lists_orig = files_vars
+        files = self._merge_lists(files_vars)
+        return files
+    
+    def _get_var_cols(self, varname_ebas, data):
+        """Get all columns in NASA Ames file matching input Aerocom variable
+        
+        Note
+        ----
+        For developers: All Aerocom variable definitions should go into file
+        *variables.ini* in pyaerocom data directory.
+        
+        Parameters
+        -----------
+        var : str
+            EBAS variable name (e.g. absc550aer)
+        data : EbasNasaAmesFile
+            loaded EBAS file data
+        
+        Returns
+        -------
+        dict
+            key value pairs specifying all matches of input variable, where 
+            keys are the column index and values are instances of
+            :class:`EbasColDef` specifying further information such as unit, 
+            or sampling wavelength.
+        
+        Raises
+        ------
+        VariableDefinitionError
+            if inconsistencies occur or variable is not unembiguously defined
+            (e.g. EBAS column variable contains wavelength information but 
+            wavelength of Aerocom variable)
+        """
+        
+        col_info = {}
+        for i, info in enumerate(data.var_defs):
+            if varname_ebas == info.name:
+                col_info[i] = info
+        if len(col_info) is 0:
+            raise NotInFileError("Variable {} could not be found in file".format(varname_ebas))
+        return col_info
+        
+        
+    def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet file containing results from v2 inversion algorithm
 
@@ -113,30 +286,51 @@ class ReadEbas(ReadUngriddedBase):
         -------
         StationData
             dict-like object containing results
-        
-
-        Example
-        -------
-        >>> import pyaerocom.io as pio
-        >>> obj = pio.read_aeronet_invv2.ReadAeronetInvV2()
-        >>> files = obj.get_file_list()
-        >>> filedata = obj.read_file(files[0])
         """
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
+        data_in = EbasNasaAmesFile(filename)
+        
+        var_cols = {}
+        all_vars = self.aerocom_vars
+        for var in vars_to_read:
+            if not var in self.loaded_aerocom_vars:
+                self.loaded_aerocom_vars[var] = all_vars[var]
+            var_info = self.loaded_aerocom_vars[var]
+            var_info_ebas = EbasVarInfo(var)
+            var_cols[var] = {}
+            for varname_ebas in var_info_ebas.component:
+                try:
+                    col_matches = self._get_var_cols(varname_ebas, data_in)
+                except NotInFileError:
+                    continue
+                for colnum, colinfo in col_matches.items():
+                    if 'wavelength' in colinfo:
+                        wvl = var_info.wavelength_nm
+                        if wvl is None:
+                            raise VariableDefinitionError('Require wavelength '
+                                'specification for Aerocom variable {}'.format(var))
+                        if colinfo.get_wavelength_nm() == wvl:
+                            var_cols[var][colnum] = colinfo
+                    elif 'location' in colinfo:
+                        raise NotImplementedError('For developers, please '
+                                                  'check!')
+        if not len(var_cols) > 0:
+            raise NotInFileError('None of the specified variables {} could be '
+                                 'found in file {}'.format(vars_to_read,
+                                                os.path.basename(filename)))
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
+        data_out.dataset_name = self.DATASET_NAME
         
-        # create empty arrays for meta information
-        for item in self.META_NAMES_FILE:
-            data_out[item] = []
-            
-        # create empty arrays for all variables that are supposed to be read
-        # from file
-        for var in vars_to_read:
-            data_out[var] = []
-        
+        meta = data_in.meta
+        # write meta information
+        data_out['latitude'] = float(meta['station_latitude'])
+        data_out['longitude'] = float(meta['station_longitude'])
+        data_out['altitude'] = float(meta['station_altitude'])
+        data_out['station_name'] = meta['station_name']
+        data_out['PI'] = meta['PI']
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
     
@@ -232,12 +426,18 @@ class ReadEbas(ReadUngriddedBase):
                     del data_out[var]
             
         return data_out
-
+    
+    def read(self):
+        raise NotImplementedError
+        
 if __name__=="__main__":
-    read = ReadAeronetInvV2(const.AERONET_INV_V2L15_DAILY_NAME)
-    read.verbosity_level = 'debug'
+    read = ReadEbas()
+    files = read.get_file_list()
     
-    data = read.read(last_file=2)
+    test_file = read.files[0]
+    test_file_contains = read.files_contain[0]
+    d0 = EbasNasaAmesFile(test_file)
     
-    data_first = read.read_first_file()
-    print(data_first)
+    read.read_file(test_file, vars_to_retrieve=test_file_contains)
+    
+    

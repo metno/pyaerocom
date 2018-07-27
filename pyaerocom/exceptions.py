@@ -37,3 +37,9 @@ class DataExtractionError(ValueError):
 
 class TimeZoneError(AttributeError):
     pass
+
+class VariableDefinitionError(IOError):
+    pass
+
+class NotInFileError(IOError):
+    pass

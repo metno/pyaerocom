@@ -363,7 +363,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">database</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">database</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBAS_SQLITE_DATABASE</span>
+            <span class="n">database</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBASMC_SQL_DATABASE</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;SQLite database file does not exist&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
@@ -475,7 +475,7 @@
                 
             
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">dbfile</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBAS_SQLITE_DATABASE</span>
+    <span class="n">dbfile</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBASMC_SQL_DATABASE</span>
     
     <span class="n">db</span> <span class="o">=</span> <span class="n">EbasFileIndex</span><span class="p">(</span><span class="n">dbfile</span><span class="p">)</span>
     

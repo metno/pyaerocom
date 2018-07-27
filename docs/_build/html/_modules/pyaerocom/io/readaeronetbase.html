@@ -328,7 +328,7 @@
             <span class="c1"># in the time series plot</span>
             <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">station_data</span><span class="o">.</span><span class="n">get_meta</span><span class="p">())</span>
-            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">station_data</span><span class="o">.</span><span class="n">get_coords</span><span class="p">())</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">station_data</span><span class="o">.</span><span class="n">get_station_coords</span><span class="p">())</span>
             <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
             <span class="c1"># this is a list with indexes of this station for each variable</span>
             <span class="c1"># not sure yet, if we really need that or if it speeds up things</span>

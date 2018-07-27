@@ -242,9 +242,9 @@ class ReadAeronetSDAV2(ReadAeronetBase):
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
             dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['latitude'] = float(dict_loc['Latitude'])
-            data_out['longitude'] = float(dict_loc['Longitude'])
-            data_out['altitude'] = float(dict_loc['Elevation[m]'])
+            data_out['stat_lat'] = float(dict_loc['Latitude'])
+            data_out['stat_lon'] = float(dict_loc['Longitude'])
+            data_out['stat_alt'] = float(dict_loc['Elevation[m]'])
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             c_dummy = in_file.readline()
@@ -313,5 +313,10 @@ if __name__ == "__main__":
     
     read.verbosity_level = 'debug'
     
+    first_ten = read.read(last_file=10)
+    
     data = read.read_first_file()
     print(data)
+    
+    
+    

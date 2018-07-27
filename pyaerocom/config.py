@@ -40,8 +40,7 @@ import os
 from warnings import warn
 from collections import OrderedDict as od
 from pyaerocom.utils import list_to_shortstr, dict_to_str
-from pyaerocom.variable import Variable
-from pyaerocom import logger
+from pyaerocom.variable import AllVariables
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -167,37 +166,6 @@ class GridIO(object):
         return ("\n{}\n{}\n{}".format(head, 
                                       len(head)*"-",
                                       dict_to_str(self.to_dict())))
-        
-class VarInfo(object):
-    """Class that handles default information for all available variables"""
-    def __init__(self):
-        self.import_all()
-        
-    def import_all(self):
-        parser = Variable.open_conf_parser()
-        for var_name in parser.keys():
-            var = Variable(init=False)
-            var.parse_from_ini(var_name, conf_reader=parser)
-            self[var_name] = var
-            
-    def __getitem__(self, key):
-        if key in self.__dict__:
-            return self.__dict__[key]
-        else:
-            logger.warning("No default configuration available for "
-                               "variable {}. Using DEFAULT settings".format(key))
-            return self.__dict__['DEFAULT']
-        
-    def __setitem__(self, key, val):
-        self.__dict__[key] = val
-        
-    def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = '\n{}\n{}\n{}'.format(len(head)*"-", head, len(head)*"-")
-        for v in self.__dict__.values():
-            s += '\n{}\n'.format(v)
-        return s   
-            
     
 class Config(object):
     """Class containing relevant paths for read and write routines"""
@@ -304,7 +272,7 @@ class Config(object):
         if not self.check_dir(self.PLOT_DIR):
             os.mkdir(self.PLOT_DIR)
         
-        self.VAR_PARAM = VarInfo()
+        self.VAR_PARAM = AllVariables()
         self.READY
     
         
@@ -323,9 +291,13 @@ class Config(object):
         return ok
     
     @property
-    def EBAS_SQLITE_DATABASE(self):
+    def EBASMC_SQL_DATABASE(self):
         return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 
                                 'ebas_file_index.sqlite3')
+        
+    @property
+    def EBASMC_DATA_DIR(self):
+        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 'data')
                             
     @property
     def OBSDIRS(self):

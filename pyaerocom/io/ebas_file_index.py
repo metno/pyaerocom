@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from pyaerocom import const as const
+from pyaerocom import const
 import sqlite3
 import sys
 import os
@@ -29,7 +29,7 @@ class EbasSQLRequest(BrowseDict):
         ``('pm1', 'pm10', 'pm25', 'aerosol')``)
         If None, all available is used
     altitude_range : :obj:`tuple`, optional
-        tuple specifying alEtitude range of station in m (e.g.
+        tuple specifying altitude range of station in m (e.g.
         ``(0.0, 500.0)``). If None, all available is used
     lon_range : :obj:`tuple`, optional
         tuple specifying longitude range of station in degrees (e.g.
@@ -92,7 +92,10 @@ class EbasSQLRequest(BrowseDict):
     @staticmethod
     def _var2sql(var):
         if isinstance(var, list):
-            var = tuple(var)
+            if len(var) > 1:
+                var = tuple(var)
+            else:
+                var = var[0]
         if isinstance(var, tuple):
             return "{}".format(var)
         elif isinstance(var, str):
@@ -171,21 +174,22 @@ class EbasSQLRequest(BrowseDict):
             req += ' and ' if add_cond else ' where '
             req += 'last_start > \'{}\''.format(self.start_date)
             add_cond += 1
-        
         if self.matrices is not None:
             req += ' and ' if add_cond else ' where '
-            req += 'matrix in '.format(conv(self.matrices))
+            req += 'matrix in {}'.format(conv(self.matrices))
             add_cond += 1  
         if self.statistics is not None:
             req += ' and ' if add_cond else ' where '
-            req += 'statistics in '.format(conv(self.statistics))
+            req += 'statistics in {}'.format(conv(self.statistics))
             add_cond += 1      
         return (req + ";")
     
     def __str__(self):
-        s=""
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}".format(head, len(head)*"-")
         for k, v in self.items():
-            s += "{}: {}\n".format(k, v)
+            s += "\n{}: {}".format(k, v)
+        s += '\nFilename request string:\n{}'.format(self.make_file_query_str())
         return s
         
         
@@ -196,11 +200,59 @@ class EbasFileIndex(object):
     """
     def __init__(self, database=None):
         if database is None:
-            database = const.EBAS_SQLITE_DATABASE
+            database = const.EBASMC_SQL_DATABASE
         if not os.path.exists(database):
             raise IOError("SQLite database file does not exist")
         self.database = database
+       
         
+    @property
+    def ALL_STATION_NAMES(self):
+        """List of all available station names in database"""
+        names = self.execute_request('select distinct station_name from station')
+        return [x[0] for x in names]
+    
+    @property
+    def ALL_STATION_CODES(self):
+        """List of all available station codes in database
+        
+        Note
+        ----
+        Not tested whether the order is the same as the order in 
+        :attr:`STATION_NAMES`, i.e. the lists should not be linked to each 
+        other
+        """
+        names = self.execute_request('select distinct station_code from station')
+        return [x[0] for x in names]
+    
+    @property
+    def ALL_STATISTICS_PARAMS(self):
+        """List of all statistical parameters available
+        
+        For more info see `here <https://ebas-submit.nilu.no/Submit-Data/
+        Data-Reporting/Comments/Generic-metadata-comments/Statistics>`__
+        """
+        names = self.execute_request('select distinct statistics from variable')
+        return [x[0] for x in names]
+    
+    @property
+    def ALL_VARIABLES(self):
+        """List of all variables available"""
+        names = self.execute_request('select distinct comp_name from variable')
+        return [x[0] for x in names]
+    
+    @property
+    def ALL_MATRICES(self):
+        """List of all matrix values available"""
+        names = self.execute_request('select distinct matrix from variable')
+        return [x[0] for x in names]
+    
+    @property
+    def ALL_INSTRUMENTS(self):
+        """List of all variables available"""
+        names = self.execute_request('select distinct instr_type from variable')
+        return [x[0] for x in names]
+    
     def contains_variables(self, request):
         """List all variables contained in request
         
@@ -284,6 +336,15 @@ class EbasFileIndex(object):
         ----------
         request : :obj:`EbasSQLRequest` or :obj:`str`
             request specifications
+            
+        Returns
+        -------
+        list 
+            list of tuples containing the retrieved results. The number of 
+            items in each tuple corresponds to the number of requested 
+            parameters (usually one, can be specified in 
+            :func:`make_query_str` using argument ``what``)
+            
         """
         if isinstance(request, EbasSQLRequest):
             request = request.make_query_str()
@@ -306,16 +367,37 @@ class EbasFileIndex(object):
             if con:
                 con.close() 
                 
+    def get_file_names(self, request):
+        """Get all files that match the request specifications
+        
+        Parameters
+        ----------
+        request : :obj:`EbasSQLRequest` or :obj:`str`
+            request specifications
+        
+        Returns
+        -------
+        list 
+            list of file paths that match the request
+        """  
+        try:
+            names = [f[0] for f in self.execute_request(request)]
+            if not len(names) > 0:
+                raise IOError('No files could be found for request')
+        except Exception as e:
+            raise e
+            
+        return names
             
 if __name__=="__main__":
-    dbfile = const.EBAS_SQLITE_DATABASE
+    dbfile = const.EBASMC_SQL_DATABASE
     
     db = EbasFileIndex(dbfile)
     
-    req = EbasSQLRequest(variables=('aerosol_optical_depth',
+    req = EbasSQLRequest(variables=['aerosol_optical_depth',
                                     'aerosol_light_scattering_coefficient',
                                     'aerosol_light_backscattering_coefficient',
-                                    'aerosol_optical_depth'),
+                                    'aerosol_optical_depth'],
                         start_date="2010-01-01", 
                         stop_date="2010-07-01")
     
@@ -331,9 +413,10 @@ if __name__=="__main__":
     coords = db.contains_coordinates(req)
     
     
-    
-    
-    
+    print(db.ALL_STATION_CODES)
+    print(db.ALL_STATION_NAMES)
+    print(db.ALL_STATISTICS_PARAMS)
+    print(db.ALL_VARIABLES)
     
     
     

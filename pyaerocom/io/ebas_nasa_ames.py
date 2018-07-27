@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict as od
 from datetime import datetime
-from pyaerocom.utils import str_underline
+from pyaerocom.utils import str_underline, dict_to_str
 from pyaerocom.exceptions import TimeZoneError
 from pyaerocom import const 
 
@@ -59,14 +59,30 @@ class EbasColDef(dict):
         self.is_flag = is_flag
         self.flag_id = flag_id
         
+    def get_wavelength_nm(self):
+        """Try to access wavelength information in nm (as float)"""
+        if not 'wavelength' in self:
+            raise KeyError('Column variable {} does not contain wavelength '
+                           'information'.format(self.name))
+        elif not 'nm' in self.wavelength:
+            raise NotImplementedError('Wavelength definition is not in nm')
+        return float(self.wavelength.split('nm')[0].strip())
+        
     def __getattr__(self, key):
         return self[key]
     
     def __setattr__(self, key, val):
         self[key] = val
     
+    def __repr__(self):
+        s = "{}: ".format(type(self).__name__)
+        for k, v in self.items():
+            s += "{}={}, ".format(k, v)
+        return s
+    
     def __str__(self):
-        s=""
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "{}\n{}\n".format(head, len(head)*"-")
         for k, v in self.items():
             s += "{}: {}\n".format(k, v)
         return s
@@ -181,15 +197,14 @@ class NasaAmesHeader(object):
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "{}\n{}\n".format(head, len(head)*"-")
-        for k, v in self._head_fix.items():
-            s += "{}: {}\n".format(k, v)
-        s += "\n{}".format(str_underline("Column variable definitions"))
+        s += dict_to_str(self._head_fix)
+        s += "\n\n{}".format(str_underline("Column variable definitions",
+                                           indent=3))
         for item in self._var_defs:
-            s += "{}\n".format(item)
-        s += "\n{}".format(str_underline("EBAS meta data"))
-        
-        for k, v in self.meta.items():
-            s += "\t{}: {}\n".format(k, v)
+            s += "\n   {}".format(repr(item))
+        s += "\n\n{}".format(str_underline("EBAS meta data",
+                                             indent=3))
+        s += dict_to_str(self.meta)
         
         return s
 
@@ -272,7 +287,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
         
         self.flags = od()
         
-        if file is not None and os.path.exists(file):
+        if file is not None:
+            if not os.path.exists(file):
+                raise IOError("File {} does not exists".format(file))
             self.read_file(file, only_head, replace_invalid_nan, 
                            convert_timestamps, decode_flags,
                            quality_check)
@@ -414,7 +431,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
             raise AttributeError("Quality check failed. Messages: {}".format(msgs))
         
     def read_header(self, nasa_ames_file, quality_check=True):
-        self.read_file(nasa_ames_file, True, quality_check)
+        self.read_file(nasa_ames_file, only_head=True, 
+                       quality_check=quality_check)
         
     def read_file(self, nasa_ames_file, only_head=False, 
                   replace_invalid_nan=True,
@@ -619,8 +637,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
             
     def __str__(self):
         s = super(EbasNasaAmesFile, self).__str__()
-        s += str_underline("Data")
-        s += self._data_short_str()
+        s += "\n\n{}".format(str_underline("Data", indent=3))
+        s += "\n{}".format(self._data_short_str())
         return s
     
 if __name__=="__main__":

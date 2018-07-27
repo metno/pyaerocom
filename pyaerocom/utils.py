@@ -5,6 +5,7 @@ Small helper utility functions for pyaerocom
 """   
 import numpy as np
 from collections import OrderedDict
+
 class BrowseDict(OrderedDict):
     """Dictionary with get / set attribute methods
     
@@ -19,7 +20,8 @@ class BrowseDict(OrderedDict):
     
     def __setattr__(self, key, val):
         self[key] = val
-        
+   
+     
 def list_to_shortstr(lst, indent=3):
     """Custom function to convert a list into a short string representation"""
     if len(lst) == 0:
@@ -81,7 +83,9 @@ def dict_to_str(dictionary, s="", indent=3):
             s += "\n" + indent*" " + "{}: {}".format(k, v)
     return s
 
-def str_underline(s):
+def str_underline(s, indent=0):
     """Create underlined string"""
-    return "{}\n{}\n".format(s, len(s)*"-")
+    s = indent*" " + "{}\n".format(s)
+    s+= indent*" " + "{}".format(len(s)*"-")
+    return s
 

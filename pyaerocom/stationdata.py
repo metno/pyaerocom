@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from pyaerocom.station import Station
 from pyaerocom import VerticalProfile
+from pyaerocom.utils import list_to_shortstr
 
 class StationData(Station):
     """Dict-like base class for single station data
@@ -18,16 +19,24 @@ class StationData(Station):
         list / array containing index values
     
     """
+    NAMES_STAT_COORDS = {'latitude' : 'stat_lat', 
+                         'longitude': 'stat_lon', 
+                         'altitude' : 'stat_alt'}
+    
     def __init__(self, *args, **kwargs):
         super(StationData, self).__init__(*args, **kwargs)
         self.dtime = []
-    
-    def check_dtime(self):
-        """Checks if dtime attribute is array or list"""
-        if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
-            raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
-        elif not len(self.dtime) > 0:
-            raise AttributeError("No timestamps available")
+        
+        # these three variables may or may not be set. As you can see in the 
+        # methods __getitem__ and __setitem__, if they are not set
+        # explicitely, the returned value is the corresponding station 
+        # coordinate. This enables flexible behaviour when it comes to 
+        # treatment of these objects, since the general keywords can be used
+        # (rather than the station specific ones) to access coordinates
+        self._data_coords = {'latitude' : None, 
+                             'longitude': None,
+                             'altitude' : None}
+        
     @property
     def data_columns(self):
         """List containing all data columns
@@ -59,7 +68,14 @@ class StationData(Station):
         if not cols:
             raise AttributeError("No datacolumns could be found")
         return cols
-                
+    
+    def check_dtime(self):
+        """Checks if dtime attribute is array or list"""
+        if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
+            raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
+        elif not len(self.dtime) > 0:
+            raise AttributeError("No timestamps available")         
+    
     def to_dataframe(self):
         """Convert this object to pandas dataframe
         
@@ -127,10 +143,110 @@ class StationData(Station):
         ax = s.plot(**kwargs)
         return ax
     
+    def __getitem__(self, name):
+        if not name in self.NAMES_STAT_COORDS:
+            # no special treatment
+            return super(StationData, self).__getitem__(name)
+        if self._data_coords[name] is not None:
+            return self._data_coords[name]
+        stat_var = self.NAMES_STAT_COORDS[name]
+        return self[stat_var]
+    
+    def __setitem__(self, name, value):
+        if name in self.NAMES_STAT_COORDS:
+            #special treatment
+            if isinstance(value, (int, np.integer)):
+                value = float(value)
+            if not isinstance(value, (float, np.floating, 
+                                      tuple, list, np.ndarray)):
+                raise ValueError('Need floating point or list-like, got: {}'.format(value))
+            self._data_coords[name] = value
+        else:
+            # no special treatment
+            super(StationData, self).__setitem__(name, value)
+            
+    def __str__(self):
+        s = super(StationData, self).__str__()
+        s_data = ''
+        for k, v in self._data_coords.items():
+            if v is not None:
+                if isinstance(v, list):
+                    s_data += "\n{} (list, {} items)".format(k, len(v))
+                    s_data += list_to_shortstr(v)
+                elif isinstance(v, np.ndarray) and v.ndim==1:
+                    s_data += "\n{} (array, {} items)".format(k, len(v))
+                    s_data += list_to_shortstr(v)
+                else:
+                    s_data += "\n%s: %s" %(k,v)
+        if s_data:
+            s += '\nData coordinates\n.................'
+            s += s_data
+        return s
+    
+# =============================================================================
+#     @property
+#     def latitude(self):
+#         """Single value, list or array of data latitude coordinates
+#         
+#         Note
+#         ----
+#         If not explicitely defined, the station latitude (:attr:`stat_lat`)
+#         is used
+#         """
+#         if self._latitude is None:
+#             return self.stat_lat
+#         return self._latitude
+#     
+#     @latitude.setter
+#     def latitude(self, value):
+#         if not isinstance(value, (float, np.floating, tuple, list, np.ndarray)):
+#             raise ValueError('Need floating point or list-like')
+#         self._latitude = value
+#         
+#     @property
+#     def longitude(self):
+#         """Single value, list or array of data longitude coordinates
+#         
+#         Note
+#         ----
+#         If not explicitely defined, the station longitude (:attr:`stat_lon`)
+#         is used
+#         """
+#         if self._longitude is None:
+#             return self.stat_lon
+#         return self._longitude
+#     
+#     @longitude.setter
+#     def longitude(self, value):
+#         if not isinstance(value, (float, np.floating, tuple, list, np.ndarray)):
+#             raise ValueError('Need floating point or list-like')
+#         self._longitude = value
+#     
+#     @property
+#     def altitude(self):
+#         """Single value, list or array of data altitude coordinates
+#         
+#         Note
+#         ----
+#         If not explicitely defined, the station altitude (:attr:`stat_alt`)
+#         is used
+#         """
+#         if self._altitude is None:
+#             return self.stat_alt
+#         return self._altitude
+#     
+#     @altitude.setter
+#     def altitude(self, value):
+#         if not isinstance(value, (float, np.floating, tuple, list, np.ndarray)):
+#             raise ValueError('Need floating point or list-like')
+#         self._altitude = value
+# =============================================================================
+    
 if __name__=="__main__":
     
     d = StationData()
-
+    
+    d.longitude = 42.
     print(d)
         
         
