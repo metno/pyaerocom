@@ -62,7 +62,7 @@ class ReadAeronetSDAV2(ReadAeronetBase):
     _FILEMASK = '*.ONEILL_20'
     
     #: version log of this class (for caching)
-    __version__ = '0.05'
+    __version__ = '0.06'
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V2L2_SDA_DAILY_NAME

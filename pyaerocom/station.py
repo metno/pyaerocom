@@ -178,6 +178,9 @@ class Station(BrowseDict):
             elif isinstance(v, np.ndarray) and v.ndim==1:
                 arrays += "\n{} (array, {} items)".format(k, len(v))
                 arrays += list_to_shortstr(v)
+            elif isinstance(v, np.ndarray):
+                arrays += "\n{} (array, shape {})".format(k, v.shape)
+                arrays += "\n{}".format(v)
             else:
                 s += "\n%s: %s" %(k,v)
         s += arrays

@@ -290,7 +290,7 @@ class ReadEbas(ReadUngriddedBase):
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
-        data_in = EbasNasaAmesFile(filename)
+        file = EbasNasaAmesFile(filename)
         
         var_cols = {}
         all_vars = self.aerocom_vars
@@ -302,7 +302,7 @@ class ReadEbas(ReadUngriddedBase):
             var_cols[var] = {}
             for varname_ebas in var_info_ebas.component:
                 try:
-                    col_matches = self._get_var_cols(varname_ebas, data_in)
+                    col_matches = self._get_var_cols(varname_ebas, file)
                 except NotInFileError:
                     continue
                 for colnum, colinfo in col_matches.items():
@@ -324,96 +324,43 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
         data_out.dataset_name = self.DATASET_NAME
         
-        meta = data_in.meta
+        meta = file.meta
         # write meta information
-        data_out['latitude'] = float(meta['station_latitude'])
-        data_out['longitude'] = float(meta['station_longitude'])
-        data_out['altitude'] = float(meta['station_altitude'])
+        print(file)
+        
+        # altitude of station
+        stat_alt = float(meta['station_altitude'].split(' ')[0])
+        try:
+            meas_height = float(meta['measurement_height'].split(' ')[0])
+        except KeyError:
+            meas_height = 0.0
+        data_alt = stat_alt + meas_height
+            
+        
+        data_out['stat_lon'] = float(meta['station_latitude'])
+        data_out['stat_lat'] = float(meta['station_longitude'])
+        data_out['stat_alt'] = stat_alt
         data_out['station_name'] = meta['station_name']
-        data_out['PI'] = meta['PI']
-        # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
-    
-        with open(filename, 'rt') as in_file:
-            #get rid of the first com,a seperated string element...
-            c_dummy = ','.join(in_file.readline().strip().split(',')[1:])
-            # re.split(r'=|\,',c_dummy)
-            i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
-            dict_loc = dict(zip(i_dummy, i_dummy))
-
-            data_out['latitude'] = float(dict_loc['lat'])
-            data_out['longitude'] = float(dict_loc['long'])
-            data_out['altitude'] = float(dict_loc['elev'])
-            data_out['station_name'] = dict_loc['Locations']
-            data_out['PI'] = dict_loc['PI']
-            data_out['PI_email'] = dict_loc['Email']
-
-            #skip next two lines
-            in_file.readline()
-            in_file.readline()
-            
-            col_index_str = in_file.readline()
-            if col_index_str != self._last_col_index_str:
-                self.logger.info("Header has changed, reloading col_index map")
-                self._update_col_index(col_index_str)
-            col_index = self.col_index
-            
-            # dependent on the station, some of the required input variables
-            # may not be provided in the data file. These will be ignored
-            # in the following list that iterates over all data rows and will
-            # be filled below, with vectors containing NaNs after the file 
-            # reading loop
-            vars_available = {}
-            for var in vars_to_read:
-                if var in col_index:
-                    vars_available[var] = col_index[var]
-                else:
-                    self.logger.warning("Variable {} not available in file {}"
-                                        .format(var, os.path.basename(filename)))
-                
-            for line in in_file:
-                # process line
-                dummy_arr = line.strip().split(self.COL_DELIM)
-
-                # This uses the numpy datestring64 functions that i.e. also 
-                # support Months as a time step for timedelta
-                # Build a proper ISO 8601 UTC date string
-                day, month, year = dummy_arr[col_index['date']].split(':')
-                datestring = '-'.join([year, month, day])
-                datestring = 'T'.join([datestring, dummy_arr[col_index['time']]])
-                datestring = '+'.join([datestring, '00:00'])
-                data_out['dtime'].append(np.datetime64(datestring))
-                
-                for var in self.META_NAMES_FILE:
-                    val = dummy_arr[col_index[var]]
-                    try:
-                        # e.g. lon, lat, altitude
-                        val = float(val)
-                    except:
-                        pass
-                    data_out[var].append(val)
-
-                # copy the data fields that are available (rest will be filled
-                # below)
-                for var, idx in vars_available.items():
-                    val = np.float_(dummy_arr[idx])
-                    if val == self.NAN_VAL: 
-                        val = np.nan
-                    data_out[var].append(val)
+        data_out['PI'] = meta['submitter']
+        data_out['altitude'] = data_alt
         
-        # convert all lists to numpy arrays
-        data_out['dtime'] = np.asarray(data_out['dtime'])
+        # store the raw EBAS meta dictionary (who knows what for later ;P )
+        data_out['ebas_meta'] = meta
         
-        for item in self.META_NAMES_FILE:
-            data_out[item] = np.asarray(data_out[item])
-            
-        for var in vars_to_read:
-            if var in vars_available:
-                array = np.asarray(data_out[var])
-            else:
-                array = np.zeros(len(data_out['dtime'])) * np.nan
-            data_out[var] = array
-        
+        dtime = file.time_stamps
+        num_times = len(dtime)
+        data_out['var_info'] = {}
+        for var, info  in var_cols.items():
+            num_matches = len(info)
+            data = np.empty((num_matches, num_times))
+            var_info = []
+            for i, colnum in enumerate(info.keys()):
+                data[i] = file.data[:, colnum]
+                var_info.append(info[colnum])
+            data_out[var] = data
+            data_out['var_info'][var] = var_info
+                    
+        data_out['dtime'] = dtime
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
         
@@ -438,6 +385,6 @@ if __name__=="__main__":
     test_file_contains = read.files_contain[0]
     d0 = EbasNasaAmesFile(test_file)
     
-    read.read_file(test_file, vars_to_retrieve=test_file_contains)
-    
+    data = read.read_file(test_file, vars_to_retrieve=test_file_contains)
+    print(data)
     

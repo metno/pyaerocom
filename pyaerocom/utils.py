@@ -27,17 +27,16 @@ def list_to_shortstr(lst, indent=3):
     if len(lst) == 0:
         return "\n" + indent*" " + "[]\n"
     elif len(lst) == 1:
-        return "\n" + indent*" " + "[%s]\n" %lst[0]
-    
-    s = "\n" + indent*" " + "[%s\n" %lst[0]
+        return "\n" + indent*" " + "[%s]\n" %repr(lst[0])
+    s = "\n" + indent*" " + "[%s\n" %repr(lst[0])
     if len(lst) > 4:
-        s += (indent+1)*" " + "%s\n" %lst[1]
+        s += (indent+1)*" " + "%s\n" %repr(lst[1])
         s += (indent+1)*" " + "...\n"
-        s += (indent+1)*" " + "%s\n" %lst[-2]
+        s += (indent+1)*" " + "%s\n" %repr(lst[-2])
     else: 
         for item in lst[1:-1]:
-            s += (indent+1)*" " + "%s" %item
-    s += (indent+1)*" " + "%s]\n" %lst[-1]
+            s += (indent+1)*" " + "%s" %repr(item)
+    s += (indent+1)*" " + "%s]\n" %repr(lst[-1])
     return s
         
 def dict_to_str(dictionary, s="", indent=3):
