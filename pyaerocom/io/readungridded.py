@@ -32,16 +32,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-
-
 import os
-import glob
-# import pdb
-import numpy as np
 
-from collections import OrderedDict as od
-from datetime import datetime
-import pandas as pd
 from pyaerocom.exceptions import NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
@@ -56,7 +48,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 
 from pyaerocom import const, logger
 
-# TODO: Removed infiles (list of files from which datasets were read, since it 
+# TODO Note: Removed infiles (list of files from which datasets were read, since it 
 # was not used anywhere so far)
 class ReadUngridded:
     """Factory class for reading of ungridded data based on obsnetwork ID
@@ -90,13 +82,13 @@ class ReadUngridded:
         self._read_objects = {}
         
         self.datasets_to_read = datasets_to_read
-        
-        
-        
+    
         # optional: list of variables that are supposed to be imported, if 
         # None, all variables provided by the corresponding network are loaded
         self.vars_to_retrieve = vars_to_retrieve
         
+        if os.path.exists(self._DONOTCACHEFILE):
+            ignore_cache = True
         self.ignore_cache = ignore_cache
         
         self.revision = {}
@@ -202,9 +194,12 @@ class ReadUngridded:
         
         self.revision[dataset_to_read] = reader.data_revision
         self.data_version[dataset_to_read] = reader.__version__
+        self.cache_files[dataset_to_read] = cache.file_path
+        
         # write the cache file
-        if not cache_hit_flag:
+        if not cache_hit_flag and not self.ignore_cache:
             cache.write(data)
+        
         return data
     
     def read(self):
