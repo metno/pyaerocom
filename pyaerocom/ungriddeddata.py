@@ -223,6 +223,7 @@ class UngriddedData(object):
         """Shape of data array"""
         return self._data.shape
     
+    @property
     def is_empty(self):
         return True if len(self.metadata) == 0 else False
     
@@ -251,26 +252,28 @@ class UngriddedData(object):
         if not isinstance(other, UngriddedData):
             raise ValueError("Invalid input, need instance of UngriddedData, "
                              "got: {}".format(type(other)))
-        if self.is_empty:
-            return other
-        
         if new_obj:
             obj = deepcopy(self)
         else:
             obj = self
         
-        # get offset in metadata index
-        meta_offset = max([x for x in obj.metadata.keys()]) + 1
-        data_offset = self.shape[0]
-        # add this offset to indices of meta dictionary in input data object
-        for meta_idx_other, meta_other in other.metadata.items():
-            meta_idx = meta_offset + meta_idx_other
-            obj.metadata[meta_idx] = meta_other
-            _idx_map = od()
-            for var_name, indices in other.meta_idx[meta_idx_other].items():
-                _idx_map[var_name] = indices + data_offset
-            obj.meta_idx[meta_idx] = _idx_map
-        obj._data = np.vstack([obj._data, other._data])
+        if obj.is_empty:
+            obj._data = other._data
+            obj.metadata = other.metadata
+            obj.meta_idx = other.meta_idx
+        else:
+            # get offset in metadata index
+            meta_offset = max([x for x in obj.metadata.keys()]) + 1
+            data_offset = self.shape[0]
+            # add this offset to indices of meta dictionary in input data object
+            for meta_idx_other, meta_other in other.metadata.items():
+                meta_idx = meta_offset + meta_idx_other
+                obj.metadata[meta_idx] = meta_other
+                _idx_map = od()
+                for var_name, indices in other.meta_idx[meta_idx_other].items():
+                    _idx_map[var_name] = np.asarray(indices) + data_offset
+                obj.meta_idx[meta_idx] = _idx_map
+            obj._data = np.vstack([obj._data, other._data])
         return obj
         
     def append(self, other):
