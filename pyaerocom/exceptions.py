@@ -43,3 +43,10 @@ class VariableDefinitionError(IOError):
 
 class NotInFileError(IOError):
     pass
+
+class NetworkNotSupported(NotImplementedError):
+    pass
+
+class NetworkNotImplemented(NotImplementedError):
+    pass
+

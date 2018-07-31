@@ -40,6 +40,7 @@ from .read_aeronet_sdav2 import ReadAeronetSdaV2
 from .read_aeronet_sdav3 import ReadAeronetSdaV3
 from .read_aeronet_sunv2 import ReadAeronetSunV2
 from .read_aeronet_sunv3 import ReadAeronetSunV3
+from .read_earlinet import ReadEarlinet
 from .ebas_nasa_ames import EbasNasaAmesFile
 from .ebas_file_index import EbasSQLRequest, EbasFileIndex
 

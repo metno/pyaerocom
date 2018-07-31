@@ -190,6 +190,10 @@ class ReadUngriddedBase(abc.ABC):
         return list(self.AUX_REQUIRES.keys())
     
     @property
+    def dataset_to_read(self):
+        return self.DATASET_NAME
+    
+    @property
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
         """

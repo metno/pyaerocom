@@ -61,6 +61,38 @@ def str_to_iris(key):
     if callable(val):
         return val()
     return val
+
+def to_datestring_YYYYMMDD(value):
+    """Convert input time to string with format YYYYMMDD
+    
+    Parameters
+    ----------
+    value
+        input time, may be string, datetime, numpy.datetime64 or 
+        pandas.Timestamp
+        
+    Returns
+    -------
+    str
+        input formatted to string YYYYMMDD
+        
+    Raises
+    ------
+    ValueError
+        if input is not supported
+    """
+    if isinstance(value, str):
+        if not len(value, 8):
+            raise ValueError('Need string in format YYYYMMDD')
+        return value
+    elif isinstance(value, datetime64):
+        value = value.astype(datetime)
+    elif isinstance(value, Timestamp):
+        value = value.to_pydatetime()
+    if isinstance(value, datetime):
+        return datetime.strftime(value, "%Y%m%d")
+    raise ValueError('Invalid input, need str, datetime, numpy.datetime64 or '
+                     'pandas.Timestamp')
     
 def cftime_to_datetime64(times, cfunit=None, calendar=None):
     """Convert numerical timestamps with epoch to numpy datetime64

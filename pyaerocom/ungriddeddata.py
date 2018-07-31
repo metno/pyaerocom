@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import logging
 import numpy as np
 from copy import deepcopy
 from collections import OrderedDict as od
@@ -224,6 +223,9 @@ class UngriddedData(object):
         """Shape of data array"""
         return self._data.shape
     
+    def is_empty(self):
+        return True if len(self.metadata) == 0 else False
+    
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
         
@@ -249,10 +251,14 @@ class UngriddedData(object):
         if not isinstance(other, UngriddedData):
             raise ValueError("Invalid input, need instance of UngriddedData, "
                              "got: {}".format(type(other)))
+        if self.is_empty:
+            return other
+        
         if new_obj:
             obj = deepcopy(self)
         else:
             obj = self
+        
         # get offset in metadata index
         meta_offset = max([x for x in obj.metadata.keys()]) + 1
         data_offset = self.shape[0]
