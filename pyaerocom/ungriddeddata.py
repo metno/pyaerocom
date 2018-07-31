@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 import logging
 import numpy as np
+from copy import deepcopy
 from collections import OrderedDict as od
 import pandas as pd
+
+from pyaerocom import logger
+from pyaerocom.utils import dict_to_str, list_to_shortstr
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -72,7 +76,7 @@ class UngriddedData(object):
         self.metadata = od()
         self.meta_idx = od()
         
-        self.logger = logging.getLogger(__name__)
+        #self.logger = logging.getLogger(__name__)
     
     def add_chunk(self, size=None):
         """Extend the size of the data array
@@ -89,7 +93,7 @@ class UngriddedData(object):
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
-        self.logger.info("adding chunk, new array size ({})".format(self._data.shape))
+        logger.info("adding chunk, new array size ({})".format(self._data.shape))
 # =============================================================================
 #     
 #     def __setitem__(self, key, val):
@@ -215,7 +219,97 @@ class UngriddedData(object):
         return lats, lons
 
     ###################################################################################
-
+    @property
+    def shape(self):
+        """Shape of data array"""
+        return self._data.shape
+    
+    def merge(self, other, new_obj=True):
+        """Merge another data object with this one
+        
+        Parameters
+        -----------
+        other : UngriddedData
+            other data object
+        new_obj : bool
+            if True, this object remains unchanged and the merged data objects
+            are returned in a new instance of :class:`UngriddedData`. If False, 
+            then this object is modified
+        
+        Returns
+        -------
+        UngriddedData
+            merged data object
+            
+        Raises
+        -------
+        ValueError
+            if input object is not an instance of :class:`UngriddedData`
+        """
+        if not isinstance(other, UngriddedData):
+            raise ValueError("Invalid input, need instance of UngriddedData, "
+                             "got: {}".format(type(other)))
+        if new_obj:
+            obj = deepcopy(self)
+        else:
+            obj = self
+        # get offset in metadata index
+        meta_offset = max([x for x in obj.metadata.keys()]) + 1
+        data_offset = self.shape[0]
+        # add this offset to indices of meta dictionary in input data object
+        for meta_idx_other, meta_other in other.metadata.items():
+            meta_idx = meta_offset + meta_idx_other
+            obj.metadata[meta_idx] = meta_other
+            _idx_map = od()
+            for var_name, indices in other.meta_idx[meta_idx_other].items():
+                _idx_map[var_name] = indices + data_offset
+            obj.meta_idx[meta_idx] = _idx_map
+        obj._data = np.vstack([obj._data, other._data])
+        return obj
+        
+    def append(self, other):
+        """Append other instance of :class:`UngriddedData` to this object
+        
+        Note
+        ----
+        Calls :func:`merge(other, new_obj=False)`
+        
+        Parameters
+        -----------
+        other : UngriddedData
+            other data object
+        
+        Returns
+        -------
+        UngriddedData
+            merged data object
+            
+        Raises
+        -------
+        ValueError
+            if input object is not an instance of :class:`UngriddedData`
+            
+        """
+        return self.merge(other, new_obj=False)
+    
+    def __and__(self, other):
+        """Merge this object with another using the logical ``and`` operator
+        
+        Example
+        -------
+        >>> from pyaerocom.io import ReadAeronetSdaV2
+        >>> read = ReadAeronetSdaV2()
+        
+        >>> d0 = read.read(last_file=10)
+        >>> d1 = read.read(first_file=10, last_file=20)
+    
+        >>> merged = d0 & d1
+        
+        >>> print(d0.shape, d1.shape, merged.shape)
+        (7326, 11) (9894, 11) (17220, 11)
+        """
+        return self.merge(other, new_obj=True)
+        
     @property
     def longitude(self):
         """Longitudes of stations"""
@@ -228,7 +322,7 @@ class UngriddedData(object):
 
     @property
     def latitude(self):
-        """Latitudes of data"""
+        """Latitudes of stations"""
         return [stat['stat_lat'] for stat in self.metadata.values()]
 
     @latitude.setter
@@ -260,4 +354,46 @@ class UngriddedData(object):
     def __getitem__(self, key, val):
         raise NotImplementedError
         
+    def __str__(self):
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}".format(head, len(head)*"-")
+        arrays = ''
+        for k, v in self.metadata.items():
+            if isinstance(v, dict):
+                s += "\n{} ({})".format(k, type(v))
+                s = dict_to_str(v, s)
+            elif isinstance(v, list):
+                s += "\n{} (list, {} items)".format(k, len(v))
+                s += list_to_shortstr(v)
+            elif isinstance(v, np.ndarray) and v.ndim==1:
+                arrays += "\n{} (array, {} items)".format(k, len(v))
+                arrays += list_to_shortstr(v)
+            elif isinstance(v, np.ndarray):
+                arrays += "\n{} (array, shape {})".format(k, v.shape)
+                arrays += "\n{}".format(v)
+            else:
+                s += "\n%s: %s" %(k,v)
+        s += arrays
+        return s
+if __name__ == "__main__":
+    from pyaerocom.io import ReadAeronetSdaV2
+    read = ReadAeronetSdaV2()
     
+    read.verbosity_level = 'debug'
+    
+    d0 = read.read(last_file=10)
+    d1 = read.read(first_file=10, last_file=20)
+    
+    print(d0)
+    
+    print(d1)
+    
+    merged = d0 & d1
+    
+    
+    
+    print(merged)
+    print(d0.shape, d1.shape, merged.shape)
+    
+    d0.append(d1)
+    print(d0.shape)

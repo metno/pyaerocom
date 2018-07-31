@@ -40,32 +40,27 @@ import glob
 import numpy as np
 import sys
 from collections import OrderedDict as od
-#from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2
+
+from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_earlinet import ReadEarlinet
+from pyaerocom.io.read_ebas import ReadEbas
 
-from pyaerocom.utils import _BrowserDict
-from pyaerocom import const
-
-class QueryUngridded(_BrowserDict):
-    """Query class for specifying obsdata requests"""
-    def __init__(self, dataset_to_read, vars_to_retrieve=None):
-        self.dataset_to_read = dataset_to_read
-        self.vars_to_retrieve = vars_to_retrieve
-        
-    def __str__(self):
-        s=""
-        for k, v in self.items():
-            s += "{}: {}\n".format(k, v)
-        return s 
+from pyaerocom import const, logger
         
 class ReadUngridded:
     """Factory class for reading of ungridded data based on obsnetwork ID
     """
-
+    SUPPORTED = [ReadAeronetInvV2,
+                 ReadAeronetSdaV2,
+                 ReadAeronetSdaV3,
+                 ReadAeronetSunV2,
+                 ReadAeronetSunV3,
+                 ReadEarlinet,
+                 ReadEbas]
     #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
                           const.AERONET_INV_V2L2_DAILY_NAME,
@@ -77,15 +72,15 @@ class ReadUngridded:
     # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
-    def __init__(self, dataset_to_read=const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
+    def __init__(self, datasets_to_read=const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
                  vars_to_retrieve=None, ignore_cache=False,
                  verbose=False):
         
         #will be assigned in setter method of dataset_to_read
-        self.data_dir = None
-        self._dataset_to_read = None
+        self.data_dirs = []
+        self._datasets_to_read = []
         
-        self.dataset_to_read = dataset_to_read
+        self.datasets_to_read = datasets_to_read
         
         # optional: list of variables that are supposed to be imported, if 
         # None, all variables provided by the corresponding network are loaded
@@ -103,26 +98,35 @@ class ReadUngridded:
         self.revision = {}
         self.data_version = {}
         
+        self.logger 
         self.cache_file = {}
     
     @property
-    def dataset_to_read(self):
-        return self._dataset_to_read
+    def datasets_to_read(self):
+        return self._datasets_to_read
     
-    @dataset_to_read.setter
-    def dataset_to_read(self, val):
+    @datasets_to_read.setter
+    def datasets_to_read(self, datasets):
+        if isinstance(datasets, str):
+            datasets = [datasets]
+        elif not isinstance(val, (tuple, list)):
+            raise IOError('Invalid input for parameter datasets_to_read')
         if not val in const.OBS_IDS:
             raise ValueError("Invalid input for ID of OBS network, please "
                              "choose from {}".format(const.OBS_IDS))
-            
-        data_dir = const.OBSCONFIG[val]['PATH']
+        success = []
+        dirs = []
+        for ds in datasets:
+            data_dir = const.OBSCONFIG[ds]['PATH']
         
-        if not os.path.exists(data_dir):
-            raise IOError("Specified directory {} for OBS-ID {} does not "
-                          "exist".format(data_dir, val))
-        
-        self._dataset_to_read = val
-        self.data_dir = data_dir
+            if not os.path.exists(data_dir):
+                logger.warning('Directory for dataset {} does not exist'.format(ds))
+            else:
+                success.append(ds)
+                dirs.append(data_dir)
+                
+        self._datasets_to_read = success
+        self.data_dirs = dirs
         
     def __str__(self):
         raise NotImplementedError("Requires review after API changes")
@@ -130,7 +134,22 @@ class ReadUngridded:
         for key in self.metadata:
             stat_names.append(self.metadata[key]['station_name'])
         return ','.join(stat_names)
-
+    
+    def read_dataset(self, dataset_to_read, vars_to_retrieve, **kwargs):
+        """Read single dataset into instance of :class:`ReadUngridded`
+        
+        Parameters
+        ----------
+        dataset_to_read : str
+            name of dataset
+        vars_to_retrieve : list
+            list of variables to be retrieved
+            
+        Returns
+        --------
+        UngriddedData
+            data object
+        """
     def read(self):
         """Read observations
 

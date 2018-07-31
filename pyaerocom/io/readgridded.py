@@ -426,6 +426,7 @@ class ReadGridded(object):
                     match_mask = self.file_convention.string_mask(var_name,
                                                                   year, 
                                                                   ts_type)
+                    
                     if match(match_mask, _file):
                         match_files.append(_file)
                         if self.verbose:
@@ -434,9 +435,9 @@ class ReadGridded(object):
             else:
                 if self.verbose:
                     print("Ignoring file {}. File out of allowed year bounds "
-                          "({:d} - {:d})" %(basename(_file), 
-                                            const.MIN_YEAR, 
-                                            const.MAX_YEAR))
+                          "({:d} - {:d})".format(basename(_file), 
+                                                const.MIN_YEAR, 
+                                                const.MAX_YEAR))
            
         if len(match_files) == 0:
             raise IOError("No files could be found for dataset %s, variable %s "
@@ -954,6 +955,9 @@ if __name__=="__main__":
     cube = iris.load_cube(read.files[0])
     
     data = read.read_var("od550aer", "2009", "2011", ts_type="monthly")
+    
+    read_caliop = ReadGridded('CALIOP3')
+    cp = read_caliop.read_var('z3d', ts_type='monthly')
     
     
     

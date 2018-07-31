@@ -44,7 +44,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 
 
-class ReadAeronetSDAV2(ReadAeronetBase):
+class ReadAeronetSdaV2(ReadAeronetBase):
     """Interface for reading Aeronet Sun V2 Level 2 data
     
     Todo
@@ -309,7 +309,7 @@ class ReadAeronetSDAV2(ReadAeronetBase):
 
 
 if __name__ == "__main__":
-    read = ReadAeronetSDAV2()
+    read = ReadAeronetSdaV2()
     
     read.verbosity_level = 'debug'
     
