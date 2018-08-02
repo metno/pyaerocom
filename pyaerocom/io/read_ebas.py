@@ -54,18 +54,35 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.01"
+    __version__ = "0.02"
+    
+    #: preferred order of data statistics. Some files may contain multiple 
+    #: columns for one variable, where each column corresponds to one of the
+    #: here defined statistics that where applied to the data. This attribute
+    #: is only considered for ebas variables, that have not explicitely defined
+    #: what statistics to use (and in which preferred order, if appicable).
+    #: Reading preferences for all Ebas variables are specified in the file
+    #: ebas_config.ini in the data directory of pyaerocom
+    PREFER_STATISTICS = ['arithmetic mean',
+                         'percentile:15.87',
+                         'percentile:84.13']
+    
+    #: Wavelength tolerance in nm for reading of variables. If multiple matches
+    #: occure, the closest wavelength to the desired wavelength is chosen
+    #: e.g. if 50 and for variable at 550nm, accept everything in interval
+    #: {500, 600}
+    WAVELENGTH_TOL_NM = 50
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.EBAS_MULTICOLUMN_NAME
+    
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EBAS_MULTICOLUMN_NAME]
     
     # TODO: check and redefine 
     #: default variables for read method
-    DEFAULT_VARS = ['bscatc550aer', # light backscattering coefficient
-                    'absc550aer', # light absorption coefficient
+    DEFAULT_VARS = ['absc550aer', # light absorption coefficient
                     'scatc550aer'] # light scattering coefficient
     
     #: List of variables that are provided by this dataset (will be extended 
@@ -299,23 +316,51 @@ class ReadEbas(ReadUngriddedBase):
                 self.loaded_aerocom_vars[var] = all_vars[var]
             var_info = self.loaded_aerocom_vars[var]
             var_info_ebas = EbasVarInfo(var)
-            var_cols[var] = {}
+            
+            matches = {}
+            # this variable may go under multiple names in EBAS
+            # (e.g. SCONC_SO4 -> sulphate_corrected, sulphate_total)
             for varname_ebas in var_info_ebas.component:
                 try:
+                    # all columns in file that match the EBAS variable name
+                    # (may be multiple)
                     col_matches = self._get_var_cols(varname_ebas, file)
                 except NotInFileError:
                     continue
+                # init helper variable for finding closest wavelength (if 
+                # no exact wavelength match can be found)
+                min_diff_wvl = 1e6
                 for colnum, colinfo in col_matches.items():
                     if 'wavelength' in colinfo:
                         wvl = var_info.wavelength_nm
                         if wvl is None:
                             raise VariableDefinitionError('Require wavelength '
                                 'specification for Aerocom variable {}'.format(var))
-                        if colinfo.get_wavelength_nm() == wvl:
-                            var_cols[var][colnum] = colinfo
+                        wvl_col = colinfo.get_wavelength_nm()
+                        wvl_low = wvl - self.WAVELENGTH_TOL_NM
+                        wvl_high = wvl + self.WAVELENGTH_TOL_NM
+                        # wavelength is in tolerance range
+                        if wvl_low <= wvl_col <= wvl_high:
+                            wvl_diff = abs(wvl_col - wvl)
+                            if wvl_diff < min_diff_wvl:
+                                # the wavelength difference of this column to
+                                # the desired wavelength of the variable is 
+                                # smaller than any of the detected before, so
+                                # ignore those from earlier columns by reinit
+                                # of the matches dictionary
+                                min_diff_wvl = wvl_diff
+                                matches = {}
+                            matches[colnum] = colinfo
+                    
                     elif 'location' in colinfo:
                         raise NotImplementedError('For developers, please '
                                                   'check!')
+                    else:
+                        matches[colnum] = colinfo
+            if matches:
+                # loop was interrupted since exact wavelength match was found
+                var_cols[var] = matches
+        
         if not len(var_cols) > 0:
             raise NotInFileError('None of the specified variables {} could be '
                                  'found in file {}'.format(vars_to_read,
@@ -326,7 +371,6 @@ class ReadEbas(ReadUngriddedBase):
         
         meta = file.meta
         # write meta information
-        print(file)
         
         # altitude of station
         stat_alt = float(meta['station_altitude'].split(' ')[0])
@@ -378,13 +422,68 @@ class ReadEbas(ReadUngriddedBase):
         raise NotImplementedError
         
 if __name__=="__main__":
+    from pyaerocom import change_verbosity
+    change_verbosity('warning')
+
     read = ReadEbas()
-    files = read.get_file_list()
     
-    test_file = read.files[0]
-    test_file_contains = read.files_contain[0]
+    files = read.get_file_list()
+            
+    FILE = 0
+    test_file = read.files[FILE]
+    test_file_contains = read.files_contain[FILE]
     d0 = EbasNasaAmesFile(test_file)
     
     data = read.read_file(test_file, vars_to_retrieve=test_file_contains)
     print(data)
     
+    DO_META_TEST = False
+    if DO_META_TEST:
+        totnum = len(files)
+        failed = 0
+        mat_in_head = 0
+        mat_in_coldef =  0
+        mat_in_both = 0
+        mat_in_none = 0
+        stat_in_head = 0
+        stat_in_coldef = 0
+        stat_in_both = 0
+        stat_in_none = 0
+        for i, f in enumerate(read.files):
+            if i%25 == 0:
+                print('File {} of {}'.format(i, totnum))
+            _mat_in_head = 0
+            _mat_in_coldef =  0
+            _mat_in_both = 0
+            _stat_in_head = 0
+            _stat_in_coldef = 0
+            _stat_in_both = 0
+            try:
+                head = EbasNasaAmesFile(f, only_head=True)
+                for col in head.var_defs:
+                    if 'matrix' in col:
+                        _mat_in_coldef = 1
+                    if 'statistics' in col:
+                        _stat_in_coldef = 1
+                if 'matrix' in head.meta:
+                    _mat_in_head = 1
+                if 'statistics' in head.meta:
+                    _stat_in_head = 1
+                if _mat_in_coldef and _mat_in_head:
+                    _mat_in_both = True
+                if _stat_in_coldef and _stat_in_head:
+                    _stat_in_both = True
+                if not _mat_in_coldef and not _mat_in_head:
+                    mat_in_none += 1
+                if not _stat_in_coldef and not _stat_in_head:
+                    stat_in_none += 1
+                mat_in_both += _mat_in_both
+                mat_in_coldef += _mat_in_coldef
+                mat_in_head += _mat_in_head
+                
+                stat_in_both += _stat_in_both
+                stat_in_coldef += _stat_in_coldef
+                stat_in_head += _stat_in_head
+                   
+            except:
+                failed += 1

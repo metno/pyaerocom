@@ -345,7 +345,12 @@ class Config(object):
         self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME = cr['obsnames']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
         self.AERONET_SUN_V2L2_SDA_DAILY_NAME = cr['obsnames']['AERONET_SUN_V2L2_SDA_DAILY']
         self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME = cr['obsnames']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
-            
+        # inversions
+        self.AERONET_INV_V2L15_DAILY_NAME = cr['obsnames']['AERONET_INV_V2L15_DAILY']
+        self.AERONET_INV_V2L15_ALL_POINTS_NAME = cr['obsnames']['AERONET_INV_V2L15_ALL_POINTS']
+        self.AERONET_INV_V2L2_DAILY_NAME = cr['obsnames']['AERONET_INV_V2L2_DAILY']
+        self.AERONET_INV_V2L2_ALL_POINTS_NAME = cr['obsnames']['AERONET_INV_V2L2_ALL_POINTS']
+        
         # Aeronet V3
         self.AERONET_SUN_V3L15_AOD_DAILY_NAME = cr['obsnames']['AERONET_SUN_V3L15_AOD_DAILY']
         self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = cr['obsnames']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
@@ -353,12 +358,10 @@ class Config(object):
         self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = cr['obsnames']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
         self.AERONET_SUN_V3L2_SDA_DAILY_NAME = cr['obsnames']['AERONET_SUN_V3L2_SDA_DAILY']
         self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = cr['obsnames']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
-        
         # inversions
-        self.AERONET_INV_V2L15_DAILY_NAME = cr['obsnames']['AERONET_INV_V2L15_DAILY']
-        self.AERONET_INV_V2L15_ALL_POINTS_NAME = cr['obsnames']['AERONET_INV_V2L15_ALL_POINTS']
-        self.AERONET_INV_V2L2_DAILY_NAME = cr['obsnames']['AERONET_INV_V2L2_DAILY']
-        self.AERONET_INV_V2L2_ALL_POINTS_NAME = cr['obsnames']['AERONET_INV_V2L2_ALL_POINTS']
+        self.AERONET_INV_V3L15_DAILY_NAME = cr['obsnames']['AERONET_INV_V3L15_DAILY']
+        self.AERONET_INV_V3L2_DAILY_NAME = cr['obsnames']['AERONET_INV_V3L2_DAILY']
+        
         
         self.EBAS_MULTICOLUMN_NAME = cr['obsnames']['EBAS_MULTICOLUMN']
         self.EEA_NAME = cr['obsnames']['EEA']
@@ -457,6 +460,15 @@ class Config(object):
         OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L2_ALL_POINTS']
     
+        # Aeronet v3 inversions
+        OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME] = {}
+        OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V3L15_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_DAILY']
+        
+        OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME] = {}
+        OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V3L2_DAILY'].replace('${BASEDIR}',self.OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_DAILY']
+        
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME] = {}
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['PATH'] = cr['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',self.OBSBASEDIR)
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['START_YEAR'] = cr['obsstartyears']['EBAS_MULTICOLUMN']

@@ -223,6 +223,14 @@ class ReadUngridded:
         self.data = data
         return data
     
+    @property
+    def supported_datasets(self):
+        supported = []
+        for reader in self.SUPPORTED:
+            supported.extend(reader.SUPPORTED_DATASETS)
+        return supported
+        
+    
 if __name__=="__main__":
     test = [const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
             const.EARLINET_NAME]

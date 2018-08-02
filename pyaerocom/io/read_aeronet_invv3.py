@@ -1,12 +1,12 @@
 ################################################################
-# read_aeronet_invv2.py
+# read_aeronet_invv3.py
 #
-# read Aeronet inversion V2 data
+# read Aeronet inversion V3 data
 #
 # this file is part of the pyaerocom package
 #
 #################################################################
-# Created 20180629 by Jan Griesfeller for Met Norway
+# Created 20180802 by Jonas Gliss for Met Norway
 #
 # Last changed: See git log
 #################################################################
@@ -37,12 +37,12 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.mathutils import numbers_in_str
+from pyaerocom.mathutils import calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom import StationData
 
-class ReadAeronetInvV2(ReadAeronetBase):
-    """Interface for reading Aeronet inversion V2 Level 1.5 and 2.0 data
+class ReadAeronetInvV3(ReadAeronetBase):
+    """Interface for reading Aeronet inversion V3 Level 1.5 and 2.0 data
 
     Parameters
     ----------
@@ -51,95 +51,61 @@ class ReadAeronetInvV2(ReadAeronetBase):
         in ``SUPPORTED_DATASETS``
     """
     #: Mask for identifying datafiles 
-    _FILEMASK = '*.dubovikday'
+    _FILEMASK = '*.all'
     
     #: version log of this class (for caching)
-    __version__ = "0.05"
+    __version__ = "0.01"
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
+    DATASET_NAME = const.AERONET_INV_V3L2_DAILY_NAME
     
     #: List of all datasets supported by this interface
-    SUPPORTED_DATASETS = [const.AERONET_INV_V2L2_DAILY_NAME,
-                          const.AERONET_INV_V2L15_DAILY_NAME]
+    SUPPORTED_DATASETS = [const.AERONET_INV_V3L2_DAILY_NAME,
+                          const.AERONET_INV_V3L15_DAILY_NAME]
     
     #: default variables for read method
-    DEFAULT_VARS = ['ssa675aer','ssa440aer']
+    DEFAULT_VARS = ['abs550aer']
     
     #: value corresponding to invalid measurement
-    NAN_VAL = -9999.
+    NAN_VAL = -999.
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
     VAR_NAMES_FILE = {}
-    VAR_NAMES_FILE['ssa440aer'] = 'SSA440-T'
-    VAR_NAMES_FILE['ssa675aer'] = 'SSA675-T'
-    VAR_NAMES_FILE['ssa870aer'] = 'SSA870-T'
-    VAR_NAMES_FILE['ssa1020aer'] = 'SSA1020-T'
-    
-    #: OPTIONAL: dictionary specifying alternative column names for variables
-    #: defined in :attr:`VAR_NAMES_FILE`. Check attribute _alt_vars_cols after
-    #: running read().
-    ALT_VAR_NAMES_FILE = {}
-    ALT_VAR_NAMES_FILE['ssa440aer'] = ['SSA439-T', 'SSA441-T', 'SSA438-T', 
-                                       'SSA437-T', 'SSA442-T']
-    ALT_VAR_NAMES_FILE['ssa675aer'] = ['SSA676-T', 'SSA673-T', 'SSA674-T', 
-                                       'SSA669-T', 'SSA677-T', 'SSA668-T', 
-                                       'SSA672-T']
-    ALT_VAR_NAMES_FILE['ssa870aer'] = ['SSA872-T']
-    ALT_VAR_NAMES_FILE['ssa1020aer'] = ['SSA1018-T']
-    
+    VAR_NAMES_FILE['abs440aer'] = 'Absorption_AOD[440nm]'
+    VAR_NAMES_FILE['abs870aer'] = 'Absorption_AOD[870nm]'
+    VAR_NAMES_FILE['angabs4487aer'] = 'Absorption_Angstrom_Exponent_440-870nm'
 
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
-    META_NAMES_FILE['data_quality_level'] = 'DATA_TYPE'
-    META_NAMES_FILE['date'] = 'Date(dd-mm-yyyy)'
+    #META_NAMES_FILE['data_quality_level'] = 'DATA_TYPE'
+    META_NAMES_FILE['date'] = 'Date(dd:mm:yyyy)'
     META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
-    META_NAMES_FILE['day_of_year'] = 'Julian_Day'
+    META_NAMES_FILE['day_of_year'] = 'Day_of_Year(fraction)'
+    
+    #: dictionary containing information about additionally required variables
+    #: for each auxiliary variable (i.e. each variable that is not provided
+    #: by the original data but computed on import)
+    AUX_REQUIRES = {'abs550aer'   :   ['abs440aer', 
+                                       'abs870aer',
+                                       'angabs4487aer']}
+                    
+    #: Functions that are used to compute additional variables (i.e. one 
+    #: for each variable defined in AUX_REQUIRES)
+    AUX_FUNS = {'abs550aer'   :   calc_od550aer}
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
-    def infer_wavelength_colname(self, colname, low=250, high=2000):
-        """Get variable wavelength from column name
-        
-        Parameters
-        ----------
-        colname : str
-            string of column name
-        low : int
-            lower limit of accepted value range
-        high : int
-            upper limit of accepted value range
-        
-        Returns
-        -------
-        str
-            wavelength in nm as floating str
-        
-        Raises
-        ------
-        ValueError
-            if None or more than one number is detected in variable string
-        """
-        nums = numbers_in_str(colname)
-        if len(nums) == 1:
-            if low <= int(nums[0]) <= high:
-                self.logger.debug('Succesfully extracted wavelength {} nm '
-                                 'from column name {}'.format(nums[0], colname))
-                return nums[0]
-        raise ValueError('Failed to extract wavelength from colname {}'.format(colname))
-        
-            
     # TODO: currently every file is read, regardless of whether it actually
     # contains the desired variables or not. Do we need that? Slows stuff down..
     # Also: Quick check reading all files in the database showed that only 
     # about 20% of the files contain the default variables..
-    def read_file(self, filename, vars_to_retrieve=['ssa675aer','ssa440aer'],
+    def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet file containing results from v2 inversion algorithm
 
@@ -214,16 +180,13 @@ class ReadAeronetInvV2(ReadAeronetBase):
             # be filled below, with vectors containing NaNs after the file 
             # reading loop
             vars_available = {}
-            col_names = {}
             for var in vars_to_read:
                 if var in col_index:
-                    idx = col_index[var]
-                    vars_available[var] = idx
-                    col_names[var] = self._last_col_order[idx]
+                    vars_available[var] = col_index[var]
                 else:
                     self.logger.warning("Variable {} not available in file {}"
                                         .format(var, os.path.basename(filename)))
-            data_out['col_names'] = col_names
+                
             for line in in_file:
                 # process line
                 dummy_arr = line.strip().split(self.COL_DELIM)
@@ -281,11 +244,10 @@ class ReadAeronetInvV2(ReadAeronetBase):
         return data_out
 
 if __name__=="__main__":
-    read = ReadAeronetInvV2()
-    read.verbosity_level = 'warning'
+    read = ReadAeronetInvV3()
+    read.verbosity_level = 'debug'
     
-    data = read.read()
-    
-    data_first = read.read_first_file()
-    print(read._alt_var_cols)
+    files = read.get_file_list()
+    read.read_first_file()
+    #read.print_all_columns()
     

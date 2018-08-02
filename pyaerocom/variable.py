@@ -39,7 +39,43 @@ class Variable(BrowseDict):
         AEROCOM variable name (see e.g. `AEROCOM protocol 
         <http://aerocom.met.no/protocol_table.html>`__ for a list of 
         available variables)
-    
+    unit : str
+        unit of variable (None if no unit)
+    aliases : list
+        list of alternative names for this variable
+    lower_limit : float
+        lower limit of allowed value range
+    upper_limit : float
+        upper limit of allowed value range
+    obs_wavelength_tol_nm : float
+        wavelength tolerance (+/-) for reading of obsdata. Default is 10, i.e.
+        if this variable is defined at 550 nm and obsdata contains measured 
+        values of this quantity within interval of 540 - 560, then these data
+        is used
+    scat_xlim : float
+        x-range for scatter plot
+    scat_ylim : float
+        y-range for scatter plot
+    scat_loglog : bool
+        scatter plot on loglog scale
+    scat_scale_factor : float
+        scale factor for scatter plot
+    map_vmin : float
+        data value corresponding to lower end of colormap in map plots of this
+        quantity
+    map_vmax : float
+        data value corresponding to upper end of colormap in map plots of this
+        quantity
+    map_c_under : str
+        color used for values below :attr:`map_vmin` in map plots of this
+        quantity
+    map_c_over : str
+        color used for values exceeding :attr:`map_vmax` in map plots of this
+        quantity
+    map_cbar_levels : :obj:`list`, optional
+        levels of colorbar
+    map_cbar_ticks : :obj:`list`, optional
+        colorbar ticks
     """
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         self.var_name = var_name
@@ -50,6 +86,11 @@ class Variable(BrowseDict):
         self.lower_limit = -9e30
         self.upper_limit = 9e30
         
+        # parameters for reading of obsdata
+        
+        #wavelength tolerance in nm
+        self.obs_wavelength_tol_nm = 10.
+        
         # settings for scatter plots
         self.scat_xlim = None
         self.scat_ylim = None
@@ -59,8 +100,8 @@ class Variable(BrowseDict):
         # settings for map plotting
         self.map_vmin = None
         self.map_vmax = None
-        self.map_c_over = None 
         self.map_c_under = None
+        self.map_c_over = None
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
         

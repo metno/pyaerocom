@@ -13,7 +13,7 @@ from collections import OrderedDict as od
 from datetime import datetime
 from pyaerocom.utils import str_underline, dict_to_str
 from pyaerocom.exceptions import TimeZoneError
-from pyaerocom import const 
+from pyaerocom import const, logger
 
 class NasaAmesReadError(IOError):
     pass
@@ -176,8 +176,7 @@ class NasaAmesHeader(object):
             try:
                 self[k] = v
             except:
-                if self.verbose:
-                    print("Invalid attribute: {}".format(k))
+                logger.warning("Invalid attribute: {}".format(k))
                     
             
     def __getattr__(self, key):
@@ -462,8 +461,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             :func:`_quality_check`)
         """
         verbose = self.verbose
-        if verbose:
-            print("Reading NASA Ames file:\n{}".format(nasa_ames_file))
+        logger.info("Reading NASA Ames file:\n{}".format(nasa_ames_file))
         lc = 0 #line counter
         dc = 0 #data block line counter
         mc = 0 #meta block counter
@@ -474,16 +472,15 @@ class EbasNasaAmesFile(NasaAmesHeader):
         for line in open(nasa_ames_file):
             #print(lc, _NUM_FIXLINES, line)
             if IN_DATA:
-                if dc == 0 and verbose:
-                    print(line)
+                if dc == 0:
+                    logger.debug(line)
                 try:
                     data.append(tuple([float(x.strip()) for x in line.strip().split()]))
                     #data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
                     data.append(_insert_invalid)
-                    if verbose:
-                        print("Failed to read data row {}. "
-                              "Error msg: {}".format(dc, repr(e)))
+                    logger.warning("Failed to read data row {}. "
+                                   "Error msg: {}".format(dc, repr(e)))
                 dc += 1
             elif lc < self._NUM_FIXLINES:
                 try:
@@ -500,8 +497,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     if lc in self._HEAD_ROWS_MANDATORY:
                         raise NasaAmesReadError("Fatal: {}".format(msg))
                     else:
-                        if self.verbose:
-                            print(msg)
+                        logger.warning(msg)
             else:
                 _flagmap_idx = 0
                 if mc == 0:
@@ -510,8 +506,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     try:
                         self.var_defs.append(self._read_vardef_line(line))
                     except Exception as e:
-                        if verbose:
-                            print(repr(e))
+                        logger.warning(repr(e))
                            
                 elif lc < END_VAR_DEF:
                     var = self._read_vardef_line(line)
@@ -526,8 +521,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         pass
                         #self.var_defs.append(var)
                     except Exception as e:
-                        if verbose:
-                            print(repr(e))
+                        logger.warning(repr(e))
     
                 elif lc == NUM_HEAD_LINES - 1:
                     IN_DATA = True
@@ -544,8 +538,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                                                         unit=self.time_unit))
                     if only_head:
                         return
-                    if verbose:
-                        print("REACHED DATA BLOCK")
+                    logger.debug("REACHED DATA BLOCK")
                     _insert_invalid = tuple([np.nan]*self.col_num)
                     
                     
@@ -556,11 +549,10 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         key = name.strip().lower().replace(" ", "_")
                         self.meta[key] = val.strip()
                     except Exception as e:
-                        print("Failed to read line no. {}.\n{}\n"
+                        logger.warning("Failed to read line no. {}.\n{}\n"
                               "Error msg: {}\n".format(lc, line, repr(e)))
                 else:
-                    if verbose:
-                        print("Ignoring line no. {}: {}".format(lc, line)) 
+                    logger.debug("Ignoring line no. {}: {}".format(lc, line)) 
                 mc += 1
             lc += 1
         
@@ -578,9 +570,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     col[cond] = np.nan
                     dep_dat[:, i] = col
                 except:
-                    if self.verbose:
-                        print("Failed to replace invalid values with NaNs "
-                              "in column {}".format(self.col_names[i+1]))
+                    logger.warning("Failed to replace invalid values with "
+                                   "NaNs in column {}".format(self.col_names[i+1]))
             data[:, 1:] =dep_dat
         self._data = data
         
@@ -588,9 +579,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
             try:
                 self.compute_time_stamps()
             except Exception as e:
-                if self.verbose:
-                    print("Failed to compute time stamps.\n"
-                          "Error message: {}".format(repr(e)))
+                logger.warning("Failed to compute time stamps.\n"
+                               "Error message: {}".format(repr(e)))
         self.init_flags(decode_flags)
         if quality_check:
             self._quality_check()
@@ -615,8 +605,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     idf, val = [x.strip() for x in sub]
                     data[idf.lower()] = val
                 else: #unit
-                    if self.verbose:
-                        print("Failed to interpret {}".format(item))
+                    logger.warning("Failed to interpret {}".format(item))
         
         return data
     

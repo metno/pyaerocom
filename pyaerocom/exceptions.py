@@ -41,6 +41,9 @@ class TimeZoneError(AttributeError):
 class VariableDefinitionError(IOError):
     pass
 
+class VariableNotFoundError(IOError):
+    pass
+
 class NotInFileError(IOError):
     pass
 

@@ -110,6 +110,9 @@ class StationData(Station):
             raise KeyError("Variable {} does not exist".format(var_name))
         self.check_dtime()
         data = self[var_name]
+        if not data.ndim == 1:
+            raise NotImplementedError('Multi-dimensional data columns cannot '
+                                      'be converted to time-series')
         if not len(data) == len(self.index):
             raise ValueError("Mismatch between length of data array for "
                              "variable {} (length: {}) and time array  "

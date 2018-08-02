@@ -68,7 +68,8 @@ class ReadAeronetSunV2(ReadAeronetBase):
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
     
     #: List of all datasets supported by this interface
-    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME]
+    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, 
+                          const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]
     
     #: default variables for read method
     DEFAULT_VARS = ['od550aer']
@@ -222,6 +223,19 @@ class ReadAeronetSunV2(ReadAeronetBase):
         return data_out
     
 if __name__=="__main__":
+    data = {}
+    failed = []
+    for name in ReadAeronetSunV2.SUPPORTED_DATASETS:
+        print('reading {}'.format(name))
+        reader = ReadAeronetSunV2(name)
+        try:
+            data[name] = reader.read_first_file()
+        except Exception as e:
+            failed.append(repr(e))
+        
+    for name, sdata in data.items():
+        print(name)
+        print(sdata)
     
     read = ReadAeronetSunV2()
     
@@ -231,5 +245,7 @@ if __name__=="__main__":
     data0 = read.read_first_file(vars_as_series=True)
     data = read.read_first_file()
     print(data)
-
-
+    
+    for item in failed:
+        print(item)
+    

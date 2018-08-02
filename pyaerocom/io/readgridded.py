@@ -46,11 +46,11 @@ from iris.experimental.equalise_cubes import equalise_attributes
 from iris.util import unify_time_units
 from iris._concatenate import concatenate
 
-from pyaerocom import const
+from pyaerocom import const, logger
 from pyaerocom.exceptions import IllegalArgumentError
 from pyaerocom.io.fileconventions import FileConventionRead
-from pyaerocom.io.helpers import (check_time_coord, correct_time_coord,
-                                  search_data_dir_aerocom)
+from pyaerocom.io import AerocomBrowser
+from pyaerocom.io.helpers import (check_time_coord, correct_time_coord)
 from pyaerocom.griddeddata import GriddedData
 
 class ReadGridded(object):
@@ -166,6 +166,7 @@ class ReadGridded(object):
         self.vars = []
         self.years = []
         
+        self.browser = AerocomBrowser()
         if init and name:
             self.search_data_dir()
             self.search_all_files()
@@ -283,7 +284,7 @@ class ReadGridded(object):
         IOError 
             if directory cannot be found
         """
-        _dir = search_data_dir_aerocom(self.name, verbose=self.verbose)
+        _dir = self.browser.find_data_dir(self.name)
         self.data_dir = _dir
         return _dir
     
@@ -333,10 +334,11 @@ class ReadGridded(object):
                 _vars_temp.append(info["var_name"])
                 _years_temp.append(info["year"])
                 self.files.append(_file)
+                logger.debug('Read file {}'.format(_file))
             except Exception as e:
-                if self.verbose:
-                    print("Failed to import file %s\nError: %s" 
-                          %(basename(_file), repr(e)))
+                logger.warning("Failed to import file {}\nModel: {}\n"
+                               "Error: {}".format(basename(_file), 
+                               self.name, repr(e)))
         if not _vars_temp or not len(_vars_temp) == len(_years_temp):
             raise IOError("Failed to extract information from filenames")
         # make sorted list of unique vars
@@ -354,11 +356,11 @@ class ReadGridded(object):
         """
         for k, v in kwargs.items():
             if k in self.__dict__:
-                print("Updating %s in ModelImportResult for model %s"
-                      "New value: %s" %(k, self.name, v))
+                logger.info("Updating %s in ModelImportResult for model %s"
+                            "New value: %s" %(k, self.name, v))
                 self.__dict__[k] = v
             else:
-                print("Ignoring key %s in ModelImportResult.update()"  %k)
+                logger.info("Ignoring key %s in ModelImportResult.update()" %k)
                 
     def read_var(self, var_name, start_time=None, stop_time=None, 
                  ts_type='daily'):
@@ -429,15 +431,13 @@ class ReadGridded(object):
                     
                     if match(match_mask, _file):
                         match_files.append(_file)
-                        if self.verbose:
-                            print("FOUND MATCH: {}".format(basename(_file)))
+                        logger.info("FOUND MATCH: {}".format(basename(_file)))
 
             else:
-                if self.verbose:
-                    print("Ignoring file {}. File out of allowed year bounds "
-                          "({:d} - {:d})".format(basename(_file), 
-                                                const.MIN_YEAR, 
-                                                const.MAX_YEAR))
+                logger.warning("Ignoring file {}. File out of allowed year bounds "
+                               "({:d} - {:d})".format(basename(_file), 
+                                                    const.MIN_YEAR, 
+                                                    const.MAX_YEAR))
            
         if len(match_files) == 0:
             raise IOError("No files could be found for dataset %s, variable %s "
@@ -476,10 +476,9 @@ class ReadGridded(object):
                                             year=finfo["year"],
                                             verbose=self.verbose):
                         
-                        if self.verbose:
-                            print("Invalid time axis in file {}. " 
-                                             "Attempting to correct.".format(
-                                                     basename(_file)))
+                        logger.warning("Invalid time axis in file {}. " 
+                                       "Attempting to correct.".format(
+                                        basename(_file)))
                         
                         cube = correct_time_coord(cube, 
                                                   ts_type=finfo["ts_type"],
@@ -626,10 +625,12 @@ class ReadGridded(object):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = ("\n{}\n{}\n"
              "Model ID: {}\n"
+             "Data directory: {}\n"
              "Available variables: {}\n"
              "Available years: {}\n".format(head, 
                                             len(head)*"-",
                                             self.name,
+                                            self.data_dir,
                                             self.vars, 
                                             self.years))
         if self.data:

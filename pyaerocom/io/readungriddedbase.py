@@ -7,6 +7,7 @@ import numpy as np
 from fnmatch import fnmatch
 
 from pyaerocom import const
+from pyaerocom.utils import list_to_shortstr
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
 
@@ -412,7 +413,13 @@ class ReadUngriddedBase(abc.ABC):
         files = sorted(glob.glob(os.path.join(self.DATASET_PATH, 
                                               self._FILEMASK)))
         if not len(files) > 0:
-            raise IOError("No files could be detected...")
+            all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
+            raise IOError("No files could be detected matching file mask {} "
+                          "in dataset {}, files in folder {}:\nFiles in "
+                          "folder:{}".format(self._FILEMASK, 
+                                  self.dataset_to_read,
+                                  self.DATASET_PATH,
+                                  all_str))
         self.files = files
         return files
     

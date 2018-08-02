@@ -4,7 +4,8 @@ import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.exceptions import MetaDataError
+from pyaerocom.exceptions import MetaDataError, VariableNotFoundError
+from pyaerocom import const
 
 class ReadAeronetBase(ReadUngriddedBase):
     """TEMPLATE: Abstract base class template for reading of Aeronet data
@@ -18,6 +19,10 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
     VAR_NAMES_FILE = {}
+    
+    #: OPTIONAL: dictionary specifying alternative column names for variables
+    #: defined in :attr:`VAR_NAMES_FILE`
+    ALT_VAR_NAMES_FILE = {}
     
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
@@ -38,6 +43,9 @@ class ReadAeronetBase(ReadUngriddedBase):
         # col_index is only recomputed when the file structure changes 
         # and not for each file individually
         self._last_col_index_str = None
+        self._last_col_order = []
+        
+        self._alt_var_cols = {}
     
     @property
     def col_index(self):
@@ -63,6 +71,18 @@ class ReadAeronetBase(ReadUngriddedBase):
         """
         return self._col_index
     
+    def infer_wavelength_colname(self):
+        """Method that may be implemented to infer variable wavelength from 
+        column name
+        
+        Note
+        ----
+        See e.g. :class:`ReadAeronetInvV2` where this method is used to find
+        wavelengths in case the exact variable wavelength is not provided
+        """
+        raise NotImplementedError('Method infer_wavelength_colname is not '
+                                  'implemented in class {}'.format(type(self).__name__))
+        
     def _update_col_index(self, col_index_str):
         """Update column information for fast access during read_file
         
@@ -98,14 +118,82 @@ class ReadAeronetBase(ReadUngriddedBase):
                 raise MetaDataError("Required meta-information string {} could "
                                     "not be found in file header".format(val))
             col_index[key] = mapping[val]
-        for key, val in self.VAR_NAMES_FILE.items():
-            if val in mapping:
-                col_index[key] = mapping[val]    
+        for var, colname in self.VAR_NAMES_FILE.items():
+            if colname in mapping:
+                col_index[var] = mapping[colname]  
+            else:
+                if var in self.ALT_VAR_NAMES_FILE:
+                    for alt_colname in self.ALT_VAR_NAMES_FILE[var]:
+                        if alt_colname in mapping:
+                            col_index[var] = mapping[alt_colname]
+                else:
+                    try:
+                        idx = self._search_var_wavelength_tol(var, cols)
+                        col_index[var] = idx
+                    except Exception as e:
+                        self.logger.info('Failed to infer data column of '
+                                         'variable {} within wavelength tolerance '
+                                         'range.Error:\n{}'.format(var, repr(e)))
         self._col_index = col_index
         self._last_col_index_str = col_index_str
+        self._last_col_order = cols
         return col_index
     
-    
+    def _search_var_wavelength_tol(self, var, cols):
+        """Find alternative variable within acceptance range"""
+        var_info = const.VAR_PARAM[var]
+        colname = self.VAR_NAMES_FILE[var]
+        
+        wvl = var_info.wavelength_nm
+        tol = var_info.obs_wavelength_tol_nm
+        low, high = wvl - tol, wvl + tol
+        if wvl is None:
+            raise AttributeError('Variable {} does not contain '
+                                 'wavelength information'.format(var))
+        
+        # variable information exists and contains wavelength info    
+        wvl_str = self.infer_wavelength_colname(colname)
+        check_mask = colname.replace(wvl_str, '')
+        if not wvl == float(wvl_str):
+            raise ValueError('Wavelength mismatch between '
+                             'pyaerocom Variable {} and '
+                             'wavelength inferred from '
+                             'Aeronet column name {}'.
+                             format(var, colname))
+        
+        # it is possible to extract wavelength from column
+        # name and the extracted number corresponds to 
+        # the expected wavelength as inferred from 
+        # pyaerocom.Variable instance
+        
+        wvl_diff_min = 1e6
+        # loop over header
+        for i, col in enumerate(cols):
+            try:
+                wvl_str_col = self.infer_wavelength_colname(col)
+            except:
+                pass
+            else:
+                wvl_col = float(wvl_str_col)
+                if low <= wvl_col <= high:
+                    mask = col.replace(wvl_str_col, '')
+                    if check_mask == mask:
+                        diff = abs(wvl_col - wvl)
+                        if diff < wvl_diff_min:
+                            wvl_diff_min = diff
+                            if not var in self._alt_var_cols:
+                                self._alt_var_cols[var] = []
+                            if not col in self._alt_var_cols[var]:
+                                self._alt_var_cols[var].append(col)
+                            return i
+        raise VariableNotFoundError('Did not find an alternative data column '
+                                    'for variable {} within allowed wavelength '
+                                    'tolerance range of +/- {} nm.'.format(
+                                            var, tol))
+    def print_all_columns(self):
+        for col in self._last_col_order:
+            print(col)
+                
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
              last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`

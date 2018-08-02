@@ -4,6 +4,7 @@
 I/O helper methods of the pyaerocom package
 """
 from pyaerocom import const
+from pyaerocom.io import AerocomBrowser
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom import __dir__
 from os.path import join, exists, isdir
@@ -13,7 +14,6 @@ from iris.coords import DimCoord
 from datetime import datetime
 from numpy import datetime64, asarray, arange
 import cf_units
-import fnmatch, re
 
 TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
                  "3hourly" :  "datetime64[3h]",
@@ -32,6 +32,11 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "monthly" :  "days"}
 
 
+def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
+    """Search Aerocom data directory based on model / data ID
+    """
+    browser = AerocomBrowser()
+    return browser.find_data_dir(name_or_pattern, ignorecase)
 
 def get_obsnetwork_dir(obs_id):
     """Returns data path for obsnetwork ID
@@ -61,164 +66,6 @@ def get_obsnetwork_dir(obs_id):
         raise IOError("Data directory {} of observation network {} does not "
                       "exists".format(data_dir, obs_id))
     return data_dir
-
-def search_data_dir_aerocom(name_or_pattern, ignorecase=True, 
-                            verbose=const.VERBOSE):
-    """Search Aerocom data directory based on model / data ID
-    
-    Parameters
-    ----------
-    name_or_pattern : str
-        name of model
-    verbose : bool
-        print output
-        
-    Returns
-    -------
-    str
-        Model directory
-        
-    Raises
-    ------
-    IOError
-        if model directory cannot be found
-    """
-    pattern = fnmatch.translate(name_or_pattern)
-    _candidates = []
-    _msgs = []
-    #
-    for obs_id in const.OBS_IDS:
-        if ignorecase:
-            match = name_or_pattern.lower() == obs_id.lower()
-        else:
-            match = name_or_pattern == obs_id
-        if match:
-            if verbose:
-                print("Found match for search pattern in obs network "
-                      "directories {}".format(obs_id))
-            return const.OBSCONFIG[obs_id]["PATH"]
-        else:
-            if ignorecase:
-                match = bool(re.search(pattern, obs_id, re.IGNORECASE))
-            else:
-                match = bool(re.search(pattern, obs_id))
-        if match:
-            _candidates.append(obs_id)
-        
-    for search_dir in const.MODELDIRS:
-        # get the directories
-        if isdir(search_dir):
-            #subdirs = listdir(search_dir)
-            subdirs = [x for x in listdir(search_dir) if isdir(join(search_dir, x))]
-            for subdir in subdirs:
-                
-                if ignorecase:
-                    match = bool(re.search(pattern, subdir,re.IGNORECASE))
-                else:
-                    match = bool(re.search(pattern, subdir))
-                if match:
-                    ok = True
-                    if ignorecase:
-                        match = name_or_pattern.lower() == subdir.lower()
-                    else:
-                        match = name_or_pattern == subdir
-                    if match:
-                        ok = True
-                        if verbose:
-                            print("Found match for ID {}".format(name_or_pattern))
-                        _dir = join(search_dir, subdir)
-                        if const.GRID_IO.USE_RENAMED_DIR:
-                            if verbose:
-                                print("Checking if renamed directory exists")
-                            _dir = join(_dir, "renamed")
-                        if isdir(_dir):
-                            if verbose:
-                                print('Found directory {}'.format(_dir))    
-                            return _dir
-                        else:
-                            ok = False
-                            if verbose:
-                                _msgs.append("Renamed folder does not exist "
-                                      "in {}".format(join(search_dir, subdir)))
-                    if ok:
-                        _candidates.append(subdir)
-        else:
-            if verbose:
-                _msgs.append('directory %s does not exist\n'
-                             %search_dir)
-    for msg in _msgs:
-        print(msg)
-    msg=""
-    if _candidates:
-        if len(_candidates) == 1:
-            if verbose:
-                print("Found exactly one match for search pattern "
-                      "{}: {}".format(name_or_pattern, _candidates[0]))
-                return _candidates[0]
-        else:
-            msg = ("Found multiple matches. Please choose from the "
-                  "following list: {}".format(_candidates))
-        
-    raise IOError("No unique match found for ID ot pattern {}. "
-                  "{}".format(name_or_pattern, msg))
-
-def search_data_dir_aerocom_old(name, verbose=const.VERBOSE):
-    """Search Aerocom data directory based on model / data ID
-    
-    Parameters
-    ----------
-    name : str
-        name of model
-    verbose : bool
-        print output
-        
-    Returns
-    -------
-    str
-        Model directory
-        
-    Raises
-    ------
-    IOError
-        if model directory cannot be found
-    """
-    sid = name
-    _candidates = []
-    _msgs = []
-    for search_dir in const.MODELDIRS:
-        if verbose:
-            print('Searching dir for ID %s in: %s' 
-                  %(name, search_dir))
-        # get the directories
-        if isdir(search_dir):
-            #subdirs = listdir(search_dir)
-            subdirs = [x for x in listdir(search_dir) if isdir(join(search_dir, x))]
-            for subdir in subdirs:
-                if sid == subdir:
-                    _dir = join(search_dir, subdir)
-                    if const.GRID_IO.USE_RENAMED_DIR:
-                        _dir = join(_dir, "renamed")
-                    if isdir(_dir):
-                        if verbose:
-                            print('Found directory: {}'.format(_dir))    
-                        return _dir
-                    else:
-                        if verbose:
-                            _msgs.append("renamed folder does not exist "
-                                  "in {}".format(join(search_dir, subdir)))
-                elif (sid.lower() in subdir.lower()):
-                    _candidates.append(subdir)
-        else:
-            if verbose:
-                _msgs.append('directory: %s does not exist\n'
-                             %search_dir)
-    print("Model directory could not be found.")
-    for msg in _msgs:
-        print(msg)
-
-    if _candidates:
-        print("Did you mean either of: {} ?".format(_candidates))
-    raise IOError("Model directory for name {} could not be found".format(name))
     
 def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
     """Method that checks the time coordinate of an iris Cube

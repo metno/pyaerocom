@@ -7,6 +7,48 @@ Mathematical low level utility methods ofcd pyaerocom
 import numpy as np
 from pyaerocom import const, logger
 
+def numbers_in_str(input_string):
+    """This method finds all numbers in a string
+    
+    Note
+    ----
+    - Beta version, please use with care
+    - Detects only integer numbers, dots are ignored
+    
+    Parameters
+    ----------
+    input_string : str
+        string containing numbers
+    
+    Returns
+    -------
+    list
+        list of strings specifying all numbers detected in string
+        
+    Example
+    -------
+    >>> numbers_in_str('Bla42Blub100')
+    [42, 100]
+    """
+    numbers = []
+    IN_NUM=False
+    c_num = None
+    for char in input_string:
+        try:
+            int(char)
+            if not IN_NUM:
+                IN_NUM = True
+                c_num = char
+            elif IN_NUM:
+                c_num += char
+        except:
+            if IN_NUM:
+                numbers.append(c_num)
+            IN_NUM=False
+    if IN_NUM:
+        numbers.append(c_num)
+    return numbers
+
 def od_wavelength_from_varstr(var_str):
     """Extracts AOD wavelength from Aerocom variable name
     
@@ -291,10 +333,10 @@ def range_magnitude(low, high):
     return exponent(high) - exponent(low)
 
 if __name__ == "__main__":
-    import doctest
+    #import doctest
     exp = exponent(23)
-    
+    print(numbers_in_str('Bla42Blub100'))
     #run tests in all docstrings
-    doctest.testmod()
+    #doctest.testmod()
     
     
