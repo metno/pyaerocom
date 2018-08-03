@@ -86,8 +86,9 @@ class ReadAeronetInvV2(ReadAeronetBase):
     ALT_VAR_NAMES_FILE['ssa675aer'] = ['SSA676-T', 'SSA673-T', 'SSA674-T', 
                                        'SSA669-T', 'SSA677-T', 'SSA668-T', 
                                        'SSA672-T']
-    ALT_VAR_NAMES_FILE['ssa870aer'] = ['SSA872-T']
-    ALT_VAR_NAMES_FILE['ssa1020aer'] = ['SSA1018-T']
+    ALT_VAR_NAMES_FILE['ssa870aer'] = ['SSA871-T', 'SSA869-T', 'SSA868-T', 
+                                       'SSA873-T', 'SSA867-T', 'SSA872-T']
+    ALT_VAR_NAMES_FILE['ssa1020aer'] = ['SSA1022-T', 'SSA1016-T', 'SSA1018-T']
     
 
     #: dictionary specifying the file column names (values) for each 
@@ -284,7 +285,7 @@ if __name__=="__main__":
     read = ReadAeronetInvV2()
     read.verbosity_level = 'warning'
     
-    data = read.read()
+    data = read.read(read.PROVIDES_VARIABLES)
     
     data_first = read.read_first_file()
     print(read._alt_var_cols)

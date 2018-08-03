@@ -106,8 +106,6 @@ class ReadGridded(object):
         if True, the model directory is searched (:func:`search_data_dir`) on
         instantiation and if it is found, all valid files for this model are 
         searched using :func:`search_all_files`.
-    verbose : bool
-        if True, output is printed
         
     Examples
     --------
@@ -124,8 +122,7 @@ class ReadGridded(object):
     # Directory containing model data for this species
     _data_dir = ""
     def __init__(self, name="", start_time=None, stop_time=None,
-                 file_convention="aerocom3", io_opts=const, init=True, 
-                 verbose=const.VERBOSE):
+                 file_convention="aerocom3", io_opts=const, init=True):
         # model ID
         if not isinstance(name, str):
             if isinstance(name, list):
@@ -146,8 +143,6 @@ class ReadGridded(object):
             self.start_time = start_time
         if stop_time:
             self.stop_time = stop_time
-        
-        self.verbose = verbose
         
         # Dictionary containing loaded results for different variables
         self.data = od()
@@ -473,8 +468,7 @@ class ReadGridded(object):
                 if const.GRID_IO["CHECK_TIME_FILENAME"]:
                     
                     if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                            year=finfo["year"],
-                                            verbose=self.verbose):
+                                            year=finfo["year"]):
                         
                         logger.warning("Invalid time axis in file {}. " 
                                        "Attempting to correct.".format(
@@ -485,18 +479,16 @@ class ReadGridded(object):
                                                   year=finfo["year"])
                         
                 else:
-                    if self.verbose:
-                        print("WARNING: Automatic check of time "
-                              "array in netCDF files is deactivated."
-                              " This may cause problems in case "
-                              "the time dimension is not CF conform.")
+                    logger.warning("WARNING: Automatic check of time "
+                                   "array in netCDF files is deactivated."
+                                   " This may cause problems in case "
+                                   "the time dimension is not CF conform.")
                 
                 cubes.append(cube)
                 loaded_files.append(_file)
             except Exception as e:
-                if self.verbose:
-                    print("Failed to load {} as Iris cube.\n"
-                          "Error: {}".format(_file, repr(e)))
+                logger.warning("Failed to load {} as Iris cube.\n"
+                               "Error: {}".format(_file, repr(e)))
         
         if len(loaded_files) == 0:
             raise IOError("None of the found files for variable {}, and {} "
@@ -508,12 +500,11 @@ class ReadGridded(object):
         if const.GRID_IO.EQUALISE_METADATA:
             meta_init = cubes[0].metadata
             if not all([x.metadata == meta_init for x in cubes]):
-                if self.verbose:
-                    print("Cubes for variable {} have different meta data "
-                          "settings. These will be unified using the metadata "
-                          "dictionary of the first cube (otherwise the method "
-                          "concatenate of the iris package won't work)".format(
-                          var_name))
+                logger.warning("Cubes for variable {} have different meta data "
+                               "settings. These will be unified using the "
+                               "metadata dictionary of the first cube "
+                               "(otherwise the method concatenate of the iris "
+                               "package won't work)".format(var_name))
                 for cube in cubes:
                     cube.metadata =meta_init
             
@@ -534,12 +525,10 @@ class ReadGridded(object):
         
         #create instance of pyaerocom.GriddedData
         data = GriddedData(input=cubes_concat[0], from_files=loaded_files,
-                         name=self.name, ts_type=ts_type, 
-                         verbose=self.verbose)
+                         name=self.name, ts_type=ts_type)
         # crop cube in time (if applicable)
         if self.start_time and self.stop_time:
-            if self.verbose:
-                print("Applying temporal cropping of result cube")
+            logger.info("Applying temporal cropping of result cube")
             try:
 # =============================================================================
 #                 t_constraint = data.get_time_constraint(self.start_time, 
@@ -550,13 +539,12 @@ class ReadGridded(object):
                                               self.stop_time))
                 data = _data
             except Exception as e:
-                if self.verbose:
-                    print("Failed to crop data for {} in time.\n"
-                          "Error: {}".format(var_name, repr(e)))
+                logger.warning("Failed to crop data for {} in time.\n"
+                               "Error: {}".format(var_name, repr(e)))
         
-        if var_name in self.data and self.verbose:
-            print("Warning: Data for variable {} already exists "
-                             "and will be overwritten".format(var_name))
+        if var_name in self.data:
+            logger.warning("Warning: Data for variable {} already exists "
+                           "and will be overwritten".format(var_name))
         self.data[var_name] = data
         return data
     
@@ -672,7 +660,7 @@ class ReadGriddedMulti(object):
     >>> import pyaerocom, pandas
     >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
     >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
-    >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop, verbose=False)
+    >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop)
     >>> print(read.names)
     ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
     >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
@@ -695,8 +683,7 @@ class ReadGriddedMulti(object):
     # e.g. definition of def start_time below)
     _start_time = None
     _stop_time = None
-    def __init__(self, names, start_time=None, stop_time=None,
-                 verbose=const.VERBOSE):
+    def __init__(self, names, start_time=None, stop_time=None):
         
         if isinstance(names, str):
             names = [names]
@@ -707,8 +694,6 @@ class ReadGriddedMulti(object):
         # dictionary containing instances of ModelImportResult for each model
         # is initiated in method `init_results` at end of __init__
         self.results = None
-        
-        self.verbose = verbose
         
         # only overwrite if there is input, note that the attributes
         # start_time and stop_time are defined below as @property getter and
@@ -801,11 +786,8 @@ class ReadGriddedMulti(object):
         """
         self.results = od()
         for name in self.names:
-            self.results[name] = ReadGridded(name,
-                                                   self.start_time, 
-                                                   self.stop_time, 
-                                                   init=False,
-                                                   verbose=self.verbose)
+            self.results[name] = ReadGridded(name, self.start_time, 
+                                             self.stop_time, init=False)
     
     def search_data_dirs(self):
         """Get the directory where model data for a given model resides in
@@ -875,8 +857,7 @@ class ReadGriddedMulti(object):
         --------
         
             >>> read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN",
-            ...                                      "ECMWF_OSUITE"],
-            ...                           verbose=False)
+            ...                                "ECMWF_OSUITE"])
             >>> read.read(["od550aer", "od550so4", "od550bc"])
             
         """
@@ -910,9 +891,8 @@ class ReadGriddedMulti(object):
                 
             else:
                 warnings.append("Failed to import model {}".format(name))
-        if self.verbose:
-            for msg in warnings:
-                print(msg)
+        for msg in warnings:
+            logger.warning(msg)
         return self.results
     
     def __getitem__(self, name):
@@ -951,7 +931,7 @@ if __name__=="__main__":
     
     import iris
     
-    read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015", verbose=True)
+    read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015")
     
     cube = iris.load_cube(read.files[0])
     

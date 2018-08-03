@@ -12,9 +12,9 @@ import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from numpy import meshgrid, linspace, ceil
 
-from pyaerocom import const
+from pyaerocom import logger
 from pyaerocom.plot.config import COLOR_THEME, ColorTheme, MAP_AXES_ASPECT
-from pyaerocom.plot.helpers import (calc_figsize, custom_mpl, 
+from pyaerocom.plot.helpers import (custom_mpl, 
                                     calc_pseudolog_cmaplevels,
                                     projection_from_str)
 from pyaerocom.mathutils import exponent
@@ -27,8 +27,7 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
              add_zero=False, c_under=None, c_over=None, log_scale=True, 
              discrete_norm=True, figh=8, fix_aspect=False, 
              cbar_levels=None, cbar_ticks=None, xticks=None, yticks=None,
-             color_theme=COLOR_THEME, projection=ccrs.PlateCarree(), fig=None,
-             verbose=const.VERBOSE):
+             color_theme=COLOR_THEME, projection=ccrs.PlateCarree(), fig=None):
     """Make a plot of grid data onto a map
     
     Parameters
@@ -84,8 +83,6 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
         input args (``figh`` and ``fix_aspect``) are ignored. Note that the 
         Figure is wiped clean before plotting, so any plotted content will be 
         lost
-    verbose : bool
-        if True, print output
     
     Returns
     -------
@@ -104,9 +101,8 @@ def plot_map(data, xlim=(-180, 180), ylim=(-90, 90), vmin=None, vmax=None,
     
     cube = data.grid
     if len(cube.coord("time").points) > 1:
-        if verbose:
-            print("Input data contains more than one time stamp, using first "
-                  "time stamp")
+        logger.warning("Input data contains more than one time stamp, using "
+                       "first time stamp")
         data = data[0]
     if not isinstance(color_theme, ColorTheme):
         if isinstance(color_theme, str):

@@ -15,7 +15,7 @@ from warnings import warn
 from numpy import nan, where
 from numpy.ma import MaskedArray
 
-from pyaerocom import const
+from pyaerocom import const, logger
 from pyaerocom.exceptions import DataExtractionError
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
@@ -56,8 +56,8 @@ class GriddedData(object):
     -------
     >>> from pyaerocom.io.testfiles import get
     >>> files = get()
-    >>> data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
-    ...                  verbose=False)
+    >>> data = GriddedData(files['models']['aatsr_su_v4.3'], 
+    ...                    var_name="od550aer")
     >>> print(data.var_name)
     od550aer
     >>> print(type(data.longitude))
@@ -88,10 +88,7 @@ class GriddedData(object):
     """
     _grid = None
     _GRID_IO = const.GRID_IO
-    def __init__(self, input=None, var_name=None, verbose=const.VERBOSE, 
-                 **suppl_info):
-        #super(GriddedData, self).__init__(input, var_name, verbose, **suppl_info)
-        self.verbose = verbose
+    def __init__(self, input=None, var_name=None, **suppl_info):
         self.suppl_info = od(from_files     = [],
                              name           = "Unknown",
                              ts_type        = "Unknown",
@@ -241,9 +238,7 @@ class GriddedData(object):
     def start_time(self):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
-            if self.verbose:
-                print("Start time could not be accessed in "
-                                 "GriddedData class")
+            logger.warning("Start time could not be accessed in GriddedData")
             return nan
         return cftime_to_datetime64(self.time[0])[0]
     
@@ -251,9 +246,7 @@ class GriddedData(object):
     def stop_time(self):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
-            if self.verbose:
-                print("Stop time could not be accessed in "
-                                 "GriddedData class")
+            logger.warning("Stop time could not be accessed in GriddedData")
             return nan
         return cftime_to_datetime64(self.time[-1])[0]
         
@@ -293,8 +286,7 @@ class GriddedData(object):
             if self._GRID_IO["DEL_TIME_BOUNDS"]:
                 self.grid.coord("time").bounds = None
         except:
-            if self.verbose:
-                print("Failed to access time coordinate in GriddedData class")
+            logger.warning("Failed to access time coordinate in GriddedData")
         if self._GRID_IO["SHIFT_LONS"]:
             self.check_and_regrid_lons()
         #if isinstance(sel)
@@ -462,8 +454,7 @@ class GriddedData(object):
             False
         """
         if self.grid.coord("longitude").points.max() > 180:
-            if self.verbose:
-                print("Rolling longitudes to -180 -> 180 definition")
+            logger.info("Rolling longitudes to -180 -> 180 definition")
             self.grid = self.grid.intersection(longitude=(-180, 180))
         
     def crop(self, lon_range=None, lat_range=None, 
@@ -518,10 +509,9 @@ class GriddedData(object):
                 try:
                     region = Region(region)
                 except Exception as e:
-                    if self.verbose:
-                        print("Failed to access longitude / latitude range "
-                              "using region ID {}. Error msg: {}".format(region, 
-                                               repr(e)))
+                    logger.warning("Failed to access longitude / latitude range "
+                                   "using region ID {}. Error msg: {}".format(
+                                           region, repr(e)))
             if not isinstance(region, Region):
                 raise ValueError("Invalid input for region")
             suppl["region"] = region
@@ -544,13 +534,11 @@ class GriddedData(object):
                 time_range = (Timestamp(time_range[0]),
                               Timestamp(time_range[1]))
             if all(isinstance(x, Timestamp) for x in time_range):
-                if self.verbose:
-                    print("Cropping along time axis based on Timestamps")
+                logger.info("Cropping along time axis based on Timestamps")
                 time_constraint = get_time_constraint(*time_range)
                 data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
-                if self.verbose:
-                    print("Cropping along time axis based on indices")
+                logger.info("Cropping along time axis based on indices")
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")

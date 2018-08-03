@@ -39,6 +39,7 @@ import numpy as np
 import os
 from warnings import warn
 from collections import OrderedDict as od
+import pyaerocom.obs_io as obs_io
 from pyaerocom.utils import list_to_shortstr, dict_to_str
 from pyaerocom.variable import AllVariables
 try:
@@ -173,15 +174,23 @@ class Config(object):
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  out_base_dir=None, config_file=None, 
                  obs_cache_dir=None):
-
-        self.VERBOSE = True
         
-        self.MIN_YEAR=0
-        self.MAX_YEAR=3000
+        #: Lowest possible year in data
+        self.MIN_YEAR = 0
+        #: Highest possible year in data
+        self.MAX_YEAR = 3000
         
-        # If True, pre-existing time bounds in data files are removed on 
-        # import
+        #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
+        
+        #: Wavelength tolerance for observations if data for required wavelength
+        #: is not available
+        self.OBS_WAVELENGTH_TOL_NM = obs_io.OBS_WAVELENGTH_TOL_NM
+        
+        #: This boolean can be used to enable / disable the former (i.e. use
+        #: available wavelengths of variable in a certain range around variable
+        #: wavelength).
+        self.OBS_ALLOW_ALT_WAVELENGTHS = obs_io.OBS_ALLOW_ALT_WAVELENGTHS
         
         self.GCOSPERCENTCRIT =   np.float(0.1)
         self.GCOSABSCRIT     =   np.float(0.04)

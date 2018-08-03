@@ -3,7 +3,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
-from pyaerocom import const
+from pyaerocom import const, logger
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom import __dir__
@@ -67,7 +67,7 @@ def get_obsnetwork_dir(obs_id):
                       "exists".format(data_dir, obs_id))
     return data_dir
     
-def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
+def check_time_coord(cube, ts_type, year):
     """Method that checks the time coordinate of an iris Cube
     
     This method checks if the time dimension of a cube is accessible and 
@@ -125,9 +125,8 @@ def check_time_coord(cube, ts_type, year, verbose=const.VERBOSE):
                              %(test_datenums, t.units.origin,
                                dts_nominal, dts_values))
     except Exception as e:
-        if verbose:
-            print("Invalid time dimension.\n"
-                  "Error message: {}".format(repr(e)))
+        logger.warning("Invalid time dimension.\n"
+                       "Error message: {}".format(repr(e)))
         ok = False
     return ok
 

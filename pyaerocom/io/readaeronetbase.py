@@ -121,12 +121,14 @@ class ReadAeronetBase(ReadUngriddedBase):
         for var, colname in self.VAR_NAMES_FILE.items():
             if colname in mapping:
                 col_index[var] = mapping[colname]  
-            else:
+            elif const.OBS_ALLOW_ALT_WAVELENGTHS:
+                known = False
                 if var in self.ALT_VAR_NAMES_FILE:
                     for alt_colname in self.ALT_VAR_NAMES_FILE[var]:
                         if alt_colname in mapping:
+                            known = True
                             col_index[var] = mapping[alt_colname]
-                else:
+                if not known:
                     try:
                         idx = self._search_var_wavelength_tol(var, cols)
                         col_index[var] = idx

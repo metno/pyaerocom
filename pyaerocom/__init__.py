@@ -1,3 +1,31 @@
+def _init_logger():
+    import logging
+    ### LOGGING
+# Note: configuration will be propagated to all child modules of
+# pyaerocom, for details see 
+# http://eric.themoritzfamily.com/learning-python-logging.html
+    logger = logging.getLogger('pyaerocom')
+    
+    
+    default_formatter = logging.Formatter(\
+       "%(asctime)s:%(levelname)s:\n%(message)s")
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(default_formatter)
+    
+    logger.addHandler(console_handler)
+    
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+def change_verbosity(new_level='debug'):
+    if isinstance(new_level, str):
+        if not new_level in LOGLEVELS:
+            raise ValueError("Invalid input for loglevel, choose "
+                             "from {}".format(LOGLEVELS.keys()))
+        new_level = LOGLEVELS[new_level]
+    logger.setLevel(new_level)
+    
 ### Functions for package initialisation
 def _init_supplemental():
     from pkg_resources import get_distribution
@@ -15,46 +43,18 @@ def _init_config(package_dir):
         cfg = join(package_dir, 'data', 'paths.ini')
     return Config(config_file=cfg)
 
-import logging
-
 __version__, __dir__ = _init_supplemental()
 
-###############################################################################
-### LOGGING
-# Note: configuration will be propagated to all child modules of
-# pyaerocom, for details see 
-# http://eric.themoritzfamily.com/learning-python-logging.html
-logger = logging.getLogger('pyaerocom')
-
-
-default_formatter = logging.Formatter(\
-   "%(asctime)s:%(levelname)s:\n%(message)s")
-
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(default_formatter)
-
-logger.addHandler(console_handler)
-
-logger.setLevel(logging.DEBUG)
-
-
+logger = _init_logger()
 LOGLEVELS = {'debug': 10,
              'info': 20,
              'warning': 30,
              'error': 40,
              'critical': 50}
 
-def change_verbosity(new_level='debug'):
-    if isinstance(new_level, str):
-        if not new_level in LOGLEVELS:
-            raise ValueError("Invalid input for loglevel, choose "
-                             "from {}".format(LOGLEVELS.keys()))
-        new_level = LOGLEVELS[new_level]
-    logger.setLevel(new_level)
-###############################################################################
-
 # Imports
 from . import utils
+from . import obs_io
 # custom toplevel classes
 from .variable import Variable
 from .region import Region
@@ -62,7 +62,7 @@ from .config import Config
 
 const = _init_config(__dir__)
 if not const.READY:
-    print("WARNING: Failed to initiate data directories")
+    logger.warning("WARNING: Failed to initiate data directories")
     
 from . import mathutils
 from . import multiproc

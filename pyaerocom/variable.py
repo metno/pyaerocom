@@ -10,6 +10,7 @@ try:
 except: 
     from configparser import ConfigParser
 from pyaerocom import __dir__, logger
+from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.utils import BrowseDict, list_to_shortstr, dict_to_str
 
@@ -89,7 +90,7 @@ class Variable(BrowseDict):
         # parameters for reading of obsdata
         
         #wavelength tolerance in nm
-        self.obs_wavelength_tol_nm = 10.
+        self.obs_wavelength_tol_nm = None
         
         # settings for scatter plots
         self.scat_xlim = None
@@ -111,7 +112,9 @@ class Variable(BrowseDict):
             self.parse_from_ini(var_name, cfg) 
         
         self.update(**kwargs)
-     
+        if self.obs_wavelength_tol_nm is None:
+            self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
+            
     @property
     def unit_str(self):
         if self.unit is None:

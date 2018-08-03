@@ -89,7 +89,6 @@ class EbasColDef(dict):
     
 class NasaAmesHeader(object):
     _NUM_FIXLINES = 13
-    _VERBOSE = False
     _HEAD_ROWS_MANDATORY = [0,5,8,9,10,11]
     
     #conversion methods for first 13 header lines of
@@ -129,7 +128,7 @@ class NasaAmesHeader(object):
                         CONV_MULTIFLOAT, #12
                         CONV_STR] #13
     
-    def __init__(self, verbose=const.VERBOSE, **kwargs):
+    def __init__(self, **kwargs):
         self._head_fix = od(num_head_lines = np.nan,
                             num_head_fmt = np.nan,
                             data_originator = "",
@@ -148,16 +147,7 @@ class NasaAmesHeader(object):
                             descr_first_col = "")
         self._var_defs = []
         self._meta = od()
-        self.verbose = verbose
         self.update(**kwargs)
-    
-    @property
-    def verbose(self):
-        return self._VERBOSE
-    
-    @verbose.setter
-    def verbose(self, val):
-        self._VERBOSE = val
         
     @property
     def head_fix(self):
@@ -267,8 +257,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
     quality_check : bool
         perform quality check after import (for details see 
         :func:`_quality_check`)
-    verbose : bool
-        print output
     **kwargs 
         optional input args that are passed to init of :class:`NasaAmesHeader`
         base class
@@ -277,8 +265,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
     TIMEUNIT2SECFAC = dict(days = 3600*24)
     def __init__(self, file=None, only_head=False, replace_invalid_nan=True,
                  convert_timestamps=True, decode_flags=True, 
-                 quality_check=True, verbose=const.VERBOSE, **kwargs):
-        super(EbasNasaAmesFile, self).__init__(verbose, **kwargs)
+                 quality_check=True, **kwargs):
+        super(EbasNasaAmesFile, self).__init__(**kwargs)
         self._data_header = [] #Header line of data block
         self._data = [] #data block
         
@@ -460,7 +448,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
             perform quality check after import (for details see 
             :func:`_quality_check`)
         """
-        verbose = self.verbose
         logger.info("Reading NASA Ames file:\n{}".format(nasa_ames_file))
         lc = 0 #line counter
         dc = 0 #data block line counter
