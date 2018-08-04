@@ -50,7 +50,7 @@ class UngriddedData(object):
         values are arrays or lists, specifying indices (rows) of these 
         station / variable information in :attr:`_data`.
     """
-    
+    __version__ = '0.1.0'
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -71,7 +71,7 @@ class UngriddedData(object):
     
     def __init__(self):
         #keep private, this is not supposed to be used by the user
-        self._data = np.empty([self._ROWNO, self._COLNO])*np.nan
+        self._data = np.empty([self._ROWNO, self._COLNO]) * np.nan
         self.metadata = od()
         self.meta_idx = od()
         

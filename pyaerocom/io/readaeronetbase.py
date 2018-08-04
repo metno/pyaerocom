@@ -4,6 +4,7 @@ import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.exceptions import MetaDataError, VariableNotFoundError
 from pyaerocom import const
 
@@ -71,17 +72,49 @@ class ReadAeronetBase(ReadUngriddedBase):
         """
         return self._col_index
     
-    def infer_wavelength_colname(self):
-        """Method that may be implemented to infer variable wavelength from 
-        column name
+# =============================================================================
+#     def infer_wavelength_colname(self):
+#         """Method that may be implemented to infer variable wavelength from 
+#         column name
+#         
+#         Note
+#         ----
+#         See e.g. :class:`ReadAeronetInvV2` where this method is used to find
+#         wavelengths in case the exact variable wavelength is not provided
+#         """
+#         raise NotImplementedError('Method infer_wavelength_colname is not '
+#                                   'implemented in class {}'.format(type(self).__name__))
+# =============================================================================
+    
+    def infer_wavelength_colname(self, colname, low=250, high=2000):
+        """Get variable wavelength from column name
         
-        Note
-        ----
-        See e.g. :class:`ReadAeronetInvV2` where this method is used to find
-        wavelengths in case the exact variable wavelength is not provided
+        Parameters
+        ----------
+        colname : str
+            string of column name
+        low : int
+            lower limit of accepted value range
+        high : int
+            upper limit of accepted value range
+        
+        Returns
+        -------
+        str
+            wavelength in nm as floating str
+        
+        Raises
+        ------
+        ValueError
+            if None or more than one number is detected in variable string
         """
-        raise NotImplementedError('Method infer_wavelength_colname is not '
-                                  'implemented in class {}'.format(type(self).__name__))
+        nums = numbers_in_str(colname)
+        if len(nums) == 1:
+            if low <= int(nums[0]) <= high:
+                self.logger.debug('Succesfully extracted wavelength {} nm '
+                                 'from column name {}'.format(nums[0], colname))
+                return nums[0]
+        raise ValueError('Failed to extract wavelength from colname {}'.format(colname))
         
     def _update_col_index(self, col_index_str):
         """Update column information for fast access during read_file
@@ -220,6 +253,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         UngriddedData
             data object
         """
+        
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         if files is None:
@@ -245,8 +279,15 @@ class ReadAeronetBase(ReadUngriddedBase):
         meta_idx = data_obj.meta_idx
         
         num_vars = len(vars_to_retrieve)
-
-        for _file in files:
+        num_files = len(files)
+        disp_each = int(num_files*0.1)
+        if disp_each < 1:
+            disp_each = 1
+        for i, _file in enumerate(files):
+            
+            if i%disp_each == 0:
+                self.logger.info("Reading file {} of {} ({})".format(i, 
+                                 num_files, type(self).__name__))
             station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
             # the location in the data set is time step dependant!

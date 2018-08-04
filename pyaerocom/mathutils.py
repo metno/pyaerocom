@@ -47,32 +47,7 @@ def numbers_in_str(input_string):
             IN_NUM=False
     if IN_NUM:
         numbers.append(c_num)
-    return numbers
-
-def od_wavelength_from_varstr(var_str):
-    """Extracts AOD wavelength from Aerocom variable name
-    
-    Parameters
-    ----------
-    var_str : str
-        Aerocom variable string (must start with od)
-       
-    Returns
-    -------
-    int
-        wavelength in nm
-       
-    Raises
-    ------
-    ValueError
-        if input string is invalid
-    Example
-    -------
-    >>> od_wavelength_from_varstr('od500aer')
-    500
-    """
-    raise NotImplementedError('Not sure if we will need this...')
-    
+    return numbers    
     
 def calc_ang4487aer(data):
     """Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs
@@ -125,8 +100,31 @@ def calc_od550aer(data):
                            od_ref='od500aer', 
                            lambda_ref=.50, 
                            od_ref_alt='od440aer', 
-                           lambda_ref_alt=.44)
+                           lambda_ref_alt=.44,
+                           use_angstrom_coeff='ang4487aer')
 
+def calc_abs550aer(data):
+    """Compute AOD at 550 nm using Angstrom coefficient and 500 nm AOD
+        
+    Parameters
+    ----------
+    data : dict-like
+        data object containing imported results
+    
+    Returns
+    -------
+    :obj:`float` or :obj:`ndarray`
+        AOD(s) at shifted wavelength
+    """
+    return _calc_od_helper(data=data, 
+                           var_name='abs550aer', 
+                           to_lambda=.55, 
+                           od_ref='abs500aer', 
+                           lambda_ref=.50, 
+                           od_ref_alt='abs440aer', 
+                           lambda_ref_alt=.44,
+                           use_angstrom_coeff='angabs4487aer')
+    
 def calc_od550gt1aer(data):
     """Compute coarse mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD
         
@@ -144,7 +142,8 @@ def calc_od550gt1aer(data):
                            var_name='od550gt1aer', 
                            to_lambda=.55, 
                            od_ref='od500gt1aer', 
-                           lambda_ref=.50)
+                           lambda_ref=.50,
+                           use_angstrom_coeff='ang4487aer')
 
 def calc_od550lt1aer(data):
     """Compute fine mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD
@@ -163,7 +162,8 @@ def calc_od550lt1aer(data):
                            var_name='od550lt1aer', 
                            to_lambda=.55, 
                            od_ref='od500lt1aer', 
-                           lambda_ref=.50)
+                           lambda_ref=.50,
+                           use_angstrom_coeff='ang4487aer')
         
 def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
     """Compute Angstrom coefficient based on 2 optical densities
@@ -213,7 +213,8 @@ def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref,
     return od_ref * (lambda_ref / to_lambda) ** angstrom_coeff
 
 def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref, 
-                    od_ref_alt=None, lambda_ref_alt=None):
+                    od_ref_alt=None, lambda_ref_alt=None, 
+                    use_angstrom_coeff='ang4487aer'):
     """Helper method for computing ODs
     
     Parameters
@@ -237,6 +238,8 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         invalid)
     lambda_ref_alt : :obj:`float` or :obj:`ndarray`, optional
         wavelength corresponding to alternative reference AOD
+    use_angstrom_coeff : str
+        name of Angstrom coefficient in data, that is used for computation
         
     Returns
     -------
@@ -246,18 +249,26 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     Raises
     ------
     AttributeError
-        if ``od_ref`` or "ang4487aer" not available in data
+        if neither ``od_ref`` nor ``od_ref_alt`` are available in data, or if
+        ``use_angstrom_coeff`` is missing
     """
     if not od_ref in data:
-        raise AttributeError("Reference OD at {} nm data is not available in "
-                             "provided data".format(lambda_ref))
-    elif not 'ang4487aer' in data:
+        logger.warning('Reference OD at {} nm is not available in data, '
+                       'checking alternative'.format(lambda_ref))
+        if od_ref_alt is None or not od_ref_alt in data:
+            raise AttributeError('No alternative OD found for computation of '
+                                 '{}'.format(var_name))
+        return compute_od_from_angstromexp(to_lambda=to_lambda, 
+                                           od_ref=data[od_ref_alt],
+                                           lambda_ref=lambda_ref_alt, 
+                                           angstrom_coeff=data[use_angstrom_coeff])
+    elif not use_angstrom_coeff in data:
         raise AttributeError("Angstrom coefficient (440-870 nm) is not "
                              "available in provided data")
     result = compute_od_from_angstromexp(to_lambda=to_lambda, 
                                           od_ref=data[od_ref],
                                           lambda_ref=lambda_ref, 
-                                          angstrom_coeff=data['ang4487aer'])
+                                          angstrom_coeff=data[use_angstrom_coeff])
     # optional if available
     if od_ref_alt in data:
         # fill up time steps that are nans with values calculated from the
@@ -266,11 +277,11 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         
         if len(mask) > 0: #there are nans
             ods_alt = data[od_ref_alt][mask]
-            ang4487aer = data['ang4487aer'][mask]
+            ang = data[use_angstrom_coeff][mask]
             replace = compute_od_from_angstromexp(to_lambda=to_lambda, 
                                                     od_ref=ods_alt,
                                                     lambda_ref=lambda_ref_alt, 
-                                                    angstrom_coeff=ang4487aer)
+                                                    angstrom_coeff=ang)
             result[mask] = replace
     
     try:

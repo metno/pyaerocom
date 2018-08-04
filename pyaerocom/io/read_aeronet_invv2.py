@@ -64,7 +64,10 @@ class ReadAeronetInvV2(ReadAeronetBase):
                           const.AERONET_INV_V2L15_DAILY_NAME]
     
     #: default variables for read method
-    DEFAULT_VARS = ['ssa675aer','ssa440aer']
+    DEFAULT_VARS = ['ssa675aer','ssa440aer', 'ssa870aer', 'ssa1020aer']
+    
+                    #'abs550aer',
+                    #'od550aer'
     
     #: value corresponding to invalid measurement
     NAN_VAL = -9999.
@@ -105,42 +108,14 @@ class ReadAeronetInvV2(ReadAeronetBase):
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
-    def infer_wavelength_colname(self, colname, low=250, high=2000):
-        """Get variable wavelength from column name
-        
-        Parameters
-        ----------
-        colname : str
-            string of column name
-        low : int
-            lower limit of accepted value range
-        high : int
-            upper limit of accepted value range
-        
-        Returns
-        -------
-        str
-            wavelength in nm as floating str
-        
-        Raises
-        ------
-        ValueError
-            if None or more than one number is detected in variable string
-        """
-        nums = numbers_in_str(colname)
-        if len(nums) == 1:
-            if low <= int(nums[0]) <= high:
-                self.logger.debug('Succesfully extracted wavelength {} nm '
-                                 'from column name {}'.format(nums[0], colname))
-                return nums[0]
-        raise ValueError('Failed to extract wavelength from colname {}'.format(colname))
+
         
             
     # TODO: currently every file is read, regardless of whether it actually
     # contains the desired variables or not. Do we need that? Slows stuff down..
     # Also: Quick check reading all files in the database showed that only 
     # about 20% of the files contain the default variables..
-    def read_file(self, filename, vars_to_retrieve=['ssa675aer','ssa440aer'],
+    def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet file containing results from v2 inversion algorithm
 
@@ -282,11 +257,24 @@ class ReadAeronetInvV2(ReadAeronetBase):
         return data_out
 
 if __name__=="__main__":
+    import matplotlib.pyplot as plt
+    plt.close('all')
     read = ReadAeronetInvV2()
     read.verbosity_level = 'warning'
     
-    data = read.read(read.PROVIDES_VARIABLES)
+    #data = read.read(read.PROVIDES_VARIABLES)
     
-    data_first = read.read_first_file()
-    print(read._alt_var_cols)
+    data  = read.read_first_file()
     
+    wavelengths = [440, 675, 870, 1020]
+    vals = [np.nanmean(data.ssa440aer),
+            np.nanmean(data.ssa675aer),
+            np.nanmean(data.ssa870aer),
+            np.nanmean(data.ssa1020aer)]
+    
+    plt.plot(wavelengths, vals, '--og')
+    
+    avgssa550aer = np.interp(550, wavelengths, vals)
+    
+    plt.plot(550, avgssa550aer, ' xb')
+    read.print_all_columns()

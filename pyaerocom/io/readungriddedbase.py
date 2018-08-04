@@ -16,15 +16,15 @@ class ReadUngriddedBase(abc.ABC):
     
     .. note::
     
-        Even though this is a template for a reading class, it prodides the 
-        option to compute variables during import, that are not contained in 
-        the actual data files. These can be specified for each auxiliary 
-        parameter using the two class attributes ``AUX_REQUIRES`` (what 
-        additional variables are required to perform the computation) and 
-        ``AUX_FUNS`` (functions used to perform the computations). 
+        The two dictionaries ``AUX_REQUIRES`` and ``AUX_FUNS`` can be filled 
+        with variables that are not contained in the original data files but
+        are computed during the reading. The former specifies what additional 
+        variables are required to perform the computation and the latter 
+        specifies functions used to perform the computations of the auxiliary 
+        variables. 
         See, for instance, the class :class:`ReadAeronetSunV2`, which includes 
         the computation of the AOD at 550nm and the Angstrom coefficient 
-        (in 440-870 nm range).
+        (in 440-870 nm range) from AODs measured at other wavelengths.
     """
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided

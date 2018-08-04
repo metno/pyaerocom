@@ -114,7 +114,7 @@ class Variable(BrowseDict):
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
-            
+                
     @property
     def unit_str(self):
         if self.unit is None:

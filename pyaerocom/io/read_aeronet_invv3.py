@@ -31,13 +31,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import os, re
+import os
 
 import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.mathutils import calc_od550aer
+from pyaerocom.mathutils import calc_abs550aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom import StationData
 
@@ -64,18 +64,33 @@ class ReadAeronetInvV3(ReadAeronetBase):
                           const.AERONET_INV_V3L15_DAILY_NAME]
     
     #: default variables for read method
-    DEFAULT_VARS = ['abs550aer']
+    DEFAULT_VARS = ['abs550aer',
+                    'od550aer']
     
     #: value corresponding to invalid measurement
     NAN_VAL = -999.
+    
+    #: dictionary containing information about additionally required variables
+    #: for each auxiliary variable (i.e. each variable that is not provided
+    #: by the original data but computed on import)
+    AUX_REQUIRES = {'abs550aer'     :   ['abs440aer',
+                                         'angabs4487aer'],
+                    'od550aer'     :   ['od440aer',
+                                        'ang4487aer']}
+                    
+    #: Functions that are used to compute additional variables (i.e. one 
+    #: for each variable defined in AUX_REQUIRES)
+    AUX_FUNS = {'abs550aer'     :   calc_abs550aer,
+                'od550aer'      :   calc_od550aer}
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['abs440aer'] = 'Absorption_AOD[440nm]'
-    VAR_NAMES_FILE['abs870aer'] = 'Absorption_AOD[870nm]'
     VAR_NAMES_FILE['angabs4487aer'] = 'Absorption_Angstrom_Exponent_440-870nm'
-
+    VAR_NAMES_FILE['od440aer'] = 'AOD_Extinction-Total[440nm]'
+    VAR_NAMES_FILE['ang4487aer'] = 'Extinction_Angstrom_Exponent_440-870nm-Total'
+    
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
@@ -84,17 +99,10 @@ class ReadAeronetInvV3(ReadAeronetBase):
     META_NAMES_FILE['date'] = 'Date(dd:mm:yyyy)'
     META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
     META_NAMES_FILE['day_of_year'] = 'Day_of_Year(fraction)'
-    
-    #: dictionary containing information about additionally required variables
-    #: for each auxiliary variable (i.e. each variable that is not provided
-    #: by the original data but computed on import)
-    AUX_REQUIRES = {'abs550aer'   :   ['abs440aer', 
-                                       'abs870aer',
-                                       'angabs4487aer']}
-                    
-    #: Functions that are used to compute additional variables (i.e. one 
-    #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {'abs550aer'   :   calc_od550aer}
+    META_NAMES_FILE['station_name'] = 'Site'
+    META_NAMES_FILE['stat_lat'] = 'Latitude(Degrees)'
+    META_NAMES_FILE['stat_lon'] = 'Longitude(Degrees)'
+    META_NAMES_FILE['stat_alt'] = 'Elevation(m)'
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -148,29 +156,34 @@ class ReadAeronetInvV3(ReadAeronetBase):
             data_out[var] = []
         
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
+        self.logger.debug("Reading file {}".format(filename))
     
         with open(filename, 'rt') as in_file:
-            #get rid of the first com,a seperated string element...
-            c_dummy = ','.join(in_file.readline().strip().split(',')[1:])
-            # re.split(r'=|\,',c_dummy)
-            i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
-            dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['stat_lat'] = float(dict_loc['lat'])
-            data_out['stat_lon'] = float(dict_loc['long'])
-            data_out['stat_alt'] = float(dict_loc['elev'])
-            data_out['station_name'] = dict_loc['Locations']
-            data_out['PI'] = dict_loc['PI']
-            data_out['PI_email'] = dict_loc['Email']
+            data_out['dataset_info'] = in_file.readline().strip()
+            self.logger.debug('Skipping line: {}'.format(in_file.readline()))
+            data_out['algorithm_info'] = in_file.readline().strip()
+            
+            self.logger.debug('Skipping line: {}'.format(in_file.readline()))
+            
+            
+            c_dummy = in_file.readline().strip().split(',')
+            data_out['freq_info'] = c_dummy[0].strip()
+            
+            pi_info = c_dummy[1].strip().split(';')
+            # re.split(r'=|\,',c_dummy)
+            
+            
+            data_out['PI'] = pi_info[0].split('PI=')[1].strip()
+            data_out['PI_email'] = pi_info[1].split('PI Email=')[1].strip()
 
             #skip next two lines
-            self.logger.info('Skipping line:\n{}'.format(in_file.readline()))
-            self.logger.info('Skipping line:\n{}'.format(in_file.readline()))
+            self.logger.debug('Skipping line:\n{}'.format(in_file.readline()))
+            #self.logger.info('Skipping line:\n{}'.format(in_file.readline()))
             
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:
-                self.logger.info("Header has changed, reloading col_index map")
+                self.logger.debug("Header has changed, reloading col_index map")
                 self._update_col_index(col_index_str)
             col_index = self.col_index
             
@@ -244,10 +257,18 @@ class ReadAeronetInvV3(ReadAeronetBase):
         return data_out
 
 if __name__=="__main__":
+    from pyaerocom import change_verbosity
+    change_verbosity('critical')
     read = ReadAeronetInvV3()
-    read.verbosity_level = 'debug'
+    read15 = ReadAeronetInvV3(const.AERONET_INV_V3L15_DAILY_NAME)
+    read.verbosity_level = 'info'
     
-    files = read.get_file_list()
-    read.read_first_file()
+    data = read.read_first_file()
+    data15 = read15.read_first_file()
+    print(data)
+    #print(data15)
     #read.print_all_columns()
     
+    #ax = data.plot_variable('od550aer')
+    
+    #all_lvl2 = read.read()

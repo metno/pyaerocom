@@ -113,7 +113,7 @@ class StationData(Station):
         if not data.ndim == 1:
             raise NotImplementedError('Multi-dimensional data columns cannot '
                                       'be converted to time-series')
-        if not len(data) == len(self.index):
+        if not len(data) == len(self.dtime):
             raise ValueError("Mismatch between length of data array for "
                              "variable {} (length: {}) and time array  "
                              "(length: {}).".format(var_name, len(data), 
