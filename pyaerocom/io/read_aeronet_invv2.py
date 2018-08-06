@@ -54,7 +54,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
     _FILEMASK = '*.dubovikday'
     
     #: version log of this class (for caching)
-    __version__ = "0.06"
+    __version__ = "0.07"
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
@@ -112,7 +112,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
     #: by the original data but computed on import)
     AUX_REQUIRES = {'abs550aer'     :   ['abs440aer',
                                          'angabs4487aer'],
-                    'od550aer'     :   ['od440aer',
+                    'od550aer'      :   ['od440aer',
                                         'ang4487aer']}
                     
     #: Functions that are used to compute additional variables (i.e. one 

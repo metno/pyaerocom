@@ -38,6 +38,7 @@ from pyaerocom.exceptions import NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
+from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_earlinet import ReadEarlinet
@@ -51,24 +52,16 @@ from pyaerocom import const, logger
 # TODO Note: Removed infiles (list of files from which datasets were read, since it 
 # was not used anywhere so far)
 class ReadUngridded:
-    """Factory class for reading of ungridded data based on obsnetwork ID
-    
-    """
-    SUPPORTED = [ReadAeronetInvV2,
+    """Factory class for reading of ungridded data based on obsnetwork ID"""
+    SUPPORTED = [ReadAeronetInvV3,
+                 ReadAeronetInvV2,
                  ReadAeronetSdaV2,
                  ReadAeronetSdaV3,
                  ReadAeronetSunV2,
                  ReadAeronetSunV3,
                  ReadEarlinet,
                  ReadEbas]
-    #SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
-    SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-                          const.AERONET_INV_V2L2_DAILY_NAME,
-                          const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
-                          const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
-                          const.AERONET_SUN_V3L2_SDA_DAILY_NAME,
-                          const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME,
-                          const.EARLINET_NAME]
+    
     # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
@@ -95,7 +88,7 @@ class ReadUngridded:
         self.data_version = {}
     
         self.cache_files = {}
-    
+                                      
     @property
     def datasets_to_read(self):
         return self._datasets_to_read
@@ -232,17 +225,10 @@ class ReadUngridded:
         
     
 if __name__=="__main__":
-    test = [const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
-            const.EARLINET_NAME]
-    read = ReadUngridded(test)
-    
-    print(read.datasets_to_read)
-    
-    from time import time
-    t0 = time()
+
+    read = ReadUngridded(const.AERONET_INV_V2L2_DAILY_NAME)
     read.read()
-    print('Elapsed time first read: {} s'.format(time() - t0))
     
-    t0 = time()
+    read = ReadUngridded(const.AERONET_INV_V3L2_DAILY_NAME)
     read.read()
-    print('Elapsed time 2nd read: {} s'.format(time() - t0))
+    

@@ -48,7 +48,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.e*'
     
     #: version log of this class (for caching)
-    __version__ = "0.06"
+    __version__ = "0.07"
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.EARLINET_NAME
@@ -298,11 +298,13 @@ class ReadEarlinet(ReadUngriddedBase):
         for i, _file in enumerate(files):
             self.logger.info('File {} ({})'.format(i, num_files))
             try:
-                station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
-                if not any([var in station_data.contains_vars for var in vars_to_retrieve]):
+                station_data = self.read_file(_file, vars_to_retrieve=
+                                              vars_to_retrieve)
+                if not any([var in station_data.contains_vars for var in 
+                            vars_to_retrieve]):
                     self.logger.info("Station {} contains none of the desired "
-                                     "variables. Skipping "
-                                     "station...".format(station_data.station_name))
+                                     "variables. Skipping station..."
+                                     .format(station_data.station_name))
                     continue
                 stat_code = station_data['stat_code']
                 if last_stat_code != stat_code:
@@ -361,6 +363,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     
                     if not var in metadata[meta_key]['variables']:
                         metadata[meta_key]['variables'].append(var)
+                    if not var in data_obj.contains_vars:
+                        data_obj.contains_vars.append(var)
                     idx += add
             except:
                 self.read_failed.append(_file)

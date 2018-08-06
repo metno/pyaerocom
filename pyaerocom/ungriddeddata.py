@@ -4,7 +4,7 @@ import numpy as np
 from copy import deepcopy
 from collections import OrderedDict as od
 import pandas as pd
-
+from math import isclose
 from pyaerocom import logger
 from pyaerocom.utils import dict_to_str, list_to_shortstr
 
@@ -63,6 +63,7 @@ class UngriddedData(object):
     _COLNO = 11
     _ROWNO = 10000
     _CHUNKSIZE = 1000
+    
     # The following number denotes the kept precision after the decimal dot of
     # the location (e.g denotes lat = 300.12345)
     # used to code lat and long in a single number for a uniqueness test
@@ -75,7 +76,16 @@ class UngriddedData(object):
         self.metadata = od()
         self.meta_idx = od()
         
+        self.contains_vars = []
+        
         #self.logger = logging.getLogger(__name__)
+    
+    @property
+    def vars_to_retrieve(self):
+        logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
+                                          "deprectated. Please use attr "
+                                          "contains_vars instead"))
+        return self.contains_vars
     
     def add_chunk(self, size=None):
         """Extend the size of the data array
@@ -104,7 +114,8 @@ class UngriddedData(object):
 # =============================================================================
     def _to_timeseries_helper(self, val, start_date=None, end_date=None, 
                               freq=None):
-        """small helper routine for self.to_timeseries to not to repeat the same code fragment three times"""
+        """small helper routine for self.to_timeseries to not to repeat the 
+        same code fragment three times"""
 
         data_found_flag = False
         temp_dict = {}
@@ -227,6 +238,16 @@ class UngriddedData(object):
     def is_empty(self):
         return True if len(self.metadata) == 0 else False
     
+    @property
+    def all_datasets(self):
+        """Return list of names of all datasets in this object"""
+        datasets = []
+        for info in self.metadata.values():
+            ds = info['dataset_name']
+            if not ds in datasets:
+                datasets.append(ds)
+        return datasets
+        
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
         
@@ -349,7 +370,7 @@ class UngriddedData(object):
     def station_name(self, value):
         raise AttributeError("Station names cannot be changed, please check "
                              "underlying data type stored in attribute grid")
-
+    
     @property
     def time(self):
         """Time dimension of data"""
@@ -359,6 +380,44 @@ class UngriddedData(object):
     def time(self, value):
         raise AttributeError("Time array cannot be changed, please check "
                              "underlying data type stored in attribute grid")
+      
+    def find_common_stations(self, other, check_coordinates=True, 
+                             check_vars_available=None):
+        """Search common stations between two UngriddedData objects
+        
+        Parameters
+        ----------
+        other : UngriddedData
+            other object of ungridded data 
+        check_coordinates : bool
+            boolean that
+            
+        Returns
+        -------
+        OrderedDict
+            dictionary where keys are meta_indices of the common station in 
+            this object and corresponding values are meta indices of the 
+            station in the other object
+            
+        """
+        station_map = od()
+        stations_other = other.station_name
+        for meta_idx, info in self.metadata.items():
+            name = info['station_name']
+            if name in stations_other:
+                for meta_idx_other, meta_other in other.metadata.items():
+                    if meta_other['station_name'] == name:
+                        station_map[meta_idx] = meta_idx_other
+                        
+        return station_map
+        
+    def find_common_data_points(self, other, var_name):
+        if not isinstance(other, UngriddedData):
+            raise NotImplementedError('So far, common data points can only be '
+                                      'retrieved between two instances of '
+                                      'UngriddedData')
+    
+        common_stations = self.find_common_stations(other)
         
     def __getitem__(self, key, val):
         raise NotImplementedError
@@ -384,6 +443,7 @@ class UngriddedData(object):
                 s += "\n%s: %s" %(k,v)
         s += arrays
         return s
+    
 if __name__ == "__main__":
     from pyaerocom.io import ReadAeronetSdaV2
     read = ReadAeronetSdaV2()

@@ -13,7 +13,8 @@ class ReadAeronetBase(ReadUngriddedBase):
     
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
-    """
+    """    
+    
     #: column delimiter in data block of files
     COL_DELIM = ','
     
@@ -71,20 +72,6 @@ class ReadAeronetBase(ReadUngriddedBase):
         information.
         """
         return self._col_index
-    
-# =============================================================================
-#     def infer_wavelength_colname(self):
-#         """Method that may be implemented to infer variable wavelength from 
-#         column name
-#         
-#         Note
-#         ----
-#         See e.g. :class:`ReadAeronetInvV2` where this method is used to find
-#         wavelengths in case the exact variable wavelength is not provided
-#         """
-#         raise NotImplementedError('Method infer_wavelength_colname is not '
-#                                   'implemented in class {}'.format(type(self).__name__))
-# =============================================================================
     
     def infer_wavelength_colname(self, colname, low=250, high=2000):
         """Get variable wavelength from column name
@@ -339,6 +326,9 @@ class ReadAeronetBase(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
                 meta_idx[meta_key][var] = np.arange(start, stop)
+                
+                if not var in data_obj.contains_vars:
+                    data_obj.contains_vars.append(var)
             
             idx += totnum  
             meta_key = meta_key + 1.
