@@ -6,6 +6,7 @@ from collections import OrderedDict as od
 import pandas as pd
 from math import isclose
 from pyaerocom import logger
+from pyaerocom.exceptions import DataExtractionError
 from pyaerocom.utils import dict_to_str, list_to_shortstr
 
 class UngriddedData(object):
@@ -381,16 +382,33 @@ class UngriddedData(object):
         raise AttributeError("Time array cannot be changed, please check "
                              "underlying data type stored in attribute grid")
       
-    def find_common_stations(self, other, check_coordinates=True, 
-                             check_vars_available=None):
+    def find_common_stations(self, other, check_vars_available=None,
+                             check_coordinates=True, 
+                             max_diff_coords_km=0.1):
         """Search common stations between two UngriddedData objects
+        
+        This method loops over all stations that are stored within this 
+        object (using :attr:`metadata`) and checks if the corresponding 
+        station exists in a second instance of :class:`UngriddedData` that
+        is provided. The check is performed on basis of the station name, and
+        optionally, if desired, for each station name match, the lon lat 
+        coordinates can be compared within a certain radius (defaul 0.1 km).
+        
+        Note
+        ----
+        This is a beta version and thus, to be treated with care.
         
         Parameters
         ----------
         other : UngriddedData
             other object of ungridded data 
+        check_vars_available : :obj:`list` (or similar), optional
+            list of variables that need to be available in stations of both 
+            datasets
         check_coordinates : bool
-            boolean that
+            if True, check that lon and lat coordinates of station candidates
+            match within a certain range, specified by input parameter
+            ``max_diff_coords_km``
             
         Returns
         -------
@@ -400,25 +418,106 @@ class UngriddedData(object):
             station in the other object
             
         """
+        if len(self.all_datasets) > 1:
+            raise NotImplementedError('This data object contains data from '
+                                      'more than one dataset and thus may '
+                                      'include multiple station matches for '
+                                      'each station ID. This method, however '
+                                      'is implemented such, that it checks '
+                                      'only the first match for each station')
+        elif len(other.all_datasets) > 1:
+            raise NotImplementedError('Other data object contains data from '
+                                      'more than one dataset and thus may '
+                                      'include multiple station matches for '
+                                      'each station ID. This method, however '
+                                      'is implemented such, that it checks '
+                                      'only the first match for each station')
+        _check_vars = False
+        if check_vars_available is not None:
+            _check_vars = True
+            if isinstance(check_vars_available, str):
+                check_vars_available = [check_vars_available]
+            elif isinstance(check_vars_available, (tuple, np.ndarray)):
+                check_vars_available = list(check_vars_available)
+            if not isinstance(check_vars_available, list):
+                raise ValueError('Invalid input for check_vars_available. Need '
+                                 'str or list-like, got: {}'
+                                 .format(check_vars_available))
+        lat_len = 111.0 #approximate length of latitude degree in km
         station_map = od()
         stations_other = other.station_name
-        for meta_idx, info in self.metadata.items():
-            name = info['station_name']
-            if name in stations_other:
+        for meta_idx, meta in self.metadata.items():
+            name = meta['station_name']
+            # bool that is used to accelerate things
+            ok = True
+            if _check_vars:
+                for var in check_vars_available:
+                    try:
+                        if not var in meta['variables']:
+                            logger.debug('No {} in data of station {}'
+                                         '({})'.format(var, name, 
+                                                       meta['dataset_name']))
+                            ok = False
+                    except: # attribute does not exist or is not iterable
+                        ok = False
+            if ok and name in stations_other:
                 for meta_idx_other, meta_other in other.metadata.items():
                     if meta_other['station_name'] == name:
-                        station_map[meta_idx] = meta_idx_other
+                        if _check_vars:
+                            for var in check_vars_available:
+                                try:
+                                    if not var in meta_other['variables']:
+                                        logger.debug('No {} in data of station'
+                                                     ' {} ({})'.format(var, 
+                                                     name, 
+                                                     meta_other['dataset_name']))
+                                        ok = False
+                                except: # attribute does not exist or is not iterable
+                                    ok = False
+                        if ok and check_coordinates:
+                            dlat = abs(meta['stat_lat']-meta_other['stat_lat'])
+                            dlon = abs(meta['stat_lon']-meta_other['stat_lon'])
+                            lon_fac = np.cos(np.deg2rad(meta['stat_lat']))
+                            #compute distance between both station coords
+                            dist = np.linalg.norm((dlat*lat_len, 
+                                                   dlon*lat_len*lon_fac))
+                            print('Distance in km {}'.format(dist))
+                            if dist > max_diff_coords_km:
+                                logger.warning('Coordinate of station '
+                                               '{} varies more than {} km '
+                                               'between {} and {} data'
+                                               .format(name, max_diff_coords_km,
+                                                       meta['dataset_name'],
+                                                       meta_other['dataset_name']))
+                                ok = False
+                        if ok: #match found
+                            station_map[meta_idx] = meta_idx_other
+                            logger.debug('Found station match {}'.format(name))
+                            # no need to further iterate over the rest 
+                            continue
                         
         return station_map
         
-    def find_common_data_points(self, other, var_name):
+    
+    def find_common_data_points(self, other, var_name, sampling_freq='daily'):
         if not isinstance(other, UngriddedData):
             raise NotImplementedError('So far, common data points can only be '
                                       'retrieved between two instances of '
                                       'UngriddedData')
-    
-        common_stations = self.find_common_stations(other)
-        
+        common = self.find_common_stations(other, check_vars_available=var_name,
+                                           check_coordinates=True)
+        if len(common) == 0:
+            raise DataExtractionError('None of the stations in the two '
+                                      'match')
+        for idx_this, idx_other in common.items():
+            data_idx_this = self.meta_idx[idx_this][var_name]
+            data_idx_other = other.meta_idx[idx_other][var_name]
+            time_this = self._data[data_idx_this, self._TIMEINDEX]
+            time_other = other._data[data_idx_other, self._TIMEINDEX]
+            
+            
+        return time_this, time_other
+            
     def __getitem__(self, key, val):
         raise NotImplementedError
         
@@ -443,26 +542,30 @@ class UngriddedData(object):
                 s += "\n%s: %s" %(k,v)
         s += arrays
         return s
-    
+
+def reduce_array_closest(arr_nominal, arr_to_be_reduced):
+    test = sorted(arr_to_be_reduced)
+    closest_idx = []
+    for num in sorted(arr_nominal):
+        idx = np.argmin(abs(test - num))
+        closest_idx.append(idx)
+        test = test[(idx+1):]
+    return closest_idx    
+        
 if __name__ == "__main__":
-    from pyaerocom.io import ReadAeronetSdaV2
-    read = ReadAeronetSdaV2()
     
-    read.verbosity_level = 'debug'
+    from pyaerocom import change_verbosity
+    from pyaerocom.io import ReadAeronetSunV2, ReadAeronetSunV3
+    change_verbosity('debug')
+    read_v2 = ReadAeronetSunV2()
+    read_v3 = ReadAeronetSunV3()
     
-    d0 = read.read(last_file=10)
-    d1 = read.read(first_file=10, last_file=20)
+    data_v2 = read_v2.read(vars_to_retrieve='od550aer', last_file=30)
+    data_v3 = read_v3.read(vars_to_retrieve='od550aer', last_file=30)
     
-    print(d0)
+    #t0common_stats = data_v2.find_common_stations(data_v3)
+    t0, t1 = data_v2.find_common_data_points(data_v3, 'od550aer')
     
-    print(d1)
-    
-    merged = d0 & d1
-    
+    t1_red = reduce_array_closest(t1, t0)
     
     
-    print(merged)
-    print(d0.shape, d1.shape, merged.shape)
-    
-    d0.append(d1)
-    print(d0.shape)

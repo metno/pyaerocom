@@ -243,6 +243,9 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+            
         if files is None:
             if len(self.files) == 0:
                 self.get_file_list()
