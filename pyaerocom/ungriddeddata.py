@@ -4,10 +4,10 @@ import numpy as np
 from copy import deepcopy
 from collections import OrderedDict as od
 import pandas as pd
-from math import isclose
 from pyaerocom import logger
 from pyaerocom.exceptions import DataExtractionError
 from pyaerocom.utils import dict_to_str, list_to_shortstr
+
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -498,25 +498,52 @@ class UngriddedData(object):
                         
         return station_map
         
-    
+    # TODO: brute force at the moment, we need to rethink and define how to
+    # work with time intervals and perform temporal merging.
     def find_common_data_points(self, other, var_name, sampling_freq='daily'):
+        if not sampling_freq == 'daily':
+            raise NotImplementedError('Currently only works with daily data')
         if not isinstance(other, UngriddedData):
             raise NotImplementedError('So far, common data points can only be '
                                       'retrieved between two instances of '
                                       'UngriddedData')
-        common = self.find_common_stations(other, check_vars_available=var_name,
+        #find all stations that are common
+        common = self.find_common_stations(other, 
+                                           check_vars_available=var_name,
                                            check_coordinates=True)
         if len(common) == 0:
             raise DataExtractionError('None of the stations in the two '
                                       'match')
+        dates = []
+        data_this_match = []
+        data_other_match = []
+        
         for idx_this, idx_other in common.items():
             data_idx_this = self.meta_idx[idx_this][var_name]
             data_idx_other = other.meta_idx[idx_other][var_name]
-            time_this = self._data[data_idx_this, self._TIMEINDEX]
-            time_other = other._data[data_idx_other, self._TIMEINDEX]
             
+            # timestamps of variable match for station...
+            dtimes_this = self._data[data_idx_this, self._TIMEINDEX]
+            dtimes_other = other._data[data_idx_other, other._TIMEINDEX]
+            # ... and corresponding data values of variable
+            data_this = self._data[data_idx_this, self._DATAINDEX]
+            data_other = other._data[data_idx_other, other._DATAINDEX]
+            # round to daily resolution. looks too complicated, but is much 
+            # faster than pandas combined with datetime 
+            date_nums_this = (dtimes_this.astype('datetime64[s]').
+                              astype('M8[D]').astype(int))
+            date_nums_other = (dtimes_other.astype('datetime64[s]').
+                               astype('M8[D]').astype(int))
             
-        return time_this, time_other
+            # TODO: loop over shorter array
+            for idx, datenum in enumerate(date_nums_this):
+                matches = np.where(date_nums_other==datenum)[0]
+                if len(matches) == 1:
+                    dates.append(datenum)
+                    data_this_match.append(data_this[idx])
+                    data_other_match.append(data_other[matches[0]])
+        
+        return (dates, data_this_match, data_other_match)
             
     def __getitem__(self, key, val):
         raise NotImplementedError
@@ -556,16 +583,24 @@ if __name__ == "__main__":
     
     from pyaerocom import change_verbosity
     from pyaerocom.io import ReadAeronetSunV2, ReadAeronetSunV3
+    import matplotlib.pyplot as plt
+    plt.close('all')
+    
     change_verbosity('debug')
     read_v2 = ReadAeronetSunV2()
     read_v3 = ReadAeronetSunV3()
     
-    data_v2 = read_v2.read(vars_to_retrieve='od550aer', last_file=30)
-    data_v3 = read_v3.read(vars_to_retrieve='od550aer', last_file=30)
+    data_v2 = read_v2.read(vars_to_retrieve='od550aer')
+    data_v3 = read_v3.read(vars_to_retrieve='od550aer')
     
     #t0common_stats = data_v2.find_common_stations(data_v3)
-    t0, t1 = data_v2.find_common_data_points(data_v3, 'od550aer')
+    dates, data_this, data_other = data_v2.find_common_data_points(data_v3, 
+                                                                   'od550aer')
     
-    t1_red = reduce_array_closest(t1, t0)
+    plt.plot(data_this, data_other, ' *g')
+    plt.xlabel('AOD 550 nm, Aeronet Sun V2')
+    plt.ylabel('AOD 550 nm, Aeronet Sun V3')
+    plt.grid()    
+    #t0_red = reduce_array_closest(t1, t0)
     
     

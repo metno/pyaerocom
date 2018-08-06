@@ -13,7 +13,7 @@ from collections import OrderedDict as od
 from datetime import datetime
 from pyaerocom.utils import str_underline, dict_to_str
 from pyaerocom.exceptions import TimeZoneError
-from pyaerocom import const, logger
+from pyaerocom import logger
 
 class NasaAmesReadError(IOError):
     pass
