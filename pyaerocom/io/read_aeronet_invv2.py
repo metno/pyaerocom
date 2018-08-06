@@ -37,8 +37,8 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
+from pyaerocom.mathutils import calc_abs550aer, calc_od550aer
 from pyaerocom import StationData
 
 class ReadAeronetInvV2(ReadAeronetBase):
@@ -54,7 +54,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
     _FILEMASK = '*.dubovikday'
     
     #: version log of this class (for caching)
-    __version__ = "0.05"
+    __version__ = "0.06"
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
@@ -64,10 +64,9 @@ class ReadAeronetInvV2(ReadAeronetBase):
                           const.AERONET_INV_V2L15_DAILY_NAME]
     
     #: default variables for read method
-    DEFAULT_VARS = ['ssa675aer','ssa440aer', 'ssa870aer', 'ssa1020aer']
-    
-                    #'abs550aer',
-                    #'od550aer'
+    DEFAULT_VARS = ['ssa675aer','ssa440aer', 'ssa870aer', 'ssa1020aer',
+                    'abs550aer',
+                    'od550aer']
     
     #: value corresponding to invalid measurement
     NAN_VAL = -9999.
@@ -79,6 +78,10 @@ class ReadAeronetInvV2(ReadAeronetBase):
     VAR_NAMES_FILE['ssa675aer'] = 'SSA675-T'
     VAR_NAMES_FILE['ssa870aer'] = 'SSA870-T'
     VAR_NAMES_FILE['ssa1020aer'] = 'SSA1020-T'
+    VAR_NAMES_FILE['od440aer'] = 'AOTExt440-T' #derived from inversion
+    VAR_NAMES_FILE['ang4487aer'] = '870-440AngstromParam.[AOTExt]-Total' 
+    VAR_NAMES_FILE['abs440aer'] = 'AOTAbsp440-T' 
+    VAR_NAMES_FILE['angabs4487aer'] = '870-440AngstromParam.[AOTAbsp]' 
     
     #: OPTIONAL: dictionary specifying alternative column names for variables
     #: defined in :attr:`VAR_NAMES_FILE`. Check attribute _alt_vars_cols after
@@ -92,8 +95,26 @@ class ReadAeronetInvV2(ReadAeronetBase):
     ALT_VAR_NAMES_FILE['ssa870aer'] = ['SSA871-T', 'SSA869-T', 'SSA868-T', 
                                        'SSA873-T', 'SSA867-T', 'SSA872-T']
     ALT_VAR_NAMES_FILE['ssa1020aer'] = ['SSA1022-T', 'SSA1016-T', 'SSA1018-T']
+    ALT_VAR_NAMES_FILE['od440aer'] = ['AOTExt439-T', 'AOTExt441-T', 
+                                      'AOTExt438-T', 'AOTExt437-T',
+                                      'AOTExt442-T']
+    ALT_VAR_NAMES_FILE['abs440aer'] = ['AOTAbsp439-T', 'AOTAbsp441-T',
+                                       'AOTAbsp438-T', 'AOTAbsp437-T',
+                                       'AOTAbsp442-T']
     
-
+    #: dictionary containing information about additionally required variables
+    #: for each auxiliary variable (i.e. each variable that is not provided
+    #: by the original data but computed on import)
+    AUX_REQUIRES = {'abs550aer'     :   ['abs440aer',
+                                         'angabs4487aer'],
+                    'od550aer'     :   ['od440aer',
+                                        'ang4487aer']}
+                    
+    #: Functions that are used to compute additional variables (i.e. one 
+    #: for each variable defined in AUX_REQUIRES)
+    AUX_FUNS = {'abs550aer'     :   calc_abs550aer,
+                'od550aer'      :   calc_od550aer}
+    
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
@@ -108,9 +129,6 @@ class ReadAeronetInvV2(ReadAeronetBase):
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
-
-        
-            
     # TODO: currently every file is read, regardless of whether it actually
     # contains the desired variables or not. Do we need that? Slows stuff down..
     # Also: Quick check reading all files in the database showed that only 
@@ -277,4 +295,6 @@ if __name__=="__main__":
     avgssa550aer = np.interp(550, wavelengths, vals)
     
     plt.plot(550, avgssa550aer, ' xb')
-    read.print_all_columns()
+    #read.print_all_columns()
+    print(data)
+    read.read()
