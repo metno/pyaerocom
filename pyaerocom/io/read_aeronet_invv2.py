@@ -63,6 +63,11 @@ class ReadAeronetInvV2(ReadAeronetBase):
     SUPPORTED_DATASETS = [const.AERONET_INV_V2L2_DAILY_NAME,
                           const.AERONET_INV_V2L15_DAILY_NAME]
     
+    #: Mapping for dataset location for different data levels that can be 
+    #: read with this interface (can be used when creating the object)
+    DATA_LEVELS = {2.0      :   SUPPORTED_DATASETS[0],
+                   1.5      :   SUPPORTED_DATASETS[1]}
+    
     #: default variables for read method
     DEFAULT_VARS = ['ssa675aer','ssa440aer', 'ssa870aer', 'ssa1020aer',
                     'abs550aer',
@@ -129,10 +134,29 @@ class ReadAeronetInvV2(ReadAeronetBase):
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
-    # TODO: currently every file is read, regardless of whether it actually
-    # contains the desired variables or not. Do we need that? Slows stuff down..
-    # Also: Quick check reading all files in the database showed that only 
-    # about 20% of the files contain the default variables..
+    def __init__(self, dataset_to_read=None, level=None):
+        super(ReadAeronetInvV2, self).__init__(dataset_to_read)
+        if level is not None:
+            self.change_data_level(level)
+            
+    def change_data_level(self, level):
+        """Change level of Inversion data
+        
+        Parameters
+        ----------
+        level :obj:`float` or :obj:`int`, 
+            data level (choose from 1.5 or 2)
+        
+        Raises
+        ------
+        ValueError
+            if input level is not available
+        """
+        if not level in self.DATA_LEVELS:
+            raise ValueError('Invalid input for level, please choose '
+                             'from {}'.format(self.DATA_LEVELS.keys()))
+        super(ReadAeronetInvV2, self).__init__(self.DATA_LEVELS[level])
+        
     def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet file containing results from v2 inversion algorithm
@@ -295,6 +319,5 @@ if __name__=="__main__":
     avgssa550aer = np.interp(550, wavelengths, vals)
     
     plt.plot(550, avgssa550aer, ' xb')
-    #read.print_all_columns()
-    print(data)
-    read.read()
+  
+    
