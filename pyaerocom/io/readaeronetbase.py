@@ -14,7 +14,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    
+    __baseversion__ = '0.01_' + ReadUngriddedBase.__baseversion__
     #: column delimiter in data block of files
     COL_DELIM = ','
     

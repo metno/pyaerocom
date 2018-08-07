@@ -52,7 +52,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     _FILEMASK = '*.lev30'
     
     #: version log of this class (for caching)
-    __version__ = '0.04'
+    __version__ = '0.04_' + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V3L15_AOD_DAILY_NAME

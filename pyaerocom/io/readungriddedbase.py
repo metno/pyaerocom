@@ -26,6 +26,12 @@ class ReadUngriddedBase(abc.ABC):
         the computation of the AOD at 550nm and the Angstrom coefficient 
         (in 440-870 nm range) from AODs measured at other wavelengths.
     """
+    #: version of this base class. Please update if you apply changes to this
+    #: code. This version is required for caching and needs to be considered
+    #: in the definition of __version__ in all derived classes, so that
+    #: caching can be done reliably
+    __baseversion__ = '0.01'
+    
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
@@ -107,7 +113,6 @@ class ReadUngriddedBase(abc.ABC):
         ``pyaerocom.const``).
         """
         return get_obsnetwork_dir(self.DATASET_NAME)
-     
         
     @abc.abstractmethod
     def read_file(self, filename, vars_to_retrieve=None):

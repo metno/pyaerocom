@@ -590,8 +590,11 @@ if __name__ == "__main__":
     read_v2 = ReadAeronetSunV2()
     read_v3 = ReadAeronetSunV3()
     
-    data_v2 = read_v2.read(vars_to_retrieve='od550aer')
-    data_v3 = read_v3.read(vars_to_retrieve='od550aer')
+    try:
+        data_v2, data_v3
+    except:
+        data_v2 = read_v2.read(vars_to_retrieve='od550aer')
+        data_v3 = read_v3.read(vars_to_retrieve='od550aer')
     
     #t0common_stats = data_v2.find_common_stations(data_v3)
     dates, data_this, data_other = data_v2.find_common_data_points(data_v3, 
@@ -600,6 +603,8 @@ if __name__ == "__main__":
     plt.plot(data_this, data_other, ' *g')
     plt.xlabel('AOD 550 nm, Aeronet Sun V2')
     plt.ylabel('AOD 550 nm, Aeronet Sun V3')
+    plt.xlim([0,8])
+    plt.ylim([0,8])
     plt.grid()    
     #t0_red = reduce_array_closest(t1, t0)
     
