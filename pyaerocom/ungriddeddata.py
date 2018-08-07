@@ -50,8 +50,12 @@ class UngriddedData(object):
         variables are dictionaries containing keys specifying variable name and 
         values are arrays or lists, specifying indices (rows) of these 
         station / variable information in :attr:`_data`.
+    var_idx : dict
+        mapping of variable name (keys, e.g. od550aer) to numerical variable 
+        index of this variable in data numpy array (in column specified by
+        :attr:`_VARINDEX`)
     """
-    __version__ = '0.1.0'
+    __version__ = '0.01'
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -76,11 +80,12 @@ class UngriddedData(object):
         self._data = np.empty([self._ROWNO, self._COLNO]) * np.nan
         self.metadata = od()
         self.meta_idx = od()
-        
-        self.contains_vars = []
-        
-        #self.logger = logging.getLogger(__name__)
+        self.var_idx = od()
     
+    @property
+    def contains_vars(self):
+        return [k for k in self.var_idx.keys()]
+
     @property
     def vars_to_retrieve(self):
         logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
@@ -283,6 +288,7 @@ class UngriddedData(object):
             obj._data = other._data
             obj.metadata = other.metadata
             obj.meta_idx = other.meta_idx
+            obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
@@ -296,6 +302,15 @@ class UngriddedData(object):
                     _idx_map[var_name] = np.asarray(indices) + data_offset
                 obj.meta_idx[meta_idx] = _idx_map
             obj._data = np.vstack([obj._data, other._data])
+            for var, idx in other.var_idx.items():
+                if var in self.var_idx:
+                    if not idx == self.var_idx[var]:
+                        raise AttributeError('Could not merge data objects. '
+                                             'Variable {} occurs in both '
+                                             'datasets but has different '
+                                             'variable index in data array'
+                                             .format(var))
+                self.var_idx[var] = idx
         return obj
         
     def append(self, other):
@@ -382,6 +397,47 @@ class UngriddedData(object):
         raise AttributeError("Time array cannot be changed, please check "
                              "underlying data type stored in attribute grid")
       
+    
+    def all_datapoints_var(self, var_name):
+        """Get 1D-array of all data values of input variable
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name
+            
+        Returns
+        -------
+        ndarray
+            1-d numpy array containing all values of this variable 
+            
+        Raises
+        ------
+        AttributeError
+            if variable name is not available
+        """
+        if not var_name in self.var_idx:
+            raise AttributeError('Variable {} not available in data'
+                                 .format(var_name))
+        idx = self.var_idx[var_name]
+        mask = np.where(self._data[:, self._VARINDEX]==idx)[0]
+        return self._data[mask, self._DATAINDEX]
+    
+    def num_obs_var_valid(self, var_name):
+        """Number of valid observations of variable in this dataset
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+        
+        Returns
+        -------
+        int
+            number of valid observations (all values that are not NaN)
+        """
+        pass
+    
     def find_common_stations(self, other, check_vars_available=None,
                              check_coordinates=True, 
                              max_diff_coords_km=0.1):
@@ -481,14 +537,15 @@ class UngriddedData(object):
                             #compute distance between both station coords
                             dist = np.linalg.norm((dlat*lat_len, 
                                                    dlon*lat_len*lon_fac))
-                            print('Distance in km {}'.format(dist))
                             if dist > max_diff_coords_km:
                                 logger.warning('Coordinate of station '
                                                '{} varies more than {} km '
-                                               'between {} and {} data'
+                                               'between {} and {} data. '
+                                               'Retrieved distance: {:.2f} km '
                                                .format(name, max_diff_coords_km,
                                                        meta['dataset_name'],
-                                                       meta_other['dataset_name']))
+                                                       meta_other['dataset_name'],
+                                                       dist))
                                 ok = False
                         if ok: #match found
                             station_map[meta_idx] = meta_idx_other
@@ -590,11 +647,13 @@ if __name__ == "__main__":
     read_v2 = ReadAeronetSunV2()
     read_v3 = ReadAeronetSunV3()
     
-    try:
-        data_v2, data_v3
-    except:
-        data_v2 = read_v2.read(vars_to_retrieve='od550aer')
-        data_v3 = read_v3.read(vars_to_retrieve='od550aer')
+    data_v2 = read_v2.read(vars_to_retrieve=read_v2.PROVIDES_VARIABLES, 
+                           last_file=20)
+    data_v3 = read_v3.read(vars_to_retrieve=read_v3.PROVIDES_VARIABLES, 
+                           last_file=20)
+    
+    od550aer_all_v2 = data_v2.all_datapoints_var('od550aer')
+    od550aer_all_v3 = data_v3.all_datapoints_var('od550aer')
     
     #t0common_stats = data_v2.find_common_stations(data_v3)
     dates, data_this, data_other = data_v2.find_common_data_points(data_v3, 

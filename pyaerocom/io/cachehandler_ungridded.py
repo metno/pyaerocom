@@ -7,6 +7,8 @@ from pyaerocom import const, logger, UngriddedData
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 import glob, os, pickle
 
+# TODO: Write data attribute list contains_vars in header of pickled file and
+# check if variables match the request
 class CacheHandlerUngridded(object):
     """Interface for reading and writing of cache files
     

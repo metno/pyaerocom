@@ -259,21 +259,41 @@ class ReadUngriddedBase(abc.ABC):
         tuple
             2-element tuple, containing
             
-            - bool : boolean, specifying whether variables were added to \
-            input list
-            - list : modified / unmodified input list 
+            - bool : boolean, specifying whether variables list of required \
+            variables needs to be extended or the order was changed
+            - list : additionally required variables
         """
-        added = False
+        changed = False
         added_vars = []
+        
         for var in vars_to_retrieve:
             if var in self.AUX_VARS:
-                add_vars = self.AUX_REQUIRES[var]
-                for add_var in add_vars:
-                    if not add_var in vars_to_retrieve:
-                        added_vars.append(add_var)
-                        added = True
-        return (added, added_vars)
-    
+                vars_req = self.AUX_REQUIRES[var]
+                for var_req in vars_req:
+                    if var_req in vars_to_retrieve:
+                        idx_var = vars_to_retrieve.index(var)
+                        idx_var_req = vars_to_retrieve.index(var_req)
+                        if idx_var < idx_var_req: #wrong order for computation
+                            vars_to_retrieve[idx_var] = var_req
+                            vars_to_retrieve[idx_var_req] = var
+                            # break and return that it was changed (i.e repeat
+                            # calling this method until nothing is changed or
+                            # added)
+                            return (True, added_vars + vars_to_retrieve)
+                    else: 
+                        added_vars.append(var_req)
+                        changed = True
+        # it is important to insert the additionally required variables in
+        # the beginning, as these need to be computed first later on 
+        # Example: if vars_to_retrieve=['od550aer'] then this loop will
+        # find out that this requires 'ang4487aer' to be computed as 
+        # well. So at the end of this function, ang4487aer needs to be 
+        # before od550aer in the list vars_to_compute, since the method
+        # "compute_additional_vars" loops over that list in the specified
+        # order
+        vars_to_retrieve = added_vars + vars_to_retrieve
+        return (changed, vars_to_retrieve)
+                
     def check_vars_to_retrieve(self, vars_to_retrieve):
         """Separate variables that are in file from those that are computed
         
@@ -310,25 +330,19 @@ class ReadUngriddedBase(abc.ABC):
         if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
             raise AttributeError("One or more of the desired variables is not "
                                  "supported by this dataset.")
+        
+        
         repeat = True
         while repeat:
-            repeat, add_vars = self._add_additional_vars(vars_to_retrieve)
-            # it is important to insert the additionally required variables in
-            # the beginning, as these need to be computed first later on 
-            # Example: if vars_to_retrieve=['od550aer'] then this loop will
-            # find out that this requires 'ang4487aer' to be computed as 
-            # well. So at the end of this function, ang4487aer needs to be 
-            # before od550aer in the list vars_to_compute, since the method
-            # @"compute_additional_vars" loops over that list in the specified
-            # order
-            vars_to_retrieve = add_vars + vars_to_retrieve
+            repeat, vars_to_retrieve = self._add_additional_vars(vars_to_retrieve)
+            
         
         # unique list containing all variables that are supposed to be read, 
         # either because they are required to be retrieved, or because they 
         # are supposed to be read because they are required to compute one 
         # of the output variables
         vars_to_retrieve = list(dict.fromkeys(vars_to_retrieve))
-        
+    
         # in the following, vars_to_retrieve is separated into two arrays, one 
         # containing all variables that can be read from the files, and the 
         # second containing all variables that are computed

@@ -14,7 +14,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.01_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.02_' + ReadUngriddedBase.__baseversion__
     #: column delimiter in data block of files
     COL_DELIM = ','
     
@@ -187,8 +187,8 @@ class ReadAeronetBase(ReadUngriddedBase):
         # name and the extracted number corresponds to 
         # the expected wavelength as inferred from 
         # pyaerocom.Variable instance
-        
         wvl_diff_min = 1e6
+        
         # loop over header
         for i, col in enumerate(cols):
             try:
@@ -273,12 +273,14 @@ class ReadAeronetBase(ReadUngriddedBase):
         disp_each = int(num_files*0.1)
         if disp_each < 1:
             disp_each = 1
+            
         for i, _file in enumerate(files):
             
             if i%disp_each == 0:
                 self.logger.info("Reading file {} of {} ({})".format(i, 
                                  num_files, type(self).__name__))
-            station_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve)
+            station_data = self.read_file(_file, 
+                                          vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
@@ -330,8 +332,8 @@ class ReadAeronetBase(ReadUngriddedBase):
                 
                 meta_idx[meta_key][var] = np.arange(start, stop)
                 
-                if not var in data_obj.contains_vars:
-                    data_obj.contains_vars.append(var)
+                if not var in data_obj.var_idx:
+                    data_obj.var_idx[var] = var_idx
             
             idx += totnum  
             meta_key = meta_key + 1.

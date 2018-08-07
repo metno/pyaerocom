@@ -85,8 +85,14 @@ class ReadGridded(object):
         List of all netCDF files that were used to concatenate the current 
         data cube (i.e. that can be based on certain matching settings such as
         var_name or time interval). 
+    ts_types : list
+        list of all sampling frequencies (e.g. hourly, daily, monthly) that 
+        were inferred from filenames (based on Aerocom file naming convention) 
+        of all files that were found
     vars : list
-        list containing all variable names that were found
+        list containing all variable names (e.g. od550aer) that were inferred 
+        from filenames based on Aerocom model file naming convention
+    years :
         
     Parameters
     ----------
@@ -121,6 +127,7 @@ class ReadGridded(object):
     _stop_time = None
     # Directory containing model data for this species
     _data_dir = ""
+
     def __init__(self, name="", start_time=None, stop_time=None,
                  file_convention="aerocom3", io_opts=const, init=True):
         # model ID
@@ -158,6 +165,7 @@ class ReadGridded(object):
         self.files = []
         
         self._match_files = None
+        self.ts_types = []
         self.vars = []
         self.years = []
         
@@ -323,11 +331,13 @@ class ReadGridded(object):
                               %(self.name, self.data_dir))
         _vars_temp = []
         _years_temp = []
+        _ts_types_temp = []
         for _file in nc_files:
             try:
                 info = self.file_convention.get_info_from_file(_file)
                 _vars_temp.append(info["var_name"])
                 _years_temp.append(info["year"])
+                _ts_types_temp.append(info["ts_type"])
                 self.files.append(_file)
                 logger.debug('Read file {}'.format(_file))
             except Exception as e:
@@ -339,6 +349,14 @@ class ReadGridded(object):
         # make sorted list of unique vars
         self.vars = sorted(od.fromkeys(_vars_temp))
         self.years = sorted(od.fromkeys(_years_temp))
+        
+        _ts_types = od.fromkeys(_ts_types_temp)
+        # write detected sampling frequencies in the preferred order
+        self.ts_types = []
+        for item in self.TS_TYPES:
+            if item in _ts_types:
+                pass
+    
         
     def update(self, **kwargs):
         """Update one or more valid parameters
@@ -358,7 +376,7 @@ class ReadGridded(object):
                 logger.info("Ignoring key %s in ModelImportResult.update()" %k)
                 
     def read_var(self, var_name, start_time=None, stop_time=None, 
-                 ts_type='daily'):
+                 ts_type=None):
         """Read model data for a specific variable
         
         This method searches all valid files for a given variable and for a 

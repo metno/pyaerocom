@@ -171,6 +171,10 @@ class ReadUngridded:
         UngriddedData
             data object
         """
+        if vars_to_retrieve is None:
+            # Note: self.vars_to_retrieve may be None as well, then
+            # default variables of each network are read
+            vars_to_retrieve = self.vars_to_retrieve 
         reader = self._read_objects[dataset_to_read]
         
         # read the data sets
@@ -192,7 +196,7 @@ class ReadUngridded:
         # write the cache file
         if not cache_hit_flag and not self.ignore_cache:
             cache.write(data)
-        
+    
         return data
     
     def read(self):

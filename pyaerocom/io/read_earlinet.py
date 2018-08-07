@@ -48,7 +48,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.e*'
     
     #: version log of this class (for caching)
-    __version__ = "0.07_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.08_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.EARLINET_NAME
@@ -363,8 +363,8 @@ class ReadEarlinet(ReadUngriddedBase):
                     
                     if not var in metadata[meta_key]['variables']:
                         metadata[meta_key]['variables'].append(var)
-                    if not var in data_obj.contains_vars:
-                        data_obj.contains_vars.append(var)
+                    if not var in data_obj.var_idx:
+                        data_obj.var_idx[var] = var_idx
                     idx += add
             except:
                 self.read_failed.append(_file)

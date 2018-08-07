@@ -248,4 +248,7 @@ if __name__=="__main__":
     
     for item in failed:
         print(item)
+        
+    read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
+    data = read.read_first_file()
     
