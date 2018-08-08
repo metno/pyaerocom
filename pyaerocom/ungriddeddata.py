@@ -292,7 +292,7 @@ class UngriddedData(object):
         else:
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
-            data_offset = self.shape[0]
+            data_offset = obj.shape[0]
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other
@@ -301,17 +301,67 @@ class UngriddedData(object):
                 for var_name, indices in other.meta_idx[meta_idx_other].items():
                     _idx_map[var_name] = np.asarray(indices) + data_offset
                 obj.meta_idx[meta_idx] = _idx_map
-            obj._data = np.vstack([obj._data, other._data])
+            
             for var, idx in other.var_idx.items():
-                if var in self.var_idx:
-                    if not idx == self.var_idx[var]:
-                        raise AttributeError('Could not merge data objects. '
-                                             'Variable {} occurs in both '
-                                             'datasets but has different '
-                                             'variable index in data array'
-                                             .format(var))
-                self.var_idx[var] = idx
+                if var in obj.var_idx: #variable already exists in this object
+                    if not idx == obj.var_idx[var]:
+                        other.change_var_idx(var, obj.var_idx[var])
+# =============================================================================
+#                         raise AttributeError('Could not merge data objects. '
+#                                              'Variable {} occurs in both '
+#                                              'datasets but has different '
+#                                              'variable index in data array'
+#                                              .format(var))
+# =============================================================================
+                else: # variable does not yet exist
+                    idx_exists = [v for v in obj.var_idx.values()]
+                    if idx in idx_exists: 
+                        # variable index is already assigned to another 
+                        # variable and needs to be changed
+                        new_idx = max(idx_exists)+1
+                        other.change_var_idx(var, new_idx)
+                        obj.var_idx[var] = new_idx
+                    else:
+                        obj.var_idx[var] = idx
+            obj._data = np.vstack([obj._data, other._data])
         return obj
+    
+    def change_var_idx(self, var_name, new_idx):
+        """Change index that is assigned to variable
+        
+        Each variable in this object has assigned a unique index that is
+        stored in the dictionary :attr:`var_idx` and which is used internally
+        to access data from a certain variable from the data array 
+        :attr:`_data` (the indices are stored in the data column specified by
+        :attr:`_VARINDEX`, cf. class header).
+        
+        This index thus needs to be unique for each variable and hence, may 
+        need to be updated, when two instances of :class:`UngriddedData` are 
+        merged (cf. :func:`merge`). 
+
+        And the latter is exactrly what this function does.
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+        new_idx : int
+            new index of variable
+            
+        Raises
+        ------
+        ValueError
+            if input ``new_idx`` already exist in this object as a variable 
+            index
+        """
+        if new_idx in self.var_idx.values():
+            raise ValueError('Fatal: variable index cannot be assigned a new '
+                             'index that is already assigned to one of the '
+                             'variables in this object')
+        cidx = self.var_idx[var_name]
+        self.var_idx[var_name] = new_idx
+        var_indices = np.where(self._data[:, self._VARINDEX]==cidx)
+        self._data[var_indices, self._VARINDEX] = new_idx
         
     def append(self, other):
         """Append other instance of :class:`UngriddedData` to this object

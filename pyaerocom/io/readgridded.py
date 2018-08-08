@@ -400,8 +400,7 @@ class ReadGridded(object):
         Parameters
         ----------
         var_name : str
-            variable name that is supposed to be plotted (e.g. )
-            Must be in :attr:`vars`
+            variable that are supposed to be read
         start_time : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
             :attr:`start_time` will be overwritten)
@@ -417,6 +416,13 @@ class ReadGridded(object):
         -------
         GriddedData
             loaded data object
+            
+        Raises
+        ------
+        AttributeError
+            if none of the ts_types identified from file names is valid
+        ValueError
+            if specified ts_type is not supported
         """
         if ts_type is None:
             if len(self.ts_types) == 0:
@@ -572,15 +578,25 @@ class ReadGridded(object):
         return data
     
     def read(self, var_names=None, start_time=None, stop_time=None, 
-                 ts_type='daily'):
+                 ts_type=None):
         """Read all variables that could be found 
         
         Reads all variables that are available (i.e. in :attr:`vars`)
         
         Parameters
         ----------
-        **kwargs
-            see :func:`read_var` for valid input arguments.
+        var_names : :obj:`list` or :obj:`str`
+            variables that are supposed to be read
+        start_time : :obj:`Timestamp` or :obj:`str`, optional
+            start time of data import (if valid input, then the current 
+            :attr:`start_time` will be overwritten)
+        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            stop time of data import (if valid input, then the current 
+            :attr:`start_time` will be overwritten)
+        ts_type : str
+            string specifying temporal resolution (choose from 
+            "hourly", "3hourly", "daily", "monthly"). If None, then the first
+            available
         
         Returns
         -------
@@ -853,13 +869,13 @@ class ReadGriddedMulti(object):
             self.results[name].search_all_files()
     
         
-    def read(self, var_ids, names=None, start_time=None, stop_time=None,
-             ts_type="daily"):
+    def read(self, var_names, names=None, start_time=None, stop_time=None,
+             ts_type=None):
         """High level method to import data for multiple variables and models
         
         Parameters
         ----------
-        var_ids : :obj:`str` or :obj:`list`
+        var_names : :obj:`str` or :obj:`list`
             string IDs of all variables that are supposed to be imported
         names : :obj:`str` or :obj:`list`, optional
             string IDs of all models that are supposed to be imported
@@ -895,14 +911,14 @@ class ReadGriddedMulti(object):
             names = self.names
         elif isinstance(names, str):
             names = [names]
-        if isinstance(var_ids, str):
-            var_ids = [var_ids]
+        if isinstance(var_names, str):
+            var_names = [var_names]
             
         warnings = []
         for name in names:
             if name in self.results:
                 read = self.results[name]
-                for var in var_ids:
+                for var in var_names:
                     if var in read.vars:
                         try:
                             read.read_var(var, start_time, stop_time, ts_type)
