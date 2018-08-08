@@ -17,8 +17,7 @@ def dataset():
     '''
     return ReadGridded(name="ECMWF_CAMS_REAN",
                        start_time="1-1-2003",
-                       stop_time="31-12-2007", 
-                       verbose=False)
+                       stop_time="31-12-2007")
     
 def test_variables(dataset):
     npt.assert_array_equal(dataset.vars,

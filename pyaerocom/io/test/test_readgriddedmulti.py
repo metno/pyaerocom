@@ -18,7 +18,7 @@ TEST_VARS = ["od550aer", "od550dust"]
 def dataset():
     '''Read ECMWF data between 2003 and 2008
     '''
-    return ReadGriddedMulti(MODELS, '2010','2011', verbose=False)
+    return ReadGriddedMulti(MODELS, '2010','2011')
     
 def test_info_available(dataset):    
     ids_nominal = MODELS
