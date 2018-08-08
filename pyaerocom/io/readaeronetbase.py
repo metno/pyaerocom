@@ -14,9 +14,15 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.02_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.03_' + ReadUngriddedBase.__baseversion__
+    
     #: column delimiter in data block of files
     COL_DELIM = ','
+    
+    #: dictionary assigning temporal resolution flags for supported datasets
+    #: that are provided in a defined temporal resolution. Key is the name
+    #: of the dataset and value is the corresponding ts_type
+    TS_TYPES = {}
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
@@ -30,6 +36,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
+    
     
     def __init__(self, dataset_to_read=None):
         super(ReadAeronetBase, self).__init__(dataset_to_read)
@@ -49,6 +56,14 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         self._alt_var_cols = {}
     
+    @property
+    def TS_TYPE(self):
+        """Default implementation of string for temporal resolution"""
+        try:
+            return self.TS_TYPES[self.DATASET_NAME]      
+        except KeyError:
+            return 'undefined'
+        
     @property
     def col_index(self):
         """Dictionary that specifies the index for each data column
@@ -289,6 +304,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things

@@ -63,6 +63,11 @@ class ReadAeronetInvV2(ReadAeronetBase):
     SUPPORTED_DATASETS = [const.AERONET_INV_V2L2_DAILY_NAME,
                           const.AERONET_INV_V2L15_DAILY_NAME]
     
+    #: dictionary assigning temporal resolution flags for supported datasets
+    #: that are provided in a defined temporal resolution
+    TS_TYPES = {const.AERONET_INV_V2L2_DAILY_NAME   :   'daily',
+                const.AERONET_INV_V2L15_DAILY_NAME  :   'daily'}
+    
     #: Mapping for dataset location for different data levels that can be 
     #: read with this interface (can be used when creating the object)
     DATA_LEVELS = {2.0      :   SUPPORTED_DATASETS[0],
@@ -138,7 +143,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
         super(ReadAeronetInvV2, self).__init__(dataset_to_read)
         if level is not None:
             self.change_data_level(level)
-            
+    
     def change_data_level(self, level):
         """Change level of Inversion data
         
@@ -215,6 +220,8 @@ class ReadAeronetInvV2(ReadAeronetBase):
             data_out['station_name'] = dict_loc['Locations']
             data_out['PI'] = dict_loc['PI']
             data_out['PI_email'] = dict_loc['Email']
+            
+            data_out['ts_type'] = self.TS_TYPE
 
             #skip next two lines
             self.logger.info('Skipping line:\n{}'.format(in_file.readline()))
@@ -319,5 +326,7 @@ if __name__=="__main__":
     avgssa550aer = np.interp(550, wavelengths, vals)
     
     plt.plot(550, avgssa550aer, ' xb')
-  
+    print(data)
     
+    udat = read.read(last_file=10)
+    print(udat.metadata)

@@ -63,6 +63,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
                           const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]
     
+    #: dictionary assigning temporal resolution flags for supported datasets
+    #: that are provided in a defined temporal resolution
+    TS_TYPES = {const.AERONET_SUN_V3L15_AOD_DAILY_NAME :    'daily',
+                const.AERONET_SUN_V3L2_AOD_DAILY_NAME  :    'daily'}
+    
     #: default variables for read method
     DEFAULT_VARS = ['od550aer']
     
@@ -160,6 +165,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             dummy_arr = in_file.readline().strip().split(';')
             data_out['PI'] = dummy_arr[0].split('=')[1]
             data_out['PI_email'] = dummy_arr[1].split('=')[1]
+            data_out['ts_type'] = self.TS_TYPE
 
             data_type_comment = in_file.readline()
             # TODO: delete later

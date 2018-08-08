@@ -51,6 +51,10 @@ class ReadEbas(ReadUngriddedBase):
     dataset_to_read
         string specifying either of the supported datasets that are defined 
         in ``SUPPORTED_DATASETS``
+        
+    TODO
+    ----
+    Check for negative values vs. detection limit
     """
     
     #: version log of this class (for caching)
@@ -80,10 +84,20 @@ class ReadEbas(ReadUngriddedBase):
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EBAS_MULTICOLUMN_NAME]
     
+    TS_TYPE = 'undefined'
+    
     # TODO: check and redefine 
     #: default variables for read method
     DEFAULT_VARS = ['absc550aer', # light absorption coefficient
                     'scatc550aer'] # light scattering coefficient
+    
+    # Temporal resolution codes that (so far) can be understood by pyaerocom
+    TS_TYPE_CODES = {'1h'   :   'hourly',
+                     '1d'   :   'daily',
+                     '1mo'  :   'monthly'}
+    
+    # list of all available resolution codes (extracted from SQL database)
+    # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -132,7 +146,7 @@ class ReadEbas(ReadUngriddedBase):
     def PROVIDES_VARIABLES(self):
         """List of variables provided by the interface"""
         return self._ebas_vars
-    
+
     def _merge_lists(self, lists_per_var):
         """Merge dictionary of lists for each variable into one list
         
@@ -308,7 +322,7 @@ class ReadEbas(ReadUngriddedBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         file = EbasNasaAmesFile(filename)
-        
+
         var_cols = {}
         all_vars = self.aerocom_vars
         for var in vars_to_read:
@@ -369,9 +383,16 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
         data_out.dataset_name = self.DATASET_NAME
         
+        
         meta = file.meta
         # write meta information
-        
+        tres_code = meta['resolution_code']
+        try:
+            ts_type = self.TS_TYPE_CODES[tres_code]
+        except KeyError:
+            self.logger.info('Unkown temporal resolution {}'.format(tres_code))
+            ts_type = 'undefined'
+        data_out['ts_type'] = ts_type
         # altitude of station
         stat_alt = float(meta['station_altitude'].split(' ')[0])
         try:
@@ -423,7 +444,7 @@ class ReadEbas(ReadUngriddedBase):
         
 if __name__=="__main__":
     from pyaerocom import change_verbosity
-    change_verbosity('warning')
+    change_verbosity('critical')
 
     read = ReadEbas()
     
@@ -438,12 +459,7 @@ if __name__=="__main__":
     print(data)
     
     DO_META_TEST = False
-    DO_TIME_SAMPLE_TEST = True
-    DO_ABS_COEFF_TEST = True
-    if DO_ABS_COEFF_TEST:
-        reader = ReadEbas()
-        reader
-    
+    DO_TIME_SAMPLE_TEST = False
     if DO_TIME_SAMPLE_TEST:
         files_failed = []
         has_24h = []
@@ -481,7 +497,7 @@ if __name__=="__main__":
                     print(repr(var))
             print()
             print()
-                    
+
                 
     if DO_META_TEST:
         totnum = len(files)

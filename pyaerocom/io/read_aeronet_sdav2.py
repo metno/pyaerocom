@@ -70,6 +70,10 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
     
+    #: dictionary assigning temporal resolution flags for supported datasets
+    #: that are provided in a defined temporal resolution
+    TS_TYPES = {const.AERONET_SUN_V2L2_SDA_DAILY_NAME   :  'daily'}
+    
     #: default variables for read method
     DEFAULT_VARS = ['od550aer', 'od550gt1aer','od550lt1aer']
     
@@ -247,6 +251,8 @@ class ReadAeronetSdaV2(ReadAeronetBase):
             data_out['stat_alt'] = float(dict_loc['Elevation[m]'])
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
+            data_out['ts_type'] = self.TS_TYPE
+            
             c_dummy = in_file.readline()
             c_Header = in_file.readline()
             

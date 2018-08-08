@@ -32,7 +32,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-import os
+import os, logging
 
 from pyaerocom.exceptions import NetworkNotImplemented, NetworkNotSupported
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
@@ -51,7 +51,7 @@ from pyaerocom import const, logger
 
 # TODO Note: Removed infiles (list of files from which datasets were read, since it 
 # was not used anywhere so far)
-class ReadUngridded:
+class ReadUngridded(object):
     """Factory class for reading of ungridded data based on obsnetwork ID"""
     SUPPORTED = [ReadAeronetInvV3,
                  ReadAeronetInvV2,
@@ -89,6 +89,9 @@ class ReadUngridded:
         self.data_version = {}
     
         self.cache_files = {}
+        
+        # initiate a logger for this class
+        self.logger = logging.getLogger(__name__)
                                       
     @property
     def datasets_to_read(self):
@@ -183,17 +186,25 @@ class ReadUngridded:
             vars_to_retrieve = self.vars_to_retrieve 
         reader = self._read_objects[dataset_to_read]
         
+        # Since this interface enables to load multiple datasets, each of 
+        # which support a number of variables, here, only the variables are 
+        # considered that are supported by the dataset
+        vars_available = [var for var in vars_to_retrieve if var in 
+                          reader.PROVIDES_VARIABLES]
+        
         # read the data sets
         cache_hit_flag = False
         
         # initate cache handler
-        cache = CacheHandlerUngridded(reader, vars_to_retrieve, **kwargs)
+        cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
         
         if cache.check_and_load() and not self.ignore_cache:
             cache_hit_flag = True
             data = cache.loaded_data
         else:
-            data = reader.read(vars_to_retrieve)
+            logger.info('No cache match found for {}. Reading from files (this '
+                        'may take a while)'.format(dataset_to_read))
+            data = reader.read(vars_available)
         
         self.revision[dataset_to_read] = reader.data_revision
         self.data_version[dataset_to_read] = reader.__version__
@@ -227,7 +238,9 @@ class ReadUngridded:
             
         data = UngriddedData()
         for ds in self.datasets_to_read:
-            data.append(self.read_dataset(ds))
+            self.logger.info('Reading {} data'.format(ds))
+            data.append(self.read_dataset(ds, vars_to_retrieve))
+            self.logger.info('Successfully imported {} data'.format(ds))
         self.data = data
         return data
     

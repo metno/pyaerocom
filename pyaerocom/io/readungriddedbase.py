@@ -10,7 +10,8 @@ from pyaerocom import const
 from pyaerocom.utils import list_to_shortstr
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
-
+# TODO: Proposal: include attribute ts_type that is by default undefined but 
+# may be set to either of the defined 
 class ReadUngriddedBase(abc.ABC):
     """TEMPLATE: Abstract base class template for reading of ungridded data
     
@@ -30,7 +31,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.01'
+    __baseversion__ = '0.02'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -40,6 +41,38 @@ class ReadUngriddedBase(abc.ABC):
     #: Functions that are used to compute additional variables (i.e. one 
     #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {}
+    
+    
+    @abc.abstractproperty
+    def TS_TYPE(self):
+        """Temporal resolution of dataset 
+        
+        This should be defined in the header of an implementation class if 
+        it can be globally defined for the corresponding obs-network or in 
+        other cases it should be initated as string ``undefined`` and then, 
+        if applicable, updated in the reading routine of a file. 
+        
+        The TS_TYPE information should ultimately be written into the meta-data 
+        of objects returned by the implementation of :func:`read_file` (e.g.
+        instance of :class:`StationData` or a normal dictionary) and the method
+        :func:`read` (which should ALWAYS return an instance of the 
+        :class:`UngriddedData` class).
+        
+        Note
+        ----
+        - Please use ``"undefined"`` if the derived class is not sampled on \
+            a regular basis.
+        - If applicable please use Aerocom ts_type (i.e. hourly, 3hourly, \
+                                                    daily, monthly, yearly)
+        - Note also, that the ts_type in a derived class may or may not be \
+            defined in a general case. For instance, in the EBAS database the \
+            resolution code can be found in the file header and may thus be \
+            intiated as ``"undefined"`` in the initiation of the reading class \
+            and then updated when the class is being read
+        - For derived implementation classes that support reading of multiple \
+            network versions, you may also assign
+        """
+        pass
     
     @abc.abstractproperty
     def _FILEMASK(self):

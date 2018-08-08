@@ -67,6 +67,11 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
                           const.AERONET_SUN_V3L2_SDA_DAILY_NAME]
     
+    #: dictionary assigning temporal resolution flags for supported datasets
+    #: that are provided in a defined temporal resolution
+    TS_TYPES = {const.AERONET_SUN_V3L15_SDA_DAILY_NAME :   'daily',
+                const.AERONET_SUN_V3L2_SDA_DAILY_NAME   :   'daily'}
+    
     #: default variables for read method
     DEFAULT_VARS = ['od550aer', 'od550gt1aer', 'od550lt1aer']
     
@@ -154,6 +159,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
         self.logger.info("Reading file {}".format(filename))
         
         with open(filename, 'rt') as in_file:
+            # skip first 4 lines
             in_file.readline()
             in_file.readline()
             in_file.readline()
@@ -163,10 +169,10 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             dummy_arr = in_file.readline().strip().split(';')
             data_out['PI'] = dummy_arr[0].split('=')[1]
             data_out['PI_email'] = dummy_arr[1].split('=')[1]
+            data_out['ts_type'] = self.TS_TYPE
 
-            data_type_comment = in_file.readline()
-            # TODO: delete later
-            self.logger.debug("Data type comment: {}".format(data_type_comment))
+            #skip this line
+            in_file.readline()
             
             # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string

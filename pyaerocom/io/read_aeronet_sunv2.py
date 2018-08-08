@@ -71,6 +71,10 @@ class ReadAeronetSunV2(ReadAeronetBase):
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, 
                           const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]
     
+    #: dictionary assigning temporal resolution flags for supported datasets
+    #: that are provided in a defined temporal resolution
+    TS_TYPES = {const.AERONET_SUN_V2L2_AOD_DAILY_NAME :   'daily'}
+    
     #: default variables for read method
     DEFAULT_VARS = ['od550aer']
     
@@ -182,9 +186,12 @@ class ReadAeronetSunV2(ReadAeronetBase):
             data_out['stat_alt'] = float(dict_loc['elev'])
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
+            data_out['ts_type'] = self.TS_TYPE
+            
             c_dummy = in_file.readline()
-            #added to output
-            data_out.data_header = in_file.readline().strip()
+        
+            #data_out.data_header = 
+            in_file.readline().strip()
             
             for line in in_file:
                 # process line
@@ -246,9 +253,8 @@ if __name__=="__main__":
     data = read.read_first_file()
     print(data)
     
-    for item in failed:
-        print(item)
         
     read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
     data = read.read_first_file()
+    print(data)
     
