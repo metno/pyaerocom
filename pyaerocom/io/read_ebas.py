@@ -428,7 +428,7 @@ if __name__=="__main__":
     read = ReadEbas()
     
     files = read.get_file_list()
-            
+        
     FILE = 0
     test_file = read.files[FILE]
     test_file_contains = read.files_contain[FILE]
@@ -438,6 +438,51 @@ if __name__=="__main__":
     print(data)
     
     DO_META_TEST = False
+    DO_TIME_SAMPLE_TEST = True
+    DO_ABS_COEFF_TEST = True
+    if DO_ABS_COEFF_TEST:
+        reader = ReadEbas()
+        reader
+    
+    if DO_TIME_SAMPLE_TEST:
+        files_failed = []
+        has_24h = []
+        success = 0
+        failed = 0
+        file_info = {}
+        for file in files[:200]:
+            try:
+                data = read.read_file(file)
+                days_vs_num = {}
+                prev_date= 0 
+                for t in data.dtime:
+                    date = t.astype('datetime64[D]')
+                    if not date == prev_date:
+                        if prev_date != 0:
+                            if days_vs_num[prev_date] == 24:
+                                has_24h.append(True)
+                            else:
+                                has_24h.append(False)
+                                
+                        days_vs_num[date] = 1
+                    else:
+                        days_vs_num[date] += 1
+                    prev_date = date
+                file_info[file] = days_vs_num
+                success += 1
+            except NotInFileError:
+                failed += 1
+                files_failed.append(file)
+        for file in files_failed:
+            data = EbasNasaAmesFile(file, only_head=True)
+            print("File {} contains:\n".format(file))
+            for var in data.var_defs:
+                if var.is_var:
+                    print(repr(var))
+            print()
+            print()
+                    
+                
     if DO_META_TEST:
         totnum = len(files)
         failed = 0

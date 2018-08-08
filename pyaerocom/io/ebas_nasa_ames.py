@@ -214,12 +214,15 @@ class EbasFlagCol(object):
         flags = np.zeros((len(self.raw_data), 3)).astype(int)
         mask = self.raw_data.astype(bool)
         not_ok = self.raw_data[mask]
-        
-        decoded = []
-        for flag in not_ok:
-            item = "{:.9f}".format(flag).split(".")[1]
-            decoded.append([int(item[:3]), int(item[3:6]), int(item[6:9])])
-        flags[mask] = np.asarray(decoded)
+        if len(not_ok) > 0:
+            decoded = []
+            for flag in not_ok:
+                item = "{:.9f}".format(flag).split(".")[1]
+                decoded.append([int(item[:3]), int(item[3:6]), int(item[6:9])])
+            try:
+                flags[mask] = np.asarray(decoded)
+            except:
+                logger.exception('Failed to decode flag')
         self.flags = flags
         
         
@@ -586,11 +589,15 @@ class EbasNasaAmesFile(NasaAmesHeader):
             data.is_flag = False
             for item in spl[2:]:
                 if "=" in item:
+                    # e.g. wavelength=550nm
                     sub = item.split("=")
-                    if not len(sub) == 2:
-                        raise IOError("Provide some useful information here")
-                    idf, val = [x.strip() for x in sub]
-                    data[idf.lower()] = val
+                    if len(sub) == 2:
+                        idf, val = [x.strip() for x in sub]
+                        data[idf.lower()] = val
+                    else:
+                        logger.warning("Could not interpret part of column "
+                                       "definition in EBAS NASA Ames file: "
+                                       "{}".format(item))
                 else: #unit
                     logger.warning("Failed to interpret {}".format(item))
         

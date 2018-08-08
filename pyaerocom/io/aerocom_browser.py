@@ -27,7 +27,14 @@ class AerocomBrowser(BrowseDict):
     the search result (a list with strings) to 
     
     """
-    
+# =============================================================================
+#     def __getitem__(self, name_or_pattern):
+#         try:
+#             return super(AerocomBrowser, self).__getitem__(name_or_pattern)
+#         except KeyError:
+#             raise Exception
+# =============================================================================
+            
     def _browse(self, name_or_pattern, ignorecase=True, return_if_match=True):
         """Search all Aerocom data directories that match input name or pattern
         
@@ -71,6 +78,7 @@ class AerocomBrowser(BrowseDict):
             if match:
                 logger.info("Found match for search pattern in obs network "
                             "directories {}".format(obs_id))
+                self[obs_id] = const.OBSCONFIG[obs_id]["PATH"]
                 if return_if_match:
                     return self[obs_id]
             else:
@@ -80,8 +88,7 @@ class AerocomBrowser(BrowseDict):
                     match = bool(re.search(pattern, obs_id))
             if match:
                 _candidates.append(obs_id)
-                self[obs_id] = const.OBSCONFIG[obs_id]["PATH"]
-            
+                
         for search_dir in const.MODELDIRS:
             # get the directories
             if isdir(search_dir):
@@ -202,7 +209,8 @@ class AerocomBrowser(BrowseDict):
         
 if __name__ == "__main__":
     browser = AerocomBrowser()
-    browser.find_matches('ECMWF_OSUITE')
+    browser.find_matches('Earli*')
+    browser.find_matches('Earlinet')
     
     
 # =============================================================================

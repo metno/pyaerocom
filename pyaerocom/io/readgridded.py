@@ -355,8 +355,7 @@ class ReadGridded(object):
         self.ts_types = []
         for item in self.TS_TYPES:
             if item in _ts_types:
-                pass
-    
+                self.ts_types.append(item)
         
     def update(self, **kwargs):
         """Update one or more valid parameters
@@ -411,14 +410,21 @@ class ReadGridded(object):
             :attr:`start_time` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly")
+            "hourly", "3hourly", "daily", "monthly"). If None, then the first
+            available
             
         Returns
         -------
         GriddedData
             loaded data object
         """
-        if not ts_type in self.TS_TYPES:
+        if ts_type is None:
+            if len(self.ts_types) == 0:
+                raise AttributeError('Apparently no files with a valid ts_type '
+                                     'entry in their filename could be found')
+                
+            ts_type = self.ts_types[0]
+        if not ts_type in self.ts_types:
             raise ValueError("Invalid input for ts_type, got: {}, "
                              "allowed values: {}".format(ts_type, 
                                                          self.TS_TYPES))
@@ -447,10 +453,9 @@ class ReadGridded(object):
                         logger.info("FOUND MATCH: {}".format(basename(_file)))
 
             else:
-                logger.warning("Ignoring file {}. File out of allowed year bounds "
-                               "({:d} - {:d})".format(basename(_file), 
-                                                    const.MIN_YEAR, 
-                                                    const.MAX_YEAR))
+                logger.warning('Ignoring data from year {}. Year is out of '
+                               'allowed bounds ({:d} - {:d})'
+                               .format(year, const.MIN_YEAR, const.MAX_YEAR))
            
         if len(match_files) == 0:
             raise IOError("No files could be found for dataset %s, variable %s "
@@ -633,12 +638,14 @@ class ReadGridded(object):
              "Model ID: {}\n"
              "Data directory: {}\n"
              "Available variables: {}\n"
-             "Available years: {}\n".format(head, 
-                                            len(head)*"-",
-                                            self.name,
-                                            self.data_dir,
-                                            self.vars, 
-                                            self.years))
+             "Available years: {}\n"
+             "Available time resolutions {}\n".format(head, 
+                                                      len(head)*"-",
+                                                      self.name,
+                                                      self.data_dir,
+                                                      self.vars, 
+                                                      self.years,
+                                                      self.ts_types))
         if self.data:
             s += "\nLoaded GriddedData objects:\n"
             for var_name, data in self.data.items():
@@ -957,33 +964,6 @@ if __name__=="__main__":
     
     read_caliop = ReadGridded('CALIOP3')
     cp = read_caliop.read_var('z3d', ts_type='monthly')
-    
-    
-    
-    
-    
-# =============================================================================
-#     read = ReadGridded(name="ECMWF_CAMS_REAN",
-#                                   start_time="1-1-2003",
-#                                   stop_time="31-12-2007", 
-#                                   verbose=True)
-#     data = read.read_var(var_name="od550aer", ts_type="daily")
-#     
-# =============================================================================
-    
-# =============================================================================
-#     read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN", "ECMWF_OSUITE"])
-#     
-#     read.read(["od550aer", "od440aer"])
-#     
-#     print(read)
-# =============================================================================
-# =============================================================================
-#     
-#     import doctest
-#     doctest.testmod()
-# 
-# =============================================================================
 
     
 

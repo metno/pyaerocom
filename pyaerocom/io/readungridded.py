@@ -74,6 +74,7 @@ class ReadUngridded:
         #: be filled in setter of datasets_to_read)
         self._read_objects = {}
         
+        
         self.datasets_to_read = datasets_to_read
     
         # optional: list of variables that are supposed to be imported, if 
@@ -112,7 +113,12 @@ class ReadUngridded:
                 success.append(ds)
     
         self._datasets_to_read = success
-        
+    
+    def dataset_provides_variables(self, dataset_to_read):
+        if dataset_to_read in self._read_objects:
+            return self._read_objects[dataset_to_read].PROVIDES_VARIABLES
+        return self.find_read_class(dataset_to_read).PROVIDES_VARIABLES
+            
     def find_read_class(self, dataset_to_read):
         """Find reading class for dataset name
         
@@ -140,8 +146,8 @@ class ReadUngridded:
         
         """
         if not dataset_to_read in const.OBS_IDS:
-            raise NetworkNotSupported("Network {} is not supported and will be "
-                                      "ignored".format(dataset_to_read))
+            raise NetworkNotSupported("Network {} is not supported"
+                                      .format(dataset_to_read))
         for cls in self.SUPPORTED:
             if dataset_to_read in cls.SUPPORTED_DATASETS:
                 return cls
@@ -199,7 +205,7 @@ class ReadUngridded:
     
         return data
     
-    def read(self):
+    def read(self, datasets_to_read=None, vars_to_retrieve=None):
         """Read observations
 
         Iter over all datasets in :attr:`datasets_to_read`, call 
@@ -214,6 +220,11 @@ class ReadUngridded:
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
         """
+        if datasets_to_read is not None:
+            self.datasets_to_read = datasets_to_read
+        if vars_to_retrieve is not None:
+            self.vars_to_retrieve = vars_to_retrieve
+            
         data = UngriddedData()
         for ds in self.datasets_to_read:
             data.append(self.read_dataset(ds))

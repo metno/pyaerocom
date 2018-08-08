@@ -168,6 +168,7 @@ class GridIO(object):
                                       len(head)*"-",
                                       dict_to_str(self.to_dict())))
     
+
 class Config(object):
     """Class containing relevant paths for read and write routines"""
     
@@ -178,7 +179,7 @@ class Config(object):
         #: Lowest possible year in data
         self.MIN_YEAR = 0
         #: Highest possible year in data
-        self.MAX_YEAR = 3000
+        self.MAX_YEAR = 20000
         
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
