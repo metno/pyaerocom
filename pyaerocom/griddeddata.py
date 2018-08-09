@@ -26,6 +26,9 @@ from pyaerocom.region import Region
 class GriddedData(object):
     """Base class representing model data
     
+    Todo
+    ----
+    Add support for    
     This class is largely based on the :class:`iris.Cube` object. However, this
     object comes with an expanded functionality for convenience, for instance, 
     netCDF files can directly be loaded in the :class:`GriddedData` object,
@@ -622,6 +625,10 @@ class GriddedData(object):
     def collocate(self, sample_points=None, scheme="nearest", 
                   collapse_scalar=True, **coords):
         """Collocate Cube to positions of input coordinates
+        
+        Note
+        -----
+        This method is under development and does not work yet
         
         Other than :func:`interpolate`, this method extracts the data values 
         for a given number of input coordinates (e.g. combination of lon / lat

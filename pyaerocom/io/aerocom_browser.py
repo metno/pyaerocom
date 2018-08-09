@@ -87,6 +87,7 @@ class AerocomBrowser(BrowseDict):
                 else:
                     match = bool(re.search(pattern, obs_id))
             if match:
+                self[obs_id] = const.OBSCONFIG[obs_id]["PATH"]
                 _candidates.append(obs_id)
                 
         for search_dir in const.MODELDIRS:
@@ -196,7 +197,7 @@ class AerocomBrowser(BrowseDict):
         Returns
         -------
         list
-            list of keys that match the pattern (corresponding paths can be
+            list of names that match the pattern (corresponding paths can be
             accessed from this class instance)
             
         Raises
@@ -209,10 +210,12 @@ class AerocomBrowser(BrowseDict):
         
 if __name__ == "__main__":
     browser = AerocomBrowser()
-    browser.find_matches('Earli*')
-    browser.find_matches('Earlinet')
+    dd = browser.find_data_dir('TM5_AP3-CTRL2016*')
+    ea = browser.find_data_dir('Earli*')
+    ea1 = browser.find_matches('Earlinet')
     
-    
+    print(ea)
+    print(ea1)
 # =============================================================================
 #     try:
 #         data_dir = browser.find_data_dir('*Cam5.3-Oslo*')

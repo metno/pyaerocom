@@ -204,7 +204,8 @@ class ReadUngriddedBase(abc.ABC):
         # method read_file is called, and in case of an Exception, append the
         # corresponding file path to this list.
         self.read_failed = []
-        # 
+        
+        #: Class own instance of logger class
         self.logger = logging.getLogger(__name__)
         self._add_aux_variables()
         

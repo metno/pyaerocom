@@ -34,23 +34,23 @@
 #MA 02110-1301, USA
 
 from glob import glob
-from re import match
+import re
+import logging
 from os.path import isdir, basename
 from collections import OrderedDict as od
-from numpy import arange
-from pandas import Timestamp
+import numpy as np
+import pandas as pd
 
-from iris import Constraint, load_cube
-from iris.cube import CubeList
-from iris.experimental.equalise_cubes import equalise_attributes
-from iris.util import unify_time_units
-from iris._concatenate import concatenate
+import iris
 
-from pyaerocom import const, logger
-from pyaerocom.exceptions import IllegalArgumentError
+from pyaerocom import const
+from pyaerocom.exceptions import (IllegalArgumentError, 
+                                  YearNotAvailableError,
+                                  VarNotAvailableError)
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.io.helpers import (check_time_coord, correct_time_coord)
+from pyaerocom.io.helpers import (check_time_coord, correct_time_coord, 
+                                  concatenate_iris_cubes)
 from pyaerocom.griddeddata import GriddedData
 
 class ReadGridded(object):
@@ -139,9 +139,11 @@ class ReadGridded(object):
                 msg = ("Invalid input for name. Need str, got: %s"
                        %type(name))
             raise TypeError(msg)
-                
+        
+        #: name of gridded dataset        
         self.name = name
         
+        self.logger = logging.getLogger(__name__)
         # only overwrite if there is input, note that the attributes
         # start_time and stop_time are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
@@ -151,8 +153,12 @@ class ReadGridded(object):
         if stop_time:
             self.stop_time = stop_time
         
-        # Dictionary containing loaded results for different variables
+        #: Dictionary containing loaded results for different variables
         self.data = od()
+        
+        #: Dictionary holding variable data for individual years (loaded
+        #: using :func:`read_individual_years`)
+        self.data_yearly = od()
         
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
@@ -160,15 +166,36 @@ class ReadGridded(object):
         self.io_opts = io_opts
         self.file_convention = FileConventionRead(file_convention)
         
-        # All files that were found for this model (updated, e.g. in class
-        # ReadGridded, method: `get_model_files`
+        #: All files that were found for this model (updated, e.g. in class
+        #: ReadGridded, method: `get_model_files`
         self.files = []
         
-        self._match_files = None
+        #: All files that match a certain variable, ts_type and time period
+        #: Will be filled in :func:`find_var_files_in_timeperiod` 
+        self.match_files = None
+        
+        #: List of unique Aerocom temporal resolution strings that were 
+        #: identified from the filenames in the data directory
         self.ts_types = []
+        
+        #: List of unique Aerocom variable names that were identified from 
+        #: the filenames in the data directory
         self.vars = []
+        
+        #: List of unique years that were 
+        #: identified from the filenames in the data directory
         self.years = []
         
+        #: All files that could be loaded into cubes (i.e. instances 
+        #: of :class:`iris.cube.Cube` class. Will be filled in method
+        #: :func:`load_files` and loaded cubes can be accessed via 
+        #: private attribute :attr:`_cubes`
+        self.loaded_files = od()
+        
+        #: Cube lists for each loaded variable
+        self.cubes = od()
+        
+        #: This object can be used to 
         self.browser = AerocomBrowser()
         if init and name:
             self.search_data_dir()
@@ -190,6 +217,10 @@ class ReadGridded(object):
         else:
             raise ValueError("Could not set directory: %s" %value)
             
+    @property
+    def vars_read(self):
+        return [k for k in self.data.keys()]
+    
     @property
     def file_type(self):
         """File type of data files"""
@@ -220,9 +251,9 @@ class ReadGridded(object):
             except:
                 raise ValueError("Failed to convert non-string input for "
                                  "time stamp into string")
-        if not isinstance(value, Timestamp):    
+        if not isinstance(value, pd.Timestamp):    
             try:
-                value = Timestamp(value)
+                value = pd.Timestamp(value)
             except:
                 raise ValueError("Failed to convert input value to pandas "
                                   "Timestamp: %s" %value)
@@ -248,9 +279,9 @@ class ReadGridded(object):
             except:
                 raise ValueError("Failed to convert non-string input for "
                                  "time stamp into string")
-        if not isinstance(value, Timestamp):  
+        if not isinstance(value, pd.Timestamp):  
             try:
-                value = Timestamp(value)
+                value = pd.Timestamp(value)
             except:
                 raise ValueError("Failed to convert input value to pandas "
                                   "Timestamp: %s" %value)
@@ -265,7 +296,7 @@ class ReadGridded(object):
         ndarray
         """
         if self.start_time and self.stop_time:
-            return arange(self.start_time.year, self.stop_time.year + 1, 1)
+            return np.arange(self.start_time.year, self.stop_time.year + 1, 1)
         if not self.years:
             raise AttributeError("No information available for available "
                                  "years. Please run method "
@@ -339,9 +370,9 @@ class ReadGridded(object):
                 _years_temp.append(info["year"])
                 _ts_types_temp.append(info["ts_type"])
                 self.files.append(_file)
-                logger.debug('Read file {}'.format(_file))
+                self.logger.debug('Read file {}'.format(_file))
             except Exception as e:
-                logger.warning("Failed to import file {}\nModel: {}\n"
+                self.logger.warning("Failed to import file {}\nModel: {}\n"
                                "Error: {}".format(basename(_file), 
                                self.name, repr(e)))
         if not _vars_temp or not len(_vars_temp) == len(_years_temp):
@@ -368,12 +399,253 @@ class ReadGridded(object):
         """
         for k, v in kwargs.items():
             if k in self.__dict__:
-                logger.info("Updating %s in ModelImportResult for model %s"
+                self.logger.info("Updating %s in ModelImportResult for model %s"
                             "New value: %s" %(k, self.name, v))
                 self.__dict__[k] = v
             else:
-                logger.info("Ignoring key %s in ModelImportResult.update()" %k)
+                self.logger.info("Ignoring key %s in ModelImportResult.update()" %k)
+    
+    def find_var_files_flex_ts_type(self, var_name, ts_type_init,
+                                    years_to_load=None):
+        """Find available files for a variable in a time period 
+        
+        Like :func:`find_var_files_in_timeperiod` but this method also checks
+        other available ts_types in case, no files can be found for the 
+        desired temporal resolution
+        
+        Parameters
+        -----------
+        var_name : str
+            variable name
+        ts_type_init : str
+            desired temporal resolution of data
+        years_to_load : list
+            list containing years to be loaded. If None, class attr. 
+            :attr:`years_to_load` is used.
+            
+        Returns
+        --------
+        list
+            list of filepaths matching variable name, ts_type and either of the
+            years specified by years_to_load
+            
+        Raises
+        ------
+        IOError 
+            if not files could be found
+        """
+        try:
+            return self.find_var_files_in_timeperiod(var_name, ts_type_init,
+                                                     years_to_load)
+        except IOError as e:
+            self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
+                                'Trying other available ts_types {}'
+                                .format(ts_type_init, repr(e), self.ts_types))
+            for ts_type in self.ts_types:
+                if not ts_type == ts_type_init: #this already did not work
+                    try:
+                        return self.find_var_files_in_timeperiod(var_name, 
+                                                                 ts_type,
+                                                                 years_to_load)
+                    except IOError as e:
+                        self.logger.warning(repr(e))
+        raise IOError("No files could be found for dataset {}, variable {}, "
+                      "ts_types {}, and years {}".format(self.name, 
+                           var_name, self.ts_types, years_to_load))
+                        
+    def find_var_files_in_timeperiod(self, var_name, ts_type, 
+                                     years_to_load=None):
+        """Find all files that match variable, time period and temporal res.
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name
+        ts_type : str
+            temporal resolution of data
+        years_to_load : list
+            list containing years to be loaded. If None, class attr. 
+            :attr:`years_to_load` is used.
+            
+        Returns
+        --------
+        list
+            list of filepaths matching variable name, ts_type and either of the
+            years specified by years_to_load
+            
+        Raises
+        ------
+        IOError 
+            if no files could be found
+        """
+        match_files = []
+        if years_to_load is None:
+            years_to_load = self.years_to_load
+        elif isinstance(years_to_load, (float, int, np.floating, np.integer)):
+            years_to_load = [years_to_load]
+        for year in years_to_load:
+            if const.MIN_YEAR <= year <= const.MAX_YEAR:
+                # search for filename in self.files using ts_type as default ts size
+                for _file in self.files:
+                    #new file naming convention (aerocom3)
+                    match_mask = self.file_convention.string_mask(var_name,
+                                                                  year, 
+                                                                  ts_type)
+                    
+                    if re.match(match_mask, _file):
+                        match_files.append(_file)
+                        self.logger.debug("FOUND MATCH: {}".format(basename(_file)))
+
+            else:
+                self.logger.warning('Ignoring data from year {}. Year is out of '
+                               'allowed bounds ({:d} - {:d})'
+                               .format(year, const.MIN_YEAR, const.MAX_YEAR))
+           
+        if len(match_files) == 0:
+            raise IOError("No files could be found for dataset {}, variable {}, "
+                          "ts_type {} and years {}".format(self.name, 
+                           var_name, ts_type, years_to_load))
                 
+        self.match_files = match_files
+        return match_files
+    
+    def load_files(self, var_name, files):
+        """Load list of files containing variable to read into Cube instances
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable to read
+        files : list
+            list of netcdf files that contain this variable
+        
+        Returns
+        -------
+        CubeList
+            list of loaded Cube instances
+            
+        Raises
+        ------
+        """
+        # Define Iris var_constraint -> ensures that only the current 
+        # variable is extracted from the netcdf file 
+        var_constraint = iris.Constraint(cube_func=lambda c: c.var_name==var_name)
+        
+        # read files using iris
+        cubes = iris.cube.CubeList()
+        loaded_files = []
+        for _file in files:
+            try:
+                finfo = self.file_convention.get_info_from_file(_file)
+                cube = iris.load_cube(_file, var_constraint)
+                if const.GRID_IO["CHECK_TIME_FILENAME"]:
+                    
+                    if not check_time_coord(cube, ts_type=finfo["ts_type"], 
+                                            year=finfo["year"]):
+                        
+                        self.logger.warning("Invalid time axis in file {}. " 
+                                       "Attempting to correct.".format(
+                                        basename(_file)))
+                        
+                        cube = correct_time_coord(cube, 
+                                                  ts_type=finfo["ts_type"],
+                                                  year=finfo["year"])
+                        
+                else:
+                    self.logger.warning("WARNING: Automatic check of time "
+                                   "array in netCDF files is deactivated."
+                                   " This may cause problems in case "
+                                   "the time dimension is not CF conform.")
+                
+                cubes.append(cube)
+                loaded_files.append(_file)
+            except Exception as e:
+                self.logger.warning("Failed to load {} as Iris cube.\n"
+                               "Error: {}".format(_file, repr(e)))
+        
+        if len(loaded_files) == 0:
+            raise IOError("None of the found files for variable {} "
+                          "in specified time interval\n{}-{}\n"
+                          "could be loaded".format(self.name,
+                                                   self.start_time,
+                                                   self.stop_time))
+    
+        self.cubes[var_name] = cubes
+        self.loaded_files[var_name] = loaded_files
+        return cubes
+    
+    def concatenate_cubes(self, cubes):
+        """Concatenate list of cubes into one cube
+        
+        Parameters
+        ----------
+        CubeList
+            list of individual cubes
+        
+        Returns
+        -------
+        Cube
+            Single cube that contains concatenated cubes from input list
+            
+        Raises 
+        ------
+        iris.exceptions.ConcatenateError
+            if concatenation of all cubes failed (catch this error using 
+            :func:`concatenate_possible_cubes` which returns an instance 
+            of :class:`CubeList` with results)
+        """
+        return concatenate_iris_cubes(cubes, error_on_mismatch=True)
+    
+    def concatenate_possible_cubes(self, cubes):
+        """Concatenate list of cubes into one cube
+        
+        Note
+        ----
+        Warns, if all input cubes could be merged into single cube (because
+        in this case, :func:`concatenate_cubes` should be used)
+        
+        Parameters
+        ----------
+        CubeList
+            list of individual cubes
+        
+        Returns
+        -------
+        CubeList
+            list of cubes that could be concatenated
+        
+        Raises
+        ------
+        iris.exceptions.ConcatenateError
+            if call or :func:`iris._concatenate.concatenate` did not return
+            instance of :class:`iris.cube.CubeList` or of 
+            :class:`iris.cube.Cube`
+        """
+        cubes_concat = concatenate_iris_cubes(cubes, error_on_mismatch=False)
+        if isinstance(cubes_concat, iris.cube.Cube):
+            self.logger.warning('Successfully concatenated all input cubes into '
+                           'single Cube, returning single cube as CubeList. '
+                           'Please use method concatenate_cubes')
+            cubes_concat = iris.cube.CubeList(cubes_concat)
+        if not isinstance(cubes_concat, iris.cube.CubeList):
+            raise iris.exceptions.ConcatenateError('Unexpected error please '
+                                                   'debug')
+        return cubes_concat
+    
+    def _check_ts_type(self, ts_type):
+        """Check and, if applicable, update ts_type"""
+        if ts_type is None:
+            if len(self.ts_types) == 0:
+                raise AttributeError('Apparently no files with a valid ts_type '
+                                     'entry in their filename could be found')
+                
+            ts_type = self.ts_types[0]
+        if not ts_type in self.ts_types:
+            raise ValueError("Invalid input for ts_type, got: {}, "
+                             "allowed values: {}".format(ts_type, 
+                                                         self.TS_TYPES))
+        return ts_type
+    
     def read_var(self, var_name, start_time=None, stop_time=None, 
                  ts_type=None):
         """Read model data for a specific variable
@@ -409,8 +681,8 @@ class ReadGridded(object):
             :attr:`start_time` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly"). If None, then the first
-            available
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
             
         Returns
         -------
@@ -424,16 +696,7 @@ class ReadGridded(object):
         ValueError
             if specified ts_type is not supported
         """
-        if ts_type is None:
-            if len(self.ts_types) == 0:
-                raise AttributeError('Apparently no files with a valid ts_type '
-                                     'entry in their filename could be found')
-                
-            ts_type = self.ts_types[0]
-        if not ts_type in self.ts_types:
-            raise ValueError("Invalid input for ts_type, got: {}, "
-                             "allowed values: {}".format(ts_type, 
-                                                         self.TS_TYPES))
+        ts_type = self._check_ts_type(ts_type)
         if start_time:
             self.start_time = start_time
         if stop_time:
@@ -444,120 +707,23 @@ class ReadGridded(object):
                              "in model directory: {}".format(var_name, 
                                                   self.data_dir))
         
-        match_files = []
-        for year in self.years_to_load:
-            if const.MIN_YEAR <= year <= const.MAX_YEAR:
-                # search for filename in self.files using ts_type as default ts size
-                for _file in self.files:
-                    #new file naming convention (aerocom3)
-                    match_mask = self.file_convention.string_mask(var_name,
-                                                                  year, 
-                                                                  ts_type)
-                    
-                    if match(match_mask, _file):
-                        match_files.append(_file)
-                        logger.info("FOUND MATCH: {}".format(basename(_file)))
-
-            else:
-                logger.warning('Ignoring data from year {}. Year is out of '
-                               'allowed bounds ({:d} - {:d})'
-                               .format(year, const.MIN_YEAR, const.MAX_YEAR))
-           
-        if len(match_files) == 0:
-            raise IOError("No files could be found for dataset %s, variable %s "
-                          "and %s data in specified time interval %s-%s"
-                          %(self.name, var_name, ts_type, self.start_time,
-                            self.stop_time))
-# =============================================================================
-#             try:
-#                 freqs = list(self.TS_TYPES)
-#                 ts_type = freqs[freqs.index(ts_type)+1]
-#                 print("No files could be found for variable %s, and %s "
-#                       "data in specified time interval\n%s-%s. Trying "
-#                       "ts_type {}".format(ts_type)
-#                       %(self.name, ts_type, self.start_time,
-#                         self.stop_time))
-#                 return self.read(var_name, start_time, stop_time, ts_type)
-#             except:
-# =============================================================================
-                
-                
-        self._match_files = match_files
-        # Define Iris var_constraint -> ensures that only the current 
-        # variable is extracted from the netcdf file 
-        var_constraint = Constraint(cube_func=lambda c: c.var_name==var_name)
+        match_files = self.find_var_files_flex_ts_type(var_name, 
+                                                       ts_type_init=ts_type)
+        cubes = self.load_files(var_name, match_files)
         
-        # read files using iris
-        cubes = CubeList()
-        loaded_files = []
-        for _file in match_files:
-            try:
-                finfo = self.file_convention.get_info_from_file(_file)
-                cube = load_cube(_file, var_constraint)
-                if const.GRID_IO["CHECK_TIME_FILENAME"]:
-                    
-                    if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                            year=finfo["year"]):
-                        
-                        logger.warning("Invalid time axis in file {}. " 
-                                       "Attempting to correct.".format(
-                                        basename(_file)))
-                        
-                        cube = correct_time_coord(cube, 
-                                                  ts_type=finfo["ts_type"],
-                                                  year=finfo["year"])
-                        
-                else:
-                    logger.warning("WARNING: Automatic check of time "
-                                   "array in netCDF files is deactivated."
-                                   " This may cause problems in case "
-                                   "the time dimension is not CF conform.")
-                
-                cubes.append(cube)
-                loaded_files.append(_file)
-            except Exception as e:
-                logger.warning("Failed to load {} as Iris cube.\n"
-                               "Error: {}".format(_file, repr(e)))
-        
-        if len(loaded_files) == 0:
-            raise IOError("None of the found files for variable {}, and {} "
-                          "in specified time interval\n{}-{}\n"
-                          "could be loaded".format(self.name,
-                                                   ts_type, 
-                                                   self.start_time,
-                                                   self.stop_time))
-        if const.GRID_IO.EQUALISE_METADATA:
-            meta_init = cubes[0].metadata
-            if not all([x.metadata == meta_init for x in cubes]):
-                logger.warning("Cubes for variable {} have different meta data "
-                               "settings. These will be unified using the "
-                               "metadata dictionary of the first cube "
-                               "(otherwise the method concatenate of the iris "
-                               "package won't work)".format(var_name))
-                for cube in cubes:
-                    cube.metadata =meta_init
-            
-        #now put the CubeList together and form one cube
-        #1st equalise the cubes (remove non common attributes)
-        equalise_attributes(cubes)
-        #unify time units
-        unify_time_units(cubes)
-        self._cubes = cubes
-        #now concatenate the cube list to one cube
-        cubes_concat = concatenate(cubes, error_on_mismatch=True)
-        if len(cubes_concat) > 1:
-            long_names = [x.long_name for x in cubes_concat]
-            raise IOError("Could not concatenate individual Cubes for in "
-                          "var_name {} in time: likely due to multiple "
-                          "long_name attributes in source files: {}".format(
-                                  var_name, long_names))
+        try:
+            cubes_concat = self.concatenate_cubes(cubes)
+        except iris.exceptions.ConcatenateError:
+            raise NotImplementedError('Can not yet handle partial '
+                                      'concatenation in pyaerocom')
         
         #create instance of pyaerocom.GriddedData
-        data = GriddedData(input=cubes_concat[0], from_files=loaded_files,
-                         name=self.name, ts_type=ts_type)
+        data = GriddedData(input=cubes_concat[0], 
+                           from_files=self.loaded_files,
+                           name=self.name, ts_type=ts_type)
         # crop cube in time (if applicable)
         if self.start_time and self.stop_time:
-            logger.info("Applying temporal cropping of result cube")
+            self.logger.info("Applying temporal cropping of result cube")
             try:
 # =============================================================================
 #                 t_constraint = data.get_time_constraint(self.start_time, 
@@ -568,17 +734,19 @@ class ReadGridded(object):
                                               self.stop_time))
                 data = _data
             except Exception as e:
-                logger.warning("Failed to crop data for {} in time.\n"
+                self.logger.warning("Failed to crop data for {} in time.\n"
                                "Error: {}".format(var_name, repr(e)))
         
         if var_name in self.data:
-            logger.warning("Warning: Data for variable {} already exists "
+            self.logger.warning("Warning: Data for variable {} already exists "
                            "and will be overwritten".format(var_name))
         self.data[var_name] = data
+        
         return data
     
+                
     def read(self, var_names=None, start_time=None, stop_time=None, 
-                 ts_type=None):
+                 ts_type=None, require_all_vars_avail=False):
         """Read all variables that could be found 
         
         Reads all variables that are available (i.e. in :attr:`vars`)
@@ -595,16 +763,28 @@ class ReadGridded(object):
             :attr:`start_time` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly"). If None, then the first
-            available
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
+        require_all_vars_avail : bool
+            if True, it is strictly required that all input variables are 
+            available. 
         
         Returns
         -------
         tuple
-            loaded data objects (type GriddedData)
+            loaded data objects (type :class:`GriddedData`)
+            
+        Raises 
+        ------
+        IOError
+            if input variable names is not list or string
+        VarNotAvailableError
+            1. if ``require_all_vars_avail=True`` and one or more of the 
+            desired variables is not available in this class
+            2. if ``require_all_vars_avail=True`` and if none of the input 
+            variables is available in this object
         """
-        _vars_read = []
-        _loaded = []
+
         if var_names is None:
             var_names = self.vars
         elif isinstance(var_names, str):
@@ -614,17 +794,124 @@ class ReadGridded(object):
                           "of strings specifying var_names to load. You may "
                           "also leave it empty (None) in which case all "
                           "available variables are loaded".format(var_names))
+        if require_all_vars_avail:
+            if not all([var in self.vars for var in var_names]):
+                raise VarNotAvailableError('One or more of the specified vars '
+                                        '({}) is not available in {} database. '
+                                        'Available vars: {}'.format(
+                                        var_names, self.name, 
+                                        self.vars))
+        var_names = np.intersect1d(self.vars, var_names)
+        if len(var_names) == 0:
+            raise VarNotAvailableError('None of the desired variables is '
+                                        'available in {}'.format(self.name))
+        data = []
         for var in var_names:
-            try:
-                dat = self.read_var(var, start_time, stop_time, ts_type)
-                _vars_read.append(var)
-                _loaded.append(dat)
-            except Exception as e:
-                print("Failed to read variable {}."
-                      "Error msg: {}".format(var, repr(e)))
-                _loaded.append(None)
-        self.vars = _vars_read
-        return tuple(_loaded)
+            data.append(self.read_var(var, start_time, stop_time, ts_type))
+# =============================================================================
+#             except Exception as e:
+#                 self.logger.exception('Failed to read variable {} ({})\n'
+#                                       'Error message: {}'.format(var,
+#                                                       self.name, 
+#                                                       repr(e)))
+# =============================================================================
+        return tuple(data)
+    
+    def read_individual_years(self, var_names, years_to_load, 
+                              ts_type=None, 
+                              require_all_years_avail=False,
+                              require_all_vars_avail=False):
+        """Read individual years into instances of :class:`GriddedData`
+        
+        Note
+        ----
+        Other than methods :func:`read_var` and :func:`read`, this method does
+        not write into :attr:`data` but into :attr:`data_yearly`. Since for 
+        each provided variable, multiple years are loaded, the structure of
+        :attr:`data_yearly` is a nested dictionary and the yearly data may
+        be accessed as shown in the below example.
+        
+        Parameters
+        ----------
+        var_names : :obj:`list` or :obj:`str`
+            variables that are supposed to be read
+        years_to_load : list
+            list specifying the years to be loaded
+        ts_type : str
+            string specifying temporal resolution (choose from 
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
+        require_all_years_avail : bool
+            if True, it is strictly required that all input years are 
+            available. 
+        require_all_vars_avail : bool
+            if True, it is strictly required that all input variables are 
+            available. 
+        
+        Returns
+        -------
+        dict
+            nested dictionary dictionary containing the results for each 
+            variable and for each year
+            
+        Raises 
+        ------
+        YearNotAvailableError
+            1. if ``require_all_years_avail=True`` and one or more of the provided 
+            years is not available in this class
+            2. if none of the required years is available in this object
+        VarNotAvailableError
+            1. if ``require_all_vars_avail=True`` and one or more of the 
+            desired variables is not available in this class
+            2. if ``require_all_vars_avail=True`` and if none of the input 
+            variables is available in this object
+        """
+        ts_type = self._check_ts_type(ts_type)
+        if require_all_years_avail:
+            if not all([year in self.years for year in years_to_load]):
+                raise YearNotAvailableError('One or more of the specified years '
+                                        '({}) is not available in {} database. '
+                                        'Available years: {}'.format(
+                                        years_to_load, self.name, 
+                                        self.years))
+        years_to_load = np.intersect1d(self.years, years_to_load)
+        if len(years_to_load) == 0:
+            raise YearNotAvailableError('None of the provided years is '
+                                        'available in {}'.format(self.name))
+        
+        if require_all_vars_avail:
+            if not all([var in self.vars for var in var_names]):
+                raise VarNotAvailableError('One or more of the specified vars '
+                                        '({}) is not available in {} database. '
+                                        'Available vars: {}'.format(
+                                        var_names, self.name, 
+                                        self.vars))
+        var_names = np.intersect1d(self.vars, var_names)
+        if len(var_names) == 0:
+            raise VarNotAvailableError('None of the desired variables is '
+                                        'available in {}'.format(self.name))
+            
+        for var in var_names:
+            if not var in self.data_yearly:
+                self.data_yearly[var] = od()
+                
+            for year in years_to_load:
+                match_files = self.find_var_files_flex_ts_type(var,
+                                                               ts_type,
+                                                               year)
+                cubes = self.load_files(var, match_files)
+                if len(cubes) > 1:
+                    raise NotImplementedError('Coming soon...')
+                data = GriddedData(input=cubes[0], 
+                                   from_files=self.loaded_files,
+                                   name=self.name, 
+                                   ts_type=ts_type)
+                if year in self.data_yearly[var]:
+                    self.logger.warning('Individual data of year {} and var {} '
+                                        'already exists and will be '
+                                        'overwritten'.format(year, var))
+                self.data_yearly[var][year] = data
+        return self.data_yearly
     
     def __getitem__(self, var_name):
         """Try access import result for one of the models
@@ -666,6 +953,12 @@ class ReadGridded(object):
             s += "\nLoaded GriddedData objects:\n"
             for var_name, data in self.data.items():
                 s += "{}\n".format(data.short_str())
+        if self.data_yearly:
+            s += "\nLoaded GriddedData objects (individual years):\n"
+            for var_name, yearly_data in self.data_yearly.items():
+                if yearly_data:
+                    for year, data in yearly_data.items():
+                        s += "{}\n".format(data.short_str())
         return s.rstrip()
         
 class ReadGriddedMulti(object):
@@ -732,9 +1025,9 @@ class ReadGriddedMulti(object):
             raise IllegalArgumentError("Please provide string or list of strings")
     
         self.names = names
-        # dictionary containing instances of ModelImportResult for each model
-        # is initiated in method `init_results` at end of __init__
-        self.results = None
+        #: dictionary containing instances of :class:`ReadGridded` for each
+        #: datset
+        self.results = od()
         
         # only overwrite if there is input, note that the attributes
         # start_time and stop_time are defined below as @property getter and
@@ -746,8 +1039,6 @@ class ReadGriddedMulti(object):
             self.stop_time = stop_time
         
         self.init_results()
-        self.search_data_dirs()
-        self.search_all_files()
         
     @property
     def start_time(self):
@@ -759,12 +1050,6 @@ class ReadGriddedMulti(object):
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         """
         return self._start_time
-# =============================================================================
-#         if not isinstance(t, Timestamp):
-#             raise ValueError("Invalid value encountered for start time "
-#                              "in reading engine: %s" %t)
-#         return t
-# =============================================================================
     
     @start_time.setter
     def start_time(self, value):
@@ -774,9 +1059,9 @@ class ReadGriddedMulti(object):
             except:
                 raise ValueError("Failed to convert non-string input for "
                                  "time stamp into string")
-        if not isinstance(value, Timestamp):    
+        if not isinstance(value, pd.Timestamp):    
             try:
-                value = Timestamp(value)
+                value = pd.Timestamp(value)
             except:
                 raise ValueError("Failed to convert input value to pandas "
                                   "Timestamp: %s" %value)
@@ -793,13 +1078,7 @@ class ReadGriddedMulti(object):
         
         """
         return self._stop_time
-# =============================================================================
-#         if not isinstance(t, Timestamp):
-#             raise ValueError("Invalid value encountered for stop time "
-#                              "in reading engine: %s" %t)
-#         return t
-# =============================================================================
-    
+
     @stop_time.setter
     def stop_time(self, value):
         if not isinstance(value, str):
@@ -808,68 +1087,34 @@ class ReadGriddedMulti(object):
             except:
                 raise ValueError("Failed to convert non-string input for "
                                  "time stamp into string")
-        if not isinstance(value, Timestamp):  
+        if not isinstance(value, pd.Timestamp):  
             try:
-                value = Timestamp(value)
+                value = pd.Timestamp(value)
             except:
                 raise ValueError("Failed to convert input value to pandas "
                                   "Timestamp: %s" %value)
         self._stop_time = value
-        
-    
     
     def init_results(self):
-        """Initiate the import result attributes
+        """Initiate the reading classes for each dataset
         
-        Creates and initiates :class:`ModelImportResult` object for each 
-        model specified in :attr:`names` and stores it in the dictionary
-        :attr:`results` using the `name`.
+        Creates and initates instance of :class:`ReadGridded` for each 
+        dataset name specified in attr. :attr:`names`.
+        
+        Raises
+        ------
+        Exception 
+            if one of the reading classes cannot be instantiated properly. The
+            type of Exception 
         """
         self.results = od()
         for name in self.names:
-            self.results[name] = ReadGridded(name, self.start_time, 
-                                             self.stop_time, init=False)
-    
-    def search_data_dirs(self):
-        """Get the directory where model data for a given model resides in
-        
-        Returns
-        -------
-        bool
-            True, if directory could be found, else False
-        """
-        #remember only the model IDs for which a directory could be found
-        names_new = []
-        for name in self.names:
-            # loop through the list of models
-            if self.results[name].search_data_dir():
-                names_new.append(name)
-        if len(names_new) == 0:
-            raise AttributeError("Failed to find model directories for all "
-                                 "model IDs specified (%s)" %self.names)
-        self.names = names_new
-        return names_new
-    
-    def search_all_files(self):
-        """Search all valid model files for each model
-        
-        See also :func:`ReadGridded.search_all_files`
-        
-        Note
-        ----
-        This function does not seperate by variable or time.
-        
-        """
-        # unfortunately there's more than one file naming convention
-        # examples
-        # aerocom3_CAM5.3-Oslo_AP3-CTRL2016-PD_od550aer_Column_2010_monthly.nc
-        # aerocom.AATSR_ensemble.v2.6.daily.od550aer.2012.nc
-        # loop through the list of models
-        for name in self.names:
-            self.results[name].search_all_files()
+            self.results[name] = ReadGridded(name, 
+                                             self.start_time, 
+                                             self.stop_time)
     
         
-    def read(self, var_names, names=None, start_time=None, stop_time=None,
+    def read(self, var_names, start_time=None, stop_time=None,
              ts_type=None):
         """High level method to import data for multiple variables and models
         
@@ -877,8 +1122,6 @@ class ReadGriddedMulti(object):
         ----------
         var_names : :obj:`str` or :obj:`list`
             string IDs of all variables that are supposed to be imported
-        names : :obj:`str` or :obj:`list`, optional
-            string IDs of all models that are supposed to be imported
         start_time : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
             :attr:`start_time` will be overwritten)
@@ -887,7 +1130,8 @@ class ReadGriddedMulti(object):
             :attr:`start_time` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly")
+            "hourly", "3hourly", "daily", "monthly").If None, prioritised 
+            of the available resolutions is used
             
         Returns
         -------
@@ -906,34 +1150,67 @@ class ReadGriddedMulti(object):
             self.start_time = start_time
         if stop_time:
             self.stop_time = stop_time
-
-        if names is None: #use all models if unspecified
-            names = self.names
-        elif isinstance(names, str):
-            names = [names]
-        if isinstance(var_names, str):
-            var_names = [var_names]
+    
+        for name, reader in self.results.items():
+            try:
+                reader.read(var_names, start_time, stop_time, ts_type)
+            except Exception as e:
+                self.logger.exception('Failed to read data of {}\n'
+                                      'Error message: {}'.format(name,
+                                                      repr(e)))
+        return self.results
+    
+    def read_individual_years(self, var_names, years_to_load, 
+                              ts_type=None, require_all_years_avail=False,
+                              require_all_vars_avail=False):
+        """Read individual years into instances of :class:`GriddedData`
+        
+        Calls :func:`read_individual_years` from :class:`ReadGridded` for each
+        of the datasets in this object.
+        
+        Parameters
+        ----------
+        var_names : :obj:`list` or :obj:`str`
+            variables that are supposed to be read
+        years_to_load : list
+            list specifying the years to be loaded
+        ts_type : str
+            string specifying temporal resolution (choose from 
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
+        require_all_years_avail : bool
+            if True, it is strictly required that all input years are 
+            available. 
+        require_all_vars_avail : bool
+            if True, it is strictly required that all input variables are 
+            available.
             
-        warnings = []
-        for name in names:
-            if name in self.results:
-                read = self.results[name]
-                for var in var_names:
-                    if var in read.vars:
-                        try:
-                            read.read_var(var, start_time, stop_time, ts_type)
-                        except Exception as e:
-                            print(repr(e))
-                            
-                    else:
-                        warnings.append("Variable {} not available for model "
-                                        "{}".format(var, name))
-                    
-                
-            else:
-                warnings.append("Failed to import model {}".format(name))
-        for msg in warnings:
-            logger.warning(msg)
+        
+        Returns
+        -------
+        dict
+            nested dictionary dictionary containing the results for each 
+            variable and for each year
+            
+        Raises 
+        ------
+        YearNotAvailableError
+            1. if ``require_all_years_avail=True`` and one or more of the provided 
+            years is not available in this class
+            2. if none of the required years is available in either of the 
+            reading classes for the individual models
+        VarNotAvailableError
+            1. if ``require_all_vars_avail=True`` and one or more of the 
+            desired variables is not available in this class
+            2. if ``require_all_vars_avail=True`` and if none of the input 
+            variables is available in this object
+        
+        """
+        for name, reader in self.results.items():
+            reader.read_individual_years(var_names, years_to_load, ts_type,
+                                         require_all_years_avail,
+                                         require_all_vars_avail)
+            
         return self.results
     
     def __getitem__(self, name):
@@ -969,9 +1246,6 @@ class ReadGriddedMulti(object):
         return s
     
 if __name__=="__main__":
-    
-    import iris
-    
     read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015")
     
     cube = iris.load_cube(read.files[0])

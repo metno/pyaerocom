@@ -10,7 +10,12 @@ from pyaerocom import __dir__
 from os.path import join, exists, isdir
 from os import listdir
 from collections import OrderedDict as od
+
 from iris.coords import DimCoord
+from iris.experimental.equalise_cubes import equalise_attributes
+from iris.util import unify_time_units
+from iris._concatenate import concatenate
+
 from datetime import datetime
 from numpy import datetime64, asarray, arange
 import cf_units
@@ -174,6 +179,63 @@ def correct_time_coord(cube, ts_type, year, tindex_cube=0):
         pass
     cube.add_dim_coord(tcoord, tindex_cube)
     return cube
+
+def concatenate_iris_cubes(cubes, error_on_mismatch=True):
+    """Concatenate list of :class:`iris.Cube` instances cubes into single Cube
+    
+    Helper method for concatenating list of cubes and that helps 
+    with handling the fact that the corresponding iris method is not well 
+    defined in the sense of what it returns (i.e. instance of 
+    :class:`Cube` or :class:`CubeList`, depending on whether all cubes 
+    could be concatenated or not...)
+    
+    This method is not supposed to be called directly but rather 
+    :func:`concatenate_cubes` (which ALWAYS returns instance of 
+    :class:`Cube` or raises Exception) or :func:`concatenate_possible_cubes`
+    (which ALWAYS returns instance of :class:`CubeList` or raises Exception)
+    
+    Parameters
+    ----------
+    cubes : CubeList
+        list of individual cubes
+    error_on_mismatch
+        boolean specifying whether an Exception is supposed to be raised
+        or not
+        
+    Returns
+    -------
+    :obj:`Cube` or :obj:`CubeList`
+        result of concatenation 
+    
+    Raises
+    ------
+    iris.exceptions.ConcatenateError
+        if ``error_on_mismatch=True`` and input cubes could not all concatenated
+        into a single instance of :class:`iris.Cube` class.
+        
+    """
+    var_name = cubes[0].var_name
+    if const.GRID_IO.EQUALISE_METADATA:
+        meta_init = cubes[0].metadata
+        if not all([x.metadata == meta_init for x in cubes]):
+            logger.warning("{} cubes to be concatenated have different meta "
+                           "data settings. These will be unified using the "
+                           "metadata dictionary of the first cube "
+                           "(otherwise the method concatenate of the iris "
+                           "package won't work)".format(var_name))
+            for cube in cubes:
+                cube.metadata = meta_init
+                
+    #now put the CubeList together and form one cube
+    #1st equalise the cubes (remove non common attributes)
+    equalise_attributes(cubes)
+    #unify time units
+    unify_time_units(cubes)
+    
+    #now concatenate the cube list to one cube
+    cubes_concat = concatenate(cubes, error_on_mismatch)
+    
+    return cubes_concat
 
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database

@@ -37,7 +37,7 @@ _STR_TO_IRIS = dict(count       = iris_analysis.COUNT,
                     median      = iris_analysis.MEDIAN,
                     
                     nearest     = iris_analysis.Nearest)
-
+    
 def str_to_iris(key):
     """Mapping function that converts strings into iris analysis objects
     

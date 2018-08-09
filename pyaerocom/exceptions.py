@@ -35,6 +35,12 @@ class LongitudeConstraintError(ValueError):
 class DataExtractionError(ValueError):
     pass
 
+class YearNotAvailableError(IOError):
+    pass
+
+class VarNotAvailableError(IOError):
+    pass
+
 class TimeZoneError(AttributeError):
     pass
 
