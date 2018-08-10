@@ -1231,6 +1231,8 @@ class ReadGriddedMulti(object):
         ValueError
             if results for ``name`` are not available
         """
+        if isinstance(name, int):
+            name = self.names[name]
         if not name in self.results:
             raise ValueError("No data found for name %s" %name)
         return self.results[name]

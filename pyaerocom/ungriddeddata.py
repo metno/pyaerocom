@@ -170,7 +170,7 @@ class UngriddedData(object):
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
                         stop=None, data_as_series=True, freq=None,
                         interp_nans=True, min_coverage_interp=0.68, 
-                        _test_mode=True):
+                        _test_mode=False):
         """Convert data from one station to :class:`StationData`
         
         Todo
@@ -200,6 +200,7 @@ class UngriddedData(object):
         min_coverage_interp : float
             required coverage fraction for interpolation (default is 0.68, i.e.
             roughly corresponding to 1 sigma)
+            
         
         Returns
         -------
@@ -253,7 +254,9 @@ class UngriddedData(object):
             data = self._data[indices, self._DATAINDEX]
             if data_as_series:
                 data = pd.Series(data, dtime)[start:stop]
-                data[4:6] = np.nan
+                if _test_mode:
+                    data[0] = np.nan
+                    data[4:6] = np.nan
                 if interp_nans:
                     coverage = 1 - data.isnull().sum() / len(data)
                     if coverage < min_coverage_interp:
@@ -265,12 +268,9 @@ class UngriddedData(object):
                                                         temp_dict['station_name'],
                                                         temp_dict['dataset_name'],
                                                         start, stop))
-                    data = data.interpolate()
+                    data = data.interpolate().dropna()
                 if freq is not None:
-                    mean_temp = data.resample(freq).mean()
-                    
-                    data = data.resample(freq).mean()
-                    
+                    data = data.resample(freq).mean()     
             temp_dict[var] = data
         return temp_dict
     
