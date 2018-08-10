@@ -6,7 +6,8 @@ from collections import OrderedDict as od
 import pandas as pd
 from pyaerocom import logger, const
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
-                                  TimeMatchError, DataCoverageError)
+                                  TimeMatchError, DataCoverageError,
+                                  MetaDataError)
 from pyaerocom import StationData
 from pyaerocom.utils import dict_to_str, list_to_shortstr
 from pyaerocom.helpers import to_pandas_timestamp
@@ -111,28 +112,14 @@ class UngriddedData(object):
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
         logger.info("adding chunk, new array size ({})".format(self._data.shape))
-# =============================================================================
-#     
-#     def __setitem__(self, key, val):
-#         if self.index_pointer >= self._ROWNO:
-#             self._add_chunk()
-#         self._data[key] = val
-#         self.index_pointer += 1
-#         
-# =============================================================================
-    def _to_timeseries_helper(self, index, vars_to_convert=None, 
-                              start_date=None, end_date=None, freq=None):
-        """Convert single station to StationData
-        
-        Note
-        ----
-        All variable data is directly loaded as pandas.Series and, if input
-        parameter ``freq`` is provided, resampled onto a regular grid
-        """
-        if isinstance(vars_to_convert, str):
-            vars_to_convert = [vars_to_convert]
-        temp_dict = StationData()
-        val = self.metadata[index]
+
+    def _to_timeseries_helper(self, val, start_date=None, end_date=None, 
+                              freq=None):
+        """small helper routine for self.to_timeseries to not to repeat the 
+        same code fragment three times"""
+        raise NotImplementedError('Outdated, cf. new version of to_timeseries ')
+        data_found_flag = False
+        temp_dict = {}
         # do not return anything for stations without data
         temp_dict['station_name'] = val['station_name']
         temp_dict['latitude'] = val['stat_lat']
@@ -140,37 +127,98 @@ class UngriddedData(object):
         temp_dict['altitude'] = val['stat_alt']
         temp_dict['PI'] = val['PI']
         temp_dict['dataset_name'] = val['dataset_name']
-        
         if 'files' in val:
             temp_dict['files'] = val['files']
-        
-        if vars_to_convert is None:
-            vars_to_convert = val['variables']
-        if not len(vars_to_convert) > 1:
-            raise VarNotAvailableError()
-        first_var = vars_to_convert[0]
-        idx_first_var = self.var_idx[first_var]
-        dtime = None
-        for var in vars_to_convert:
-            if var in val['variables']: # station data contains variable
-                
+        for var in val['idx']:
+            if var in self.vars_to_retrieve:
+                data_found_flag = True
                 temp_dict[var] = pd.Series(self._data[val['idx'][var], self._DATAINDEX],
-                                       index=pd.to_datetime(
-                                           self._data[
-                                               val['idx'][var], self._TIMEINDEX],
-                                           unit='s'))
+                                           index=pd.to_datetime(
+                                               self._data[
+                                                   val['idx'][var], self._TIMEINDEX],
+                                               unit='s'))
 
-            temp_dict[var] = temp_dict[var][start_date:end_date].drop_duplicates()
-            if freq is not None:
-                temp_dict[var] = temp_dict[var][start_date:end_date].resample(freq).mean()
+                temp_dict[var] = temp_dict[var][start_date:end_date].drop_duplicates()
+                if freq is not None:
+                    temp_dict[var] = temp_dict[var][start_date:end_date].resample(freq).mean()
 
-        return temp_dict
+        if data_found_flag:
+            return temp_dict
+        else:
+            return None
+    
+    # TODO: review docstring        
+    def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
+                      freq=None):
+        """Convert this object into individual pandas.Series objects
+
+        Parameters
+        ----------
+        station_name : :obj:`tuple` or :obj:`str:`, optional
+            station_name or list of station_names to return
+        start_date, end_date : :obj:`str:`, optional
+            date strings with start and end date to return
+        freq : obj:`str:`, optional
+            frequency to resample to using the pandas resample method
+            us the offset aliases as noted in
+            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+
+        Returns
+        -------
+        list or dictionary
+            station_names is a string: dictionary with station data
+            station_names is list or None: list of dictionaries with station data
+
+        Example
+        -------
+        >>> import pyaerocom.io.readobsdata
+        >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
+        >>> obj.read()
+        >>> pdseries = obj.to_timeseries()
+        >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
+        """
+        from warnings import warn
+        msg = ('This method does currently not work due to recent API changes, '
+               'and is therefore a wrapper for method to_station_data or '
+               'to_station_data_all dependent on whether a station name is '
+               'provided or not.')
+        warn(DeprecationWarning(msg))
+        if station_name is None:
+            return self.to_station_data_all(start=start_date, stop=end_date,
+                                            freq=freq)
+        if isinstance(station_name, str):
+            station_name = [station_name]
+        if isinstance(station_name, list):
+            indices = []
+            for meta_idx, info in self.metadata.items():
+                if info['station_name'] in station_name:
+                    indices.append(meta_idx)
+            if len(indices) == 0:
+                raise MetaDataError('No such station(s): {}'.format(station_name))
+            elif len(indices) == 1:
+                # return single dictionary, like before 
+                # TODO: maybe change this after clarification
+                return self.to_station_data(start=start_date, stop=end_date,
+                                            freq=freq)
+            else:
+                out_data = []
+                for meta_idx in indices:
+                    try:
+                        out_data.append(self.to_station_data(start=start_date, 
+                                                             stop=end_date,
+                                                             freq=freq))
+                    except (VarNotAvailableError, TimeMatchError, 
+                            DataCoverageError) as e:
+                        logger.warning('Failed to convert to StationData '
+                               'Error: {}'.format(repr(e)))
+                return out_data
+                    
     
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
-                        stop=None, data_as_series=True, freq=None,
-                        interp_nans=True, min_coverage_interp=0.68, 
-                        _test_mode=False):
+                        stop=None, freq=None, interp_nans=False, 
+                        min_coverage_interp=0.68, 
+                        data_as_series=True, _test_mode=False):
         """Convert data from one station to :class:`StationData`
         
         Todo
@@ -190,8 +238,6 @@ class UngriddedData(object):
         stop 
             stop time, optional (if not None, input must be convertible into
             pandas.Timestamp)
-        data_as_series : bool
-            if True, all data columns are returned as time-series
         freq : str
             pandas frequency string (e.g. 'D' for daily, 'M' for month end)
         interp_nans : bool
@@ -200,6 +246,8 @@ class UngriddedData(object):
         min_coverage_interp : float
             required coverage fraction for interpolation (default is 0.68, i.e.
             roughly corresponding to 1 sigma)
+        data_as_series : bool
+            if True, all data columns are returned as time-series
             
         
         Returns
@@ -236,7 +284,7 @@ class UngriddedData(object):
         if vars_to_convert is None:
             vars_to_convert = val['variables']
         vars_to_convert = np.intersect1d(vars_to_convert, val['variables']) 
-        if not len(vars_to_convert) > 1:
+        if not len(vars_to_convert) >= 1:
             raise VarNotAvailableError('None of the input variables matches, '
                                        'or station does not contain data')
         first_var = vars_to_convert[0]
@@ -274,68 +322,59 @@ class UngriddedData(object):
             temp_dict[var] = data
         return temp_dict
     
-        
-        
-    # TODO: review docstring        
-    def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
-                      freq=None):
-        """Convert this object into individual pandas.Series objects
+    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
+                            freq=None, interp_nans=False, 
+                            min_coverage_interp=0.68):
+        """Convert all possible stations to :class:`StationData` objects
 
         Parameters
         ----------
-        station_names : :obj:`tuple` or :obj:`str:`, optional
-            station_name or list of station_names to return
-        start_date, end_date : :obj:`str:`, optional
-            date strings with start and end date to return
-        freq : obj:`str:`, optional
-            frequency to resample to using the pandas resample method
-            us the offset aliases as noted in
-            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+        vars_to_convert : :obj:`list` or :obj:`str`, optional
+            variables that are supposed to be converted. If None, use all 
+            variables that are available for this station
+        start
+            start time, optional (if not None, input must be convertible into
+            pandas.Timestamp)
+        stop 
+            stop time, optional (if not None, input must be convertible into
+            pandas.Timestamp)
+        freq : str
+            pandas frequency string (e.g. 'D' for daily, 'M' for month end)
+        interp_nans : bool
+            if True, all NaN values in the time series for each 
+            variable are interpolated using linear interpolation
+        min_coverage_interp : float
+            required coverage fraction for interpolation (default is 0.68, i.e.
+            roughly corresponding to 1 sigma)
 
         Returns
         -------
-        list or dictionary
-            station_names is a string: dictionary with station data
-            station_names is list or None: list of dictionaries with station data
+        list 
+            list containing loaded instances of :class:`StationData` for each
+            station in :attr:`metadata`, where :func:`to_station_data` was 
+            successful, and ``None`` entries for meta data indices where 
+            :func:`to_station_data` failed (e.g. because no temporal match, 
+            etc.)
 
-        Example
-        -------
-        >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
-        >>> obj.read()
-        >>> pdseries = obj.to_timeseries()
-        >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
+        
         """
 
         out_data = []
-        if station_name is None:
-            # return all stations
-            for index, val in self.metadata.items():
-                data = self._to_timeseries_helper(index, start_date, 
-                                                  end_date, freq)
-                if data is not None:
-                    out_data.append(data)
-        elif isinstance(station_name, str):
-            # user asked for a single station_name
-            # return a single dictionary in this case
-            for index, val in self.metadata.items():
-                if station_name == val['station_name']:
-                    # we might change this to return a list at some point
-                    return self._to_timeseries_helper(val, start_date, 
-                                                      end_date, freq)
-        elif isinstance(station_name, list):
-            # user asked for a list of station_names
-            # return list with matching station_names
-            for index, val in self.metadata.items():
-                # print(val['station_name'])
-                if val['station_name'] in station_name:
-                    data = self._to_timeseries_helper(val)
-                    if data is not None:
-                        out_data.append(self._to_timeseries_helper(val, 
-                                                                   start_date, 
-                                                                   end_date, 
-                                                                   freq))
-
+        for index, val in self.metadata.items():
+            try:
+                data = self.to_station_data(index, vars_to_convert, start, 
+                                            stop, freq, interp_nans, 
+                                            min_coverage_interp)
+                
+                out_data.append(data)
+            # catch the exceptions that are acceptable
+            except (VarNotAvailableError, TimeMatchError, 
+                    DataCoverageError) as e:
+                logger.warning('Failed to convert to StationData '
+                               'Error: {}'.format(repr(e)))
+                # append None to make sure indices of stations are 
+                # preserved in output array
+                out_data.append(None)
         return out_data
     
     def code_lat_lon_in_float(self):

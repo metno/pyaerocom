@@ -50,6 +50,9 @@ class TimeZoneError(AttributeError):
 class TimeMatchError(AttributeError):
     pass
 
+class TemporalResolutionError(ValueError):
+    pass
+
 class VariableDefinitionError(IOError):
     pass
 

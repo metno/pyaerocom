@@ -23,6 +23,7 @@ from pyaerocom.helpers import (get_time_constraint,
 
 from pyaerocom.region import Region
 
+
 class GriddedData(object):
     """Base class representing model data
     
@@ -91,11 +92,14 @@ class GriddedData(object):
     """
     _grid = None
     _GRID_IO = const.GRID_IO
+    
     def __init__(self, input=None, var_name=None, **suppl_info):
         self.suppl_info = od(from_files     = [],
                              name           = "Unknown",
                              ts_type        = "Unknown",
                              region         = None)
+        
+        
         #attribute used to store area weights (if applicable, see method
         #area_weights)
         self._area_weights = None
@@ -105,6 +109,21 @@ class GriddedData(object):
             if k in self.suppl_info:
                 self.suppl_info[k] = v
     
+    @property
+    def ts_type(self):
+        """Temporal resolution"""
+        return self.suppl_info['ts_type']
+    
+    @property
+    def TS_TYPES(self):
+        """List with valid filename encryptions specifying temporal resolution
+        """
+        return self.io_opts.GRID_IO.TS_TYPES
+    
+    def to_daily(self):
+        """Convert this object to daily resolution"""
+        raise NotImplementedError
+        
     @property
     def is_masked(self):
         """Flag specifying whether data is masked or not
@@ -405,7 +424,7 @@ class GriddedData(object):
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))
-        if not self.coords_order == ['time', 'latitude', 'longitude']:
+        if not self.coords_order[:3] == ['time', 'latitude', 'longitude']:
             raise NotImplementedError("So far, time series can only be "
                                       "retrieved for 3-dimensional data "
                                       "with coordinate order "

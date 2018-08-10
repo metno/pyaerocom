@@ -99,7 +99,9 @@ class GridIO(object):
     """
     def __init__(self, **kwargs):
         self.FILE_TYPE = ".nc"
-        self.TS_TYPES = ["hourly", "3hourly", "daily", "monthly"]
+        # it is important to keep them in the order from highest to lowest
+        # resolution
+        self.TS_TYPES = ["hourly", "3hourly", "daily", "monthly", "yearly"]
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
