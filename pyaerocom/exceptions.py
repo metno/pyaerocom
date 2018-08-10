@@ -35,13 +35,19 @@ class LongitudeConstraintError(ValueError):
 class DataExtractionError(ValueError):
     pass
 
-class YearNotAvailableError(IOError):
+class DataCoverageError(ValueError):
     pass
 
-class VarNotAvailableError(IOError):
+class YearNotAvailableError(DataCoverageError):
+    pass
+
+class VarNotAvailableError(DataCoverageError):
     pass
 
 class TimeZoneError(AttributeError):
+    pass
+
+class TimeMatchError(AttributeError):
     pass
 
 class VariableDefinitionError(IOError):

@@ -7,11 +7,11 @@ from iris import Constraint
 from iris.time import PartialDateTime
 from iris.coords import DimCoord
 from iris import analysis as iris_analysis
-from pandas import Timestamp
-from numpy import datetime64, asarray
+import pandas as pd
+import numpy as np
 from pyaerocom.exceptions import LongitudeConstraintError
 from cf_units import Unit
-from datetime import MINYEAR, datetime
+from datetime import MINYEAR, datetime, date
 
 # The following import was removed and the information about available unit 
 # strings was copied from the netCDF4 module directly here
@@ -37,7 +37,7 @@ _STR_TO_IRIS = dict(count       = iris_analysis.COUNT,
                     median      = iris_analysis.MEDIAN,
                     
                     nearest     = iris_analysis.Nearest)
-    
+ 
 def str_to_iris(key):
     """Mapping function that converts strings into iris analysis objects
     
@@ -62,6 +62,22 @@ def str_to_iris(key):
         return val()
     return val
 
+def to_pandas_timestamp(value):
+    if isinstance(value, pd.Timestamp):
+        return value
+    elif isinstance(value, (str, np.datetime64, datetime, date)):
+        return pd.Timestamp(value)
+    else:
+        try:
+            numval = int(value)
+            if not 0 <= numval <= 10000:
+                raise ValueError('Could not infer valid year from numerical '
+                                 'time input')
+            return pd.Timestamp(str(numval))
+        except Exception as e:
+            raise ValueError('Failed to convert {} to Timestamp: {}'
+                             .format(value, repr(e)))
+            
 def to_datestring_YYYYMMDD(value):
     """Convert input time to string with format YYYYMMDD
     
@@ -85,9 +101,9 @@ def to_datestring_YYYYMMDD(value):
         if not len(value, 8):
             raise ValueError('Need string in format YYYYMMDD')
         return value
-    elif isinstance(value, datetime64):
+    elif isinstance(value, np.datetime64):
         value = value.astype(datetime)
-    elif isinstance(value, Timestamp):
+    elif isinstance(value, pd.Timestamp):
         value = value.to_pydatetime()
     if isinstance(value, datetime):
         return datetime.strftime(value, "%Y%m%d")
@@ -174,10 +190,10 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
         else:
             raise ValueError('unsupported time units')
         
-        basedate = datetime64(basedate)
-        return basedate + asarray(times, dtype="timedelta64[%s]" %tstr)
+        basedate = np.datetime64(basedate)
+        return basedate + np.asarray(times, dtype="timedelta64[%s]" %tstr)
     else:
-        return asarray([datetime64(t) for t in cfunit.num2date(times)])
+        return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])
 
 def get_constraint(var_names=None, lon_range=None, lat_range=None, 
                    time_range=None, meridian_centre=True):
@@ -395,10 +411,10 @@ def get_time_constraint(start_time, stop_time):
         iris Constraint instance that can, e.g., be used as input for
         :func:`pyaerocom.griddeddata.GriddedData.extract`
     """
-    if not isinstance(start_time, Timestamp):
-        start_time = Timestamp(start_time)
-    if not isinstance(stop_time, Timestamp):
-        stop_time = Timestamp(stop_time)
+    if not isinstance(start_time, pd.Timestamp):
+        start_time = pd.Timestamp(start_time)
+    if not isinstance(stop_time, pd.Timestamp):
+        stop_time = pd.Timestamp(stop_time)
         
     t_lower = PartialDateTime(year=start_time.year,
                               month=start_time.month,
