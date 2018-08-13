@@ -400,6 +400,10 @@ class GriddedData(object):
         predefined sample points (e.g. station data). If sample points are
         provided, the cube is interpolated first onto the sample points.
 
+        Todo
+        ----
+        Add model ID 
+        
         Parameters
         ----------
         sample_points : list
@@ -446,6 +450,7 @@ class GriddedData(object):
                 j = where(grid_lons == lon)[0][0]
                 result.append({'latitude'   :   lat,
                                'longitude'  :   lon,
+                               'name'       :   self.name, 
                                var          :   Series(arr[:, i, j], 
                                                        index=times)})
         except MemoryError:
