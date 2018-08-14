@@ -72,8 +72,9 @@ class ReadUngridded(object):
         self._datasets_to_read = []
         #: dictionary containing reading classes for each dataset to read (will
         #: be filled in setter of datasets_to_read)
-        self._read_objects = {}
+        self._readers = {}
         
+        self.data = None
         
         self.datasets_to_read = datasets_to_read
     
@@ -95,6 +96,7 @@ class ReadUngridded(object):
                                       
     @property
     def datasets_to_read(self):
+        """List of datasets supposed to be read"""
         return self._datasets_to_read
     
     @datasets_to_read.setter
@@ -103,25 +105,42 @@ class ReadUngridded(object):
             datasets = [datasets]
         elif not isinstance(datasets, (tuple, list)):
             raise IOError('Invalid input for parameter datasets_to_read')
-        
-        success = []
         for ds in datasets:
-            try:
-                reader = self.find_read_class(ds)
-                self._read_objects[ds] = reader(ds)
-            except (NetworkNotSupported, NetworkNotImplemented) as e:
-                logger.warning("Failed to initialise reading of {} data. "
-                               "{}".format(ds, repr(e)))
-            else:
-                success.append(ds)
-    
-        self._datasets_to_read = success
+            self.find_read_class(ds)
+            
+        self._datasets_to_read = datasets    
     
     def dataset_provides_variables(self, dataset_to_read):
-        if dataset_to_read in self._read_objects:
-            return self._read_objects[dataset_to_read].PROVIDES_VARIABLES
+        """List of variables provided by a certain dataset"""
+        if dataset_to_read in self._readers:
+            return self._readers[dataset_to_read].PROVIDES_VARIABLES
         return self.find_read_class(dataset_to_read).PROVIDES_VARIABLES
-            
+      
+    def get_reader(self, dataset_to_read):
+        """Helper method that returns loaded reader class
+        
+        Parameters
+        -----------
+        dataset_to_read : str
+            Name of dataset
+        
+        Returns
+        -------
+        ReadUngriddedBase
+            instance of reading class (needs to be implementation of base 
+            class :class:`ReadUngriddedBase`)
+        
+        Raises
+        ------
+        NetworkNotSupported
+            if network is not supported by pyaerocom
+        NetworkNotImplemented
+            if network is supported but no reading routine is implemented yet
+        """
+        if not dataset_to_read in self._readers:
+            self.find_read_class(dataset_to_read)
+        return self._readers[dataset_to_read]
+    
     def find_read_class(self, dataset_to_read):
         """Find reading class for dataset name
         
@@ -148,12 +167,15 @@ class ReadUngridded(object):
             if network is supported but no reading routine is implemented yet
         
         """
+        if dataset_to_read in self._readers:
+            return self._readers[dataset_to_read]
         if not dataset_to_read in const.OBS_IDS:
             raise NetworkNotSupported("Network {} is not supported"
                                       .format(dataset_to_read))
         for cls in self.SUPPORTED:
             if dataset_to_read in cls.SUPPORTED_DATASETS:
-                return cls
+                self._readers[dataset_to_read] = cls(dataset_to_read)
+                return self._readers[dataset_to_read]
         raise NetworkNotImplemented("No reading class available yet for dataset "
                                     "{}".format(dataset_to_read))
         
@@ -166,6 +188,11 @@ class ReadUngridded(object):
         
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None, **kwargs):
         """Read single dataset into instance of :class:`ReadUngridded`
+        
+        Note
+        ----
+        This method does not write class attribute :attr:`data` (only
+        :func:`read` does)
         
         Parameters
         ----------
@@ -184,8 +211,14 @@ class ReadUngridded(object):
             # Note: self.vars_to_retrieve may be None as well, then
             # default variables of each network are read
             vars_to_retrieve = self.vars_to_retrieve 
-        reader = self._read_objects[dataset_to_read]
+            
+        reader = self.get_reader(dataset_to_read)
         
+        if vars_to_retrieve is None:
+            vars_to_retrieve = reader.PROVIDES_VARIABLES
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+            
         # Since this interface enables to load multiple datasets, each of 
         # which support a number of variables, here, only the variables are 
         # considered that are supported by the dataset
@@ -199,10 +232,11 @@ class ReadUngridded(object):
         cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
         
         if cache.check_and_load() and not self.ignore_cache:
+            self.logger.info('Found Cache match for {}'.format(dataset_to_read))
             cache_hit_flag = True
             data = cache.loaded_data
         else:
-            logger.info('No cache match found for {}. Reading from files (this '
+            self.logger.info('No Cache match found for {}. Reading from files (this '
                         'may take a while)'.format(dataset_to_read))
             data = reader.read(vars_available)
         

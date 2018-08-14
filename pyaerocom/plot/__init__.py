@@ -39,3 +39,4 @@ from .mapping import plot_map
 from .plotscatter import plotscatter
 from .plotsitelocation import plotsitelocation
 from .plotseries import plot_series_year
+from .heatmaps import df_to_heatmap

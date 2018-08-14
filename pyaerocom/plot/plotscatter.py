@@ -190,3 +190,5 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
 
     plt.savefig(figname, dpi=300)
     plt.close()
+    
+

@@ -6,9 +6,11 @@ Created on Mon Aug 13 10:49:29 2018
 @author: jonasg
 """
 import matplotlib.pyplot as plt
+import os
 import matplotlib.dates as dates
 
-def plot_series_year(obs_data, model_data, var_name):
+def plot_series_year(obs_data, model_data, var_name, savefig=True,
+                     save_dir=None):
     """Plot one year time series overlay of model and station data
     
     Creates default plot of Aerocom time series overlay (see e.g. `here 
@@ -53,13 +55,13 @@ def plot_series_year(obs_data, model_data, var_name):
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_axes([0.1, 0.1, 0.85, 0.8])
     
-    ms = model_data[var_name]
-    os = obs_data[var_name]
-    idx = ms.index
+    mseries = model_data[var_name]
+    oseries = obs_data[var_name]
+    idx = mseries.index
     
     #ax.plot()
     
-    ax.plot_date(idx.to_pydatetime(), ms, 'rs--',
+    ax.plot_date(idx.to_pydatetime(), mseries, 'rs--',
                  markersize=8, markerfacecolor='none')
     ax.xaxis.set_minor_locator(dates.MonthLocator(bymonthday=15, 
                                                   interval=1))
@@ -70,7 +72,7 @@ def plot_series_year(obs_data, model_data, var_name):
     ax.xaxis.set_major_locator(dates.YearLocator(month=6, day=15))
     ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%Y'))
     
-    ax.plot(os, '-vb', markersize=8, markerfacecolor='none')
+    ax.plot(oseries, '-vb', markersize=8, markerfacecolor='none')
     ylim = ax.get_ylim()
     # add some space for printing legend
     ax.set_ylim([0, ylim[1]*1.1])
@@ -120,4 +122,15 @@ def plot_series_year(obs_data, model_data, var_name):
                          obs_data['longitude'],
                          obs_data['altitude']))
     
+    if savefig:
+        if not os.path.exists(save_dir):
+            raise IOError('Ouptut directory {} does not exist'.format(save_dir))
+            
+        name = '{}_an{}_freq{}_{}_SERIES_{}.png'.format(var_name,
+                                                          idx[0].year,
+                                                          idx.freqstr,
+                                                          obs_data['station_name'],
+                                                          obs_data['dataset_name'])
+        fig.savefig(os.path.join(save_dir, name))
+        
     return ax

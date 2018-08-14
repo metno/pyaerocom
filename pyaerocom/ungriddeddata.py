@@ -322,6 +322,22 @@ class UngriddedData(object):
             temp_dict[var] = data
         return temp_dict
     
+    def extract_dataset(self, dataset_name):
+        """Extract single dataset into new instance of :class:`UngriddedData`
+        
+        Parameters
+        -----------
+        dataset_name : str
+            ID of dataset
+        
+        Returns
+        -------
+        UngriddedData
+            new instance of ungridded data containing only data from specified
+            input network
+        """
+        raise NotImplementedError('Coming soon')
+        
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
                             freq=None, interp_nans=False, 
                             min_coverage_interp=0.68):
