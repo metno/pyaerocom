@@ -15,3 +15,5 @@ if __name__=='__main__':
     data = r.read()
     
     print(data.contains_datasets, data.contains_vars)
+    
+    sub = data.extract_dataset('AeronetSunV2Lev2.daily')

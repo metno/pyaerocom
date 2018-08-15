@@ -343,8 +343,13 @@ class UngriddedData(object):
             temp_dict[var] = data
         return temp_dict
     
+    # TODO: check, confirm and remove Beta version note in docstring
     def extract_dataset(self, dataset_name):
         """Extract single dataset into new instance of :class:`UngriddedData`
+        
+        Note
+        ----
+        Beta version. Please doublecheck correctness.
         
         Parameters
         -----------
@@ -357,8 +362,35 @@ class UngriddedData(object):
             new instance of ungridded data containing only data from specified
             input network
         """
-        raise NotImplementedError('Coming soon')
+        logger.info('Extracting dataset {} from data object'.format(dataset_name))
+        if not dataset_name in self.contains_datasets:
+            raise AttributeError('Dataset {} is not contained in this data '
+                                 'object'.format(dataset_name))
+        new = UngriddedData()
+        meta_idx_new = 0.0
+        data_idx_new = 0
         
+        for meta_idx, meta in self.metadata.items():
+            if meta['dataset_name'] == dataset_name:
+                new.metadata[meta_idx_new] = meta
+                new.meta_idx[meta_idx_new] = od()
+                for var in meta['variables']:
+                    indices = self.meta_idx[meta_idx][var]
+                    totnum = len(indices)
+                    if (data_idx_new + totnum) >= new._ROWNO:
+                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                        new.add_chunk(totnum)
+                    stop = data_idx_new + totnum
+                    
+                    new._data[data_idx_new:stop, :] = self._data[indices, :]
+                    new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+                                                                stop)
+                    data_idx_new += totnum
+                
+                meta_idx_new += 1
+        return new
+            
+            
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
                             freq=None, interp_nans=False, 
                             min_coverage_interp=0.68):
