@@ -28,9 +28,7 @@ def df_to_heatmap(df, cmap="bwr", center=0, low=0.3, high=0.3,
         colormap, it’s entire range isn’t used. E.g. 0.3 roughly corresponds 
         to colormap crop of 30% at the lower end.
     high : float
-        Extends upper ranCreated on Tue Aug 14 13:46:34 2018
-
-@author: jonasgge of the table values so that when mapped to the 
+        Extends upper range of the table values so that when mapped to the 
         colormap, it’s entire range isn’t used. E.g. 0.3 roughly corresponds 
         to colormap crop of 30% at the upper end.
     color_rowwise : bool

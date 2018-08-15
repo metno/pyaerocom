@@ -26,6 +26,19 @@ _COLOR_THEMES = dict(light = dict(name="light",
 
 MAP_AXES_ASPECT = 1.5
 
+# text positions for annotations in scatter plots
+SCAT_ANNOT_XYPOS = [(.01, 0.95),
+                    (0.01, 0.90),
+                    (0.3, 0.90),
+                    (0.01, 0.86),
+                    (0.3, 0.86),
+                    (0.01, 0.82),
+                    (0.3, 0.82),
+                    (0.01, 0.78),
+                    (0.3, 0.78),
+                    (0.8, 0.1),
+                    (0.8, 0.06)]
+
 class MapPlotSettings(BrowseDict):
     """Class specifying predefined plot settings for a species and region
     
