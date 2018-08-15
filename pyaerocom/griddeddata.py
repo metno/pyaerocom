@@ -16,10 +16,12 @@ from numpy import nan, where
 from numpy.ma import MaskedArray
 
 from pyaerocom import const, logger
-from pyaerocom.exceptions import DataExtractionError
+from pyaerocom.exceptions import (DataExtractionError,
+                                  TemporalResolutionError)
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
-                               str_to_iris)
+                               str_to_iris,
+                               IRIS_AGGREGATORS)
 
 from pyaerocom.region import Region
 
@@ -457,7 +459,51 @@ class GriddedData(object):
             self._to_timeseries_slow(sample_points, scheme, collapse_scalar)
                 
         return result
+    
+    # TODO: Test, confirm and remove beta flag in docstring
+    def downscale_time(self, to_ts_type='monthly'):
+        """Downscale in time to predefined resolution resolution
+        
+        Note
+        ----
+        Beta version
+        
+        Patameters
+        ----------
+        to_ts_type : str
+            either of the supported temporal resolutions (cf. 
+            :attr:`IRIS_AGGREGATORS` in :mod:`helpers`, e.g. "monthly")
+        
+        Returns
+        -------
+        GriddedData
+            new data object containing downscaled data
             
+        Raises
+        ------
+        TemporalResolutionError
+            if input resolution is not provided, or if it is higher temporal 
+            resolution than this object
+        """
+        ts_types_avail = const.GRID_IO.TS_TYPES
+        idx_ts_type = ts_types_avail.index(to_ts_type)
+        if self.ts_type == to_ts_type:
+            logger.info('Data is already in {} resolution'.format(to_ts_type))
+            return self
+        if not to_ts_type in IRIS_AGGREGATORS:
+            raise TemporalResolutionError('Resolution {} cannot '
+                'converted'.format(to_ts_type))
+        elif ts_types_avail.index(self.ts_type) >= idx_ts_type:
+            raise TemporalResolutionError('Cannot increase '
+                'temporal resolution from {} to {}'.format(self.ts_type,
+                                          to_ts_type))
+        cube = self.grid
+        IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
+        aggregated = cube.aggregated_by(to_ts_type, MEAN)
+        data = GriddedData(aggregated, **self.suppl_info)
+        data.suppl_info['ts_type'] = to_ts_type
+        return data     
+    
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         self._check_lonlat_bounds()
@@ -620,7 +666,7 @@ class GriddedData(object):
         Returns
         -------
         GriddedData
-            collapsed data object
+            new data object containing interpolated data
             
         Examples
         --------

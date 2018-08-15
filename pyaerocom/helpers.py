@@ -3,10 +3,8 @@
 """
 General helper methods for the pyaerocom library.
 """
-from iris import Constraint
-from iris.time import PartialDateTime
-from iris.coords import DimCoord
-from iris import analysis as iris_analysis
+import iris
+from iris import coord_categorisation
 import pandas as pd
 import numpy as np
 from pyaerocom.exceptions import LongitudeConstraintError
@@ -29,14 +27,19 @@ day_units = ['day', 'days', 'd']
 # Start of the gregorian calendar
 # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
 GREGORIAN_BASE = datetime(1582, 10, 15)
-_STR_TO_IRIS = dict(count       = iris_analysis.COUNT,
-                    gmean       = iris_analysis.GMEAN, 
-                    hmean       = iris_analysis.HMEAN,
-                    max         = iris_analysis.MAX, 
-                    mean        = iris_analysis.MEAN,
-                    median      = iris_analysis.MEDIAN,
-                    
-                    nearest     = iris_analysis.Nearest)
+
+_STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
+                    gmean       = iris.analysis.GMEAN, 
+                    hmean       = iris.analysis.HMEAN,
+                    max         = iris.analysis.MAX, 
+                    mean        = iris.analysis.MEAN,
+                    median      = iris.analysis.MEDIAN,
+                    nearest     = iris.analysis.Nearest)
+
+IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
+                    'daily'     :   coord_categorisation.add_day_of_year,
+                    'monthly'   :   coord_categorisation.add_month_number,
+                    'yearly'    :   coord_categorisation.add_year} 
  
 def str_to_iris(key):
     """Mapping function that converts strings into iris analysis objects
@@ -128,7 +131,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     cfunit : :obj:`str` or :obj:`Unit`, optional
         CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
         unit. Required if `times` is not an instance of 
-        :class:`iris.coord.DimCoord`
+        :class:`iris.coords.DimCoord`
     calendar : :obj:`str`, optional
         string specifying calendar (only required if ``cfunit`` is of type
         ``str``).
@@ -151,7 +154,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     >>> cftime_to_datetime64(10, cfunit_str, "gregorian")
     array(['2018-01-11T00:00:00.000000'], dtype='datetime64[us]')
     """
-    if isinstance(times, DimCoord): #special case
+    if isinstance(times, iris.coords.DimCoord): #special case
         times, cfunit = times.points, times.units
     try:
         len(times)
@@ -234,7 +237,7 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
         
     Returns
     -------
-    Constraint
+    iris.Constraint
         the combined constraint from all valid input parameters
     
     Examples
@@ -270,7 +273,7 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
         if isinstance(var_names, str):
             var_names = [var_names]
         cond = lambda c: c.var_name in var_names
-        constraints.append(Constraint(cube_func=cond))
+        constraints.append(iris.Constraint(cube_func=cond))
     if lon_range is not None:
         constraints.append(get_lon_constraint(lon_range, meridian_centre))    
     if lat_range is not None:
@@ -293,11 +296,11 @@ def get_lat_constraint(lat_range):
     
     Returns
     -------
-    Constraint
+    iris.Constraint
         the corresponding iris.Constraint instance
         
     """
-    return Constraint(latitude=lambda v: lat_range[0] <= v <= lat_range[1])
+    return iris.Constraint(latitude=lambda v: lat_range[0] <= v <= lat_range[1])
 
 def get_lon_constraint_buggy(lon_range, meridian_centre=True):        
     """Create longitude constraint based on input range
@@ -322,7 +325,7 @@ def get_lon_constraint_buggy(lon_range, meridian_centre=True):
     
     Returns
     -------
-    Constraint
+    iris.Constraint
         the corresponding iris.Constraint instance 
     """
     left, right = lon_range
@@ -335,10 +338,10 @@ def get_lon_constraint_buggy(lon_range, meridian_centre=True):
         left, right = left%360, right%360
         r_end, l_end = 360, 0
     if left < right:
-        return Constraint(longitude=lambda v: left < v < right)
+        return iris.Constraint(longitude=lambda v: left < v < right)
     else:
-        cleft = Constraint(longitude=lambda v: left <= v <= r_end)
-        cright = Constraint(longitude=lambda v: l_end <= v <= right)
+        cleft = iris.Constraint(longitude=lambda v: left <= v <= r_end)
+        cright = iris.Constraint(longitude=lambda v: l_end <= v <= right)
         return (cleft or cright)
     
 def get_lon_constraint(lon_range, meridian_centre=True):        
@@ -354,7 +357,7 @@ def get_lon_constraint(lon_range, meridian_centre=True):
     
     Returns
     -------
-    Constraint
+    iris.Constraint
         the corresponding iris.Constraint instance 
     
     Raises
@@ -391,7 +394,7 @@ def get_lon_constraint(lon_range, meridian_centre=True):
     if left > right:
         msg = ("Cannot crop over right border of longitude range")
         raise LongitudeConstraintError(msg)
-    return Constraint(longitude=lambda v: left <= v <= right)
+    return iris.Constraint(longitude=lambda v: left <= v <= right)
 
 def get_time_constraint(start_time, stop_time):
     """Create iris.Constraint for data extraction along time axis
@@ -407,7 +410,7 @@ def get_time_constraint(start_time, stop_time):
     
     Returns
     -------
-    Constraint
+    iris.Constraint
         iris Constraint instance that can, e.g., be used as input for
         :func:`pyaerocom.griddeddata.GriddedData.extract`
     """
@@ -416,14 +419,14 @@ def get_time_constraint(start_time, stop_time):
     if not isinstance(stop_time, pd.Timestamp):
         stop_time = pd.Timestamp(stop_time)
         
-    t_lower = PartialDateTime(year=start_time.year,
-                              month=start_time.month,
-                              day=start_time.day)
-    t_upper = PartialDateTime(year=stop_time.year,
-                              month=stop_time.month,
-                              day=stop_time.day)
+    t_lower = iris.time.PartialDateTime(year=start_time.year,
+                                        month=start_time.month,
+                                        day=start_time.day)
+    t_upper = iris.time.PartialDateTime(year=stop_time.year,
+                                        month=stop_time.month,
+                                        day=stop_time.day)
     
-    return Constraint(time=lambda cell: t_lower <= cell <= t_upper)
+    return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
 def to_time_series_griesie(data, lats, lons, times, var_name=['zdust'],**kwargs):
     """small helper routine to convert data from the object
