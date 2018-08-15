@@ -87,7 +87,28 @@ class UngriddedData(object):
     
     @property
     def contains_vars(self):
+        """List of all variables in this dataset"""
         return [k for k in self.var_idx.keys()]
+    
+    @property
+    def contains_datasets(self):
+        """List of all datasets in this object"""
+        datasets = []
+        for info in self.metadata.values():
+            ds = info['dataset_name']
+            if not ds in datasets:
+                datasets.append(ds)
+        return datasets
+    
+    @property
+    def shape(self):
+        """Shape of data array"""
+        return self._data.shape
+    
+    @property
+    def is_empty(self):
+        """Boolean specifying whether this object contains data or not"""
+        return True if len(self.metadata) == 0 else False
 
     @property
     def vars_to_retrieve(self):
@@ -401,8 +422,7 @@ class UngriddedData(object):
         self.coded_loc = self._data[:, self._LONINDEX] * 10 ** (3 * self._LOCATION_PRECISION) + (
                 self._data[:, self._LATINDEX] + self._LAT_OFFSET) * (10 ** self._LOCATION_PRECISION)
         return self.coded_loc
-
-    ###################################################################################
+    
     def decode_lat_lon_from_float(self):
         """method to decode lat and lon from a single number calculated by code_lat_lon_in_float
         """
@@ -412,27 +432,7 @@ class UngriddedData(object):
                 2 * self._LOCATION_PRECISION)) / (10 ** self._LOCATION_PRECISION) - self._LAT_OFFSET
 
         return lats, lons
-
-    ###################################################################################
-    @property
-    def shape(self):
-        """Shape of data array"""
-        return self._data.shape
     
-    @property
-    def is_empty(self):
-        return True if len(self.metadata) == 0 else False
-    
-    @property
-    def all_datasets(self):
-        """Return list of names of all datasets in this object"""
-        datasets = []
-        for info in self.metadata.values():
-            ds = info['dataset_name']
-            if not ds in datasets:
-                datasets.append(ds)
-        return datasets
-        
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
         
