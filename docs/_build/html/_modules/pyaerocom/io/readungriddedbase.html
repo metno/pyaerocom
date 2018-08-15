@@ -167,24 +167,33 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">fnmatch</span> <span class="k">import</span> <span class="n">fnmatch</span>
 
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.utils</span> <span class="k">import</span> <span class="n">list_to_shortstr</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">get_obsnetwork_dir</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">LOGLEVELS</span>
-
+<span class="c1"># TODO: Proposal: include attribute ts_type that is by default undefined but </span>
+<span class="c1"># may be set to either of the defined </span>
 <div class="viewcode-block" id="ReadUngriddedBase"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase">[docs]</a><span class="k">class</span> <span class="nc">ReadUngriddedBase</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;TEMPLATE: Abstract base class template for reading of ungridded data</span>
 <span class="sd">    </span>
 <span class="sd">    .. note::</span>
 <span class="sd">    </span>
-<span class="sd">        Even though this is a template for a reading class, it prodides the </span>
-<span class="sd">        option to compute variables during import, that are not contained in </span>
-<span class="sd">        the actual data files. These can be specified for each auxiliary </span>
-<span class="sd">        parameter using the two class attributes ``AUX_REQUIRES`` (what </span>
-<span class="sd">        additional variables are required to perform the computation) and </span>
-<span class="sd">        ``AUX_FUNS`` (functions used to perform the computations). </span>
+<span class="sd">        The two dictionaries ``AUX_REQUIRES`` and ``AUX_FUNS`` can be filled </span>
+<span class="sd">        with variables that are not contained in the original data files but</span>
+<span class="sd">        are computed during the reading. The former specifies what additional </span>
+<span class="sd">        variables are required to perform the computation and the latter </span>
+<span class="sd">        specifies functions used to perform the computations of the auxiliary </span>
+<span class="sd">        variables. </span>
 <span class="sd">        See, for instance, the class :class:`ReadAeronetSunV2`, which includes </span>
 <span class="sd">        the computation of the AOD at 550nm and the Angstrom coefficient </span>
-<span class="sd">        (in 440-870 nm range).</span>
+<span class="sd">        (in 440-870 nm range) from AODs measured at other wavelengths.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#: version of this base class. Please update if you apply changes to this</span>
+    <span class="c1">#: code. This version is required for caching and needs to be considered</span>
+    <span class="c1">#: in the definition of __version__ in all derived classes, so that</span>
+    <span class="c1">#: caching can be done reliably</span>
+    <span class="n">__baseversion__</span> <span class="o">=</span> <span class="s1">&#39;0.02&#39;</span>
+    
     <span class="c1">#: dictionary containing information about additionally required variables</span>
     <span class="c1">#: for each auxiliary variable (i.e. each variable that is not provided</span>
     <span class="c1">#: by the original data but computed on import)</span>
@@ -193,6 +202,38 @@
     <span class="c1">#: Functions that are used to compute additional variables (i.e. one </span>
     <span class="c1">#: for each variable defined in AUX_REQUIRES)</span>
     <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
+    <span class="k">def</span> <span class="nf">TS_TYPE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Temporal resolution of dataset </span>
+<span class="sd">        </span>
+<span class="sd">        This should be defined in the header of an implementation class if </span>
+<span class="sd">        it can be globally defined for the corresponding obs-network or in </span>
+<span class="sd">        other cases it should be initated as string ``undefined`` and then, </span>
+<span class="sd">        if applicable, updated in the reading routine of a file. </span>
+<span class="sd">        </span>
+<span class="sd">        The TS_TYPE information should ultimately be written into the meta-data </span>
+<span class="sd">        of objects returned by the implementation of :func:`read_file` (e.g.</span>
+<span class="sd">        instance of :class:`StationData` or a normal dictionary) and the method</span>
+<span class="sd">        :func:`read` (which should ALWAYS return an instance of the </span>
+<span class="sd">        :class:`UngriddedData` class).</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        - Please use ``&quot;undefined&quot;`` if the derived class is not sampled on \</span>
+<span class="sd">            a regular basis.</span>
+<span class="sd">        - If applicable please use Aerocom ts_type (i.e. hourly, 3hourly, \</span>
+<span class="sd">                                                    daily, monthly, yearly)</span>
+<span class="sd">        - Note also, that the ts_type in a derived class may or may not be \</span>
+<span class="sd">            defined in a general case. For instance, in the EBAS database the \</span>
+<span class="sd">            resolution code can be found in the file header and may thus be \</span>
+<span class="sd">            intiated as ``&quot;undefined&quot;`` in the initiation of the reading class \</span>
+<span class="sd">            and then updated when the class is being read</span>
+<span class="sd">        - For derived implementation classes that support reading of multiple \</span>
+<span class="sd">            network versions, you may also assign</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
     
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
     <span class="k">def</span> <span class="nf">_FILEMASK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -214,18 +255,6 @@
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
 <span class="sd">        May be implemented as global constant in header</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">REVISION_FILE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Name of data revision file located in data directory</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        </span>
-<span class="sd">        May be implemented as global constant in header of derieved class</span>
-<span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span>
     
@@ -265,21 +294,8 @@
         <span class="k">pass</span>
     
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractproperty</span>
-    <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Dictionary that specifies the index for each data column</span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        </span>
-<span class="sd">        Implementation depends on the data. For instance, if the variable </span>
-<span class="sd">        information is provided in all files (of all stations) and always in </span>
-<span class="sd">        the same column, then this can be set as a fixed dictionary in the </span>
-<span class="sd">        __init__ function of the implementation (see e.g. class</span>
-<span class="sd">        :class:`ReadAeronetSunV2`). </span>
-<span class="sd">        In other cases, it may not be ensured</span>
-<span class="sd">        that each variable is available in all files or the column definition</span>
-<span class="sd">        may differ between different stations (see )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">DEFAULT_VARS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List containing default variables to read&quot;&quot;&quot;</span>
         <span class="k">pass</span>
     
     <span class="nd">@property</span>
@@ -291,7 +307,6 @@
 <span class="sd">        ``pyaerocom.const``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">get_obsnetwork_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span><span class="p">)</span>
-     
         
 <div class="viewcode-block" id="ReadUngriddedBase.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.read_file">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -350,7 +365,8 @@
         <span class="c1"># method read_file is called, and in case of an Exception, append the</span>
         <span class="c1"># corresponding file path to this list.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">read_failed</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># </span>
+        
+        <span class="c1">#: Class own instance of logger class</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_add_aux_variables</span><span class="p">()</span>
         
@@ -359,6 +375,11 @@
                 <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Dataset </span><span class="si">{}</span><span class="s2"> not supported by this &quot;</span>
                                      <span class="s2">&quot;interface&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">REVISION_FILE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Name of revision file located in data directory&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span>
             
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">AUX_VARS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -368,6 +389,10 @@
 <span class="sd">        but are computed from other variables during import</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dataset_to_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -429,21 +454,41 @@
 <span class="sd">        tuple</span>
 <span class="sd">            2-element tuple, containing</span>
 <span class="sd">            </span>
-<span class="sd">            - bool : boolean, specifying whether variables were added to \</span>
-<span class="sd">            input list</span>
-<span class="sd">            - list : modified / unmodified input list </span>
+<span class="sd">            - bool : boolean, specifying whether variables list of required \</span>
+<span class="sd">            variables needs to be extended or the order was changed</span>
+<span class="sd">            - list : additionally required variables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">added</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">added_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_VARS</span><span class="p">:</span>
-                <span class="n">add_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">add_var</span> <span class="ow">in</span> <span class="n">add_vars</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">add_var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
-                        <span class="n">added_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">add_var</span><span class="p">)</span>
-                        <span class="n">added</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">added</span><span class="p">,</span> <span class="n">added_vars</span><span class="p">)</span>
-    
+                <span class="n">vars_req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">var_req</span> <span class="ow">in</span> <span class="n">vars_req</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">var_req</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">:</span>
+                        <span class="n">idx_var</span> <span class="o">=</span> <span class="n">vars_to_retrieve</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+                        <span class="n">idx_var_req</span> <span class="o">=</span> <span class="n">vars_to_retrieve</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var_req</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">idx_var</span> <span class="o">&lt;</span> <span class="n">idx_var_req</span><span class="p">:</span> <span class="c1">#wrong order for computation</span>
+                            <span class="n">vars_to_retrieve</span><span class="p">[</span><span class="n">idx_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_req</span>
+                            <span class="n">vars_to_retrieve</span><span class="p">[</span><span class="n">idx_var_req</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
+                            <span class="c1"># break and return that it was changed (i.e repeat</span>
+                            <span class="c1"># calling this method until nothing is changed or</span>
+                            <span class="c1"># added)</span>
+                            <span class="k">return</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">added_vars</span> <span class="o">+</span> <span class="n">vars_to_retrieve</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span> 
+                        <span class="n">added_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_req</span><span class="p">)</span>
+                        <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># it is important to insert the additionally required variables in</span>
+        <span class="c1"># the beginning, as these need to be computed first later on </span>
+        <span class="c1"># Example: if vars_to_retrieve=[&#39;od550aer&#39;] then this loop will</span>
+        <span class="c1"># find out that this requires &#39;ang4487aer&#39; to be computed as </span>
+        <span class="c1"># well. So at the end of this function, ang4487aer needs to be </span>
+        <span class="c1"># before od550aer in the list vars_to_compute, since the method</span>
+        <span class="c1"># &quot;compute_additional_vars&quot; loops over that list in the specified</span>
+        <span class="c1"># order</span>
+        <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="n">added_vars</span> <span class="o">+</span> <span class="n">vars_to_retrieve</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">changed</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="p">)</span>
+                
 <div class="viewcode-block" id="ReadUngriddedBase.check_vars_to_retrieve"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadUngriddedBase.check_vars_to_retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">check_vars_to_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Separate variables that are in file from those that are computed</span>
 <span class="sd">        </span>
@@ -474,31 +519,25 @@
 <span class="sd">            - list: list containing all variables to be computed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_VARS</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="p">[</span><span class="n">vars_to_retrieve</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">all</span><span class="p">([</span><span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span><span class="p">])):</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;One or more of the desired variables is not &quot;</span>
                                  <span class="s2">&quot;supported by this dataset.&quot;</span><span class="p">)</span>
+        
+        
         <span class="n">repeat</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">while</span> <span class="n">repeat</span><span class="p">:</span>
-            <span class="n">repeat</span><span class="p">,</span> <span class="n">add_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_additional_vars</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-            <span class="c1"># it is important to insert the additionally required variables in</span>
-            <span class="c1"># the beginning, as these need to be computed first later on </span>
-            <span class="c1"># Example: if vars_to_retrieve=[&#39;od550aer&#39;] then this loop will</span>
-            <span class="c1"># find out that this requires &#39;ang4487aer&#39; to be computed as </span>
-            <span class="c1"># well. So at the end of this function, ang4487aer needs to be </span>
-            <span class="c1"># before od550aer in the list vars_to_compute, since the method</span>
-            <span class="c1"># @&quot;compute_additional_vars&quot; loops over that list in the specified</span>
-            <span class="c1"># order</span>
-            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="n">add_vars</span> <span class="o">+</span> <span class="n">vars_to_retrieve</span>
+            <span class="n">repeat</span><span class="p">,</span> <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_additional_vars</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
+            
         
         <span class="c1"># unique list containing all variables that are supposed to be read, </span>
         <span class="c1"># either because they are required to be retrieved, or because they </span>
         <span class="c1"># are supposed to be read because they are required to compute one </span>
         <span class="c1"># of the output variables</span>
         <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">))</span>
-        
+    
         <span class="c1"># in the following, vars_to_retrieve is separated into two arrays, one </span>
         <span class="c1"># containing all variables that can be read from the files, and the </span>
         <span class="c1"># second containing all variables that are computed</span>
@@ -588,7 +627,13 @@
         <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span> 
                                               <span class="bp">self</span><span class="o">.</span><span class="n">_FILEMASK</span><span class="p">)))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be detected...&quot;</span><span class="p">)</span>
+            <span class="n">all_str</span> <span class="o">=</span> <span class="n">list_to_shortstr</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be detected matching file mask </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                          <span class="s2">&quot;in dataset </span><span class="si">{}</span><span class="s2">, files in folder </span><span class="si">{}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">Files in &quot;</span>
+                          <span class="s2">&quot;folder:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_FILEMASK</span><span class="p">,</span> 
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">dataset_to_read</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_PATH</span><span class="p">,</span>
+                                  <span class="n">all_str</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span> <span class="o">=</span> <span class="n">files</span>
         <span class="k">return</span> <span class="n">files</span></div>
     
@@ -641,8 +686,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    
-    <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+
     <span class="k">class</span> <span class="nc">ReadUngriddedImplementationExample</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
         <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s2">&quot;.txt&quot;</span>
         <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="s2">&quot;Blaaa&quot;</span>

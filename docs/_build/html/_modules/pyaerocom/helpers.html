@@ -168,11 +168,11 @@
 <span class="kn">from</span> <span class="nn">iris.time</span> <span class="k">import</span> <span class="n">PartialDateTime</span>
 <span class="kn">from</span> <span class="nn">iris.coords</span> <span class="k">import</span> <span class="n">DimCoord</span>
 <span class="kn">from</span> <span class="nn">iris</span> <span class="k">import</span> <span class="n">analysis</span> <span class="k">as</span> <span class="n">iris_analysis</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">Timestamp</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">datetime64</span><span class="p">,</span> <span class="n">asarray</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">LongitudeConstraintError</span>
 <span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">Unit</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">MINYEAR</span><span class="p">,</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">MINYEAR</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span>
 
 <span class="c1"># The following import was removed and the information about available unit </span>
 <span class="c1"># strings was copied from the netCDF4 module directly here</span>
@@ -198,7 +198,7 @@
                     <span class="n">median</span>      <span class="o">=</span> <span class="n">iris_analysis</span><span class="o">.</span><span class="n">MEDIAN</span><span class="p">,</span>
                     
                     <span class="n">nearest</span>     <span class="o">=</span> <span class="n">iris_analysis</span><span class="o">.</span><span class="n">Nearest</span><span class="p">)</span>
-
+ 
 <div class="viewcode-block" id="str_to_iris"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.str_to_iris">[docs]</a><span class="k">def</span> <span class="nf">str_to_iris</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Mapping function that converts strings into iris analysis objects</span>
 <span class="sd">    </span>
@@ -222,6 +222,54 @@
     <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">val</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">val</span></div>
+
+<div class="viewcode-block" id="to_pandas_timestamp"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.to_pandas_timestamp">[docs]</a><span class="k">def</span> <span class="nf">to_pandas_timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">numval</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">numval</span> <span class="o">&lt;=</span> <span class="mi">10000</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Could not infer valid year from numerical &#39;</span>
+                                 <span class="s1">&#39;time input&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">numval</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to convert </span><span class="si">{}</span><span class="s1"> to Timestamp: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span></div>
+            
+<div class="viewcode-block" id="to_datestring_YYYYMMDD"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.to_datestring_YYYYMMDD">[docs]</a><span class="k">def</span> <span class="nf">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert input time to string with format YYYYMMDD</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value</span>
+<span class="sd">        input time, may be string, datetime, numpy.datetime64 or </span>
+<span class="sd">        pandas.Timestamp</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        input formatted to string YYYYMMDD</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if input is not supported</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need string in format YYYYMMDD&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">datetime</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_pydatetime</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid input, need str, datetime, numpy.datetime64 or &#39;</span>
+                     <span class="s1">&#39;pandas.Timestamp&#39;</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="cftime_to_datetime64"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.cftime_to_datetime64">[docs]</a><span class="k">def</span> <span class="nf">cftime_to_datetime64</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert numerical timestamps with epoch to numpy datetime64</span>
@@ -303,10 +351,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;unsupported time units&#39;</span><span class="p">)</span>
         
-        <span class="n">basedate</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="n">basedate</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;timedelta64[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span><span class="n">tstr</span><span class="p">)</span>
+        <span class="n">basedate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">basedate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;timedelta64[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span><span class="n">tstr</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">asarray</span><span class="p">([</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">times</span><span class="p">)])</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">times</span><span class="p">)])</span></div>
 
 <div class="viewcode-block" id="get_constraint"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.get_constraint">[docs]</a><span class="k">def</span> <span class="nf">get_constraint</span><span class="p">(</span><span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lon_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lat_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                    <span class="n">time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">meridian_centre</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -524,10 +572,10 @@
 <span class="sd">        iris Constraint instance that can, e.g., be used as input for</span>
 <span class="sd">        :func:`pyaerocom.griddeddata.GriddedData.extract`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
-        <span class="n">start_time</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop_time</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
-        <span class="n">stop_time</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop_time</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">):</span>
+        <span class="n">stop_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
         
     <span class="n">t_lower</span> <span class="o">=</span> <span class="n">PartialDateTime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
                               <span class="n">month</span><span class="o">=</span><span class="n">start_time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>

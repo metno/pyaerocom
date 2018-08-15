@@ -193,508 +193,268 @@
 <span class="c1"># along with this program; if not, write to the Free Software</span>
 <span class="c1"># Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1"># MA 02110-1301, USA</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">logging</span>
 
-
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="c1"># import pdb</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
-<span class="c1">#from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSDAV2</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">NetworkNotImplemented</span><span class="p">,</span> <span class="n">NetworkNotSupported</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sdav2</span> <span class="k">import</span> <span class="n">ReadAeronetSdaV2</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sdav3</span> <span class="k">import</span> <span class="n">ReadAeronetSdaV3</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_invv2</span> <span class="k">import</span> <span class="n">ReadAeronetInvV2</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_invv3</span> <span class="k">import</span> <span class="n">ReadAeronetInvV3</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sunv2</span> <span class="k">import</span> <span class="n">ReadAeronetSunV2</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_aeronet_sunv3</span> <span class="k">import</span> <span class="n">ReadAeronetSunV3</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.read_earlinet</span> <span class="k">import</span> <span class="n">ReadEarlinet</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.read_ebas</span> <span class="k">import</span> <span class="n">ReadEbas</span>
 
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.cachehandler_ungridded</span> <span class="k">import</span> <span class="n">CacheHandlerUngridded</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.ungriddeddata</span> <span class="k">import</span> <span class="n">UngriddedData</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">CURRENTLY OUTDATED</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<div class="viewcode-block" id="ReadUngridded"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded">[docs]</a><span class="k">class</span> <span class="nc">ReadUngridded</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;High-level reading class for ungridded files based on obsnetwork ID</span>
-<span class="sd">    </span>
-<span class="sd">    Note</span>
-<span class="sd">    ----</span>
-<span class="sd">    </span>
-<span class="sd">    THIS CLASS IS CURRENTLY OUTDATED AND WILL BE PRONE TO MAJOR API CHANGES IN</span>
-<span class="sd">    DUE TIME</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">logger</span>
 
-    <span class="c1">#SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_AOD_DAILY_NAME, const.AERONET_SUN_V2L2_SDA_DAILY_NAME]</span>
-    <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_AOD_DAILY_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_SDA_DAILY_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L2_SDA_DAILY_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME</span><span class="p">,</span>
-                          <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">]</span>
-    <span class="c1">#</span>
-    <span class="n">_METADATAKEYINDEX</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">_TIMEINDEX</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">_LATINDEX</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">_LONINDEX</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">_ALTITUDEINDEX</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">_VARINDEX</span> <span class="o">=</span> <span class="mi">5</span>
-    <span class="n">_DATAINDEX</span> <span class="o">=</span> <span class="mi">6</span>
-
-    <span class="n">_COLNO</span> <span class="o">=</span> <span class="mi">11</span>
-    <span class="n">_ROWNO</span> <span class="o">=</span> <span class="mi">10000</span>
-
-    <span class="c1"># The following number denotes the kept precision after the decimal dot of</span>
-    <span class="c1"># the location (e.g denotes lat = 300.12345)</span>
-    <span class="c1"># used to code lat and long in a single number for a uniqueness test</span>
-    <span class="n">_LOCATION_PRECISION</span> <span class="o">=</span> <span class="mi">5</span>
-    <span class="n">_LAT_OFFSET</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="mf">90.</span><span class="p">)</span>
-
+<span class="c1"># TODO Note: Removed infiles (list of files from which datasets were read, since it </span>
+<span class="c1"># was not used anywhere so far)</span>
+<div class="viewcode-block" id="ReadUngridded"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded">[docs]</a><span class="k">class</span> <span class="nc">ReadUngridded</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Factory class for reading of ungridded data based on obsnetwork ID&quot;&quot;&quot;</span>
+    <span class="n">SUPPORTED</span> <span class="o">=</span> <span class="p">[</span><span class="n">ReadAeronetInvV3</span><span class="p">,</span>
+                 <span class="n">ReadAeronetInvV2</span><span class="p">,</span>
+                 <span class="n">ReadAeronetSdaV2</span><span class="p">,</span>
+                 <span class="n">ReadAeronetSdaV3</span><span class="p">,</span>
+                 <span class="n">ReadAeronetSunV2</span><span class="p">,</span>
+                 <span class="n">ReadAeronetSunV3</span><span class="p">,</span>
+                 <span class="n">ReadEarlinet</span><span class="p">,</span>
+                 <span class="n">ReadEbas</span><span class="p">]</span>
+    
     <span class="c1"># when this file exists, an existing cache file is not read</span>
     <span class="n">_DONOTCACHEFILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">OBSDATACACHEDIR</span><span class="p">,</span> <span class="s1">&#39;DONOTCACHE&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">],</span>
-                 <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">ReadAeronetSunV2</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">,</span>
-                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span> <span class="o">=</span> <span class="n">dataset_to_read</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span> <span class="o">=</span> <span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasets_to_read</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span>
+                 <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        
+        <span class="c1">#will be assigned in setter method of dataset_to_read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets_to_read</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#: dictionary containing reading classes for each dataset to read (will</span>
+        <span class="c1">#: be filled in setter of datasets_to_read)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span> <span class="o">=</span> <span class="n">datasets_to_read</span>
+    
+        <span class="c1"># optional: list of variables that are supposed to be imported, if </span>
+        <span class="c1"># None, all variables provided by the corresponding network are loaded</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="n">vars_to_retrieve</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filemasks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__version__</span> <span class="o">=</span> <span class="mf">0.03</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">datasetnames</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">infiles</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># file caching</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">writecachefile</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="c1"># pointer to first unused index of self.data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DONOTCACHEFILE</span><span class="p">):</span>
+            <span class="n">ignore_cache</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_cache</span> <span class="o">=</span> <span class="n">ignore_cache</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">revision</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_dirs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cache_file</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">StopIteration</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_files</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># initiate a logger for this class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+                                      
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">datasets_to_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of datasets supposed to be read&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasets_to_read</span>
+    
+    <span class="nd">@datasets_to_read</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">datasets_to_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasets</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">datasets</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Invalid input for parameter datasets_to_read&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">find_read_class</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets_to_read</span> <span class="o">=</span> <span class="n">datasets</span>    
+    
+<div class="viewcode-block" id="ReadUngridded.dataset_provides_variables"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.dataset_provides_variables">[docs]</a>    <span class="k">def</span> <span class="nf">dataset_provides_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of variables provided by a certain dataset&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_read_class</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span></div>
+      
+<div class="viewcode-block" id="ReadUngridded.get_reader"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.get_reader">[docs]</a>    <span class="k">def</span> <span class="nf">get_reader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper method that returns loaded reader class</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        dataset_to_read : str</span>
+<span class="sd">            Name of dataset</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ReadUngriddedBase</span>
+<span class="sd">            instance of reading class (needs to be implementation of base </span>
+<span class="sd">            class :class:`ReadUngriddedBase`)</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NetworkNotSupported</span>
+<span class="sd">            if network is not supported by pyaerocom</span>
+<span class="sd">        NetworkNotImplemented</span>
+<span class="sd">            if network is supported but no reading routine is implemented yet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">find_read_class</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span></div>
+    
+<div class="viewcode-block" id="ReadUngridded.find_read_class"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.find_read_class">[docs]</a>    <span class="k">def</span> <span class="nf">find_read_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find reading class for dataset name</span>
+<span class="sd">        </span>
+<span class="sd">        Loops over all reading classes available in :attr:`SUPPORTED` and finds</span>
+<span class="sd">        the first one that matches the input dataset name, by checking the </span>
+<span class="sd">        attribute :attr:`SUPPORTED_DATASETS` in each respective reading class</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        dataset_to_read : str</span>
+<span class="sd">            Name of dataset</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ReadUngriddedBase</span>
+<span class="sd">            instance of reading class (needs to be implementation of base </span>
+<span class="sd">            class :class:`ReadUngriddedBase`)</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NetworkNotSupported</span>
+<span class="sd">            if network is not supported by pyaerocom</span>
+<span class="sd">        NetworkNotImplemented</span>
+<span class="sd">            if network is supported but no reading routine is implemented yet</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">OBS_IDS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NetworkNotSupported</span><span class="p">(</span><span class="s2">&quot;Network </span><span class="si">{}</span><span class="s2"> is not supported&quot;</span>
+                                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+        <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_readers</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="n">NetworkNotImplemented</span><span class="p">(</span><span class="s2">&quot;No reading class available yet for dataset &quot;</span>
+                                    <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span></div>
+        
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Requires review after API changes&quot;</span><span class="p">)</span>
         <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
             <span class="n">stat_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;station_name&#39;</span><span class="p">])</span>
         <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stat_names</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
-
-    <span class="c1">###################################################################################</span>
-<div class="viewcode-block" id="ReadUngridded.code_lat_lon_in_float"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to code lat and lon in a single number so that we can use np.unique to</span>
-<span class="sd">        determine single locations&quot;&quot;&quot;</span>
-
-        <span class="c1"># multiply lons with 10 ** (three times the needed) precision and add the lats muliplied with 1E(precision) to it</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LONINDEX</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LATINDEX</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LAT_OFFSET</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span></div>
-
-    <span class="c1">###################################################################################</span>
-<div class="viewcode-block" id="ReadUngridded.decode_lat_lon_from_float"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.decode_lat_lon_from_float">[docs]</a>    <span class="k">def</span> <span class="nf">decode_lat_lon_from_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to decode lat and lon from a single number calculated by code_lat_lon_in_float</span>
+        
+<div class="viewcode-block" id="ReadUngridded.read_dataset"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">read_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read single dataset into instance of :class:`ReadUngridded`</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This method does not write class attribute :attr:`data` (only</span>
+<span class="sd">        :func:`read` does)</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset_to_read : str</span>
+<span class="sd">            name of dataset</span>
+<span class="sd">        vars_to_retrieve : list</span>
+<span class="sd">            list of variables to be retrieved. If None (default), the default</span>
+<span class="sd">            variables of each reading routine are imported</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        UngriddedData</span>
+<span class="sd">            data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">))</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span>
-        <span class="n">lats</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coded_loc</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">))</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span>
-                <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LOCATION_PRECISION</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LAT_OFFSET</span>
-
-        <span class="k">return</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span></div>
-
-    <span class="c1">###################################################################################</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Longitudes of data&quot;&quot;&quot;</span>
-
-        <span class="n">lons</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
-        <span class="k">return</span> <span class="n">lons</span>
-
-    <span class="nd">@longitude</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Longitudes cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
-        <span class="n">lats</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
-        <span class="k">return</span> <span class="n">lats</span>
-
-    <span class="nd">@latitude</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Latitudes cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
-        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">x</span><span class="p">)][</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">))]</span>
-        <span class="k">return</span> <span class="n">stat_names</span>
-
-    <span class="nd">@station_name</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station names cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Time dimension of data&quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-
-    <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
-
-    <span class="c1">###################################################################################</span>
-
-<div class="viewcode-block" id="ReadUngridded.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Note: self.vars_to_retrieve may be None as well, then</span>
+            <span class="c1"># default variables of each network are read</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span> 
+            
+        <span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_reader</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="p">[</span><span class="n">vars_to_retrieve</span><span class="p">]</span>
+            
+        <span class="c1"># Since this interface enables to load multiple datasets, each of </span>
+        <span class="c1"># which support a number of variables, here, only the variables are </span>
+        <span class="c1"># considered that are supported by the dataset</span>
+        <span class="n">vars_available</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_retrieve</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> 
+                          <span class="n">reader</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">]</span>
+        
+        <span class="c1"># read the data sets</span>
+        <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="c1"># initate cache handler</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="n">CacheHandlerUngridded</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">vars_available</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">cache</span><span class="o">.</span><span class="n">check_and_load</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found Cache match for </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+            <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">loaded_data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No Cache match found for </span><span class="si">{}</span><span class="s1">. Reading from files (this &#39;</span>
+                        <span class="s1">&#39;may take a while)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_available</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">revision</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data_revision</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">__version__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_files</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">file_path</span>
+        
+        <span class="c1"># write the cache file</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_cache</span><span class="p">:</span>
+            <span class="n">cache</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+        <span class="k">return</span> <span class="n">data</span></div>
+    
+<div class="viewcode-block" id="ReadUngridded.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasets_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read observations</span>
 
+<span class="sd">        Iter over all datasets in :attr:`datasets_to_read`, call </span>
+<span class="sd">        :func:`read_dataset` and append to data object</span>
+<span class="sd">        </span>
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
 <span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readungridded as pio</span>
 <span class="sd">        &gt;&gt;&gt; from pyaerocom import const</span>
-<span class="sd">        &gt;&gt;&gt; obj = pio.ReadUngridded(dataset_to_read=[const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME])</span>
+<span class="sd">        &gt;&gt;&gt; obj = pio.ReadUngridded(dataset_to_read=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME)</span>
 <span class="sd">        &gt;&gt;&gt; obj.read()</span>
 <span class="sd">        &gt;&gt;&gt; print(obj)</span>
 <span class="sd">        &gt;&gt;&gt; print(obj.metadata[0.][&#39;latitude&#39;])</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="kn">import</span> <span class="nn">pickle</span>
-
-        <span class="k">for</span> <span class="n">dataset_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span><span class="p">:</span>
-            <span class="c1"># read the data sets</span>
-            <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">False</span>
-
-            <span class="n">data_dir</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">][</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span>
-            <span class="n">revision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_revision</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
-            <span class="n">newest_file_in_read_dir</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)),</span> 
-                                          <span class="n">key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getctime</span><span class="p">)</span>
-            <span class="n">newest_file_date_in_read_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getctime</span><span class="p">(</span><span class="n">newest_file_in_read_dir</span><span class="p">)</span>
-
-            <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">const</span><span class="o">.</span><span class="n">OBSDATACACHEDIR</span><span class="p">,</span>
-                <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">dataset_to_read</span><span class="p">,</span> <span class="s1">&#39;AllYears&#39;</span><span class="p">,</span> <span class="s1">&#39;AllVars.plk&#39;</span><span class="p">]))</span>
-            <span class="c1"># TODO: check for yearly data sets as well and single variables as well</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">cache_file</span><span class="p">):</span>
-                <span class="c1"># CACHE HIT</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Importing from cache file: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cache_file</span><span class="p">))</span>
-                    
-                <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="c1"># read cache file</span>
-                <span class="n">in_handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
-                <span class="n">newest_file_in_read_dir_saved</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                <span class="n">newest_file_date_in_read_dir_saved</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                <span class="n">revision_saved</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">newest_file_in_read_dir_saved</span> <span class="o">!=</span> <span class="n">newest_file_in_read_dir</span>
-                        <span class="ow">or</span> <span class="n">newest_file_date_in_read_dir_saved</span> <span class="o">!=</span> <span class="n">newest_file_date_in_read_dir</span>
-                        <span class="ow">or</span> <span class="n">revision_saved</span> <span class="o">!=</span> <span class="n">revision</span><span class="p">):</span>
-                    <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-                <span class="c1"># The rest can only be checked when the reading object is initialised</span>
-                <span class="n">object_version_saved</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-
-            <span class="c1"># self.ReadCacheData(dataset_to_read)</span>
-            <span class="c1"># CACHE MISS</span>
-            <span class="c1"># call the different obs data reading classes</span>
-            <span class="k">if</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">:</span>
-                <span class="c1"># read AERONETSUN V2 L2 daily data set</span>
-                <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s2">&quot;Update follows soon&quot;</span><span class="p">)</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> 
-                                              <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
-                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_SDA_DAILY_NAME</span> <span class="ow">or</span> \
-                    <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L2_SDA_DAILY_NAME</span><span class="p">:</span>
-                <span class="c1"># read AERONET SDA V3 L1.5 daily data set</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSdaV3</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span>
-                                              <span class="n">dataset_to_read</span><span class="o">=</span><span class="n">dataset_to_read</span><span class="p">,</span>
-                                              <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
-                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">:</span>
-                <span class="c1"># read AERONET inversions V2 L2.0 daily data set</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetInvV2</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span>
-                                              <span class="n">dataset_to_read</span><span class="o">=</span><span class="n">dataset_to_read</span><span class="p">,</span>
-                                              <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
-                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_AOD_DAILY_NAME</span><span class="p">:</span>
-                <span class="c1"># read AERONETSUN V3 L1.5 daily data set</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSunV3</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span>
-                                              <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
-                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME</span><span class="p">:</span>
-                <span class="c1"># read AERONETSUN V3 L1.5 all points data set</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadAeronetSunV3</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span>
-                                              <span class="n">dataset_to_read</span><span class="o">=</span><span class="n">dataset_to_read</span><span class="p">,</span>
-                                              <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
-                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L20_AOD_DAILY_NAME</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not implemented at this point.&quot;</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L20_AOD_ALL_POINTS_NAME</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not implemented at this point.&quot;</span><span class="p">)</span>
-
-            <span class="k">elif</span> <span class="n">dataset_to_read</span> <span class="o">==</span> <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span><span class="p">:</span>
-                <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">ReadEarlinet</span><span class="p">(</span><span class="n">index_pointer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span><span class="p">,</span> 
-                                          <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="n">object_version_saved</span> <span class="o">==</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
-                    <span class="n">read_dummy</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_handle</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39; read</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                    <span class="c1"># TODO we might need to adjust self.index_pointer in case we really work with more than one data set!</span>
-                    <span class="n">in_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># re-read data</span>
-                    <span class="n">read_dummy</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">infiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">read_dummy</span><span class="o">.</span><span class="n">files</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">index_pointer</span> <span class="o">=</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">index_pointer</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_dirs</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">][</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">revision</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">revision</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span>
-            <span class="c1"># TODO do not forget to adjust pointers between metadata and data in case there&#39;s more than one data set!!!</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="c1"># this is the 1st data set</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">data</span>
-                <span class="c1"># we might want to check for double station_names here</span>
-                <span class="c1"># for the second data set we DO need to update the dict keys of metadata and data!</span>
-                <span class="c1"># since we do want to keep the point cloud</span>
-                <span class="c1"># we might want to move the variables to read to a dictionary</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># extend self.data numpy array</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                <span class="c1"># also adjust self.index_pointer!</span>
-                <span class="c1"># sys.stderr.write(&quot;ERROR: can only read one obs data network at the time at this point!&quot;)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">read_dummy</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
-            <span class="c1"># write the cache file</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_hit_flag</span><span class="p">:</span>
-                <span class="c1"># write cache file in case the data was newly read</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Writing cache file &#39;</span> <span class="o">+</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="c1"># OutHandle = gzip.open(c__cache_file, &#39;wb&#39;) # takes too much time</span>
-                <span class="n">out_handle</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
-                <span class="n">newest_file_in_read_dir_saved</span> <span class="o">=</span> <span class="n">newest_file_in_read_dir</span>
-                <span class="n">newest_file_date_in_read_dir_saved</span> <span class="o">=</span> <span class="n">newest_file_date_in_read_dir</span>
-                <span class="n">revision_saved</span> <span class="o">=</span> <span class="n">revision</span>
-                <span class="n">object_version_saved</span> <span class="o">=</span> <span class="n">read_dummy</span><span class="o">.</span><span class="n">__version__</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">newest_file_in_read_dir_saved</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">newest_file_date_in_read_dir_saved</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">revision_saved</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">object_version_saved</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
-                <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">read_dummy</span><span class="p">,</span> <span class="n">out_handle</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
-                <span class="n">out_handle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;done</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
-
-    <span class="c1">###################################################################################</span>
-
-<div class="viewcode-block" id="ReadUngridded.to_timeseries"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                      <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to get the ObsData object data as dict using pd.Series for the variables</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        station_names : :obj:`tuple` or :obj:`str:`, optional</span>
-<span class="sd">            station_name or list of station_names to return</span>
-<span class="sd">        start_date, end_date : :obj:`str:`, optional</span>
-<span class="sd">            date strings with start and end date to return</span>
-<span class="sd">        freq : obj:`str:`, optional</span>
-<span class="sd">            frequency to resample to using the pandas resample method</span>
-<span class="sd">            us the offset aliases as noted in</span>
-<span class="sd">            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        list or dictionary</span>
-<span class="sd">            station_names is a string: dictionary with station data</span>
-<span class="sd">            station_names is list or None: list of dictionaries with station data</span>
-
-<span class="sd">        Example</span>
-<span class="sd">        -------</span>
-<span class="sd">        &gt;&gt;&gt; import pyaerocom.io.readobsdata</span>
-<span class="sd">        &gt;&gt;&gt; obj = pyaerocom.io.readobsdata.ReadUngridded(verbose=True)</span>
-<span class="sd">        &gt;&gt;&gt; obj.read()</span>
-<span class="sd">        &gt;&gt;&gt; pdseries = obj.to_timeseries()</span>
-<span class="sd">        &gt;&gt;&gt; pdseriesmonthly = obj.to_timeseries(station_name=&#39;Avignon&#39;,start_date=&#39;2011-01-01&#39;, end_date=&#39;2012-12-31&#39;, freq=&#39;M&#39;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">out_data</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">station_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># return all stations</span>
-            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> 
-                                                  <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="c1"># user asked for a single station_name</span>
-            <span class="c1"># return a single dictionary in this case</span>
-            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">station_name</span> <span class="o">==</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]:</span>
-                    <span class="c1"># we might change this to return a list at some point</span>
-                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> 
-                                                      <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="c1"># user asked for a list of station_names</span>
-            <span class="c1"># return list with matching station_names</span>
-            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="c1"># print(val[&#39;station_name&#39;])</span>
-                <span class="k">if</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">station_name</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">out_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_timeseries_helper</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> 
-                                                                   <span class="n">start_date</span><span class="p">,</span> 
-                                                                   <span class="n">end_date</span><span class="p">,</span> 
-                                                                   <span class="n">freq</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">out_data</span></div>
-
-    <span class="c1">###################################################################################</span>
-
-<div class="viewcode-block" id="ReadUngridded.get_data_revision"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.get_data_revision">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to read the revision string from the file Revision.txt in the main data directory&quot;&quot;&quot;</span>
-
-        <span class="n">revision</span> <span class="o">=</span> <span class="s1">&#39;unset&#39;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">revision_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">][</span><span class="s1">&#39;PATH&#39;</span><span class="p">],</span> 
-                                         <span class="n">const</span><span class="o">.</span><span class="n">REVISION_FILE</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">revision_file</span><span class="p">):</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">revision_file</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
-                    <span class="n">revision</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                    <span class="n">in_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">datasets_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span> <span class="o">=</span> <span class="n">datasets_to_read</span>
+        <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span> <span class="o">=</span> <span class="n">vars_to_retrieve</span>
             
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Revision file for </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">revision</span></div>
-
-    <span class="c1">###################################################################################</span>
-
-<div class="viewcode-block" id="ReadUngridded.get_data_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.get_data_dir">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to return the path of an obs data set&quot;&quot;&quot;</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">const</span><span class="o">.</span><span class="n">OBSCONFIG</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">][</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;data set name &quot;</span> <span class="o">+</span> <span class="n">dataset_name</span> <span class="o">+</span> <span class="s2">&quot;not found &quot;</span><span class="p">)</span></div>
-
-    <span class="c1">###################################################################################</span>
-
-    <span class="k">def</span> <span class="nf">_to_timeseries_helper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                              <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;small helper routine for self.to_timeseries to not to repeat the same code fragment three times&quot;&quot;&quot;</span>
-
-        <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">temp_dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># do not return anything for stations without data</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
-        <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;files&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
-            <span class="n">temp_dict</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_to_retrieve</span><span class="p">:</span>
-                <span class="n">data_found_flag</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">],</span>
-                                           <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
-                                                   <span class="n">val</span><span class="p">[</span><span class="s1">&#39;indexes&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">],</span>
-                                               <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">))</span>
-
-                <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dict</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">start_date</span><span class="p">:</span><span class="n">end_date</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">data_found_flag</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">temp_dict</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="c1">###################################################################################</span>
-
-<div class="viewcode-block" id="ReadUngridded.check_obs_network_name"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.check_obs_network_name">[docs]</a>    <span class="k">def</span> <span class="nf">check_obs_network_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs_network_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;method to quick check if the user supplied obs network string is right&quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="n">obs_network_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span></div></div>
-
+        <span class="n">data</span> <span class="o">=</span> <span class="n">UngriddedData</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Reading </span><span class="si">{}</span><span class="s1"> data&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ds</span><span class="p">))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_dataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Successfully imported </span><span class="si">{}</span><span class="s1"> data&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ds</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">supported_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">supported</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">reader</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">:</span>
+            <span class="n">supported</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">reader</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">supported</span></div>
+        
+    
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">ReadUngridded</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">data</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadUngridded</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">)</span>
+    <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadUngridded</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V3L2_DAILY_NAME</span><span class="p">)</span>
+    <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    
 </pre></div>
 
            </div>

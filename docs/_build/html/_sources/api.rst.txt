@@ -74,10 +74,6 @@ Aeronet Version 2
 Aeronet Version 3
 ++++++++++++++++++
 
-.. todo::
-
-	Implementation of level 3 inversions follows soon
-	
 .. automodule:: pyaerocom.io.read_aeronet_sunv3
    :members:
    :undoc-members:
@@ -89,11 +85,27 @@ Aeronet Version 3
    :undoc-members:
    :inherited-members:
    :show-inheritance:
+
+.. automodule:: pyaerocom.io.read_aeronet_invv3
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
    
 Further networks
 """"""""""""""""
 
-Nothing to show yet
+.. automodule:: pyaerocom.io.read_earlinet
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+   
+.. automodule:: pyaerocom.io.read_ebas
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
    
 .. _ungriddedbase:
 
@@ -115,6 +127,9 @@ EBAS I/O (low level)
    :members:
    :undoc-members:
 
+.. automodule:: pyaerocom.io.ebas_varinfo
+   :members:
+   :undoc-members:
   
 Data types and data representation
 ----------------------------------
@@ -134,6 +149,22 @@ Ungridded data
 .. automodule:: pyaerocom.ungriddeddata
    :members:
    :undoc-members:
+   
+   
+Other data classes
+^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.station
+   :members:
+   :undoc-members:
+   
+.. automodule:: pyaerocom.stationdata
+   :members:
+   :undoc-members:
+   
+.. automodule:: pyaerocom.vertical_profile
+   :members:
+   :undoc-members:
 
 .. _io: 
 
@@ -142,9 +173,16 @@ Further I/O features
   
 .. note::
 
-	The	:mod:`pyaerocom.io` package also includes data import and reading routines. These are introduced
+	The	:mod:`pyaerocom.io` package also includes all relevant data import and reading routines. These are introduced
 	above, in Section :ref:`reading`.
+	
+AeroCom database browser
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: pyaerocom.io.aerocom_browser
+   :members:
+   :undoc-members:
+   
 File naming conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -190,6 +228,27 @@ Scatter plots
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.plot.plotscatter
+   :members:
+   :undoc-members:
+
+Time-series plots
+^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.plotseries
+   :members:
+   :undoc-members:
+   
+Site location plots
+^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.plotsitelocation
+   :members:
+   :undoc-members:   
+   
+Heatmap plots
+^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.heatmaps
    :members:
    :undoc-members:
 

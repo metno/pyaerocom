@@ -168,30 +168,47 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">logger</span>
 
-<div class="viewcode-block" id="od_wavelength_from_varstr"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.od_wavelength_from_varstr">[docs]</a><span class="k">def</span> <span class="nf">od_wavelength_from_varstr</span><span class="p">(</span><span class="n">var_str</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Extracts AOD wavelength from Aerocom variable name</span>
+<div class="viewcode-block" id="numbers_in_str"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.numbers_in_str">[docs]</a><span class="k">def</span> <span class="nf">numbers_in_str</span><span class="p">(</span><span class="n">input_string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method finds all numbers in a string</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    - Beta version, please use with care</span>
+<span class="sd">    - Detects only integer numbers, dots are ignored</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    var_str : str</span>
-<span class="sd">        Aerocom variable string (must start with od)</span>
-<span class="sd">       </span>
+<span class="sd">    input_string : str</span>
+<span class="sd">        string containing numbers</span>
+<span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    int</span>
-<span class="sd">        wavelength in nm</span>
-<span class="sd">       </span>
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        if input string is invalid</span>
+<span class="sd">    list</span>
+<span class="sd">        list of strings specifying all numbers detected in string</span>
+<span class="sd">        </span>
 <span class="sd">    Example</span>
 <span class="sd">    -------</span>
-<span class="sd">    &gt;&gt;&gt; od_wavelength_from_varstr(&#39;od500aer&#39;)</span>
-<span class="sd">    500</span>
+<span class="sd">    &gt;&gt;&gt; numbers_in_str(&#39;Bla42Blub100&#39;)</span>
+<span class="sd">    [42, 100]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Not sure if we will need this...&#39;</span><span class="p">)</span></div>
-    
+    <span class="n">numbers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">IN_NUM</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">c_num</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">input_string</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">IN_NUM</span><span class="p">:</span>
+                <span class="n">IN_NUM</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">c_num</span> <span class="o">=</span> <span class="n">char</span>
+            <span class="k">elif</span> <span class="n">IN_NUM</span><span class="p">:</span>
+                <span class="n">c_num</span> <span class="o">+=</span> <span class="n">char</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">IN_NUM</span><span class="p">:</span>
+                <span class="n">numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c_num</span><span class="p">)</span>
+            <span class="n">IN_NUM</span><span class="o">=</span><span class="kc">False</span>
+    <span class="k">if</span> <span class="n">IN_NUM</span><span class="p">:</span>
+        <span class="n">numbers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c_num</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numbers</span>    </div>
     
 <div class="viewcode-block" id="calc_ang4487aer"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.calc_ang4487aer">[docs]</a><span class="k">def</span> <span class="nf">calc_ang4487aer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute Angstrom coefficient (440-870nm) from 440 and 870 nm AODs</span>
@@ -244,8 +261,31 @@
                            <span class="n">od_ref</span><span class="o">=</span><span class="s1">&#39;od500aer&#39;</span><span class="p">,</span> 
                            <span class="n">lambda_ref</span><span class="o">=.</span><span class="mi">50</span><span class="p">,</span> 
                            <span class="n">od_ref_alt</span><span class="o">=</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> 
-                           <span class="n">lambda_ref_alt</span><span class="o">=.</span><span class="mi">44</span><span class="p">)</span></div>
+                           <span class="n">lambda_ref_alt</span><span class="o">=.</span><span class="mi">44</span><span class="p">,</span>
+                           <span class="n">use_angstrom_coeff</span><span class="o">=</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="calc_abs550aer"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.calc_abs550aer">[docs]</a><span class="k">def</span> <span class="nf">calc_abs550aer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute AOD at 550 nm using Angstrom coefficient and 500 nm AOD</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : dict-like</span>
+<span class="sd">        data object containing imported results</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :obj:`float` or :obj:`ndarray`</span>
+<span class="sd">        AOD(s) at shifted wavelength</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_calc_od_helper</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> 
+                           <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span> 
+                           <span class="n">to_lambda</span><span class="o">=.</span><span class="mi">55</span><span class="p">,</span> 
+                           <span class="n">od_ref</span><span class="o">=</span><span class="s1">&#39;abs500aer&#39;</span><span class="p">,</span> 
+                           <span class="n">lambda_ref</span><span class="o">=.</span><span class="mi">50</span><span class="p">,</span> 
+                           <span class="n">od_ref_alt</span><span class="o">=</span><span class="s1">&#39;abs440aer&#39;</span><span class="p">,</span> 
+                           <span class="n">lambda_ref_alt</span><span class="o">=.</span><span class="mi">44</span><span class="p">,</span>
+                           <span class="n">use_angstrom_coeff</span><span class="o">=</span><span class="s1">&#39;angabs4487aer&#39;</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="calc_od550gt1aer"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.calc_od550gt1aer">[docs]</a><span class="k">def</span> <span class="nf">calc_od550gt1aer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute coarse mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD</span>
 <span class="sd">        </span>
@@ -263,7 +303,8 @@
                            <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span> 
                            <span class="n">to_lambda</span><span class="o">=.</span><span class="mi">55</span><span class="p">,</span> 
                            <span class="n">od_ref</span><span class="o">=</span><span class="s1">&#39;od500gt1aer&#39;</span><span class="p">,</span> 
-                           <span class="n">lambda_ref</span><span class="o">=.</span><span class="mi">50</span><span class="p">)</span></div>
+                           <span class="n">lambda_ref</span><span class="o">=.</span><span class="mi">50</span><span class="p">,</span>
+                           <span class="n">use_angstrom_coeff</span><span class="o">=</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="calc_od550lt1aer"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.calc_od550lt1aer">[docs]</a><span class="k">def</span> <span class="nf">calc_od550lt1aer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute fine mode AOD at 550 nm using Angstrom coeff. and 500 nm AOD</span>
@@ -282,7 +323,8 @@
                            <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">,</span> 
                            <span class="n">to_lambda</span><span class="o">=.</span><span class="mi">55</span><span class="p">,</span> 
                            <span class="n">od_ref</span><span class="o">=</span><span class="s1">&#39;od500lt1aer&#39;</span><span class="p">,</span> 
-                           <span class="n">lambda_ref</span><span class="o">=.</span><span class="mi">50</span><span class="p">)</span></div>
+                           <span class="n">lambda_ref</span><span class="o">=.</span><span class="mi">50</span><span class="p">,</span>
+                           <span class="n">use_angstrom_coeff</span><span class="o">=</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">)</span></div>
         
 <div class="viewcode-block" id="compute_angstrom_coeff"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.compute_angstrom_coeff">[docs]</a><span class="k">def</span> <span class="nf">compute_angstrom_coeff</span><span class="p">(</span><span class="n">od1</span><span class="p">,</span> <span class="n">od2</span><span class="p">,</span> <span class="n">lambda1</span><span class="p">,</span> <span class="n">lambda2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute Angstrom coefficient based on 2 optical densities</span>
@@ -332,7 +374,8 @@
     <span class="k">return</span> <span class="n">od_ref</span> <span class="o">*</span> <span class="p">(</span><span class="n">lambda_ref</span> <span class="o">/</span> <span class="n">to_lambda</span><span class="p">)</span> <span class="o">**</span> <span class="n">angstrom_coeff</span></div>
 
 <span class="k">def</span> <span class="nf">_calc_od_helper</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">to_lambda</span><span class="p">,</span> <span class="n">od_ref</span><span class="p">,</span> <span class="n">lambda_ref</span><span class="p">,</span> 
-                    <span class="n">od_ref_alt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lambda_ref_alt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                    <span class="n">od_ref_alt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lambda_ref_alt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                    <span class="n">use_angstrom_coeff</span><span class="o">=</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Helper method for computing ODs</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -356,6 +399,8 @@
 <span class="sd">        invalid)</span>
 <span class="sd">    lambda_ref_alt : :obj:`float` or :obj:`ndarray`, optional</span>
 <span class="sd">        wavelength corresponding to alternative reference AOD</span>
+<span class="sd">    use_angstrom_coeff : str</span>
+<span class="sd">        name of Angstrom coefficient in data, that is used for computation</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -365,18 +410,26 @@
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    AttributeError</span>
-<span class="sd">        if ``od_ref`` or &quot;ang4487aer&quot; not available in data</span>
+<span class="sd">        if neither ``od_ref`` nor ``od_ref_alt`` are available in data, or if</span>
+<span class="sd">        ``use_angstrom_coeff`` is missing</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">od_ref</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Reference OD at </span><span class="si">{}</span><span class="s2"> nm data is not available in &quot;</span>
-                             <span class="s2">&quot;provided data&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lambda_ref</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="s1">&#39;ang4487aer&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Reference OD at </span><span class="si">{}</span><span class="s1"> nm is not available in data, &#39;</span>
+                       <span class="s1">&#39;checking alternative&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lambda_ref</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">od_ref_alt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">od_ref_alt</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No alternative OD found for computation of &#39;</span>
+                                 <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">compute_od_from_angstromexp</span><span class="p">(</span><span class="n">to_lambda</span><span class="o">=</span><span class="n">to_lambda</span><span class="p">,</span> 
+                                           <span class="n">od_ref</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">od_ref_alt</span><span class="p">],</span>
+                                           <span class="n">lambda_ref</span><span class="o">=</span><span class="n">lambda_ref_alt</span><span class="p">,</span> 
+                                           <span class="n">angstrom_coeff</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">use_angstrom_coeff</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">use_angstrom_coeff</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Angstrom coefficient (440-870 nm) is not &quot;</span>
                              <span class="s2">&quot;available in provided data&quot;</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">compute_od_from_angstromexp</span><span class="p">(</span><span class="n">to_lambda</span><span class="o">=</span><span class="n">to_lambda</span><span class="p">,</span> 
                                           <span class="n">od_ref</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">od_ref</span><span class="p">],</span>
                                           <span class="n">lambda_ref</span><span class="o">=</span><span class="n">lambda_ref</span><span class="p">,</span> 
-                                          <span class="n">angstrom_coeff</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">])</span>
+                                          <span class="n">angstrom_coeff</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">use_angstrom_coeff</span><span class="p">])</span>
     <span class="c1"># optional if available</span>
     <span class="k">if</span> <span class="n">od_ref_alt</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
         <span class="c1"># fill up time steps that are nans with values calculated from the</span>
@@ -385,11 +438,11 @@
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1">#there are nans</span>
             <span class="n">ods_alt</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">od_ref_alt</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
-            <span class="n">ang4487aer</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">ang</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">use_angstrom_coeff</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span>
             <span class="n">replace</span> <span class="o">=</span> <span class="n">compute_od_from_angstromexp</span><span class="p">(</span><span class="n">to_lambda</span><span class="o">=</span><span class="n">to_lambda</span><span class="p">,</span> 
                                                     <span class="n">od_ref</span><span class="o">=</span><span class="n">ods_alt</span><span class="p">,</span>
                                                     <span class="n">lambda_ref</span><span class="o">=</span><span class="n">lambda_ref_alt</span><span class="p">,</span> 
-                                                    <span class="n">angstrom_coeff</span><span class="o">=</span><span class="n">ang4487aer</span><span class="p">)</span>
+                                                    <span class="n">angstrom_coeff</span><span class="o">=</span><span class="n">ang</span><span class="p">)</span>
             <span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace</span>
     
     <span class="k">try</span><span class="p">:</span>
@@ -452,11 +505,11 @@
     <span class="k">return</span> <span class="n">exponent</span><span class="p">(</span><span class="n">high</span><span class="p">)</span> <span class="o">-</span> <span class="n">exponent</span><span class="p">(</span><span class="n">low</span><span class="p">)</span></div>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="c1">#import doctest</span>
     <span class="n">exp</span> <span class="o">=</span> <span class="n">exponent</span><span class="p">(</span><span class="mi">23</span><span class="p">)</span>
-    
+    <span class="nb">print</span><span class="p">(</span><span class="n">numbers_in_str</span><span class="p">(</span><span class="s1">&#39;Bla42Blub100&#39;</span><span class="p">))</span>
     <span class="c1">#run tests in all docstrings</span>
-    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+    <span class="c1">#doctest.testmod()</span>
     
     
 </pre></div>

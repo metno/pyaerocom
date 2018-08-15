@@ -205,7 +205,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.io.readaeronetbase</span> <span class="k">import</span> <span class="n">ReadAeronetBase</span>
 
 
-<div class="viewcode-block" id="ReadAeronetSDAV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetSDAV2</span><span class="p">(</span><span class="n">ReadAeronetBase</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadAeronetSdaV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetSdaV2</span><span class="p">(</span><span class="n">ReadAeronetBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface for reading Aeronet Sun V2 Level 2 data</span>
 <span class="sd">    </span>
 <span class="sd">    Todo</span>
@@ -223,13 +223,17 @@
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.ONEILL_20&#39;</span>
     
     <span class="c1">#: version log of this class (for caching)</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.05&#39;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.07_&#39;</span> <span class="o">+</span> <span class="n">ReadAeronetBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: Name of dataset (OBS_ID)</span>
     <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span>
     
     <span class="c1">#: List of all datasets supported by this interface</span>
     <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span><span class="p">]</span>
+    
+    <span class="c1">#: dictionary assigning temporal resolution flags for supported datasets</span>
+    <span class="c1">#: that are provided in a defined temporal resolution</span>
+    <span class="n">TS_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_SDA_DAILY_NAME</span>   <span class="p">:</span>  <span class="s1">&#39;daily&#39;</span><span class="p">}</span>
     
     <span class="c1">#: default variables for read method</span>
     <span class="n">DEFAULT_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550gt1aer&#39;</span><span class="p">,</span><span class="s1">&#39;od550lt1aer&#39;</span><span class="p">]</span>
@@ -348,7 +352,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">COL_INDEX</span>
     
-<div class="viewcode-block" id="ReadAeronetSDAV2.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSDAV2.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="ReadAeronetSdaV2.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">vars_as_series</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read Aeronet Sun SDA V2 file</span>
 
@@ -378,7 +382,7 @@
         
         <span class="n">data_out</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
         <span class="c1"># create empty arrays for meta information</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_COLNAMES</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_NAMES_FILE</span><span class="p">:</span>
             <span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             
         <span class="c1"># create empty arrays for all variables that are supposed to be read</span>
@@ -403,11 +407,13 @@
             <span class="n">i_dummy</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=|\,&#39;</span><span class="p">,</span> <span class="n">c_dummy</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span>
             <span class="n">dict_loc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">i_dummy</span><span class="p">,</span> <span class="n">i_dummy</span><span class="p">))</span>
 
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Elevation[m]&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;stat_lat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;stat_lon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;stat_alt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Elevation[m]&#39;</span><span class="p">])</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">]</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPE</span>
+            
             <span class="n">c_dummy</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="n">c_Header</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             
@@ -470,12 +476,17 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSDAV2</span><span class="p">()</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSdaV2</span><span class="p">()</span>
     
     <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
     
+    <span class="n">first_ten</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">last_file</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    
     <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    
+    
 </pre></div>
 
            </div>

@@ -161,13 +161,13 @@
   <h1>Source code for pyaerocom.io.ebas_file_index</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">const</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.utils</span> <span class="k">import</span> <span class="n">BrowseDict</span>
 
-<div class="viewcode-block" id="EbasSQLRequest"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest">[docs]</a><span class="k">class</span> <span class="nc">EbasSQLRequest</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="viewcode-block" id="EbasSQLRequest"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest">[docs]</a><span class="k">class</span> <span class="nc">EbasSQLRequest</span><span class="p">(</span><span class="n">BrowseDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Low level dictionary like object for EBAS sqlite queries</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes</span>
@@ -190,7 +190,7 @@
 <span class="sd">        ``(&#39;pm1&#39;, &#39;pm10&#39;, &#39;pm25&#39;, &#39;aerosol&#39;)``)</span>
 <span class="sd">        If None, all available is used</span>
 <span class="sd">    altitude_range : :obj:`tuple`, optional</span>
-<span class="sd">        tuple specifying alEtitude range of station in m (e.g.</span>
+<span class="sd">        tuple specifying altitude range of station in m (e.g.</span>
 <span class="sd">        ``(0.0, 500.0)``). If None, all available is used</span>
 <span class="sd">    lon_range : :obj:`tuple`, optional</span>
 <span class="sd">        tuple specifying longitude range of station in degrees (e.g.</span>
@@ -253,7 +253,10 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_var2sql</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="n">var</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -332,27 +335,22 @@
             <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
             <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;last_start &gt; </span><span class="se">\&#39;</span><span class="si">{}</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="p">)</span>
             <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>
-        
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
-            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;matrix in &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matrices</span><span class="p">))</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;matrix in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matrices</span><span class="p">))</span>
             <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>  
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39; and &#39;</span> <span class="k">if</span> <span class="n">add_cond</span> <span class="k">else</span> <span class="s1">&#39; where &#39;</span>
-            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;statistics in &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">))</span>
+            <span class="n">req</span> <span class="o">+=</span> <span class="s1">&#39;statistics in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">))</span>
             <span class="n">add_cond</span> <span class="o">+=</span> <span class="mi">1</span>      
         <span class="k">return</span> <span class="p">(</span><span class="n">req</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span><span class="p">)</span></div>
-
-    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-    
-    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
     
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">s</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Filename request string:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">make_file_query_str</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">s</span></div>
         
         
@@ -367,7 +365,55 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;SQLite database file does not exist&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+       
         
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ALL_STATION_NAMES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all available station names in database&quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="s1">&#39;select distinct station_name from station&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ALL_STATION_CODES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all available station codes in database</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Not tested whether the order is the same as the order in </span>
+<span class="sd">        :attr:`STATION_NAMES`, i.e. the lists should not be linked to each </span>
+<span class="sd">        other</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="s1">&#39;select distinct station_code from station&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ALL_STATISTICS_PARAMS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all statistical parameters available</span>
+<span class="sd">        </span>
+<span class="sd">        For more info see `here &lt;https://ebas-submit.nilu.no/Submit-Data/</span>
+<span class="sd">        Data-Reporting/Comments/Generic-metadata-comments/Statistics&gt;`__</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="s1">&#39;select distinct statistics from variable&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ALL_VARIABLES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all variables available&quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="s1">&#39;select distinct comp_name from variable&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ALL_MATRICES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all matrix values available&quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="s1">&#39;select distinct matrix from variable&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ALL_INSTRUMENTS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of all variables available&quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="s1">&#39;select distinct instr_type from variable&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    
 <div class="viewcode-block" id="EbasFileIndex.contains_variables"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_variables">[docs]</a>    <span class="k">def</span> <span class="nf">contains_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;List all variables contained in request</span>
 <span class="sd">        </span>
@@ -451,6 +497,15 @@
 <span class="sd">        ----------</span>
 <span class="sd">        request : :obj:`EbasSQLRequest` or :obj:`str`</span>
 <span class="sd">            request specifications</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list of tuples containing the retrieved results. The number of </span>
+<span class="sd">            items in each tuple corresponds to the number of requested </span>
+<span class="sd">            parameters (usually one, can be specified in </span>
+<span class="sd">            :func:`make_query_str` using argument ``what``)</span>
+<span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">EbasSQLRequest</span><span class="p">):</span>
             <span class="n">request</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">make_query_str</span><span class="p">()</span>
@@ -471,18 +526,39 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">con</span><span class="p">:</span>
-                <span class="n">con</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> </div></div>
+                <span class="n">con</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> </div>
                 
+<div class="viewcode-block" id="EbasFileIndex.get_file_names"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.get_file_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all files that match the request specifications</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : :obj:`EbasSQLRequest` or :obj:`str`</span>
+<span class="sd">            request specifications</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list </span>
+<span class="sd">            list of file paths that match the request</span>
+<span class="sd">        &quot;&quot;&quot;</span>  
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_request</span><span class="p">(</span><span class="n">request</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;No files could be found for request&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+            
+        <span class="k">return</span> <span class="n">names</span></div></div>
             
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">dbfile</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EBASMC_SQL_DATABASE</span>
     
     <span class="n">db</span> <span class="o">=</span> <span class="n">EbasFileIndex</span><span class="p">(</span><span class="n">dbfile</span><span class="p">)</span>
     
-    <span class="n">req</span> <span class="o">=</span> <span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;aerosol_optical_depth&#39;</span><span class="p">,</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aerosol_optical_depth&#39;</span><span class="p">,</span>
                                     <span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,</span>
                                     <span class="s1">&#39;aerosol_light_backscattering_coefficient&#39;</span><span class="p">,</span>
-                                    <span class="s1">&#39;aerosol_optical_depth&#39;</span><span class="p">),</span>
+                                    <span class="s1">&#39;aerosol_optical_depth&#39;</span><span class="p">],</span>
                         <span class="n">start_date</span><span class="o">=</span><span class="s2">&quot;2010-01-01&quot;</span><span class="p">,</span> 
                         <span class="n">stop_date</span><span class="o">=</span><span class="s2">&quot;2010-07-01&quot;</span><span class="p">)</span>
     
@@ -498,9 +574,10 @@
     <span class="n">coords</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">contains_coordinates</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
     
     
-    
-    
-    
+    <span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">ALL_STATION_CODES</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">ALL_STATION_NAMES</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">ALL_STATISTICS_PARAMS</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">ALL_VARIABLES</span><span class="p">)</span>
     
     
     

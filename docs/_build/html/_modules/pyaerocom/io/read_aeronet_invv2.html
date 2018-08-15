@@ -199,6 +199,7 @@
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.readaeronetbase</span> <span class="k">import</span> <span class="n">ReadAeronetBase</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">calc_abs550aer</span><span class="p">,</span> <span class="n">calc_od550aer</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">StationData</span>
 
 <div class="viewcode-block" id="ReadAeronetInvV2"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetInvV2</span><span class="p">(</span><span class="n">ReadAeronetBase</span><span class="p">):</span>
@@ -214,7 +215,7 @@
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.dubovikday&#39;</span>
     
     <span class="c1">#: version log of this class (for caching)</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.04&quot;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.07_&quot;</span> <span class="o">+</span> <span class="n">ReadAeronetBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: Name of dataset (OBS_ID)</span>
     <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span>
@@ -223,40 +224,106 @@
     <span class="n">SUPPORTED_DATASETS</span> <span class="o">=</span> <span class="p">[</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span><span class="p">,</span>
                           <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">]</span>
     
+    <span class="c1">#: dictionary assigning temporal resolution flags for supported datasets</span>
+    <span class="c1">#: that are provided in a defined temporal resolution</span>
+    <span class="n">TS_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L2_DAILY_NAME</span>   <span class="p">:</span>   <span class="s1">&#39;daily&#39;</span><span class="p">,</span>
+                <span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L15_DAILY_NAME</span>  <span class="p">:</span>   <span class="s1">&#39;daily&#39;</span><span class="p">}</span>
+    
+    <span class="c1">#: Mapping for dataset location for different data levels that can be </span>
+    <span class="c1">#: read with this interface (can be used when creating the object)</span>
+    <span class="n">DATA_LEVELS</span> <span class="o">=</span> <span class="p">{</span><span class="mf">2.0</span>      <span class="p">:</span>   <span class="n">SUPPORTED_DATASETS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                   <span class="mf">1.5</span>      <span class="p">:</span>   <span class="n">SUPPORTED_DATASETS</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+    
     <span class="c1">#: default variables for read method</span>
-    <span class="n">DEFAULT_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">,</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">]</span>
+    <span class="n">DEFAULT_VARS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">,</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ssa870aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ssa1020aer&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;abs550aer&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
     
     <span class="c1">#: value corresponding to invalid measurement</span>
     <span class="n">NAN_VAL</span> <span class="o">=</span> <span class="o">-</span><span class="mf">9999.</span>
     
     <span class="c1">#: dictionary specifying the file column names (values) for each Aerocom </span>
     <span class="c1">#: variable (keys)</span>
-    <span class="n">DATA_COLNAMES</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa439aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA439-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA440-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA675-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa870aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA870-T&#39;</span>
-    <span class="n">DATA_COLNAMES</span><span class="p">[</span><span class="s1">&#39;ssa1018aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA1018-T&#39;</span>
-
+    <span class="n">VAR_NAMES_FILE</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA440-T&#39;</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA675-T&#39;</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa870aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA870-T&#39;</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa1020aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSA1020-T&#39;</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AOTExt440-T&#39;</span> <span class="c1">#derived from inversion</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;870-440AngstromParam.[AOTExt]-Total&#39;</span> 
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;abs440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AOTAbsp440-T&#39;</span> 
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;angabs4487aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;870-440AngstromParam.[AOTAbsp]&#39;</span> 
+    
+    <span class="c1">#: OPTIONAL: dictionary specifying alternative column names for variables</span>
+    <span class="c1">#: defined in :attr:`VAR_NAMES_FILE`. Check attribute _alt_vars_cols after</span>
+    <span class="c1">#: running read().</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SSA439-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA441-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA438-T&#39;</span><span class="p">,</span> 
+                                       <span class="s1">&#39;SSA437-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA442-T&#39;</span><span class="p">]</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SSA676-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA673-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA674-T&#39;</span><span class="p">,</span> 
+                                       <span class="s1">&#39;SSA669-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA677-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA668-T&#39;</span><span class="p">,</span> 
+                                       <span class="s1">&#39;SSA672-T&#39;</span><span class="p">]</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa870aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SSA871-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA869-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA868-T&#39;</span><span class="p">,</span> 
+                                       <span class="s1">&#39;SSA873-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA867-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA872-T&#39;</span><span class="p">]</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ssa1020aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SSA1022-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA1016-T&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA1018-T&#39;</span><span class="p">]</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AOTExt439-T&#39;</span><span class="p">,</span> <span class="s1">&#39;AOTExt441-T&#39;</span><span class="p">,</span> 
+                                      <span class="s1">&#39;AOTExt438-T&#39;</span><span class="p">,</span> <span class="s1">&#39;AOTExt437-T&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;AOTExt442-T&#39;</span><span class="p">]</span>
+    <span class="n">ALT_VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;abs440aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AOTAbsp439-T&#39;</span><span class="p">,</span> <span class="s1">&#39;AOTAbsp441-T&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;AOTAbsp438-T&#39;</span><span class="p">,</span> <span class="s1">&#39;AOTAbsp437-T&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;AOTAbsp442-T&#39;</span><span class="p">]</span>
+    
+    <span class="c1">#: dictionary containing information about additionally required variables</span>
+    <span class="c1">#: for each auxiliary variable (i.e. each variable that is not provided</span>
+    <span class="c1">#: by the original data but computed on import)</span>
+    <span class="n">AUX_REQUIRES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;abs550aer&#39;</span>     <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;abs440aer&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;angabs4487aer&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;od550aer&#39;</span>      <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;ang4487aer&#39;</span><span class="p">]}</span>
+                    
+    <span class="c1">#: Functions that are used to compute additional variables (i.e. one </span>
+    <span class="c1">#: for each variable defined in AUX_REQUIRES)</span>
+    <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;abs550aer&#39;</span>     <span class="p">:</span>   <span class="n">calc_abs550aer</span><span class="p">,</span>
+                <span class="s1">&#39;od550aer&#39;</span>      <span class="p">:</span>   <span class="n">calc_od550aer</span><span class="p">}</span>
+    
     <span class="c1">#: dictionary specifying the file column names (values) for each </span>
     <span class="c1">#: metadata key (cf. attributes of :class:`StationData`, e.g.</span>
     <span class="c1">#: &#39;station_name&#39;, &#39;longitude&#39;, &#39;latitude&#39;, &#39;altitude&#39;)</span>
-    <span class="n">META_COLNAMES</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">META_COLNAMES</span><span class="p">[</span><span class="s1">&#39;data_quality_level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DATA_TYPE&#39;</span>
-    <span class="n">META_COLNAMES</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Date(dd-mm-yyyy)&#39;</span>
-    <span class="n">META_COLNAMES</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Time(hh:mm:ss)&#39;</span>
-    <span class="n">META_COLNAMES</span><span class="p">[</span><span class="s1">&#39;day_of_year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Julian_Day&#39;</span>
+    <span class="n">META_NAMES_FILE</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">META_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;data_quality_level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DATA_TYPE&#39;</span>
+    <span class="n">META_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Date(dd-mm-yyyy)&#39;</span>
+    <span class="n">META_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Time(hh:mm:ss)&#39;</span>
+    <span class="n">META_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;day_of_year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Julian_Day&#39;</span>
     
     <span class="c1">#: List of variables that are provided by this dataset (will be extended </span>
     <span class="c1">#: by auxiliary variables on class init, for details see __init__ method of</span>
     <span class="c1">#: base class ReadUngriddedBase)</span>
-    <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">DATA_COLNAMES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">VAR_NAMES_FILE</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
-    <span class="c1"># TODO: currently every file is read, regardless of whether it actually</span>
-    <span class="c1"># contains the desired variables or not. Do we need that? Slows stuff down..</span>
-    <span class="c1"># Also: Quick check reading all files in the database showed that only </span>
-    <span class="c1"># about 20% of the files contain the default variables..</span>
-<div class="viewcode-block" id="ReadAeronetInvV2.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ssa675aer&#39;</span><span class="p">,</span><span class="s1">&#39;ssa440aer&#39;</span><span class="p">],</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetInvV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">change_data_level</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="ReadAeronetInvV2.change_data_level"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.change_data_level">[docs]</a>    <span class="k">def</span> <span class="nf">change_data_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change level of Inversion data</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        level :obj:`float` or :obj:`int`, </span>
+<span class="sd">            data level (choose from 1.5 or 2)</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if input level is not available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">level</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATA_LEVELS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid input for level, please choose &#39;</span>
+                             <span class="s1">&#39;from </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_LEVELS</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetInvV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_LEVELS</span><span class="p">[</span><span class="n">level</span><span class="p">])</span></div>
+        
+<div class="viewcode-block" id="ReadAeronetInvV2.read_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">vars_as_series</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read Aeronet file containing results from v2 inversion algorithm</span>
 
@@ -272,7 +339,7 @@
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        StationData </span>
+<span class="sd">        StationData</span>
 <span class="sd">            dict-like object containing results</span>
 <span class="sd">        </span>
 
@@ -287,10 +354,10 @@
         <span class="n">vars_to_read</span><span class="p">,</span> <span class="n">vars_to_compute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_vars_to_retrieve</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="p">)</span>
        
         <span class="c1">#create empty data object (is dictionary with extended functionality)</span>
-        <span class="n">data_out</span> <span class="o">=</span> <span class="n">StationData</span><span class="p">()</span> 
+        <span class="n">data_out</span> <span class="o">=</span> <span class="n">StationData</span><span class="p">()</span>
         
         <span class="c1"># create empty arrays for meta information</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_COLNAMES</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_NAMES_FILE</span><span class="p">:</span>
             <span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             
         <span class="c1"># create empty arrays for all variables that are supposed to be read</span>
@@ -308,16 +375,18 @@
             <span class="n">i_dummy</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;=|\,&#39;</span><span class="p">,</span> <span class="n">c_dummy</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span>
             <span class="n">dict_loc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">i_dummy</span><span class="p">,</span> <span class="n">i_dummy</span><span class="p">))</span>
 
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;long&#39;</span><span class="p">])</span>
-            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;altitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;elev&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;stat_lat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;stat_lon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;long&#39;</span><span class="p">])</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;stat_alt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;elev&#39;</span><span class="p">])</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Locations&#39;</span><span class="p">]</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI_email&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Email&#39;</span><span class="p">]</span>
+            
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPE</span>
 
             <span class="c1">#skip next two lines</span>
-            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Skipping line:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Skipping line:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()))</span>
             
             <span class="n">col_index_str</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">col_index_str</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_index_str</span><span class="p">:</span>
@@ -331,13 +400,16 @@
             <span class="c1"># be filled below, with vectors containing NaNs after the file </span>
             <span class="c1"># reading loop</span>
             <span class="n">vars_available</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">col_names</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">col_index</span><span class="p">:</span>
-                    <span class="n">vars_available</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="n">col_index</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                    <span class="n">vars_available</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+                    <span class="n">col_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_col_order</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">{}</span><span class="s2"> not available in file </span><span class="si">{}</span><span class="s2">&quot;</span>
                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)))</span>
-                
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;col_names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">col_names</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">in_file</span><span class="p">:</span>
                 <span class="c1"># process line</span>
                 <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">COL_DELIM</span><span class="p">)</span>
@@ -351,7 +423,7 @@
                 <span class="n">datestring</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">datestring</span><span class="p">,</span> <span class="s1">&#39;00:00&#39;</span><span class="p">])</span>
                 <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datestring</span><span class="p">))</span>
                 
-                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_COLNAMES</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_NAMES_FILE</span><span class="p">:</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">col_index</span><span class="p">[</span><span class="n">var</span><span class="p">]]</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># e.g. lon, lat, altitude</span>
@@ -359,10 +431,6 @@
                     <span class="k">except</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-                <span class="c1"># copy the meta data (array of type string)</span>
-                <span class="k">for</span> <span class="n">meta_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_COLNAMES</span><span class="p">:</span>
-                    <span class="n">meta_val</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="n">col_index</span><span class="p">[</span><span class="n">meta_var</span><span class="p">]]</span>
-                    <span class="n">data_out</span><span class="p">[</span><span class="n">meta_var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta_val</span><span class="p">)</span>
 
                 <span class="c1"># copy the data fields that are available (rest will be filled</span>
                 <span class="c1"># below)</span>
@@ -375,7 +443,7 @@
         <span class="c1"># convert all lists to numpy arrays</span>
         <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
         
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_COLNAMES</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">META_NAMES_FILE</span><span class="p">:</span>
             <span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_out</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
             
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
@@ -399,13 +467,30 @@
         <span class="k">return</span> <span class="n">data_out</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetInvV2</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_INV_V2L15_DAILY_NAME</span><span class="p">)</span>
-    <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetInvV2</span><span class="p">()</span>
+    <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;warning&#39;</span>
     
-    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">last_file</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c1">#data = read.read(read.PROVIDES_VARIABLES)</span>
     
-    <span class="n">data_first</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">data_first</span><span class="p">)</span>
+    <span class="n">data</span>  <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
+    
+    <span class="n">wavelengths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">440</span><span class="p">,</span> <span class="mi">675</span><span class="p">,</span> <span class="mi">870</span><span class="p">,</span> <span class="mi">1020</span><span class="p">]</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ssa440aer</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ssa675aer</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ssa870aer</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ssa1020aer</span><span class="p">)]</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">vals</span><span class="p">,</span> <span class="s1">&#39;--og&#39;</span><span class="p">)</span>
+    
+    <span class="n">avgssa550aer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span> <span class="n">avgssa550aer</span><span class="p">,</span> <span class="s1">&#39; xb&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="n">udat</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">last_file</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">udat</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
 </pre></div>
 
            </div>

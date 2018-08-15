@@ -248,7 +248,7 @@
         <span class="c1"># df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))</span>
         <span class="n">df_time</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df_time_temp</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">df_time_temp</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
 
-    <span class="c1"># remove all indexes where either one of the data pairs is NaN</span>
+    <span class="c1"># remove all indices where either one of the data pairs is NaN</span>
     <span class="c1"># mainly done to get the number of days right.</span>
     <span class="c1"># df_time.corr() gets it right without</span>
     <span class="n">df_time</span> <span class="o">=</span> <span class="n">df_time</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;any&#39;</span><span class="p">)</span>
@@ -351,6 +351,8 @@
 
     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    
+
 </pre></div>
 
            </div>
