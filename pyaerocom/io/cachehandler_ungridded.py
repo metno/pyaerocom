@@ -4,6 +4,7 @@
 Caching class for reading and writing of ungridded data Cache objects
 """
 from pyaerocom import const, logger, UngriddedData
+from pyaerocom.exceptions import AerocomConnectionError
 from pyaerocom.helpers import to_datestring_YYYYMMDD
 import glob, os, pickle
 
@@ -34,7 +35,12 @@ class CacheHandlerUngridded(object):
         numpy.datetime64 or pandas.Timestamp. Will be converted to string 
         with format YYYYMMDD
     """
+    #: Directory of cache files
     CACHE_DIR = const.OBSDATACACHEDIR
+    
+    #: Length of header of cached pickle files (i.e. no of calls of
+    #: pickle.load before actual data object is returned)
+    LEN_CACHE_HEAD = 4
     def __init__(self, reader, vars_to_retrieve=None, 
                  start=None, stop=None, **kwargs):
     
@@ -46,13 +52,25 @@ class CacheHandlerUngridded(object):
         
         self.loaded_data = None
         
-        # get latest file in data directory of obs network ...
-        newest = max(glob.iglob(os.path.join(self.data_dir, '*')), 
-                     key=os.path.getctime)
-        self.newest_file_in_read_dir = newest
+        #: Flag that is set True if pyaerocom server can be accessed. If this
+        #: is the case, potentially pickled files are checked against latest
+        #: revision and file available in database, else, pickled match is 
+        #: loaded without doublechecking whether the database has changed
+        self.connection_established = False
+        self.newest_file_in_read_dir = None
+        self.newest_file_date_in_read_dir = None
         
-        # ... and corresponding file date
-        self.newest_file_date_in_read_dir = os.path.getctime(newest)
+        try:# get latest file in data directory of obs network ...
+            newest = max(glob.iglob(os.path.join(self.data_dir, '*')), 
+                         key=os.path.getctime)
+            self.newest_file_in_read_dir = newest
+            
+            # ... and corresponding file date
+            self.newest_file_date_in_read_dir = os.path.getctime(newest)
+            self.connection_established = True
+        except IOError as e:
+            logger.exception('Failed to establish connection with Aerocom '
+                             'server. Error: {}'.format(repr(e)))
        
     @property
     def dataset_to_read(self):
@@ -106,14 +124,7 @@ class CacheHandlerUngridded(object):
         """Full file path of cache file for query"""
         return os.path.join(self.CACHE_DIR, self.file_name)
     
-    def check_and_load(self):
-        if not os.path.isfile(self.file_path):
-            logger.info('No cache file available for query of dataset '
-                        '{}'.format(self.dataset_to_read))
-            return False
-    
-        in_handle = open(self.file_path, 'rb')
-        # read meta information about file
+    def _check_pkl_head_vs_database(self, in_handle):
         newest_file_in_read_dir_saved = pickle.load(in_handle)
         newest_file_date_in_read_dir_saved = pickle.load(in_handle)
         revision_saved = pickle.load(in_handle)
@@ -122,8 +133,28 @@ class CacheHandlerUngridded(object):
             or newest_file_date_in_read_dir_saved != self.newest_file_date_in_read_dir
             or revision_saved != self.reader.data_revision
             or object_version_saved != self.reader.__version__):
-            in_handle.close()
             return False
+        return True
+    
+    def check_and_load(self):
+        if not os.path.isfile(self.file_path):
+            logger.info('No cache file available for query of dataset '
+                        '{}'.format(self.dataset_to_read))
+            return False
+    
+        in_handle = open(self.file_path, 'rb')
+        # read meta information about file
+        if self.connection_established:
+            if not self._check_pkl_head_vs_database(in_handle):
+                # TODO: Should we delete the cache file if it is outdated ???
+                logger.info('Aborting reading cache file {}. Aerocom database '
+                            'has changed compared to cached version'
+                            .format(self.file_name))
+                in_handle.close()
+                return False
+        else:
+            for k in range(self.LEN_CACHE_HEAD):
+                logger.debug(pickle.load(in_handle))
         # everything is okay
         data = pickle.load(in_handle)
         if not isinstance(data, UngriddedData):
@@ -141,6 +172,12 @@ class CacheHandlerUngridded(object):
         data : UngriddedData
             object containing the data
         """
+        if not self.connection_established:
+            # TODO: may be updated in the future
+            raise AerocomConnectionError('Cannot write Cache file, connection '
+                                         'to Aerocom database could not be '
+                                         'established (required for checking '
+                                         'revision)')
         if not isinstance(data, UngriddedData):
             raise TypeError('Invalid input, need instance of UngriddedData, '
                             'got {}'.format(type(data)))
