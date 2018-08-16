@@ -8,9 +8,14 @@ from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
 from pyaerocom import __dir__
+from pyaerocom.utils import BrowseDict
 
-class Region(object):
+class Region(BrowseDict):
     """Interface that specifies an AEROCOM region
+    
+    Note
+    ----
+    Extended dictionary-like object
     
     Attributes
     ----------
@@ -50,22 +55,22 @@ class Region(object):
         >>> print(europe)
         pyaeorocom Region
         Name: EUROPE
-        Longitude range: [-20.0, 70.0]
-        Latitude range: [30.0, 80.0]
-        Longitude range (plots): [-20.0, 70.0]
-        Latitude range (plots): [30.0, 80.0]
+        Longitude range: [-20, 70]
+        Latitude range: [30, 80]
+        Longitude range (plots): [-20, 70]
+        Latitude range (plots): [30, 80]
         >>> print(india)
         pyaeorocom Region
         Name: INDIA
-        Longitude range: [65.0, 90.0]
-        Latitude range: [5.0, 35.0]
-        Longitude range (plots): [50.0, 100.0]
-        Latitude range (plots): [0.0, 40.0]
+        Longitude range: [65, 90]
+        Latitude range: [5, 35]
+        Longitude range (plots): [50, 100]
+        Latitude range (plots): [0, 40]
         
     """
     def __init__(self, name="WORLD", lon_range=None, lat_range=None, 
                  **kwargs):
-        self.name = name
+        self._name = name
         # longitude / latitude range of data import
         self.lon_range = lon_range
         self.lat_range = lat_range
@@ -81,8 +86,12 @@ class Region(object):
            self.import_default(name) 
         
         for k, v in kwargs.items():
-            if k in self.__dict__:
-                self.__dict__[k] = v
+            if k in self:
+                self[k] = v
+    
+    @property
+    def name(self):
+        return self._name
     
     def import_default(self, name):
         """Import information about default region
@@ -110,9 +119,9 @@ class Region(object):
         conf_reader.read(fpath)
         if not name in conf_reader:
             raise NameError("No default available for %s" %name)
-        self.name = name
+        self._name = name
         for key, val in conf_reader[name].items():
-            if key in self.__dict__:
+            if key in self.keys():
                 if "," in val:
                     #list of values
                     val = list(literal_eval(val))#[float(x) for x in val.split(",")]
@@ -121,7 +130,7 @@ class Region(object):
                         val = int(val)
                     except:
                         pass
-                self.__dict__[key] = val
+                self[key] = val
         if self.lon_range_plot is None:
             self.lon_range_plot = self.lon_range
         if self.lat_range_plot is None:
@@ -202,5 +211,3 @@ if __name__=="__main__":
         
     all_ids = get_all_default_region_ids()
     
-    import doctest
-    doctest.testmod()

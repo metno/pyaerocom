@@ -660,7 +660,7 @@ class UngriddedData(object):
       
     
     def all_datapoints_var(self, var_name):
-        """Get 1D-array of all data values of input variable
+        """Get array of all data values of input variable
         
         Parameters
         ----------
