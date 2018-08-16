@@ -867,6 +867,11 @@ class ReadGridded(object):
             variables is available in this object
         """
         ts_type = self._check_ts_type(ts_type)
+        if not isinstance(years_to_load, (list, np.ndarray)):
+            year = int(years_to_load)
+            if not const.MIN_YEAR <= year <= const.MAX_YEAR:
+                raise IOError('Invalid input for years_to_load')
+            years_to_load = [year]
         if require_all_years_avail:
             if not all([year in self.years for year in years_to_load]):
                 raise YearNotAvailableError('One or more of the specified years '

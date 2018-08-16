@@ -6,8 +6,9 @@ Created on Thu Aug 16 09:03:31 2018
 @author: jonasg
 """
 from pyaerocom.utils import BrowseDict
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.region import Region
-
 
 class Filter(BrowseDict):
     """Class that can be used to filter gridded and ungridded data objects
@@ -15,17 +16,33 @@ class Filter(BrowseDict):
     Note
     ----
     BETA version (currently being tested)
-
+    
+    Attributes
+    ----------
+    lon_range : list
+        2-element list or array specifying longitude range
+    lat_range : list
+        2-element list or array specifying latitude range
+    alt_range : list
+        2-element list or array specifying altitude range
     """
     #: dictionary specifying altitude filters
     ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for
-                        'noMOUNTAINS'   :   [1000.0, 1e9]}
+                        'noMOUNTAINS'   :   [-1e6, 1e3]} # 1000 m upper limit
 
-    def __init__(self, name=None, altitude_filter=None, region=None, **kwargs):
+    def __init__(self, name=None, region=None, altitude_filter=None, **kwargs):
         # default name (i.e. corresponds to no filtering)
         self._name = 'WORLD-wMOUNTAINS'
+        
+        self.lon_range = None
+        self.lat_range = None
+        self.alt_range = None
+        
         if name is not None:
             self.infer_from_name(name)
+        else:
+            self.infer_from_name(self._name)
+            
         if region is not None:
             self.set_region(region)
         if altitude_filter is not None:
@@ -84,6 +101,18 @@ class Filter(BrowseDict):
     def name(self):
         return self._name
     
+    def _apply_ungridded(self, data_obj):
+        """Apply filter to instance of class :class:`UngriddedData`
+        """
+        return data_obj.filter_by_meta(stat_lon=self.lon_range, 
+                                       stat_lat=self.lat_range, 
+                                       stat_alt=self.alt_range)
+    
+    def _apply_gridded(self, data_obj):
+        """Apply filter to instance of class :class:`GriddedData`
+        """
+        raise NotImplementedError
+        
     def apply(self, data_obj):
         """Apply filter to data object
         
@@ -96,8 +125,18 @@ class Filter(BrowseDict):
         -------
         :obj:`UngriddedData`, :obj:`GriddedData`
             filtered data object
+            
+        Raises
+        ------
+        IOError
+            if input is invalid
         """
-        raise NotImplementedError
+        if isinstance(data_obj, UngriddedData):
+            return self._apply_ungridded(data_obj)
+        elif isinstance(data_obj, GriddedData):
+            return 
+        IOError('Cannot filter {} obj, need instance of GriddedData or '
+                'UngriddedData'.format(type(data_obj)))
         
     def __call__(self, data_obj):
         return self.apply(data_obj)

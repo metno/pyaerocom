@@ -7,6 +7,10 @@ Mathematical low level utility methods ofcd pyaerocom
 import numpy as np
 from pyaerocom import const, logger
 
+### LAMBDA FUNCTIONS
+in_range = lambda x, low, high: low <= x <= high
+
+### OTHER FUNCTIONS
 def numbers_in_str(input_string):
     """This method finds all numbers in a string
     

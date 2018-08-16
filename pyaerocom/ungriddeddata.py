@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from copy import deepcopy
+from datetime import datetime
 from collections import OrderedDict as od
 import pandas as pd
 from pyaerocom import logger, const
@@ -10,6 +11,7 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   MetaDataError)
 from pyaerocom import StationData
 from pyaerocom.utils import dict_to_str, list_to_shortstr
+from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import to_pandas_timestamp
 
 class UngriddedData(object):
@@ -84,6 +86,8 @@ class UngriddedData(object):
         self.metadata = od()
         self.meta_idx = od()
         self.var_idx = od()
+        
+        self.filter_hist = od()
     
     @property
     def contains_vars(self):
@@ -116,6 +120,23 @@ class UngriddedData(object):
                                           "deprectated. Please use attr "
                                           "contains_vars instead"))
         return self.contains_vars
+    
+    @property
+    def is_filtered(self):
+        """Boolean specifying whether this data object has been filtered
+        
+        Note
+        ----
+        Details about applied filtering can be found in :attr:`filter_hist`
+        """
+        if len(self.filter_hist) > 0:
+            return True
+        return False
+    
+    def last_filter_applied(self):
+        if not self.is_filtered:
+            raise AttributeError('No filters were applied so far')
+        return self.filter_hist[max(self.filter_hist.keys())]
     
     def add_chunk(self, size=None):
         """Extend the size of the data array
@@ -343,6 +364,147 @@ class UngriddedData(object):
             temp_dict[var] = data
         return temp_dict
     
+    def _check_filter_match(self, meta, str_f, list_f, range_f):
+        """Helper method that checks if station meta item matches filters
+        
+        Note
+        ----
+        This method is used in :func:`apply_filter`
+        """
+        for k, v in str_f.items():
+            if not meta[k] == v:
+                return False
+        for k, v in list_f.items():
+            if not meta[k] in v:
+                return False
+        for k, v in range_f.items():
+            if not in_range(meta[k], v[0], v[1]):
+                return False
+        return True
+    
+    def _init_meta_filters(self, **filter_attributes):
+        """Init filter dictionary for :func:`apply_filter_meta`
+        
+        Parameters
+        ----------
+        **filter_attributes
+            valid meta keywords that are supposed to be filtered and the 
+            corresponding filter values (or value ranges)
+            Only valid meta keywords are considered (e.g. dataset_name, 
+            stat_lon, stat_lat, stat_alt, ts_type)
+            
+        Returns
+        -------
+        tuple
+            3-element tuple containing
+            
+            - dict: string match filters for metakeys \
+              (e.g. dict['dataset_name'] = 'AeronetSunV2Lev2.daily')
+            - dict: in-list match filters for metakeys \
+              (e.g. dict['station_name'] = ['stat1', 'stat2', 'stat3'])
+            - dict: in-range dictionary for metakeys \
+              (e.g. dict['stat_lon'] = [-30, 30])
+            
+        """
+        # initiate filters that are checked
+        valid_keys = self.metadata[0].keys()
+        str_f = {}
+        list_f = {}
+        range_f = {}
+        for key, val in filter_attributes.items():
+            if not key in valid_keys:
+                raise IOError('Invalid input parameter for filtering: {}. '
+                              'Please choose from {}'.format(key, valid_keys))
+            
+            if isinstance(val, str):
+                str_f[key] = val
+            elif isinstance(val, (list, np.ndarray, tuple)): 
+                if all([isinstance(x, str) for x in val]):
+                    list_f[key] = val
+                elif len(val) == 2:
+                    try:
+                        low, high = float(val[0]), float(val[1])
+                        range_f[key] = [low, high]
+                    except:
+                        raise IOError('Failed to convert input ({}) specifying '
+                                      'value range of {} into floating point '
+                                      'numbers'.format(list(val), key))
+        return (str_f, list_f, range_f)
+                        
+    def filter_by_meta(self, **filter_attributes):
+        """Flexible method to filter these data based on input meta specs
+        
+        Parameters
+        ----------
+        **filter_attributes
+            valid meta keywords that are supposed to be filtered and the 
+            corresponding filter values (or value ranges)
+            Only valid meta keywords are considered (e.g. dataset_name, 
+            stat_lon, stat_lat, stat_alt, ts_type)
+            
+        Returns
+        -------
+        UngriddedData
+            filtered ungridded data object
+        
+        Raises
+        ------
+        NotImplementedError
+            when variables are supposed to be filtered (not yet possible)
+        IOError
+            if any of the input keys are not valid meta key
+            
+        Example
+        -------
+        >>> import pyaerocom as pya
+        >>> r = pya.io.ReadUngridded(['AeronetSunV2Lev2.daily', 
+                                      'AeronetSunV3Lev2.daily'], 'od550aer')
+        >>> data = r.read()
+        >>> data_filtered = data.filter_by_meta(dataset_name='AeronetSunV2Lev2.daily',
+        ...                                     stat_lon=[-30, 30],
+        ...                                     stat_lat=[20, 70],
+        ...                                     stat_alt=[0, 1000])
+        """
+        new = UngriddedData()
+        meta_idx_new = 0.0
+        data_idx_new = 0
+    
+        
+        if 'variables' in filter_attributes:
+            raise NotImplementedError('Cannot yet filter by variables')
+            
+        filters = self._init_meta_filters(**filter_attributes)
+        for meta_idx, meta in self.metadata.items():
+            if self._check_filter_match(meta, *filters):
+                new.metadata[meta_idx_new] = meta
+                new.meta_idx[meta_idx_new] = od()
+                for var in meta['variables']:
+                    indices = self.meta_idx[meta_idx][var]
+                    
+                    totnum = len(indices)
+                    if (data_idx_new + totnum) >= new._ROWNO:
+                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                        new.add_chunk(totnum)
+                    stop = data_idx_new + totnum
+                    
+                    new._data[data_idx_new:stop, :] = self._data[indices, :]
+                    new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+                                                                stop)
+                    new.var_idx[var] = self.var_idx[var]
+                    data_idx_new += totnum
+                
+                meta_idx_new += 1
+            else:
+                logger.debug('{} does not match filter and will be ignored'
+                             .format(meta))
+        if meta_idx_new == 0 or data_idx_new == 0:
+            raise DataExtractionError('Filtering results in empty data object')
+        new._data = new._data[:data_idx_new]
+        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        new.filter_hist[int(time_str)] = filter_attributes
+        new.var_idx = self.var_idx
+        return new
+    
     # TODO: check, confirm and remove Beta version note in docstring
     def extract_dataset(self, dataset_name):
         """Extract single dataset into new instance of :class:`UngriddedData`
@@ -388,6 +550,11 @@ class UngriddedData(object):
                     data_idx_new += totnum
                 
                 meta_idx_new += 1
+        if meta_idx_new == 0 or data_idx_new == 0:
+            raise DataExtractionError('Filtering results in empty data object')
+        new._data = new._data[:data_idx_new]
+        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
         return new
             
             
@@ -866,7 +1033,26 @@ class UngriddedData(object):
     def __getitem__(self, key, val):
         raise NotImplementedError
         
+    def __repr__(self):
+        return str(self)
     def __str__(self):
+        head = "Pyaerocom {}".format(type(self).__name__)
+        s = "\n{}\n{}".format(head, len(head)*"-")
+        s += ('\nContains networks: {}'
+              '\nContains variables: {}'
+              '\nTotal no. of stations: {}'.format(self.contains_datasets,
+                                                   self.contains_vars,
+                                                   len(self.metadata)))
+        if self.is_filtered:
+            s += '\nFilters that were applied:'
+            for tstamp, f in self.filter_hist.items():
+                if f:
+                    s += '\n Filter time log: {}'.format(tstamp)
+                    for key, val in f.items():
+                        s += '\n\t{}: {}'.format(key, val)
+                    
+        return s
+    def __str__OLD(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
         arrays = ''
