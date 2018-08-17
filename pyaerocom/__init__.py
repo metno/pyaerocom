@@ -71,8 +71,10 @@ from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
-from .collocateddata import CollocatedData
 from .filter import Filter
+from .collocateddata import CollocatedData
+from . import collocation
+
 
 from . import io
 from . import plot

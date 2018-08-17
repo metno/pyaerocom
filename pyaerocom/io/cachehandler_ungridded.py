@@ -126,6 +126,7 @@ class CacheHandlerUngridded(object):
         return os.path.join(self.CACHE_DIR, self.file_name)
     
     def _check_pkl_head_vs_database(self, in_handle):
+        
         newest_file_in_read_dir_saved = pickle.load(in_handle)
         newest_file_date_in_read_dir_saved = pickle.load(in_handle)
         revision_saved = pickle.load(in_handle)
@@ -146,16 +147,28 @@ class CacheHandlerUngridded(object):
             logger.info('No cache file available for query of dataset '
                         '{}'.format(self.dataset_to_read))
             return False
-    
+        
+        delete_existing = False
         in_handle = open(self.file_path, 'rb')
         # read meta information about file
         if self.connection_established:
-            if not self._check_pkl_head_vs_database(in_handle):
+            try:
+                use_cache_file = self._check_pkl_head_vs_database(in_handle)
+            except Exception as e:
+                use_cache_file = False
+                delete_existing = True
+                logger.exception('File error in cached data file {}. File will '
+                                 'be removed and data reloaded'
+                                 'Error: {}'.format(self.file_path,
+                                         repr(e)))
+            if not use_cache_file:
                 # TODO: Should we delete the cache file if it is outdated ???
                 logger.info('Aborting reading cache file {}. Aerocom database '
                             'has changed compared to cached version'
                             .format(self.file_name))
                 in_handle.close()
+                if delete_existing: #something was wrong
+                    os.remove(self.file_path)
                 return False
         else:
             for k in range(self.LEN_CACHE_HEAD):
@@ -187,6 +200,7 @@ class CacheHandlerUngridded(object):
             raise TypeError('Invalid input, need instance of UngriddedData, '
                             'got {}'.format(type(data)))
         logger.info('Writing cache file: {}'.format(self.file_path))
+        success=True
         # OutHandle = gzip.open(c__cache_file, 'wb') # takes too much time
         out_handle = open(self.file_path, 'wb')
         try:
@@ -198,13 +212,18 @@ class CacheHandlerUngridded(object):
                         pickle.HIGHEST_PROTOCOL)
             pickle.dump(self.reader.__version__, out_handle, 
                         pickle.HIGHEST_PROTOCOL)
-            pickle.dump(UngriddedData.__version__)
-            pickle.dump(self.__version__)
+            pickle.dump(UngriddedData.__version__, out_handle, 
+                        pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.__version__, out_handle, 
+                        pickle.HIGHEST_PROTOCOL)
             pickle.dump(data, out_handle, pickle.HIGHEST_PROTOCOL)
         except:
             logger.exception('Failed to write cache')
+            success=False
         finally:    
             out_handle.close()
+            if not success:
+                os.remove(self.file_path)
         
         logger.info('Success!')
         
