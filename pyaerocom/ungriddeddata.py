@@ -60,7 +60,7 @@ class UngriddedData(object):
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
     """
-    __version__ = '0.01'
+    __version__ = '0.10'
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2

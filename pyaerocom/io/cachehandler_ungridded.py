@@ -35,12 +35,13 @@ class CacheHandlerUngridded(object):
         numpy.datetime64 or pandas.Timestamp. Will be converted to string 
         with format YYYYMMDD
     """
+    __version__ = '0.02'
     #: Directory of cache files
     CACHE_DIR = const.OBSDATACACHEDIR
     
     #: Length of header of cached pickle files (i.e. no of calls of
     #: pickle.load before actual data object is returned)
-    LEN_CACHE_HEAD = 4
+    LEN_CACHE_HEAD = 6
     def __init__(self, reader, vars_to_retrieve=None, 
                  start=None, stop=None, **kwargs):
     
@@ -128,11 +129,15 @@ class CacheHandlerUngridded(object):
         newest_file_in_read_dir_saved = pickle.load(in_handle)
         newest_file_date_in_read_dir_saved = pickle.load(in_handle)
         revision_saved = pickle.load(in_handle)
-        object_version_saved = pickle.load(in_handle)
+        reader_version_saved = pickle.load(in_handle)
+        data_version_saved = pickle.load(in_handle)
+        cacher_version_saved = pickle.load(in_handle)
         if (newest_file_in_read_dir_saved != self.newest_file_in_read_dir
             or newest_file_date_in_read_dir_saved != self.newest_file_date_in_read_dir
             or revision_saved != self.reader.data_revision
-            or object_version_saved != self.reader.__version__):
+            or reader_version_saved != self.reader.__version__
+            or data_version_saved != UngriddedData.__version__
+            or cacher_version_saved != self.__version__):
             return False
         return True
     
@@ -193,6 +198,8 @@ class CacheHandlerUngridded(object):
                         pickle.HIGHEST_PROTOCOL)
             pickle.dump(self.reader.__version__, out_handle, 
                         pickle.HIGHEST_PROTOCOL)
+            pickle.dump(UngriddedData.__version__)
+            pickle.dump(self.__version__)
             pickle.dump(data, out_handle, pickle.HIGHEST_PROTOCOL)
         except:
             logger.exception('Failed to write cache')
@@ -200,3 +207,16 @@ class CacheHandlerUngridded(object):
             out_handle.close()
         
         logger.info('Success!')
+        
+if __name__ == "__main__":
+    from time import time
+    import pyaerocom as pya
+    
+    reader = pya.io.ReadUngridded(vars_to_retrieve='od550aer')
+    t0=time()
+    data = reader.read()
+    t1=time()
+    data = reader.read()
+    print(t1 - t0)
+    print(time()-t1)
+    
