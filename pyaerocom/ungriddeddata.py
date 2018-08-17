@@ -430,9 +430,19 @@ class UngriddedData(object):
                                       'value range of {} into floating point '
                                       'numbers'.format(list(val), key))
         return (str_f, list_f, range_f)
-                        
+    
+    # TODO: check, confirm and remove Beta version note in docstring                   
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
+        
+        Note
+        ----
+        Beta version
+        
+        Todo
+        ----
+        Check filter history (attr filter_hist) before applying filter in 
+        order to see if filter(s) already have been applied before
         
         Parameters
         ----------
@@ -500,12 +510,14 @@ class UngriddedData(object):
         if meta_idx_new == 0 or data_idx_new == 0:
             raise DataExtractionError('Filtering results in empty data object')
         new._data = new._data[:data_idx_new]
+        # write history of filtering applied 
+        new.filter_hist.update(self.filter_hist)
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
         new.filter_hist[int(time_str)] = filter_attributes
-        new.var_idx = self.var_idx
+        
         return new
     
-    # TODO: check, confirm and remove Beta version note in docstring
+    
     def extract_dataset(self, dataset_name):
         """Extract single dataset into new instance of :class:`UngriddedData`
         
@@ -1032,9 +1044,7 @@ class UngriddedData(object):
             
     def __getitem__(self, key, val):
         raise NotImplementedError
-        
-    def __repr__(self):
-        return str(self)
+    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")

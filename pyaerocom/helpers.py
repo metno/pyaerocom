@@ -40,6 +40,20 @@ IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
                     'daily'     :   coord_categorisation.add_day_of_year,
                     'monthly'   :   coord_categorisation.add_month_number,
                     'yearly'    :   coord_categorisation.add_year} 
+
+# some helper dictionaries for conversion of temporal resolution
+TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
+                          '3hourly' :   '3H',
+                          'daily'   :   'D',
+                          'monthly' :   'MS', #Month start !
+                          'yearly'  :   'Y'}
+
+# frequency strings 
+TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
+                          '3hourly' :   '3h',
+                          'daily'   :   'D',
+                          'monthly' :   'M', #Month start !
+                          'yearly'  :   'Y'}
  
 def str_to_iris(key):
     """Mapping function that converts strings into iris analysis objects
@@ -66,6 +80,7 @@ def str_to_iris(key):
     return val
 
 def to_pandas_timestamp(value):
+    """Convert input to instance of :class:`pandas.Timestamp`"""
     if isinstance(value, pd.Timestamp):
         return value
     elif isinstance(value, (str, np.datetime64, datetime, date)):

@@ -456,7 +456,8 @@ class GriddedData(object):
                                var          :   Series(arr[:, i, j], 
                                                        index=times)})
         except MemoryError:
-            self._to_timeseries_slow(sample_points, scheme, collapse_scalar)
+            result = self.to_timeseries_iter_coords(sample_points, scheme, 
+                                                    collapse_scalar)
                 
         return result
     
@@ -498,7 +499,9 @@ class GriddedData(object):
                 'temporal resolution from {} to {}'.format(self.ts_type,
                                           to_ts_type))
         cube = self.grid
-        IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
+        if not any([x.name() == 'monty' for x in cube.coords()]):
+            IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
+        
         aggregated = cube.aggregated_by(to_ts_type, MEAN)
         data = GriddedData(aggregated, **self.suppl_info)
         data.suppl_info['ts_type'] = to_ts_type

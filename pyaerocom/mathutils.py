@@ -6,11 +6,81 @@ Mathematical low level utility methods ofcd pyaerocom
 
 import numpy as np
 from pyaerocom import const, logger
-
+from scipy.stats import pearsonr, spearmanr
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
 ### OTHER FUNCTIONS
+def calc_statistics(data, ref_data):
+    """Calc statistical properties from two data arrays
+    
+    Calculates the following statistical properties based on the two provided
+    1-dimensional data arrays and returns them in a dictionary (keys are 
+    provided after the arrows):
+        
+        - Mean value of both arrays -> refdata_mean, data_mean
+        - RMS (Root mean square) -> rms
+        - NMB (Normalised mean bias), in percent-> nmb
+        - MNMB (Modified normalised mean bias), in percent -> mnmb
+        - FGE (Fractional gross error), in percent -> fge
+        - R (Pearson correlation coefficient) -> R
+        - R_spearman (Spearman corr. coeff) -> R_spearman
+        
+    Note
+    ----
+    Nans are removed from the input arrays, information about no. of removed
+    points can be inferred from keys `totnum` and `success` in return dict.
+    
+    Parameters
+    ----------
+    data : ndarray
+        array containing data, that is supposed to be compared with reference
+        data
+    ref_data : ndarray
+        array containing data, that is used to compare `data` array with
+    
+    Returns
+    -------
+    dict
+        dictionary containing computed statistics    
+    
+    Raises
+    ------
+    ValueError 
+        if either of the input arrays has dimension other than 1
+        
+    """
+    data = np.asarray(data)
+    reference_data = np.asarray(ref_data)
+    
+    if not data.ndim == 1 or not ref_data.ndim == 1:
+        raise ValueError('Invalid input. Data arrays must be one dimensional')
+        
+    result = {}
+    mask = ~np.isnan(reference_data) * ~np.isnan(data)
+    
+    data, reference_data = data[mask], reference_data[mask]
+    
+    difference = data - reference_data
+    num_points = sum(mask)
+    
+    result['refdata_mean'] = np.mean(reference_data)
+    result['data_mean'] = np.mean(data)
+    result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
+    result['nmb'] = np.sum(difference) / np.sum(reference_data)*100.
+    tmp = difference / (data + reference_data)
+    
+    result['mnmb'] = 2. / num_points * np.sum(tmp) * 100.
+    result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) * 100.
+    #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
+    
+    result['R'] = pearsonr(data, reference_data)[0]
+    result['R_spearman'] = spearmanr(data, reference_data)[0]
+    result['totnum'] = len(mask)
+    result['success'] = num_points
+    
+    return result
+
 def numbers_in_str(input_string):
     """This method finds all numbers in a string
     

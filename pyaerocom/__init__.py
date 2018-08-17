@@ -71,6 +71,7 @@ from .vertical_profile import VerticalProfile
 from .stationdata import StationData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
+from .collocateddata import CollocatedData
 from .filter import Filter
 
 from . import io

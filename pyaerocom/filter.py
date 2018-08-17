@@ -5,6 +5,7 @@ Created on Thu Aug 16 09:03:31 2018
 
 @author: jonasg
 """
+from pyaerocom import logger
 from pyaerocom.utils import BrowseDict
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.ungriddeddata import UngriddedData
@@ -29,10 +30,11 @@ class Filter(BrowseDict):
     #: dictionary specifying altitude filters
     ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for
                         'noMOUNTAINS'   :   [-1e6, 1e3]} # 1000 m upper limit
-
+    NO_FILTER_NAME = 'WORLD-wMOUNTAINS'
     def __init__(self, name=None, region=None, altitude_filter=None, **kwargs):
         # default name (i.e. corresponds to no filtering)
-        self._name = 'WORLD-wMOUNTAINS'
+        self._name = self.NO_FILTER_NAME
+        self._region = None
         
         self.lon_range = None
         self.lat_range = None
@@ -84,7 +86,7 @@ class Filter(BrowseDict):
         
         spl = self.name.split('-')
         self._name = '{}-{}'.format(spl[0], filter_name)
-        
+    
     def set_region(self, region):
         if isinstance(region, str):
             region = Region(region)
@@ -93,14 +95,26 @@ class Filter(BrowseDict):
                           'instance of Region class, got {}'.format(region))
         self.lon_range = region.lon_range
         self.lat_range = region.lat_range
+        self._region = region
         
         spl = self.name.split('-')
         self._name = '{}-{}'.format(region.name, spl[1])
     
     @property
+    def region_name(self):
+        return self._region.name
+    
+    @property
     def name(self):
         return self._name
     
+    def to_dict(self):
+        """Convert filter to dictionary"""
+        return {'region'    :   self.region_name, 
+                'lon_range' :   self.lon_range,
+                'lat_range' :   self.lat_range,
+                'alt_range' :   self.alt_range}
+        
     def _apply_ungridded(self, data_obj):
         """Apply filter to instance of class :class:`UngriddedData`
         """
@@ -131,21 +145,27 @@ class Filter(BrowseDict):
         IOError
             if input is invalid
         """
+        if self.name == self.NO_FILTER_NAME:
+            logger.info('NO FILTER flag: {} -> no filtering will be applied '
+                        'in {}. Returning unchanged object.'
+                        .format(self.NO_FILTER_NAME, type(data_obj)))
+            return data_obj
         if isinstance(data_obj, UngriddedData):
             return self._apply_ungridded(data_obj)
         elif isinstance(data_obj, GriddedData):
-            return 
-        IOError('Cannot filter {} obj, need instance of GriddedData or '
+            return self._apply_gridded(data_obj)
+        raise IOError('Cannot filter {} obj, need instance of GriddedData or '
                 'UngriddedData'.format(type(data_obj)))
-        
+      
     def __call__(self, data_obj):
         return self.apply(data_obj)
     
     
 if __name__=="__main__":
-    f = Filter('EUROPE-noMOUNTAINS')
+    f = Filter('EUROPE-wMOUNTAINS')
     print(f)
     f.set_region('NAMERICA')
     print(f)  
-    f.set_altitude_filter('wMOUNTAINS')     
-    print(f)
+    f.set_altitude_filter('noMOUNTAINS')     
+    print(f.to_dict())
+    
