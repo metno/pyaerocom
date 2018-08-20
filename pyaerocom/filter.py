@@ -125,7 +125,10 @@ class Filter(BrowseDict):
     def _apply_gridded(self, data_obj):
         """Apply filter to instance of class :class:`GriddedData`
         """
-        raise NotImplementedError
+        logger.warning('Applying regional cropping in gridded data using Filter '
+                       'class. Note that this does not yet include potential '
+                       'cropping in the altitude dimension. Coming soon...')
+        return data_obj.crop(region=self._region)
         
     def apply(self, data_obj):
         """Apply filter to data object

@@ -11,23 +11,38 @@ from pyaerocom import const
 from pyaerocom.helpers import to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.mathutils import calc_statistics
 
-def plot_scatter(model_vals, obs_vals, model_id, var_name, obs_id, start, stop, 
-                 ts_type, stations_ok, filter_name, statistics=None, 
-                 savefig=False, save_dir=None, save_name=None,
-                 add_data_missing_note=False):
+def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None, 
+                 obs_id=None, start=None, stop=None, 
+                 ts_type=None, stations_ok=None, filter_name=None, 
+                 statistics=None, savefig=False, save_dir=None, save_name=None,
+                 add_data_missing_note=False, ax=None):
     
-    freq_np =TS_TYPE_TO_NUMPY_FREQ[ts_type]
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10,8))
+    if var_name is None:
+        var_name = 'n/d'
+    
     if statistics is None:
         statistics = calc_statistics(model_vals, obs_vals)
-        
-    VAR_PARAM = const.VAR_PARAM[var_name]
-
-    fig, ax = plt.subplots(figsize=(8,6))
+    
     ax.loglog(obs_vals, model_vals, ' k+')
     
-    start, stop = to_pandas_timestamp(start), to_pandas_timestamp(stop)
-    start_str = np.datetime64(start).astype('datetime64[{}]'.format(freq_np))
-    stop_str = np.datetime64(stop).astype('datetime64[{}]'.format(freq_np))
+    
+    try:
+        freq_np =TS_TYPE_TO_NUMPY_FREQ[ts_type]
+    except:
+        freq_np = 'n/d'
+    try:
+        start, stop = to_pandas_timestamp(start), to_pandas_timestamp(stop)
+        start_str = np.datetime64(start).astype('datetime64[{}]'.format(freq_np))
+        stop_str = np.datetime64(stop).astype('datetime64[{}]'.format(freq_np))
+    except:
+        start_str = 'n/d'
+        stop_str = 'n/d'
+    try:
+        VAR_PARAM = const.VAR_PARAM[var_name]
+    except:
+        VAR_PARAM = const.VAR_PARAM.DEFAULT
     ax.set_xlim(VAR_PARAM['scat_xlim'])
     ax.set_ylim(VAR_PARAM['scat_ylim'])
     ax.set_xlabel('Obs: {}'.format(obs_id), fontsize=14)
@@ -54,8 +69,8 @@ def plot_scatter(model_vals, obs_vals, model_id, var_name, obs_id, start, stop,
     xypos.append((0.8, 0.06))
     xypos_index = 0
     
-    
     var_str = var_name + VAR_PARAM.unit_str
+
     ax.annotate("{} #: {} # st: {}".format(var_str, 
                         statistics['success'], stations_ok),
                         xy=xypos[xypos_index], xycoords='axes fraction', 

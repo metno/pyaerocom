@@ -165,6 +165,9 @@ class CollocatedData(object):
         return calc_statistics(self.data.values[1].flatten(),
                                self.data.values[0].flatten())
         
+    def _prepare_data_scatter(self):
+        raise NotImplementedError
+        
     def plot_scatter(self, **kwargs):
         """Create scatter plot of data"""
         statistics = self.calc_statistics()
@@ -172,9 +175,9 @@ class CollocatedData(object):
         
         return plot_scatter(model_vals=self.data.values[1].flatten(), 
                             obs_vals=self.data.values[0].flatten(), 
-                            model_id=meta['grid_data_name'], 
+                            model_id=meta['data_source_idx'][1], 
                             var_name=meta['var_name'],
-                            obs_id=meta['dataset_name'],
+                            obs_id=meta['data_source_idx'][0],
                             start=meta['start'], 
                             stop=meta['stop'], 
                             ts_type=meta['ts_type'], 
@@ -202,21 +205,19 @@ class CollocatedData(object):
         data[0] = model
         data[1] = obs
         
-        meta = {'ts_type'       : 'daily',
-                'year'          : 1970, 
-                'model_id'      : 'ECMWF_OSUITE',
-                'obs_id'        : 'AeronetSunV2L2.daily',
-                'var_name'      : 'od550aer',
-                'filter_name'   :  'WORLD-noMOUNTAINS'}
+        meta = {'ts_type'         : 'daily',
+                'year'            : 1970, 
+                'data_source_idx' : ['AeronetSunV2L2.daily', 'ECMWF_OSUITE'],
+                'var_name'        : 'od550aer',
+                'filter_name'     :  'WORLD-noMOUNTAINS'}
         
-        arr = xarray.DataArray(data, coords={'source'   : [meta['model_id'],
-                                                           meta['obs_id']], 
-                                         'time'     : times, 
-                                         'longitude': lons,
-                                         'latitude' : ('longitude', lats)},
-                            dims=['source', 'time', 'longitude'],
-                            name=meta['var_name'],
-                            attrs=meta)
+        arr = xarray.DataArray(data, coords={'data_source'   : meta['data_source_idx'], 
+                                             'time'     : times, 
+                                             'longitude': lons,
+                                             'latitude' : ('longitude', lats)},
+                                dims=['data_source', 'time', 'longitude'],
+                                name=meta['var_name'],
+                                attrs=meta)
         self._data = arr
     
     @property
@@ -224,13 +225,21 @@ class CollocatedData(object):
         """Default save name for data object following AeroCom convention"""
         start_str = to_datestring_YYYYMMDD(self.start)
         stop_str = to_datestring_YYYYMMDD(self.stop)
-        return ('{}_OBS-{}_MOD-{}_{}_{}_{}_{}_COLL'.format(self.name,
-                                                        self.meta['obs_id'], 
-                                                        self.meta['model_id'],  
-                                                        start_str,
-                                                        stop_str,
-                                                        self.ts_type,
-                                                        self.meta['filter_name']))
+        
+        source_info = self.meta['data_source_idx']
+        
+        data_ref_id = source_info[0]
+        if len(source_info) > 2:
+            model_id = 'MultiModels'
+        else:
+            model_id = source_info[1]
+        return ('{}_REF-{}_MOD-{}_{}_{}_{}_{}_COLL'.format(self.name,
+                                                           data_ref_id,
+                                                           model_id,
+                                                           start_str,
+                                                           stop_str,
+                                                           self.ts_type,
+                                                           self.meta['filter_name']))
     
     def to_netcdf(self, out_dir, save_name=None, **kwargs):
         """Save data object as .nc file

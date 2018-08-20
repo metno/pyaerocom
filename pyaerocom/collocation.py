@@ -13,6 +13,60 @@ from pyaerocom.helpers import (to_pandas_timestamp,
 from pyaerocom.filter import Filter
 from pyaerocom.collocateddata import CollocatedData
 
+def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
+                              start=None, stop=None, 
+                              filter_name='WORLD-wMountains', **regrid_opts):
+    """Collocate 2 gridded data objects
+    
+    """
+    # get both objects in same time resolution
+    gridded_data = gridded_data.downscale_time(ts_type)
+    gridded_data_ref = gridded_data_ref.downscale_time(ts_type)
+    
+    # guess bounds (for area weighted regridding, which is the default)
+    gridded_data.grid.coord('longitude').guess_bounds()
+    gridded_data.grid.coord('latitude').guess_bounds()
+    gridded_data_ref.grid.coord('longitude').guess_bounds()
+    gridded_data_ref.grid.coord('latitude').guess_bounds()
+    
+    # perform regridding
+    gridded_data = gridded_data.regrid(gridded_data_ref, **regrid_opts)
+    
+    # perform region extraction (if applicable)
+    regfilter = Filter(name=filter_name)
+    gridded_data = regfilter(gridded_data)
+    gridded_data_ref = regfilter(gridded_data_ref)
+    
+    if not gridded_data.shape == gridded_data_ref.shape:
+        raise CollocationError('Shape mismatch between two collocated data '
+                               'arrays, please debug')
+
+    meta = {'data_source_idx'   :   [gridded_data_ref.name,
+                                    gridded_data.name],
+            'var_name'          :   gridded_data.var_name,
+            'ts_type'           :   ts_type,
+            'start'             :   start,
+            'stop'              :   stop,
+            'filter_name'       :   filter_name}
+
+    
+    meta.update(regfilter.to_dict())
+    
+    arr = np.asarray((gridded_data.grid.data, 
+                      gridded_data_ref.grid.data))
+    # create coordinates of DataArray
+    coords = {'data_source' : meta['data_source_idx'],
+              'time'        : gridded_data.time_stamps(),
+              'longitude'   : gridded_data.longitude.points,
+              'latitude'    : gridded_data.latitude.points
+              }
+    dims = ['data_source', 'time', 'latitude', 'longitude']
+    try:
+        return CollocatedData(data=arr, coords=coords, dims=dims, 
+                          name=gridded_data.var_name, attrs=meta)
+    except:
+        return arr, coords, dims
+
 def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily', 
                                    start=None, stop=None, 
                                    filter_name='WORLD-wMOUNTAINS'):
@@ -182,8 +236,8 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         raise CollocationError('No observations could be found that match '
                                'the collocation constraints')
         
-    meta = {'dataset_name'  :   ungridded_data.contains_datasets[0],
-            'grid_data_name':   gridded_data.name,
+    meta = {'data_source_idx'  :   [ungridded_data.contains_datasets[0],
+                                    gridded_data.name],
             'var_name'      :   var,
             'ts_type'       :   ts_type,
             'start'         :   start,
@@ -202,12 +256,11 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     #.reshape((2, time_dim, stat_dim))
     
     # create coordinates of DataArray
-    coords = {'data_source' : [meta['dataset_name'], 
-                               meta['grid_data_name']],
+    coords = {'data_source' : meta['data_source_idx'],
               'time'        : TIME_IDX,
               'station_name': station_names,
-              'longitude'   : ('station_name', lons),
               'latitude'    : ('station_name', lats),
+              'longitude'   : ('station_name', lons),
               'altitude'    : ('station_name', alts)
               }
     dims = ['data_source', 'time', 'station_name']

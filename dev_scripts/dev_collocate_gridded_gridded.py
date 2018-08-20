@@ -5,16 +5,17 @@ Test script for collocation of gridded vs gridded at different resolutions
 import pyaerocom as pya
 import matplotlib.pyplot as plt
 from time import time
-import iris
+import numpy as np
     
 model_id = 'TM5_AP3-CTRL2016'
 obs_id = 'MODIS6.terra'
 
 YEAR = 2010
 VAR = 'od550aer'
-TS_TYPE = 'daily'
+TS_TYPE = 'yearly'
+REGION = 'EUROPE'
 
-RELOAD = 0
+RELOAD = 1
 if __name__ == '__main__':
     plt.close('all')
     pya.change_verbosity('critical')
@@ -33,41 +34,55 @@ if __name__ == '__main__':
         model.grid.coord('latitude').guess_bounds()
         obs.grid.coord('longitude').guess_bounds()
         obs.grid.coord('latitude').guess_bounds()
-    
+        
+        f = pya.Filter(region=REGION)
+        
+        model = f(model)
+        obs = f(obs)
         model.quickplot_map(0)
     
         obs.quickplot_map(0)
     
     
     t0 = time()
-    model_rg = model.regrid(obs)
+    model_rg = model.regrid(obs, scheme='linear')
     t1 = time()
-    model_rg_aw = model.regrid(obs, iris.analysis.AreaWeighted())
-    t2=time()
-    model_rg_aw2 = model.regrid(obs, iris.analysis.AreaWeighted(mdtol=0.1))
-    t3=time()
+    model_rg_aw = model.regrid(obs, scheme='areaweighted')
+    t2 = time()
     
     ax = model_rg.quickplot_map(0).axes[0]
     ax.set_title('Model regrid (linear)')
     
     ax = model_rg_aw.quickplot_map(0).axes[0]
-    ax.set_title('Model regrid (areat weighted mdtol=1)')
-    
-    ax = model_rg_aw2.quickplot_map(0).axes[0]
-    ax.set_title('Model regrid (areat weighted mdtol=0.1)')
+    ax.set_title('Model regrid (areat weighted)')
+
     
     diff_LIN_AW = model_rg.grid[0].data - model_rg_aw.grid[0].data
     fig = plt.figure()
+    plt.imshow(diff_LIN_AW)
+    plt.colorbar()
+    plt.title('Difference (linear vs. Area weighted regridding)')
     
+    model_np = model_rg.grid.data
+    obs_np = obs.grid.data
     
+    if not isinstance(obs_np, np.ma.core.MaskedArray):
+        raise NotImplementedError
+    mask = ~obs_np.mask
     
+    model_vals = model_np[mask]
+    obs_vals = obs_np[mask].data
+    
+    ax = pya.plot.plotscatter_new.plot_scatter(model_vals, 
+                                          obs_vals)
     print('Elapsed time (linear regrid): {}s'.format(t1-t0))
     print('Elapsed time (area weighted regrid): {}s'.format(t2-t1))
-    print('Elapsed time (area weighted regrid mdtol = 0.1): {}s'.format(t3-t2))
     
     print('Model resolution: {}'.format(model.shape))
     print('Satellite resolution: {}'.format(obs.shape))
     print('Model resolution (regrid): {}'.format(model_rg.shape))
+    
+    
     
     
     
