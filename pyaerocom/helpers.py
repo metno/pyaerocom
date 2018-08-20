@@ -35,7 +35,9 @@ _STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
                     max         = iris.analysis.MAX, 
                     mean        = iris.analysis.MEAN,
                     median      = iris.analysis.MEDIAN,
-                    nearest     = iris.analysis.Nearest)
+                    nearest     = iris.analysis.Nearest,
+                    linear      = iris.analysis.Linear,
+                    areaweighted= iris.analysis.AreaWeighted)
 
 IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
                     'daily'     :   coord_categorisation.add_day_of_year,
@@ -56,7 +58,7 @@ TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
                           'monthly' :   'M', #Month start !
                           'yearly'  :   'Y'}
  
-def str_to_iris(key):
+def str_to_iris(key, **kwargs):
     """Mapping function that converts strings into iris analysis objects
     
     Please see dictionary ``_STR_TO_IRIS`` in this module for valid definitions
@@ -77,7 +79,7 @@ def str_to_iris(key):
                        "choose from %s" %(key, _STR_TO_IRIS.keys()))
     val = _STR_TO_IRIS[key]
     if callable(val):
-        return val()
+        return val(**kwargs)
     return val
 
 def to_pandas_timestamp(value):

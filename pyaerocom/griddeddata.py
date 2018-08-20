@@ -99,6 +99,7 @@ class GriddedData(object):
         self.suppl_info = od(from_files     = [],
                              name           = "Unknown",
                              ts_type        = "Unknown",
+                             regridded      = False,
                              region         = None)
         
         
@@ -695,6 +696,31 @@ class GriddedData(object):
                               "Cube is too large")
         return GriddedData(itp_cube, **self.suppl_info)
     
+    def regrid(self, other, scheme='areaweighted', **kwargs):
+        """Regrid this grid to grid resolution of other grid
+        
+        Parameters
+        ----------
+        other : GriddedData
+            other data object
+        scheme : str
+            regridding scheme (e.g. linear, neirest, areaweighted)
+            
+        Returns
+        -------
+        GriddedData 
+            regridded data object (new instance, this object remains unchanged)
+        """
+        if not isinstance(other, GriddedData):
+            other = GriddedData(other)
+        if isinstance(scheme, str):
+            scheme = str_to_iris(scheme, **kwargs)
+            
+        data_rg = self.grid.regrid(other.grid, scheme)
+        suppl = od(**self.suppl_info)
+        suppl['regridded'] = True
+        return GriddedData(data_rg, **suppl)
+        
     def collocate(self, sample_points=None, scheme="nearest", 
                   collapse_scalar=True, **coords):
         """Collocate Cube to positions of input coordinates
