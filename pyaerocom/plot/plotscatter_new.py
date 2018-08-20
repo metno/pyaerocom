@@ -13,7 +13,8 @@ from pyaerocom.mathutils import calc_statistics
 
 def plot_scatter(model_vals, obs_vals, model_id, var_name, obs_id, start, stop, 
                  ts_type, stations_ok, filter_name, statistics=None, 
-                 savefig=False, save_dir=None, save_name=None):
+                 savefig=False, save_dir=None, save_name=None,
+                 add_data_missing_note=False):
     
     freq_np =TS_TYPE_TO_NUMPY_FREQ[ts_type]
     if statistics is None:
@@ -95,7 +96,10 @@ def plot_scatter(model_vals, obs_vals, model_id, var_name, obs_id, start, stop,
     ax.annotate('{}'.format(filter_name),
                         xy=xypos[-1], xycoords='axes fraction', ha='center', 
                         fontsize=10, color='black')
-
+    if add_data_missing_note:
+        ax.annotate('NO MODEL DATA',
+                    xy=(0.4, 0.3), xycoords='axes fraction', ha='center', 
+                    fontsize=20, color='red')
     ax.set_aspect('equal')
     
     if savefig:

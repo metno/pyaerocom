@@ -8,6 +8,7 @@ from iris import coord_categorisation
 import pandas as pd
 import numpy as np
 from pyaerocom.exceptions import LongitudeConstraintError
+from pyaerocom import logger
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
 
@@ -115,18 +116,15 @@ def to_datestring_YYYYMMDD(value):
     ValueError
         if input is not supported
     """
-    if isinstance(value, str):
-        if not len(value, 8):
-            raise ValueError('Need string in format YYYYMMDD')
+    if isinstance(value, str) and len(value, 8):
+        logger.info('Input is already string containing 8 chars. Assuming it '
+                    'is in the right format and returning unchanged')
         return value
-    elif isinstance(value, np.datetime64):
-        value = value.astype(datetime)
-    elif isinstance(value, pd.Timestamp):
-        value = value.to_pydatetime()
-    if isinstance(value, datetime):
-        return datetime.strftime(value, "%Y%m%d")
-    raise ValueError('Invalid input, need str, datetime, numpy.datetime64 or '
-                     'pandas.Timestamp')
+    try:
+        return to_pandas_timestamp(value).strftime('%Y%m%d')
+    except Exception as e:
+        raise ValueError('Invalid input, need str, datetime, numpy.datetime64 '
+                         'or pandas.Timestamp. Error: {}'.format(repr(e)))
     
 def cftime_to_datetime64(times, cfunit=None, calendar=None):
     """Convert numerical timestamps with epoch to numpy datetime64

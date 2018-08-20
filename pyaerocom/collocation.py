@@ -5,7 +5,8 @@ Methods and / or classes to perform collocation
 """
 import pandas as pd
 import numpy as np
-from pyaerocom.exceptions import VarNotAvailableError, TimeMatchError
+from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
+                                  CollocationError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
                                TS_TYPE_TO_NUMPY_FREQ)
@@ -62,7 +63,10 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         if instance of input :class:`UngriddedData` object contains more than
         one dataset
     TimeMatchError
-        - if gridded data time range does not overlap with input time range
+        if gridded data time range does not overlap with input time range
+    CollocationError
+        if none of the data points in input :class:`UngriddedData` matches 
+        the input collocation constraints
     """
     var = gridded_data.var_name
     if not var in ungridded_data.contains_vars:
@@ -174,13 +178,18 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
             alts.append(obs_data.altitude)
             station_names.append(obs_data.station_name)
     
-    meta = {'dataset_name'  :   obs_data.dataset_name,
+    if len(obs_vals) == 0:
+        raise CollocationError('No observations could be found that match '
+                               'the collocation constraints')
+        
+    meta = {'dataset_name'  :   ungridded_data.contains_datasets[0],
             'grid_data_name':   gridded_data.name,
             'var_name'      :   var,
             'ts_type'       :   ts_type,
             'start'         :   start,
             'stop'          :   stop,
             'filter_name'   :   filter_name}
+
     
     meta.update(regfilter.to_dict())
     

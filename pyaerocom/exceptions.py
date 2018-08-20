@@ -23,10 +23,19 @@ Module containing pyaerocom custom exceptions
 class AerocomConnectionError(IOError):
     pass
 
+class CollocationError(ValueError):
+    pass
+
 class CoordinateError(ValueError):
     pass
 
-class MetaDataError(AttributeError):
+class DataCoverageError(ValueError):
+    pass
+
+class DataDimensionError(ValueError):
+    pass
+
+class DataExtractionError(ValueError):
     pass
 
 class IllegalArgumentError(ValueError):
@@ -35,16 +44,16 @@ class IllegalArgumentError(ValueError):
 class LongitudeConstraintError(ValueError):
     pass
 
-class DataExtractionError(ValueError):
+class MetaDataError(AttributeError):
     pass
 
-class DataCoverageError(ValueError):
+class NetworkNotSupported(NotImplementedError):
     pass
 
-class YearNotAvailableError(DataCoverageError):
+class NetworkNotImplemented(NotImplementedError):
     pass
 
-class VarNotAvailableError(DataCoverageError):
+class NotInFileError(IOError):
     pass
 
 class TimeZoneError(AttributeError):
@@ -56,18 +65,14 @@ class TimeMatchError(AttributeError):
 class TemporalResolutionError(ValueError):
     pass
 
+class VarNotAvailableError(DataCoverageError):
+    pass
+
 class VariableDefinitionError(IOError):
     pass
 
 class VariableNotFoundError(IOError):
     pass
 
-class NotInFileError(IOError):
+class YearNotAvailableError(DataCoverageError):
     pass
-
-class NetworkNotSupported(NotImplementedError):
-    pass
-
-class NetworkNotImplemented(NotImplementedError):
-    pass
-

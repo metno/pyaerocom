@@ -499,7 +499,7 @@ class GriddedData(object):
                 'temporal resolution from {} to {}'.format(self.ts_type,
                                           to_ts_type))
         cube = self.grid
-        if not any([x.name() == 'monty' for x in cube.coords()]):
+        if not any([x.name() == to_ts_type for x in cube.coords()]):
             IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
         
         aggregated = cube.aggregated_by(to_ts_type, MEAN)
