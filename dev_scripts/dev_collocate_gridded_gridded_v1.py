@@ -12,6 +12,7 @@ YEAR = 2010
 VAR = 'od550aer'
 TS_TYPE = 'yearly'
 REGION = 'EUROPE'
+REGION = 'WORLD'
 
 RELOAD = 1
 if __name__ == '__main__':

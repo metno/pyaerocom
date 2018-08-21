@@ -19,15 +19,31 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
     """Collocate 2 gridded data objects
     
     """
+    # get start / stop of gridded data as pandas.Timestamp
+    grid_start = to_pandas_timestamp(gridded_data.start_time)
+    grid_stop = to_pandas_timestamp(gridded_data.stop_time)
+    
+    if start is None:
+        start = grid_start
+    else:
+        start = to_pandas_timestamp(start)    
+    if stop is None:
+        stop = grid_stop
+    else:
+        stop = to_pandas_timestamp(stop)
+    
+    # check overlap
+    if stop < grid_start or start >  grid_stop:
+        raise TimeMatchError('Input time range {}-{} does not '
+                             'overlap with data range: {}-{}'
+                             .format(start, stop, grid_start, grid_stop))
     # get both objects in same time resolution
     gridded_data = gridded_data.downscale_time(ts_type)
     gridded_data_ref = gridded_data_ref.downscale_time(ts_type)
     
     # guess bounds (for area weighted regridding, which is the default)
-    gridded_data.grid.coord('longitude').guess_bounds()
-    gridded_data.grid.coord('latitude').guess_bounds()
-    gridded_data_ref.grid.coord('longitude').guess_bounds()
-    gridded_data_ref.grid.coord('latitude').guess_bounds()
+    gridded_data._check_lonlat_bounds()
+    gridded_data_ref._check_lonlat_bounds()
     
     # perform regridding
     gridded_data = gridded_data.regrid(gridded_data_ref, **regrid_opts)
@@ -51,9 +67,12 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
 
     
     meta.update(regfilter.to_dict())
-    
-    arr = np.asarray((gridded_data.grid.data, 
-                      gridded_data_ref.grid.data))
+    data_ref = gridded_data_ref.grid.data
+    if isinstance(data_ref, np.ma.core.MaskedArray):
+        data_ref = data_ref.filled(np.nan)
+
+    arr = np.asarray((data_ref,
+                      gridded_data.grid.data))
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source_idx'],
               'time'        : gridded_data.time_stamps(),

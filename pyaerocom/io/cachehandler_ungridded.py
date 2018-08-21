@@ -231,7 +231,9 @@ if __name__ == "__main__":
     from time import time
     import pyaerocom as pya
     
-    reader = pya.io.ReadUngridded(vars_to_retrieve='od550aer')
+    reader = pya.io.ReadUngridded('AeronetSDAV3Lev2.daily', 
+                                  vars_to_retrieve=['od550lt1aer', 
+                                                    'od550gt1aer'])
     t0=time()
     data = reader.read()
     t1=time()

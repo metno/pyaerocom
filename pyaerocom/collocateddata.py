@@ -152,6 +152,35 @@ class CollocatedData(object):
         """Meta data"""
         return self.data.attrs
     
+    @property
+    def num_grid_points(self):
+        """Number of lon / lat grid points that contain data"""
+        if not self.check_dimensions():
+            raise DataDimensionError('Invalid dimensionality...')
+        if self.ndim == 3:
+            return self.data.shape[2]
+        
+        elif self.ndim == 4:
+            if not all([x in self.data.dims for x in ('longitude', 'latitude')]):
+                raise AttributeError('Cannot determine grid points. Either '
+                                     'longitude or latitude are not contained '
+                                     'in 4D data object, which contains the '
+                                     'following dimensions: {}'.self.data.dims)
+            # get all grid points that contain at least one valid data point 
+            # along time dimension
+            vals = np.nanmean(self.data.data[0], axis=0)
+            valid = ~ np.isnan(vals)
+            return np.sum(valid)
+        
+    def check_dimensions(self):
+        """Checks if data source and time dimension are at the right index"""
+        dims = self.data.dims
+        try:
+            if dims.index('data_source') == 0 and dims.index('time') == 1:
+                return True
+            raise Exception
+        except:
+            return False
     def calc_statistics(self):
         """Calculate statistics from data ensemble
         
@@ -165,14 +194,11 @@ class CollocatedData(object):
         return calc_statistics(self.data.values[1].flatten(),
                                self.data.values[0].flatten())
         
-    def _prepare_data_scatter(self):
-        raise NotImplementedError
-        
     def plot_scatter(self, **kwargs):
         """Create scatter plot of data"""
         statistics = self.calc_statistics()
         meta = self.meta
-        
+        num_points = self.num_grid_points
         return plot_scatter(model_vals=self.data.values[1].flatten(), 
                             obs_vals=self.data.values[0].flatten(), 
                             model_id=meta['data_source_idx'][1], 
@@ -181,7 +207,7 @@ class CollocatedData(object):
                             start=meta['start'], 
                             stop=meta['stop'], 
                             ts_type=meta['ts_type'], 
-                            stations_ok=self.shape[2],
+                            stations_ok=num_points,
                             filter_name=meta['filter_name'], 
                             statistics=statistics, **kwargs)
     
@@ -291,7 +317,10 @@ class CollocatedData(object):
             
         """
         self._data = xarray.open_dataarray(file_path)
-        
+    
+    def __contains__(self, val):
+        return self.data.__contains__(val)
+    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
