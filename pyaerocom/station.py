@@ -38,8 +38,6 @@ class Station(BrowseDict):
     
     
     def __init__(self, *args, **kwargs):
-        super(Station, self).__init__(*args, **kwargs)
-        
         # meta data (strings, lists or arrays)
         self.dataset_name = ''
         self.station_name = ''
@@ -49,6 +47,8 @@ class Station(BrowseDict):
         self.stat_lat = np.nan
         self.stat_lon = np.nan
         self.stat_alt = np.nan
+        
+        super(Station, self).__init__(*args, **kwargs)
         
     def get_station_coords(self, force_single_value=True, quality_check=True):
         """Return coordinates as dictionary

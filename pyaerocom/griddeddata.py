@@ -12,12 +12,12 @@ from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
 from pandas import Timestamp, Series
 from warnings import warn
-from numpy import nan, where
-from numpy.ma import MaskedArray
+import numpy as np
 import pandas as pd
 from pyaerocom import const, logger
 from pyaerocom.exceptions import (DataExtractionError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  DataDimensionError)
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
                                str_to_iris,
@@ -95,7 +95,7 @@ class GriddedData(object):
     """
     _grid = None
     _GRID_IO = const.GRID_IO
-    
+    _COORDS_ORDER = ['time', 'latitude', 'longitude']
     def __init__(self, input=None, var_name=None, **suppl_info):
         self.suppl_info = od(from_files     = [],
                              name           = "Unknown",
@@ -139,7 +139,7 @@ class GriddedData(object):
         if self.grid.has_lazy_data():
             raise AttributeError("Information cannot be accessed. Data is not "
                                  "available in memory (lazy loading)")
-        return isinstance(self.grid.data, MaskedArray)
+        return isinstance(self.grid.data, np.ma.core.MaskedArray)
     
     @property
     def longitude(self):
@@ -275,7 +275,7 @@ class GriddedData(object):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
             logger.warning("Start time could not be accessed in GriddedData")
-            return nan
+            return np.nan
         return cftime_to_datetime64(self.time[0])[0]
     
     @property
@@ -283,7 +283,7 @@ class GriddedData(object):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
             logger.warning("Stop time could not be accessed in GriddedData")
-            return nan
+            return np.nan
         return cftime_to_datetime64(self.time[-1])[0]
         
     def load_input(self, input, var_name=None):
@@ -353,7 +353,16 @@ class GriddedData(object):
             
         """
         raise NotImplementedError
+       
+    def check_coord_order(self):
+        check = self.coords_order[:3]
+        for i, item in enumerate(check):
+            if not item == self._COORDS_ORDER[i]:
+                raise DataDimensionError('Invalid order of grid dimension, '
+                                         'need {}, got {}'.format(self._COORDS_ORDER,
+                                               check))
         
+            
     def to_timeseries_iter_coords(self, sample_points, scheme, collapse_scalar,
                                   **coords):
         """Extract time-series for provided input coordinates (lon, lat)
@@ -392,7 +401,7 @@ class GriddedData(object):
         raise NotImplementedError
         
     def to_time_series(self, sample_points=None, scheme="nearest", 
-                    collapse_scalar=True, **coords):
+                       collapse_scalar=True, **coords):
 
         """Extract time-series for provided input coordinates (lon, lat)
 
@@ -402,7 +411,7 @@ class GriddedData(object):
 
         Todo
         ----
-        Add model ID 
+        Check Memory error handle
         
         Parameters
         ----------
@@ -423,16 +432,14 @@ class GriddedData(object):
             list of result dictionaries for each coordinate. Dictionary keys
             are: ``longitude, latitude, var_name``
         """
-
+        self.check_coord_order()
+        if not self.ndim == 3:
+            raise DataDimensionError('So far, timeseries can only be extracted '
+                                     'from 3 dimensional data...')
         result = []
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))
-        if not self.coords_order[:3] == ['time', 'latitude', 'longitude']:
-            raise NotImplementedError("So far, time series can only be "
-                                      "retrieved for 3-dimensional data "
-                                      "with coordinate order "
-                                      "[time, latitude, longitude].")
         lens = [len(x[1]) for x in sample_points]
         if not all([lens[0]==x for x in lens]):
             raise ValueError("Arrays for sample coordinates must have the "
@@ -447,11 +454,11 @@ class GriddedData(object):
             grid_lons = data.longitude.points
             for i, lat in enumerate(lats):
                 lon = lons[i]
-                j = where(grid_lons == lon)[0][0]
+                j = np.where(grid_lons == lon)[0][0]
                 result.append({'latitude'   :   lat,
                                'longitude'  :   lon,
                                'name'       :   self.name, 
-                               var          :   Series(arr[:, i, j], 
+                                var         :   Series(arr[:, i, j], 
                                                        index=times)})
         except MemoryError:
             result = self.to_timeseries_iter_coords(sample_points, scheme, 
@@ -459,6 +466,36 @@ class GriddedData(object):
                 
         return result
     
+    def to_time_series_single_coord(self, latitude, longitude):
+        """Make time series dictionary of single location using neirest coordinate
+        
+        Parameters
+        ----------
+        latitude : float
+            latitude of coordinate
+        longitude : float
+            longitude of coordinate
+            
+        Returns
+        -------
+        dict
+            dictionary containing results
+        """
+        self.check_coord_order()
+        if not self.ndim == 3:
+            raise DataDimensionError('So far, timeseries can only be extracted '
+                                     'from 3 dimensional data...')
+        lons = self.longitude.points
+        lats = self.latitude.points
+        lon_idx = np.argmin(np.abs(lons - longitude))
+        lat_idx = np.argmin(np.abs(lats - latitude))
+        times = self.time_stamps()
+        data = self.grid.data[:, lat_idx, lon_idx]
+        return {'latitude'      : latitude, 
+                'longitude'     : longitude,
+                'name'          : self.name,
+                self.var_name   : Series(data, times)}
+        
     # TODO: Test, confirm and remove beta flag in docstring
     def downscale_time(self, to_ts_type='monthly'):
         """Downscale in time to predefined resolution resolution
@@ -716,124 +753,7 @@ class GriddedData(object):
         data_rg = self.grid.regrid(other.grid, scheme)
         suppl = od(**self.suppl_info)
         suppl['regridded'] = True
-        return GriddedData(data_rg, **suppl)
-        
-    def collocate(self, sample_points=None, scheme="nearest", 
-                  collapse_scalar=True, **coords):
-        """Collocate Cube to positions of input coordinates
-        
-        Note
-        -----
-        This method is under development and does not work yet
-        
-        Other than :func:`interpolate`, this method extracts the data values 
-        for a given number of input coordinates (e.g. combination of lon / lat
-        values that belong, e.g. to station coordinates). Thus, this results in
-        a reduction of dimensionality, since the provided coordinate 
-        combinations are not othorgonal anymore. 
-        
-        All other dimensions are preserved (e.g. time), thus, collocating a 3D
-        grid of time / lon / lat dimension and shape ``(265, 360, 180)`` at 
-        50 lon / lat coordinates will result in a 2D numpy array of shape 
-        ``(365, 50)``
-        
-        Parameters
-        ----------
-        sample_points : list
-            sequence of coordinate pairs over which to interpolate
-        scheme : str or iris interpolator object
-            interpolation scheme (for details, see :func:`interpolate`)
-        collapse_scalar : bool
-            see :func:`interpolate`
-        **coords
-            keyword args specifying coordinate name (key, e.g. longitude) and 
-            list of corresponding sample point coordinates (value, 
-            e.g. ``[1,2,3]``)
-        
-        Returns
-        -------
-        ndarray
-            data values at provided input coordinates
-            
-        Raises
-        ------
-        ValueError
-            if length of coordinate arrays are unequal or coord
-        KeyError
-            if one of the provided coordinates does not exist[('a', 1), ('b', 2), ('c', 3)]
-        
-        Example
-        -------
-        
-            >>> from pyaerocom import GriddedData
-            >>> data = GriddedData()
-            >>> data._init_testdata_default()
-            >>> lons = [10, 20, 30, 40]
-            >>> lats = [5, 7, 9, 11]
-            >>> pt_data = data.collocate(longitude=lons,
-            ...                          latitude=lats)
-            >>> print(pt_data.shape)
-            (365, 4)
-        
-        """
-        if not sample_points:
-            sample_points = []
-        sample_points.extend(list(coords.items()))
-        if not sample_points:
-            raise IOError("Please provide coordinate either using arg"
-                          "sample_points or via **coords")
-        coords_avail = [coord.name() for coord in self.grid.coords()]
-        _indices = []
-        if not sample_points:
-            sample_points = []
-        sample_points.extend(list(coords.items())) 
-        # get length of sample points array of first coordinate
-        ref_len = len(sample_points[0][1])
-        
-        for name, values in sample_points:
-            if not name in coords_avail:
-                raise KeyError("Coordinate {} does not exist in data, existing "
-                               "coordinates are {}".format(name, coords_avail))
-            elif not len(values) == ref_len:
-                raise ValueError("Length of coordinate arrays must be the "
-                                 "same...")
-            _indices.append(coords_avail.index(name))
-            
-        ### interpolate grid to new coordinates
-        sub = self.interpolate(sample_points, scheme, collapse_scalar)
-        
-        arr = sub.grid.data
-        
-        #total number of points in grid
-        tot_num_grid = np.prod(arr.shape)
-        
-        #get the number of parameters spanned by the subspace
-        sub_num_grid = ref_len**len(sample_points)
-        
-        #put reduced dimension into first index, so we can loop over it
-        arr_dimred = arr.reshape(sub_num_grid, )
-        
-        #remove first item in sample_points (used to iterate over all points)
-        first_coord, values = sample_points.pop(0)
-        
-        lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
-        lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
-        
-        raise NotImplementedError("Under construction...")
-        #for val in values:
-# =============================================================================
-#             
-#         grid_lons = data.longitude.points
-#         for i, lat in enumerate(lats):
-#             lon = lons[i]
-#             j = np.where(grid_lons == lon)[0][0]
-#             result.append({'latitude'   :   lat,
-#                            'longitude'  :   lon,
-#                            var          :   Series(arr[:, i, j], 
-#                                                    index=times)})
-#         return ()
-# =============================================================================
-        
+        return GriddedData(data_rg, **suppl)        
     
     def collapsed(self, coords, aggregator, **kwargs):
         """Collapse cube
@@ -1024,20 +944,20 @@ class GriddedData(object):
         return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
     
 if __name__=='__main__':
-    import numpy as np
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close("all")
     RUN_OLD_STUFF = False
     
-    reader = pya.io.ReadGridded('CAM6-Oslo_NF2kNucl_7jun2018AK')
-    data = reader.read_individual_years('od550aer', 9999)['od550aer'][9999]
+    reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
+    data = reader.read_individual_years('od550aer', 2010)['od550aer'][2010]
     
-
+    t1 = data.to_time_series(longitude=[30], latitude=[40])
+    ts = data.to_time_series_single_coord(longitude=30, latitude=40)
+    
     if RUN_OLD_STUFF:
         from pyaerocom.io.testfiles import get
-        from matplotlib.pyplot import close, figure
-        import numpy as np
+        from matplotlib.pyplot import figure
         files = get()
         data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
                          name='aatsr_su_v4.3')
@@ -1072,8 +992,6 @@ if __name__=='__main__':
             raise Exception
         
         mean = cropped_india.area_weighted_mean()
-        
-        from pandas import Series
         
         s = Series(data=mean, index=cropped_india.time_stamps())
         

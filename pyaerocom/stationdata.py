@@ -24,9 +24,6 @@ class StationData(Station):
                          'altitude' : 'stat_alt'}
     
     def __init__(self, *args, **kwargs):
-        super(StationData, self).__init__(*args, **kwargs)
-        self.dtime = []
-        
         # these three variables may or may not be set. As you can see in the 
         # methods __getitem__ and __setitem__, if they are not set
         # explicitely, the returned value is the corresponding station 
@@ -36,6 +33,10 @@ class StationData(Station):
         self._data_coords = {'latitude' : None, 
                              'longitude': None,
                              'altitude' : None}
+        super(StationData, self).__init__(*args, **kwargs)
+        self.dtime = []
+        
+        
         
     @property
     def data_columns(self):
