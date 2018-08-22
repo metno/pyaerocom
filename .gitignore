@@ -100,12 +100,13 @@ test_dev/out
 # Private folder in folder test_dev
 test_dev/private
 
-#Private and output folders
+# Private and output folders
 private
 _dev
 dev_input_others
 pyaerocom/io/TEMP
 dev_scripts/out/
+pyaerocom.egg-info
 
 # test cache
 .pytest_cache/
