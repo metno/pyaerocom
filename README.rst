@@ -20,7 +20,8 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 
 .. note:: This list may be incomplete
 
-- iris >= 2.0.0	
+- iris >= 2.0.0
+- xarray >= 0.10.8
 - pandas >= 0.22.0
 - cartopy >= 0.16.0
 - numpy >= 1.14
