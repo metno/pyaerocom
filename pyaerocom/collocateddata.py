@@ -7,10 +7,11 @@ Created on Thu Aug 16 14:55:01 2018
 """
 from pyaerocom import logger
 from pyaerocom.mathutils import calc_statistics
-from pyaerocom.helpers import to_datestring_YYYYMMDD
+from pyaerocom.helpers import to_datestring_YYYYMMDD, to_pandas_timestamp
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.plotscatter_new import plot_scatter
 import numpy as np
+import pandas as pd
 import os
 import xarray
 
@@ -175,12 +176,16 @@ class CollocatedData(object):
     def check_dimensions(self):
         """Checks if data source and time dimension are at the right index"""
         dims = self.data.dims
+        if not 2 < len(dims) < 5:
+            logger.info('Invalid number of dimensions. Must be 3 or 4')
+            return False
         try:
             if dims.index('data_source') == 0 and dims.index('time') == 1:
                 return True
             raise Exception
         except:
             return False
+        
     def calc_statistics(self):
         """Calculate statistics from data ensemble
         
@@ -267,6 +272,49 @@ class CollocatedData(object):
                                                            self.ts_type,
                                                            self.meta['filter_name']))
     
+    def get_meta_from_filename(self, file_path):
+        """Get meta information from file name
+        
+        Note
+        ----
+        This does not yet include IDs of model and obs data as these should
+        be included in the data anyways (e.g. column names in CSV file) and
+        may include the delimiter _ in their name.
+        
+        Returns 
+        -------
+        dict
+            dicitonary with meta information
+        """
+        spl = os.path.basename(file_path).split('_COLL')[0].split('_')
+        
+        start = to_pandas_timestamp(spl[-4])
+        stop = to_pandas_timestamp(spl[-3])
+        
+        meta = dict(var_name      = spl[0],
+                    ts_type       = spl[-2],  
+                    filter_name   = spl[-1],
+                    start         = start,
+                    stop          = stop)
+        
+        if not 'REF' in spl[1]:
+            raise ValueError('File name does not follow convention')
+        ref_base = spl[1].split('REF-')[1]
+        mod_base = ''
+        in_mod = False
+        for item in spl[2:-4]:
+            if in_mod:
+                mod_base += '_{}'.format(item)
+            if item.startswith('MOD-'):
+                in_mod=True
+                mod_base = item.split('MOD-')[1]
+            if not in_mod:
+                ref_base += item
+            
+        meta['data_source_idx'] = [ref_base, mod_base]
+        return meta
+            
+        
     def to_netcdf(self, out_dir, save_name=None, **kwargs):
         """Save data object as .nc file
         
@@ -291,7 +339,71 @@ class CollocatedData(object):
         if not save_name.endswith('.nc'):
             save_name = '{}.nc'.format(save_name)
         self.data.to_netcdf(path=os.path.join(out_dir, save_name), **kwargs)
-       
+        
+    def to_dataframe(self):
+        """Convert this object into pandas.DataFrame
+        
+        Note
+        ----
+        This does not include meta information
+        """
+        logger.warning('This method is currently not completely finished')
+        model_vals = self.data.values[1].flatten()
+        obs_vals = self.data.values[0].flatten()
+        mask = ~np.isnan(obs_vals)
+        return pd.DataFrame({'ref'  : obs_vals[mask],
+                             'data' : model_vals[mask]})
+    
+    def from_dataframe(self, df):
+        """Create collocated Data object from dataframe
+        
+        Note
+        ----
+        This is intended to be used as back-conversion from :func:`to_dataframe`
+        and methods that use the latter (e.g. :func:`to_csv`).
+        """
+        raise NotImplementedError('Coming soon...')
+        data = df.to_xarray()
+        self.data = data
+        self.check_dimensions()
+        
+        
+    def to_csv(self, out_dir, save_name=None):
+        """Save data object as .csv file
+        
+        Converts data to pandas.DataFrame and then saves as csv
+        
+        Parameters
+        ----------
+        out_dir : str
+            output directory
+        save_name : :obj:`str`, optional
+            name of file, if None, the default save name is used (cf. 
+            :attr:`save_name_aerocom`)
+        """
+        if save_name is None:
+            save_name = self.save_name_aerocom
+        if not save_name.endswith('.csv'):
+            save_name = '{}.csv'.format(save_name)
+        if not self.check_dimensions():
+            raise IOError('Invalid dimensionality, please check...')
+        df = self.to_dataframe()
+        file_path = os.path.join(out_dir, save_name)
+        df.to_csv(file_path)
+        return file_path
+        
+    def from_csv(self, file_path):
+        """Read data from CSV file
+        
+        Todo
+        -----
+        Complete docstring
+        """
+        meta = self.get_meta_from_filename(file_path)
+        df = pd.read_csv(file_path)
+        self.from_dataframe(df)
+        self.data.attrs.update(**meta)
+        
     def open(self, file_path):
         """High level helper for reading from supported file sources
         

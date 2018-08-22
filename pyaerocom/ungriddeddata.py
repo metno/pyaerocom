@@ -625,6 +625,15 @@ class UngriddedData(object):
                 out_data.append(None)
         return out_data
     
+    def station_data_to_ascii(self, vars_to_convert=None, start=None, stop=None, 
+                              freq=None, interp_nans=False, 
+                              min_coverage_interp=0.68):
+        """
+        TODO
+        ----
+        Write docstring
+        """
+        
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
         determine single locations"""

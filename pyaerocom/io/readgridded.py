@@ -129,7 +129,8 @@ class ReadGridded(object):
     _data_dir = ""
 
     def __init__(self, name="", start_time=None, stop_time=None,
-                 file_convention="aerocom3", io_opts=const, init=True):
+                 file_convention="aerocom3", io_opts=const, 
+                 init=True):
         # model ID
         if not isinstance(name, str):
             if isinstance(name, list):
@@ -197,6 +198,7 @@ class ReadGridded(object):
         
         #: This object can be used to 
         self.browser = AerocomBrowser()
+        
         if init and name:
             self.search_data_dir()
             self.search_all_files()

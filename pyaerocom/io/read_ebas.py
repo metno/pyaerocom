@@ -379,6 +379,8 @@ class ReadEbas(ReadUngriddedBase):
             raise NotInFileError('None of the specified variables {} could be '
                                  'found in file {}'.format(vars_to_read,
                                                 os.path.basename(filename)))
+        
+    
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
         data_out.dataset_name = self.DATASET_NAME

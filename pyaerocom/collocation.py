@@ -241,8 +241,10 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
             # TODO: remove this later, or include solution in case this exception
             # is raised (i.e. if model data is incomplete on the defined time
             # grid). 
-            if sum(np.isnan(grid_vals_temp)) > 0:
-                raise Exception
+# =============================================================================
+#             if sum(np.isnan(grid_vals_temp)) > 0:
+#                 raise Exception
+# =============================================================================
             obs_vals.append(df['ungridded'].values)
             grid_vals.append(grid_vals_temp)
             

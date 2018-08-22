@@ -14,14 +14,15 @@ from pandas import Timestamp, Series
 from warnings import warn
 from numpy import nan, where
 from numpy.ma import MaskedArray
-
+import pandas as pd
 from pyaerocom import const, logger
 from pyaerocom.exceptions import (DataExtractionError,
                                   TemporalResolutionError)
 from pyaerocom.helpers import (get_time_constraint, 
                                cftime_to_datetime64,
                                str_to_iris,
-                               IRIS_AGGREGATORS)
+                               IRIS_AGGREGATORS,
+                               to_pandas_timestamp)
 
 from pyaerocom.region import Region
 
@@ -218,6 +219,16 @@ class GriddedData(object):
         return True if isinstance(self.grid, Cube) else False
     
     @property
+    def is_climatology(self):
+        try:
+            year = to_pandas_timestamp(self.start_time).year
+            if year == 9999:
+                return True
+            return False
+        except pd.errors.OutOfBoundsDatetime:
+            return True
+    
+    @property
     def has_data(self):
         """True if grid data is available (:attr:`grid` =! None)
         
@@ -328,20 +339,6 @@ class GriddedData(object):
         """
         if self.is_cube:    
             return cftime_to_datetime64(self.time)
-    
-    
-    def lonlat_resolution(self):
-        """Longitude / latitude resolution of grid
-        
-        Returns
-        -------
-        tuple
-            2-element tuple containing
-            
-            - average longitude resolution in decimal degrees
-            - average latitude resolution in decimal degrees
-        """
-        raise NotImplementedError
         
     def crop_around_coord(self, lon, lat, step_deg=2):
         """Crop cube around a single lon / lat coordinate
@@ -1029,39 +1026,14 @@ class GriddedData(object):
 if __name__=='__main__':
     import numpy as np
     import matplotlib.pyplot as plt
+    import pyaerocom as pya
     plt.close("all")
     RUN_OLD_STUFF = False
     
-    data = GriddedData()
-    data._init_testdata_default()
+    reader = pya.io.ReadGridded('CAM6-Oslo_NF2kNucl_7jun2018AK')
+    data = reader.read_individual_years('od550aer', 9999)['od550aer'][9999]
     
-    start = Timestamp("2018-1-22")
-    stop = Timestamp("2018-2-5")
-    
-    lons = np.linspace(-10, 30, 20)
-    lats = np.linspace(40, 80, 20)
-    cropped = data.crop(lon_range=(lons[0], lons[-1]), 
-                        lat_range=(lats[0], lats[-1]), 
-                        time_range=(start, stop))
-    
-    fig = cropped.quickplot_map()
-    fig.suptitle("CROPPED")
-    
-    itp = cropped.interpolate(longitude=lons, 
-                              latitude=lats)
-    
-    fig = itp.quickplot_map()
-    fig.suptitle("INTERPOLATED")
-    
-# =============================================================================
-#     collo = cropped.collocate(longitude=lons, 
-#                               latitude=lats)
-# =============================================================================
-    
-    s = cropped.to_time_series(sample_points=[('longitude', lons),
-                                              ('latitude', lats)])
-    
-    
+
     if RUN_OLD_STUFF:
         from pyaerocom.io.testfiles import get
         from matplotlib.pyplot import close, figure
