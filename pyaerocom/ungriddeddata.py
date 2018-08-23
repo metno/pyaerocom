@@ -300,11 +300,11 @@ class UngriddedData(object):
         if isinstance(vars_to_convert, str):
             vars_to_convert = [vars_to_convert]
         if start is None:
-            start = pd.Timestamp(str(int(const.MIN_YEAR)))
+            start = pd.Timestamp('1970')
         else:
             start = to_pandas_timestamp(start)
         if stop is None:
-            stop = pd.Timestamp(str(int(const.MAX_YEAR)))
+            stop = pd.Timestamp('2200')
         else:
             stop = to_pandas_timestamp(stop)
             

@@ -191,7 +191,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
             c_dummy = in_file.readline()
         
             #data_out.data_header = 
-            in_file.readline().strip()
+            l=in_file.readline().strip()
             
             for line in in_file:
                 # process line

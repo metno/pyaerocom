@@ -321,13 +321,14 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     @property
     def base_date(self):
-        """Base date of data"""
+        """Base date of data as numpy.datetime64[s]"""
         if not "timezone" in self.meta:
             raise AttributeError("Fatal: could not infer base date. Timezone "
                                  "is not available in file header")
         if not self.timezone.lower() == "utc":
             raise TimeZoneError("Timezones other than UTC are not yet supported")
-        return np.datetime64(datetime.strptime(self.startdate, "%Y%m%d%H%M%S"))
+        return np.datetime64(datetime.strptime(self.startdate, "%Y%m%d%H%M%S"),
+                             's')
     
     @property
     def time_unit(self):

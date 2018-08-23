@@ -188,16 +188,19 @@ class Variable(BrowseDict):
                 elif "," in val:
                     val = list(literal_eval(val))# [float(x) for x in val.split(",")]
                 else:
-                    try:
-                        val = int(val)
-                    except:
+                    if key == 'unit':
+                        pass
+                    else:
                         try:
-                            val = float(val)
+                            val = int(val)
                         except:
                             try:
-                                val = bool(val)
+                                val = float(val)
                             except:
-                                pass
+                                try:
+                                    val = bool(val)
+                                except:
+                                    pass
                 self[key] = val
         
     def __repr__(self):
@@ -343,7 +346,6 @@ def all_var_names():
     return [k for k in Variable.read_config().keys()]
 
 if __name__=="__main__":
-
     v = Variable("od550aer", the_answer=42)
     print(v)
     
@@ -352,3 +354,6 @@ if __name__=="__main__":
     
     all_vars = AllVariables()
     print(all_vars)
+    
+    print(Variable('scatc550aer'))
+    

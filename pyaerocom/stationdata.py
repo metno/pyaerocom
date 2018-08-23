@@ -35,9 +35,7 @@ class StationData(Station):
                              'altitude' : None}
         super(StationData, self).__init__(*args, **kwargs)
         self.dtime = []
-        
-        
-        
+    
     @property
     def data_columns(self):
         """List containing all data columns

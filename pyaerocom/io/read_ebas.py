@@ -34,14 +34,16 @@
 import os
 from copy import deepcopy
 import numpy as np
-import pandas as pd
+from collections import OrderedDict as od
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData
+from pyaerocom import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex
 from pyaerocom.io import EbasNasaAmesFile
-from pyaerocom.exceptions import VariableDefinitionError, NotInFileError
+from pyaerocom.exceptions import (VariableDefinitionError, NotInFileError,
+                                  EbasFileError)
 
 class ReadEbas(ReadUngriddedBase):
     """Interface for reading EBAS data
@@ -68,9 +70,10 @@ class ReadEbas(ReadUngriddedBase):
     #: Reading preferences for all Ebas variables are specified in the file
     #: ebas_config.ini in the data directory of pyaerocom
     PREFER_STATISTICS = ['arithmetic mean',
-                         'percentile:15.87',
-                         'percentile:84.13']
+                         'median']
     
+    IGNORE_STATISTICS = ['percentile:15.87',
+                         'percentile:84.13']
     #: Wavelength tolerance in nm for reading of variables. If multiple matches
     #: occure, the closest wavelength to the desired wavelength is chosen
     #: e.g. if 50 and for variable at 550nm, accept everything in interval
@@ -89,7 +92,10 @@ class ReadEbas(ReadUngriddedBase):
     # TODO: check and redefine 
     #: default variables for read method
     DEFAULT_VARS = ['absc550aer', # light absorption coefficient
-                    'scatc550aer'] # light scattering coefficient
+                    'absc550lt1aer',
+                    'scatc550aer',
+                    'scatc550lt1aer',
+                    ] # light scattering coefficient
     
     # Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1h'   :   'hourly',
@@ -259,18 +265,21 @@ class ReadEbas(ReadUngriddedBase):
         files = self._merge_lists(files_vars)
         return files
     
-    def _get_var_cols(self, varname_ebas, data):
+    def _get_var_cols(self, ebas_var_info, data):
         """Get all columns in NASA Ames file matching input Aerocom variable
         
         Note
         ----
         For developers: All Aerocom variable definitions should go into file
-        *variables.ini* in pyaerocom data directory.
+        *variables.ini* in pyaerocom data directory. All Ebas variable 
+        definitions for each Aerocom variable should go into file 
+        *ebas_config.ini* where section names are Aerocom namespace and 
+        contain import constraints.
         
         Parameters
         -----------
-        var : str
-            EBAS variable name (e.g. absc550aer)
+        ebas_var_info : EbasVarInfo
+            EBAS variable information (e.g. for absc550aer)
         data : EbasNasaAmesFile
             loaded EBAS file data
         
@@ -284,34 +293,142 @@ class ReadEbas(ReadUngriddedBase):
         
         Raises
         ------
-        VariableDefinitionError
-            if inconsistencies occur or variable is not unembiguously defined
-            (e.g. EBAS column variable contains wavelength information but 
-            wavelength of Aerocom variable)
+        NotInFileError
+            if no column in file matches variable specifications
         """
         
-        col_info = {}
-        for i, info in enumerate(data.var_defs):
-            if varname_ebas == info.name:
-                col_info[i] = info
-        if len(col_info) is 0:
-            raise NotInFileError("Variable {} could not be found in file".format(varname_ebas))
-        return col_info
+        col_matches = []
         
+        check_matrix = False if ebas_var_info['matrix'] is None else True
+        check_stats = False if ebas_var_info['statistics'] is None else True
         
-    def read_file(self, filename, vars_to_retrieve=None,
-                  vars_as_series=False):
+        for colnum, col_info in enumerate(data.var_defs):
+            if col_info.name in ebas_var_info.component: #candidate (name match)
+                ok = True 
+                if check_matrix:
+                    if 'matrix' in col_info:
+                        matrix = col_info['matrix']
+                    else:
+                        matrix = data.matrix
+                    if not matrix in ebas_var_info['matrix']:
+                        ok = False
+                if ok and 'statistics' in col_info:
+                    # ALWAYS ignore columns containing statistics flagged in
+                    # IGNORE_STATISTICS
+                    if col_info['statistics'] in self.IGNORE_STATISTICS:
+                        ok = False
+                    elif check_stats:
+                        if not col_info['statistics'] in ebas_var_info['statistics']:
+                            ok=False
+                
+                if ok:
+                    col_matches.append(colnum)
+        if len(col_matches) == 0:
+            raise NotInFileError("Variable {} could not be found in "
+                                 "file".format(ebas_var_info.var_name))
+        return col_matches
+        
+    def _find_best_data_column(self, cols, ebas_var_info, file):
+        """Find best match of data column for variable in multiple columns
+        
+        This method is supposed to be used in case no unique match can be 
+        found for a given variable. For instance, if ``absc550aer``
+        
+        """
+        var = ebas_var_info.var_name
+        preferred_matrix = None
+        idx_best_matrix_found = 9999
+        
+        matrix_matches = []
+        #first find best column match with 
+        if ebas_var_info['matrix'] is not None:
+            preferred_matrix = ebas_var_info['matrix']
+        
+        for colnum in cols:
+            col_info = file.var_defs[colnum]
+            if 'matrix' in col_info:
+                if preferred_matrix is None:
+                    raise IOError('Data file contains multiple column matches '
+                                  'for variable {}, some of which specify '
+                                  'different data type matrices. Aerocom '
+                                  'import information for this variable, '
+                                  'however, does not contain information '
+                                  'about preferred matrix. Please resolve '
+                                  'by adding preferred matrix information for '
+                                  '{} in corresponding section of '
+                                  'ebas_config.ini file'.format(var, var))
+                matrix = col_info['matrix']
+                if matrix in preferred_matrix:
+                    idx = preferred_matrix.index(matrix)
+                    if idx < idx_best_matrix_found:
+                        idx_best_matrix_found = idx
+                        matrix_matches = []
+                        matrix_matches.append(colnum)
+                    elif idx == idx_best_matrix_found:
+                        matrix_matches.append(colnum)
+                    
+        if idx_best_matrix_found == 9999:
+            matrix_matches = cols
+        
+        if len(matrix_matches) == 1:
+            return matrix_matches
+        
+        preferred_statistics = self.PREFER_STATISTICS
+        idx_best_statistics_found = 9999
+        result_col = []
+        if ebas_var_info['statistics'] is not None:
+            preferred_statistics = ebas_var_info['statistics']
+        for colnum in matrix_matches:
+            col_info = file.var_defs[colnum]
+            if 'statistics' in col_info:
+                stats = col_info['statistics']
+            elif 'statistics' in file.meta:
+                stats = file.meta['statistics']
+            else:
+                raise EbasFileError('Cannot infer data statistics for data '
+                                    'column {}. Neither column nor file meta '
+                                    'specifications include information about '
+                                    'data statistics'.format(col_info))
+                
+            if stats in preferred_statistics:
+                idx = preferred_statistics.index(stats)
+                if idx < idx_best_statistics_found:
+                    idx_best_statistics_found = idx
+                    result_col = []
+                    result_col.append(colnum)
+                elif idx == idx_best_statistics_found:
+                    result_col.append(colnum)
+        num_matches = len(result_col)
+        if num_matches != 1:
+            if num_matches == 0:
+                raise ValueError('Note for developers: this should not happen, '
+                                 'please debug')
+            raise EbasFileError('Could not identify unique column for var {}. '
+                                'Detected multiple matches: {}'.format(
+                                        ebas_var_info.var_name,
+                                        result_col))
+        return result_col
+                    
+    def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
+                  _vars_to_compute=None):
         """Read Aeronet file containing results from v2 inversion algorithm
 
+        Todo
+        ----
+        - Introduce unit check
+        
         Parameters
         ----------
         filename : str
             absolute path to filename to read
-        vars_to_retrieve : list
-            list of str with variable names to read
-        vars_as_series : bool
-            if True, the data columns of all variables in the result dictionary
-            are converted into pandas Series objects
+        vars_to_retrieve : :obj:`list`, optional
+            list of str with variable names to read, if None (and if not 
+            both of the alternative possible parameters ``_vars_to_read`` and
+            ``_vars_to_compute`` are specified explicitely) then the default
+            settings are used
+        _vars_to_read : :obj:`list`, optional
+            private (used in method :func:`read`). List of variables to read 
+            (only considered if also ``_vars_to_compute`` is provided)
             
         Returns
         -------
@@ -319,58 +436,64 @@ class ReadEbas(ReadUngriddedBase):
             dict-like object containing results
         """
         # implemented in base class
-        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
-       
+        if _vars_to_read is None or _vars_to_compute is None:
+            vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        else:
+            vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
+            
         file = EbasNasaAmesFile(filename)
 
         var_cols = {}
         all_vars = self.aerocom_vars
+        ebas_var_info = {}
         for var in vars_to_read:
             if not var in self.loaded_aerocom_vars:
                 self.loaded_aerocom_vars[var] = all_vars[var]
             var_info = self.loaded_aerocom_vars[var]
             var_info_ebas = EbasVarInfo(var)
             
-            matches = {}
-            # this variable may go under multiple names in EBAS
-            # (e.g. SCONC_SO4 -> sulphate_corrected, sulphate_total)
-            for varname_ebas in var_info_ebas.component:
-                try:
-                    # all columns in file that match the EBAS variable name
-                    # (may be multiple)
-                    col_matches = self._get_var_cols(varname_ebas, file)
-                except NotInFileError:
+            if var_info_ebas['matrix'] is not None:
+                if not file.matrix in var_info_ebas['matrix']:
                     continue
-                # init helper variable for finding closest wavelength (if 
-                # no exact wavelength match can be found)
-                min_diff_wvl = 1e6
-                for colnum, colinfo in col_matches.items():
-                    if 'wavelength' in colinfo:
-                        wvl = var_info.wavelength_nm
-                        if wvl is None:
-                            raise VariableDefinitionError('Require wavelength '
-                                'specification for Aerocom variable {}'.format(var))
-                        wvl_col = colinfo.get_wavelength_nm()
-                        wvl_low = wvl - self.WAVELENGTH_TOL_NM
-                        wvl_high = wvl + self.WAVELENGTH_TOL_NM
-                        # wavelength is in tolerance range
-                        if wvl_low <= wvl_col <= wvl_high:
-                            wvl_diff = abs(wvl_col - wvl)
-                            if wvl_diff < min_diff_wvl:
-                                # the wavelength difference of this column to
-                                # the desired wavelength of the variable is 
-                                # smaller than any of the detected before, so
-                                # ignore those from earlier columns by reinit
-                                # of the matches dictionary
-                                min_diff_wvl = wvl_diff
-                                matches = {}
-                            matches[colnum] = colinfo
-                    
-                    elif 'location' in colinfo:
-                        raise NotImplementedError('For developers, please '
-                                                  'check!')
-                    else:
-                        matches[colnum] = colinfo
+            ebas_var_info[var] = var_info_ebas
+            try:
+                col_matches = self._get_var_cols(var_info_ebas, file)
+            except NotInFileError:
+                continue
+            # init helper variable for finding closest wavelength (if 
+            # no exact wavelength match can be found)
+            min_diff_wvl = 1e6
+            matches = []
+            for colnum in col_matches:
+                colinfo = file.var_defs[colnum]
+                if 'wavelength' in colinfo:
+                    wvl = var_info.wavelength_nm
+                    if wvl is None:
+                        raise VariableDefinitionError('Require wavelength '
+                            'specification for Aerocom variable {}'.format(var))
+                    wvl_col = colinfo.get_wavelength_nm()
+                    wvl_low = wvl - self.WAVELENGTH_TOL_NM
+                    wvl_high = wvl + self.WAVELENGTH_TOL_NM
+                    # wavelength is in tolerance range
+                    if wvl_low <= wvl_col <= wvl_high:
+                        wvl_diff = wvl_col - wvl
+                        if abs(wvl_diff) < abs(min_diff_wvl):
+                            # the wavelength difference of this column to
+                            # the desired wavelength of the variable is 
+                            # smaller than any of the detected before, so
+                            # ignore those from earlier columns by reinit
+                            # of the matches dictionary
+                            min_diff_wvl = wvl_diff
+                            matches = []
+                            matches.append(colnum)
+                        elif wvl_diff == min_diff_wvl:
+                            matches.append(colnum)
+                
+                elif 'location' in colinfo:
+                    raise NotImplementedError('For developers, please '
+                                              'check!')
+                else:
+                    matches.append(colnum)
             if matches:
                 # loop was interrupted since exact wavelength match was found
                 var_cols[var] = matches
@@ -380,9 +503,15 @@ class ReadEbas(ReadUngriddedBase):
                                  'found in file {}'.format(vars_to_read,
                                                 os.path.basename(filename)))
         
+        for var, cols in var_cols.items():
+            if len(cols) > 1:
+                col = self._find_best_data_column(cols, ebas_var_info[var],
+                                                  file)
+                var_cols[var] = col
     
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
+        data_out['filename'] = filename
         data_out.dataset_name = self.DATASET_NAME
         
         
@@ -412,53 +541,189 @@ class ReadEbas(ReadUngriddedBase):
         data_out['altitude'] = data_alt
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
-        data_out['ebas_meta'] = meta
-        
-        dtime = file.time_stamps
-        num_times = len(dtime)
+        #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
-        for var, info  in var_cols.items():
-            num_matches = len(info)
-            data = np.empty((num_matches, num_times))
-            var_info = []
-            for i, colnum in enumerate(info.keys()):
-                data[i] = file.data[:, colnum]
-                var_info.append(info[colnum])
+        contains_vars = []
+        totnum = file.data.shape[0]
+        for var, colnums  in var_cols.items():
+            if len(colnums) != 1:
+                raise Exception('Something went wrong...please debug')
+            data = file.data[:, colnum]
+            if np.isnan(data).sum() == totnum:
+                self.logger.warning('Ignoring data column of variable {}. All '
+                                    'values are NaN'.format(var))
+                continue
             data_out[var] = data
-            data_out['var_info'][var] = var_info
-                    
-        data_out['dtime'] = dtime
+            data_out['var_info'][var] = file.var_defs[colnum]
+            contains_vars.append(var)
+        
+        if len(contains_vars) == 0:
+            raise EbasFileError('All data columns of specified input variables '
+                                'are NaN in {}'.format(filename))
+        data_out['dtime'] = file.time_stamps
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        contains_vars.extend(vars_to_compute)
+        data_out['contains_vars'] = contains_vars
         
-        if vars_as_series:        
-            for var in (vars_to_read + vars_to_compute):
-                if var in vars_to_retrieve:
-                    data_out[var] = pd.Series(data_out[var], 
-                                              index=data_out['dtime'])
-                else:
-                    del data_out[var]
-            
         return data_out
     
-    def read(self):
-        raise NotImplementedError
+    def read(self, vars_to_retrieve=None, first_file=None, 
+             last_file=None):
+        """Method that reads list of files as instance of :class:`UngriddedData`
         
+        Parameters
+        ----------
+        vars_to_retrieve : :obj:`list` or similar, optional,
+            list containing variable IDs that are supposed to be read. If None, 
+            all variables in :attr:`PROVIDES_VARIABLES` are loaded
+        first_file : :obj:`int`, optional
+            index of first file in file list to read. If None, the very first
+            file in the list is used
+        last_file : :obj:`int`, optional
+            index of last file in list to read. If None, the very last file 
+            in the list is used
+            
+        Returns
+        -------
+        UngriddedData
+            data object
+        """
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+           
+        if len(self.files) == 0:
+            self.get_file_list()
+        files = self.files
+    
+        if first_file is None:
+            first_file = 0
+        if last_file is None:
+            last_file = len(files)
+        
+        files = files[first_file:last_file]
+        files_contain = self.files_contain[first_file:last_file]
+        self.read_failed = []
+        
+        data_obj = UngriddedData()
+        meta_key = 0.0
+        idx = 0
+        
+        #assign metadata object
+        metadata = data_obj.metadata
+        meta_idx = data_obj.meta_idx
+    
+        num_files = len(files)
+        disp_each = int(num_files*0.1)
+        if disp_each < 1:
+            disp_each = 1
+            
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        
+        self.files_failed = []
+        for i, _file in enumerate(files):
+            if i%disp_each == 0:
+                print("Reading file {} of {} ({})".format(i, 
+                                 num_files, type(self).__name__))
+            vars_to_read = files_contain[i]
+            
+            try:
+                station_data = self.read_file(_file, _vars_to_read=vars_to_read,
+                                              _vars_to_compute=vars_to_compute)
+            except (NotInFileError, EbasFileError) as e:
+                self.files_failed.append(_file)
+                self.logger.warning('Failed to read file {}. '
+                                    'Error: {}'.format(os.path.basename(_file),
+                                                       repr(e)))
+                continue
+                
+            # Fill the metatdata dict
+            # the location in the data set is time step dependent!
+            # use the lat location here since we have to choose one location
+            # in the time series plot
+            metadata[meta_key] = od()
+            metadata[meta_key].update(station_data.get_meta())
+            metadata[meta_key].update(station_data.get_station_coords())
+            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key]['ts_type'] = station_data['ts_type']
+            
+            # this is a list with indices of this station for each variable
+            # not sure yet, if we really need that or if it speeds up things
+            meta_idx[meta_key] = od()
+            
+            num_times = len(station_data['dtime'])
+            
+            #access array containing time stamps
+            # TODO: check using index instead (even though not a problem here 
+            # since all Aerocom data files are of type timeseries)
+            times = np.float64(station_data['dtime'])
+            
+            totnum = num_times * len(station_data.contains_vars)
+            
+            #check if size of data object needs to be extended
+            if (idx + totnum) >= data_obj._ROWNO:
+                #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                data_obj.add_chunk(totnum)
+                
+            vars_avail = station_data.contains_vars
+            for var_idx, var in enumerate(vars_avail):
+                values = station_data[var]
+                start = idx + var_idx * num_times
+                stop = start + num_times
+                
+                
+                #write common meta info for this station (data lon, lat and 
+                #altitude are set to station locations)
+                data_obj._data[start:stop, 
+                               data_obj._LATINDEX] = station_data['stat_lat']
+                data_obj._data[start:stop, 
+                               data_obj._LONINDEX] = station_data['stat_lat']
+                data_obj._data[start:stop, 
+                               data_obj._ALTITUDEINDEX] = station_data['stat_alt']
+                data_obj._data[start:stop, 
+                               data_obj._METADATAKEYINDEX] = meta_key
+                               
+                # write data to data object
+                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
+                data_obj._data[start:stop, data_obj._DATAINDEX] = values
+                data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
+                
+                meta_idx[meta_key][var] = np.arange(start, stop)
+                metadata[meta_key]['variables'] = vars_avail
+                if not var in data_obj.var_idx:
+                    data_obj.var_idx[var] = var_idx
+            
+            idx += totnum  
+            meta_key = meta_key + 1.
+        
+        # shorten data_obj._data to the right number of points
+        data_obj._data = data_obj._data[:idx]
+        self.data = data_obj
+        return data_obj
+    
 if __name__=="__main__":
     from pyaerocom import change_verbosity
     change_verbosity('critical')
 
-    read = ReadEbas()
+    reader = ReadEbas()
     
-    files = read.get_file_list()
-        
-    FILE = 0
-    test_file = read.files[FILE]
-    test_file_contains = read.files_contain[FILE]
-    d0 = EbasNasaAmesFile(test_file)
+    files = reader.get_file_list()
     
-    data = read.read_file(test_file, vars_to_retrieve=test_file_contains)
+    try:    
+        stat_data = reader.read_file(reader.files[0])
+    except EbasFileError as e:
+        print(repr(e))
+    stat_data = reader.read_file(reader.files[2])
+    print(stat_data)
+    
+    data = reader.read(last_file=20)
+    
+    stat_data = data.to_station_data(0)
+    
     print(data)
+    print(stat_data)
     
     DO_META_TEST = False
     DO_TIME_SAMPLE_TEST = False
@@ -470,7 +735,7 @@ if __name__=="__main__":
         file_info = {}
         for file in files[:200]:
             try:
-                data = read.read_file(file)
+                data = reader.read_file(file)
                 days_vs_num = {}
                 prev_date= 0 
                 for t in data.dtime:

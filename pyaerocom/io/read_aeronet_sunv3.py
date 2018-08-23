@@ -103,9 +103,9 @@ class ReadAeronetSunV3(ReadAeronetBase):
     #: by the original data but computed on import)
     AUX_REQUIRES = {'ang4487aer_calc'   :   ['od440aer',
                                              'od870aer'],
-                    'od550aer'          :     ['od440aer', 
-                                               'od500aer',
-                                               'ang4487aer']}
+                    'od550aer'          :   ['od440aer', 
+                                             'od500aer',
+                                             'ang4487aer_calc']}
                     
     #: Functions that are used to compute additional variables (i.e. one 
     #: for each variable defined in AUX_REQUIRES)

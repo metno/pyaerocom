@@ -38,6 +38,9 @@ class DataDimensionError(ValueError):
 class DataExtractionError(ValueError):
     pass
 
+class EbasFileError(ValueError):
+    pass
+
 class IllegalArgumentError(ValueError):
     pass
 
