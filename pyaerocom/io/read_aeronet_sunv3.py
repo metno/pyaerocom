@@ -102,10 +102,10 @@ class ReadAeronetSunV3(ReadAeronetBase):
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
     AUX_REQUIRES = {'ang4487aer'   :   ['od440aer',
-                                             'od870aer'],
-                    'od550aer'          :   ['od440aer', 
-                                             'od500aer',
-                                             'ang4487aer']}
+                                        'od870aer'],
+                    'od550aer'     :   ['od440aer', 
+                                        'od500aer',
+                                        'ang4487aer']}
                     
     #: Functions that are used to compute additional variables (i.e. one 
     #: for each variable defined in AUX_REQUIRES)

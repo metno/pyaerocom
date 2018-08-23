@@ -515,6 +515,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out.dataset_name = self.DATASET_NAME
         
         
+        
         meta = file.meta
         # write meta information
         tres_code = meta['resolution_code']
@@ -539,6 +540,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out['station_name'] = meta['station_name']
         data_out['PI'] = meta['submitter']
         data_out['altitude'] = data_alt
+        data_out['instrument_name'] = meta['instrument_type']
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
@@ -648,7 +650,7 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             metadata[meta_key]['ts_type'] = station_data['ts_type']
-            
+            metadata[meta_key]['instrument_name'] = station_data['instrument_name']
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = od()
@@ -718,12 +720,13 @@ if __name__=="__main__":
     stat_data = reader.read_file(reader.files[2])
     print(stat_data)
     
-    data = reader.read(last_file=20)
+    data = reader.read(last_file=10)
     
     stat_data = data.to_station_data(0)
     
+    print(stat_data)    
     print(data)
-    print(stat_data)
+
     
     DO_META_TEST = False
     DO_TIME_SAMPLE_TEST = False

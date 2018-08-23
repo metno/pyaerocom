@@ -100,19 +100,19 @@ class NasaAmesHeader(object):
     _STARTDATE_FMT = "%Y%m%d%H%M%S"
 
     _H_FIXLINES_YIELD = [["num_head_lines", "num_head_fmt"], #line 1
-                    "data_originator", #line 2
-                    "sponsor_organisation", #3
-                    "submitter", #4
-                    "project_association", #5
-                    ["vol_num", "vol_totnum"], #6
-                    ["ref_date", "revision_date"], #7
-                    "freq", #8
-                    "descr_time_unit", #9
-                    "num_cols_dependent", #10
-                    "mul_factors", #11
-                    "vals_invalid", #12
-                    "descr_first_col", #13
-                    ]
+                         "data_originator", #line 2
+                         "sponsor_organisation", #3
+                         "submitter", #4
+                         "project_association", #5
+                         ["vol_num", "vol_totnum"], #6
+                         ["ref_date", "revision_date"], #7
+                         "freq", #8
+                         "descr_time_unit", #9
+                         "num_cols_dependent", #10
+                         "mul_factors", #11
+                         "vals_invalid", #12
+                         "descr_first_col", #13
+                         ]
     
     _H_FIXLINES_CONV = [CONV_MULTIINT, #1 -> yields 2
                         CONV_STR, #2

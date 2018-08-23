@@ -105,6 +105,19 @@ class UngriddedData(object):
         return datasets
     
     @property
+    def contains_instruments(self):
+        """List of all instruments in this object"""
+        instruments = []
+        for info in self.metadata.values():
+            try:
+                instr = info['instrument_name']
+                if instr is not None and not instr in instruments:
+                    instruments.append(instr)
+            except:
+                pass
+        return instruments
+    
+    @property
     def shape(self):
         """Shape of data array"""
         return self._data.shape
@@ -319,6 +332,7 @@ class UngriddedData(object):
         temp_dict['altitude'] = val['stat_alt']
         temp_dict['PI'] = val['PI']
         temp_dict['dataset_name'] = val['dataset_name']
+        temp_dict['instrument_name'] = val['instrument_name']
         
         if 'files' in val:
             temp_dict['files'] = val['files']
@@ -633,6 +647,7 @@ class UngriddedData(object):
         ----
         Write docstring
         """
+        raise NotImplementedError
         
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
@@ -1059,8 +1074,10 @@ class UngriddedData(object):
         s = "\n{}\n{}".format(head, len(head)*"-")
         s += ('\nContains networks: {}'
               '\nContains variables: {}'
+              '\nContains instruments: {}'
               '\nTotal no. of stations: {}'.format(self.contains_datasets,
                                                    self.contains_vars,
+                                                   self.contains_instruments,
                                                    len(self.metadata)))
         if self.is_filtered:
             s += '\nFilters that were applied:'

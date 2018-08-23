@@ -33,9 +33,10 @@ class StationData(Station):
         self._data_coords = {'latitude' : None, 
                              'longitude': None,
                              'altitude' : None}
-        super(StationData, self).__init__(*args, **kwargs)
         self.dtime = []
-    
+        self.instrument_name=None
+        super(StationData, self).__init__(*args, **kwargs)
+        
     @property
     def data_columns(self):
         """List containing all data columns
@@ -251,6 +252,7 @@ if __name__=="__main__":
     d.longitude = 42.
     print(d)
         
+    
         
         
 

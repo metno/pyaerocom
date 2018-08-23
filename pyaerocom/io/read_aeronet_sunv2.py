@@ -97,7 +97,8 @@ class ReadAeronetSunV2(ReadAeronetBase):
                    od500aer       = 12,
                    od440aer       = 15,
                    od380aer       = 17,
-                   od340aer       = 18)
+                   od340aer       = 18,
+                   ang4487aer_file= 37)
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -116,9 +117,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    PROVIDES_VARIABLES = ['od500aer', 
-                          'od440aer', 
-                          'od870aer']
+    PROVIDES_VARIABLES = [k for k in COL_INDEX.keys()]
 
     @property
     def col_index(self):
@@ -191,7 +190,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
             c_dummy = in_file.readline()
         
             #data_out.data_header = 
-            l=in_file.readline().strip()
+            in_file.readline().strip()
             
             for line in in_file:
                 # process line
@@ -230,6 +229,8 @@ class ReadAeronetSunV2(ReadAeronetBase):
         return data_out
     
 if __name__=="__main__":
+    import pyaerocom as pya
+    pya.change_verbosity('critical')
     data = {}
     failed = []
     for name in ReadAeronetSunV2.SUPPORTED_DATASETS:
@@ -246,7 +247,7 @@ if __name__=="__main__":
     
     read = ReadAeronetSunV2()
     
-    read.verbosity_level = 'debug'
+    read.verbosity_level = 'critical'
     first_ten = read.read(last_file=10)
     
     data0 = read.read_first_file(vars_as_series=True)
@@ -255,6 +256,7 @@ if __name__=="__main__":
     
         
     read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
-    data = read.read_first_file()
+    data = read.read_first_file(vars_to_retrieve=['ang4487aer', 
+                                                  'ang4487aer_file'])
     print(data)
     
