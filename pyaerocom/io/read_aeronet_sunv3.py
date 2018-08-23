@@ -82,7 +82,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     VAR_NAMES_FILE['od500aer'] = 'AOD_500nm'
     # VAR_NAMES_FILE['od865aer'] = 'AOD_865nm'
     VAR_NAMES_FILE['od870aer'] = 'AOD_870nm'
-    VAR_NAMES_FILE['ang4487aer'] = '440-870_Angstrom_Exponent'
+    VAR_NAMES_FILE['ang4487aer_file'] = '440-870_Angstrom_Exponent'
 
     #: dictionary specifying the file column names (values) for each 
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
@@ -101,15 +101,15 @@ class ReadAeronetSunV3(ReadAeronetBase):
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
-    AUX_REQUIRES = {'ang4487aer_calc'   :   ['od440aer',
+    AUX_REQUIRES = {'ang4487aer'   :   ['od440aer',
                                              'od870aer'],
                     'od550aer'          :   ['od440aer', 
                                              'od500aer',
-                                             'ang4487aer_calc']}
+                                             'ang4487aer']}
                     
     #: Functions that are used to compute additional variables (i.e. one 
     #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {'ang4487aer_calc'   :   calc_ang4487aer,
+    AUX_FUNS = {'ang4487aer'   :   calc_ang4487aer,
                 'od550aer'          :   calc_od550aer}
     
     #: List of variables that are provided by this dataset (will be extended 
@@ -258,15 +258,15 @@ if __name__=="__main__":
     
     files_berlin = read.find_in_file_list('*Berlin*')
     berlin = read.read_file(files_berlin[0],
-                            vars_to_retrieve=['ang4487aer_calc',
-                                              'ang4487aer'])
+                            vars_to_retrieve=['ang4487aer',
+                                              'ang4487aer_file'])
     print(berlin)
     
     
     import matplotlib.pyplot as plt
     plt.close('all')
     plt.figure(figsize=(12,8))
-    plt.plot(berlin.ang4487aer, berlin.ang4487aer_calc, ' *')
+    plt.plot(berlin.ang4487aer_file, berlin.ang4487aer, ' *')
     plt.xlabel("Angstrom coeff 440-870 nm (from data)")
     plt.ylabel("Angstrom coeff 440-870 nm (calculated)")
     plt.grid()
