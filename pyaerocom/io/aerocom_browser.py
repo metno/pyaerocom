@@ -12,7 +12,6 @@ import fnmatch
 from pyaerocom import const, logger
 from pyaerocom.utils import BrowseDict
 
-
 class AerocomBrowser(BrowseDict):
     """Interface for browsing all Aerocom data direcories
     
@@ -207,6 +206,7 @@ class AerocomBrowser(BrowseDict):
         """
         return self._browse(name_or_pattern, ignorecase=ignorecase,
                             return_if_match=False) #returns list
+        
         
 if __name__ == "__main__":
     browser = AerocomBrowser()
