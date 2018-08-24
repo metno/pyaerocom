@@ -14,7 +14,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.03_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.04_' + ReadUngriddedBase.__baseversion__
     
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -37,7 +37,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
     
-    
+    INSTRUMENT_NAME = 'sun_photometer'
     def __init__(self, dataset_to_read=None):
         super(ReadAeronetBase, self).__init__(dataset_to_read)
         
@@ -306,6 +306,11 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve
+            if 'instrument_name' in station_data:
+                instr = station_data['instrument_name']
+            else:
+                instr = self.INSTRUMENT_NAME
+            metadata[meta_key]['instrument_name'] = instr
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = od()

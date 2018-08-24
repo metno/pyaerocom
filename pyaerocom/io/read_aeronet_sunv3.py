@@ -157,10 +157,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
         with open(filename, 'rt') as in_file:
-            in_file.readline()
-            in_file.readline()
-            in_file.readline()
-            in_file.readline()
+            _lines_ignored = []
+            _lines_ignored.append(in_file.readline())
+            _lines_ignored.append(in_file.readline())
+            _lines_ignored.append(in_file.readline())
+            _lines_ignored.append(in_file.readline())
             # PI line
             dummy_arr = in_file.readline().strip().split(';')
             data_out['PI'] = dummy_arr[0].split('=')[1]
@@ -168,6 +169,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out['ts_type'] = self.TS_TYPE
 
             data_type_comment = in_file.readline()
+            _lines_ignored.append(data_type_comment)
             # TODO: delete later
             self.logger.debug("Data type comment: {}".format(data_type_comment))
             
@@ -247,7 +249,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
                                               index=data_out['dtime'])
                 else:
                     del data_out[var]
-            
+        self.logger.debug('The following lines were ignored: {}'.format(
+                _lines_ignored))
         return data_out
 
 if __name__=="__main__":

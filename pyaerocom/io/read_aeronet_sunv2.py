@@ -62,7 +62,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     _FILEMASK = '*.lev20'
     
     #: version log of this class (for caching)
-    __version__ = "0.13_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.14_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
@@ -186,6 +186,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             data_out['ts_type'] = self.TS_TYPE
+            data_out['instrument_name'] = self.INSTRUMENT_NAME
             
             c_dummy = in_file.readline()
         
@@ -253,6 +254,8 @@ if __name__=="__main__":
     data0 = read.read_first_file(vars_as_series=True)
     data = read.read_first_file()
     print(data)
+    
+    stats = first_ten.to_station_data_all()
     
         
     read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)

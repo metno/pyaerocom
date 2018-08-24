@@ -47,7 +47,7 @@ from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
 
-from pyaerocom import const, logger
+from pyaerocom import const
 
 # TODO Note: Removed infiles (list of files from which datasets were read, since it 
 # was not used anywhere so far)

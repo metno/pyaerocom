@@ -332,7 +332,8 @@ class UngriddedData(object):
         temp_dict['altitude'] = val['stat_alt']
         temp_dict['PI'] = val['PI']
         temp_dict['dataset_name'] = val['dataset_name']
-        temp_dict['instrument_name'] = val['instrument_name']
+        if 'instrument_name' in val:
+            temp_dict['instrument_name'] = val['instrument_name']
         
         if 'files' in val:
             temp_dict['files'] = val['files']
