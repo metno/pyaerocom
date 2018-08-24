@@ -192,11 +192,10 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     
     # conver
     grid_stat_data = grid_data.to_time_series(longitude=ungridded_lons,
-                                                latitude=ungridded_lats)
+                                              latitude=ungridded_lats)
 
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
-    freq_np = TS_TYPE_TO_NUMPY_FREQ[ts_type]
     
     obs_stat_data = ungridded_data.to_station_data_all(vars_to_convert=var, 
                                                        start=start, 
@@ -213,38 +212,34 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     
     # TIME INDEX ARRAY FOR COLLOCATED DATA OBJECT
     TIME_IDX = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
-    np_conv = 'datetime64[{}]'.format(freq_np)
 
     for i, obs_data in enumerate(obs_stat_data):
         if obs_data is not None:
-            # get model data corresponding to station
-            grid_tseries = grid_stat_data[i][var]
-            if sum(grid_tseries.isnull()) > 0:
-                raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
-                
-            # make sure, time index is defined in the right way (i.e.
-            # according to TIME_INDEX, e.g. if ts_type='monthly', it should
-            # not be the mid or end of month)
-            grid_tseries.index = grid_tseries.index.values.astype(np_conv)
-            
             # get observations (Note: the index of the observation time series
             # is already in the specified frequency format, and thus, does not
             # need to be updated, for details (or if errors occur), cf. 
             # UngriddedData.to_station_data, where the conversion happens)
             obs_tseries = obs_data[var]
+            # get model data corresponding to station
+            grid_tseries = grid_stat_data[i][var]
+            if sum(grid_tseries.isnull()) > 0:
+                raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
+            elif not len(grid_tseries) == len(TIME_IDX):
+                raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
+            # make sure, time index is defined in the right way (i.e.
+            # according to TIME_INDEX, e.g. if ts_type='monthly', it should
+            # not be the mid or end of month)
+            grid_tseries = pd.Series(grid_tseries.values, 
+                                     index=TIME_IDX)
             
             # the following command takes care of filling up with NaNs where
             # data is missing
             df = pd.DataFrame({'ungridded' : obs_tseries, 
-                               'gridded'   : grid_tseries}, index=TIME_IDX)
+                               'gridded'   : grid_tseries}, 
+                              index=TIME_IDX)
+            
             grid_vals_temp = df['gridded'].values
-            # TODO: remove this later, or include solution in case this exception
-            # is raised (i.e. if model data is incomplete on the defined time
-            # grid). 
-# =============================================================================
-#             if sum(np.isnan(grid_vals_temp)) > 0:
-#                 raise Exception
-# =============================================================================
+
             obs_vals.append(df['ungridded'].values)
             grid_vals.append(grid_vals_temp)
             
