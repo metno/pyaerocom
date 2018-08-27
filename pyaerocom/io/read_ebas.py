@@ -597,7 +597,7 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
            
         if len(self.files) == 0:
-            self.get_file_list()
+            self.get_file_list(vars_to_retrieve)
         files = self.files
     
         if first_file is None:
