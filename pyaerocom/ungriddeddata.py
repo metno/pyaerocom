@@ -283,7 +283,7 @@ class UngriddedData(object):
         Parameters
         ----------
         meta_idx : float
-            index of station
+            index of station or name of station.
         vars_to_convert : :obj:`list` or :obj:`str`, optional
             variables that are supposed to be converted. If None, use all 
             variables that are available for this station
@@ -310,6 +310,12 @@ class UngriddedData(object):
         StationData
             data of this station (can be used like dictionary if desired)
         """
+        if isinstance(meta_idx, str):
+            try:
+                meta_idx = self.station_name.index(meta_idx)
+            except ValueError:
+                raise ValueError('No such station {} in UngriddedData'.format(meta_idx))
+                
         if isinstance(vars_to_convert, str):
             vars_to_convert = [vars_to_convert]
         if start is None:
@@ -1067,8 +1073,8 @@ class UngriddedData(object):
         
         return (dates, data_this_match, data_other_match)
             
-    def __getitem__(self, key, val):
-        raise NotImplementedError
+    def __getitem__(self, key):
+        return self.to_station_data(key)
     
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
