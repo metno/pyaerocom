@@ -550,6 +550,7 @@ class ReadEbas(ReadUngriddedBase):
         for var, colnums  in var_cols.items():
             if len(colnums) != 1:
                 raise Exception('Something went wrong...please debug')
+            colnum = colnums[0]
             data = file.data[:, colnum]
             if np.isnan(data).sum() == totnum:
                 self.logger.warning('Ignoring data column of variable {}. All '
@@ -641,6 +642,7 @@ class ReadEbas(ReadUngriddedBase):
                                                        repr(e)))
                 continue
                 
+            
             # Fill the metatdata dict
             # the location in the data set is time step dependent!
             # use the lat location here since we have to choose one location
@@ -651,9 +653,10 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             metadata[meta_key]['ts_type'] = station_data['ts_type']
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
+            metadata[meta_key]['var_info'] = od()
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
-            meta_idx[meta_key] = od()
+            meta_idx[meta_key] = {}
             
             num_times = len(station_data['dtime'])
             
@@ -693,10 +696,12 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
                 meta_idx[meta_key][var] = np.arange(start, stop)
-                metadata[meta_key]['variables'] = vars_avail
+                
+                var_info = station_data['var_info'][var]
+                metadata[meta_key]['var_info'][var] = var_info.to_dict()
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
-            
+            metadata[meta_key]['variables'] = vars_avail
             idx += totnum  
             meta_key = meta_key + 1.
         
@@ -711,16 +716,11 @@ if __name__=="__main__":
 
     reader = ReadEbas()
     
-    files = reader.get_file_list()
+    vars_to_retrieve = ['absc550aer']
     
-    try:    
-        stat_data = reader.read_file(reader.files[0])
-    except EbasFileError as e:
-        print(repr(e))
-    stat_data = reader.read_file(reader.files[2])
-    print(stat_data)
+    files = reader.get_file_list(vars_to_retrieve)
     
-    data = reader.read(last_file=10)
+    data = reader.read(vars_to_retrieve, last_file=10)
     
     stat_data = data.to_station_data(0)
     
