@@ -60,7 +60,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.02_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.04_" + ReadUngriddedBase.__baseversion__
     
     #: preferred order of data statistics. Some files may contain multiple 
     #: columns for one variable, where each column corresponds to one of the
@@ -97,7 +97,7 @@ class ReadEbas(ReadUngriddedBase):
                     'scatc550lt1aer',
                     ] # light scattering coefficient
     
-    # Temporal resolution codes that (so far) can be understood by pyaerocom
+    #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1h'   :   'hourly',
                      '1d'   :   'daily',
                      '1mo'  :   'monthly'}
@@ -403,10 +403,18 @@ class ReadEbas(ReadUngriddedBase):
             if num_matches == 0:
                 raise ValueError('Note for developers: this should not happen, '
                                  'please debug')
-            raise EbasFileError('Could not identify unique column for var {}. '
-                                'Detected multiple matches: {}'.format(
-                                        ebas_var_info.var_name,
-                                        result_col))
+            # multiple column matches were found, use the one that contains 
+            # less NaNs
+            num_invalid = []
+            for colnum in result_col:
+                num_invalid.append(np.isnan(file.data[:, colnum]).sum())
+            result_col = [result_col[np.argmin(num_invalid)]]
+# =============================================================================
+#             raise EbasFileError('Could not identify unique column for var {}. '
+#                                 'Detected multiple matches: {}'.format(
+#                                         ebas_var_info.var_name,
+#                                         result_col))
+# =============================================================================
         return result_col
                     
     def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
@@ -470,7 +478,8 @@ class ReadEbas(ReadUngriddedBase):
                     wvl = var_info.wavelength_nm
                     if wvl is None:
                         raise VariableDefinitionError('Require wavelength '
-                            'specification for Aerocom variable {}'.format(var))
+                                                      'specification for '
+                                                      'Aerocom variable {}'.format(var))
                     wvl_col = colinfo.get_wavelength_nm()
                     wvl_low = wvl - self.WAVELENGTH_TOL_NM
                     wvl_high = wvl + self.WAVELENGTH_TOL_NM
@@ -707,6 +716,7 @@ class ReadEbas(ReadUngriddedBase):
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
+        data_obj = data_obj.merge_common_meta()
         self.data = data_obj
         return data_obj
     
@@ -727,6 +737,12 @@ if __name__=="__main__":
     print(stat_data)    
     print(data)
 
+    idx, meta = data._find_common_meta()
+    
+    dm = data.merge_common_meta()
+    
+    sd = dm.to_station_data(0, data_as_series=True)
+    
     
     DO_META_TEST = False
     DO_TIME_SAMPLE_TEST = False

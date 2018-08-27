@@ -5,14 +5,14 @@ from copy import deepcopy
 from datetime import datetime
 from collections import OrderedDict as od
 import pandas as pd
-from pyaerocom import logger, const
+from pyaerocom import logger
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError)
 from pyaerocom import StationData
 from pyaerocom.utils import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
-from pyaerocom.helpers import to_pandas_timestamp
+from pyaerocom.helpers import to_pandas_timestamp, same_meta_dict
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -60,7 +60,7 @@ class UngriddedData(object):
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
     """
-    __version__ = '0.10'
+    __version__ = '0.12'
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -80,9 +80,11 @@ class UngriddedData(object):
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
     
-    def __init__(self):
+    def __init__(self, num_points=None):
+        if num_points is None:
+            num_points = self._ROWNO
         #keep private, this is not supposed to be used by the user
-        self._data = np.empty([self._ROWNO, self._COLNO]) * np.nan
+        self._data = np.empty([num_points, self._COLNO]) * np.nan
         self.metadata = od()
         self.meta_idx = od()
         self.var_idx = od()
@@ -146,6 +148,47 @@ class UngriddedData(object):
             return True
         return False
     
+    @property
+    def longitude(self):
+        """Longitudes of stations"""
+        return [stat['stat_lon'] for stat in self.metadata.values()]
+
+    @longitude.setter
+    def longitude(self, value):
+        raise AttributeError("Longitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+
+    @property
+    def latitude(self):
+        """Latitudes of stations"""
+        return [stat['stat_lat'] for stat in self.metadata.values()]
+
+    @latitude.setter
+    def latitude(self, value):
+        raise AttributeError("Latitudes cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+
+    @property
+    def station_name(self):
+        """Latitudes of data"""
+        stat_names = [self.metadata[np.float(x)]['station_name'] for x in range(len(self.metadata))]
+        return stat_names
+
+    @station_name.setter
+    def station_name(self, value):
+        raise AttributeError("Station names cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+    
+    @property
+    def time(self):
+        """Time dimension of data"""
+        raise NotImplementedError
+
+    @time.setter
+    def time(self, value):
+        raise AttributeError("Time array cannot be changed, please check "
+                             "underlying data type stored in attribute grid")
+        
     def last_filter_applied(self):
         if not self.is_filtered:
             raise AttributeError('No filters were applied so far')
@@ -364,7 +407,10 @@ class UngriddedData(object):
             indices = self.meta_idx[meta_idx][var]
             data = self._data[indices, self._DATAINDEX]
             if data_as_series:
-                data = pd.Series(data, dtime)[start:stop]
+                data = pd.Series(data, dtime)
+                if not data.index.is_monotonic:
+                    data = data.sort_index()
+                data = data[start:stop]
                 if _test_mode:
                     data[0] = np.nan
                     data[4:6] = np.nan
@@ -625,9 +671,7 @@ class UngriddedData(object):
             :func:`to_station_data` failed (e.g. because no temporal match, 
             etc.)
 
-        
         """
-
         out_data = []
         for index, val in self.metadata.items():
             try:
@@ -674,7 +718,86 @@ class UngriddedData(object):
                 2 * self._LOCATION_PRECISION)) / (10 ** self._LOCATION_PRECISION) - self._LAT_OFFSET
 
         return lats, lons
+            
+
+    def _find_common_meta(self, ignore_keys=['PI', 'var_info']):
+        """Searches all metadata dictionaries that are the same
+        
+        Parameters
+        ----------
+        ignore_keys : list
+            list containing meta keys that are supposed to be ignored
+            
+        Returns
+        -------
+        tuple
+            2-element tuple containing
+            
+            - list containing lists with common meta indices
+            - list containing corresponding meta dictionaries
+        """
+        meta_registered = []
+        same_indices = []
+        for meta_key, meta in self.metadata.items():
+            found = False
+            for idx, meta_reg in enumerate(meta_registered):
+                if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
+                    same_indices[idx].append(meta_key)
+                    found = True
+            if not found:
+                meta_registered.append(meta)
+                same_indices.append([meta_key])
+        return same_indices, meta_registered
     
+    def merge_common_meta(self, ignore_keys=['PI', 'var_info']):
+        """Merge all meta entries that are the same
+            
+        Todo
+        ----
+        Keep mapping of ``var_info`` (if defined in ``metadata``) to data 
+        points (e.g. EBAS), since the data sources may be at different 
+        wavelengths
+        
+        Parameters
+        ----------
+        ignore_keys : list
+            list containing meta keys that are supposed to be ignored
+            
+        Returns
+        -------
+        UngriddedData
+            merged data object
+        """
+        lst_meta_idx, lst_meta = self._find_common_meta()
+        new = UngriddedData(num_points=self.shape[0])
+        didx = 0
+        for i, idx_lst in enumerate(lst_meta_idx):
+            _meta_check = lst_meta[i]
+            _meta_idx_new = od()
+            for meta_idx in idx_lst:
+                meta = self.metadata[meta_idx]
+                if not same_meta_dict(meta, _meta_check,  
+                                      ignore_keys=ignore_keys):
+                    raise ValueError('Unexpected error. Please debug or '
+                                     'contact jonasg@met.no')
+                data_var_idx = self.meta_idx[meta_idx]
+                for var, data_idx in data_var_idx.items():
+                    num = len(data_idx)
+                    stop = didx + num
+                    new._data[didx:stop, :] = self._data[data_idx]
+                    if not var in _meta_idx_new:
+                        _meta_idx_new[var] = np.arange(didx, stop)
+                    else:
+                        _idx = np.append(_meta_idx_new[var], np.arange(didx, stop))
+                        _meta_idx_new[var] = _idx
+                    didx += num
+            
+            new.meta_idx[i] = _meta_idx_new
+            new.metadata[i] = _meta_check
+        new.var_idx.update(self.var_idx)
+        new.filter_hist.update(self.filter_hist)
+        return new
+        
     def merge(self, other, new_obj=True):
         """Merge another data object with this one
         
@@ -807,67 +930,7 @@ class UngriddedData(object):
             if input object is not an instance of :class:`UngriddedData`
             
         """
-        return self.merge(other, new_obj=False)
-    
-    def __and__(self, other):
-        """Merge this object with another using the logical ``and`` operator
-        
-        Example
-        -------
-        >>> from pyaerocom.io import ReadAeronetSdaV2
-        >>> read = ReadAeronetSdaV2()
-        
-        >>> d0 = read.read(last_file=10)
-        >>> d1 = read.read(first_file=10, last_file=20)
-    
-        >>> merged = d0 & d1
-        
-        >>> print(d0.shape, d1.shape, merged.shape)
-        (7326, 11) (9894, 11) (17220, 11)
-        """
-        return self.merge(other, new_obj=True)
-        
-    @property
-    def longitude(self):
-        """Longitudes of stations"""
-        return [stat['stat_lon'] for stat in self.metadata.values()]
-
-    @longitude.setter
-    def longitude(self, value):
-        raise AttributeError("Longitudes cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
-
-    @property
-    def latitude(self):
-        """Latitudes of stations"""
-        return [stat['stat_lat'] for stat in self.metadata.values()]
-
-    @latitude.setter
-    def latitude(self, value):
-        raise AttributeError("Latitudes cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
-
-    @property
-    def station_name(self):
-        """Latitudes of data"""
-        stat_names = [self.metadata[np.float(x)]['station_name'] for x in range(len(self.metadata))]
-        return stat_names
-
-    @station_name.setter
-    def station_name(self, value):
-        raise AttributeError("Station names cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
-    
-    @property
-    def time(self):
-        """Time dimension of data"""
-        raise NotImplementedError
-
-    @time.setter
-    def time(self, value):
-        raise AttributeError("Time array cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
-      
+        return self.merge(other, new_obj=False)  
     
     def all_datapoints_var(self, var_name):
         """Get array of all data values of input variable
@@ -1075,6 +1138,24 @@ class UngriddedData(object):
             
     def __getitem__(self, key):
         return self.to_station_data(key)
+    
+    def __and__(self, other):
+        """Merge this object with another using the logical ``and`` operator
+        
+        Example
+        -------
+        >>> from pyaerocom.io import ReadAeronetSdaV2
+        >>> read = ReadAeronetSdaV2()
+        
+        >>> d0 = read.read(last_file=10)
+        >>> d1 = read.read(first_file=10, last_file=20)
+    
+        >>> merged = d0 & d1
+        
+        >>> print(d0.shape, d1.shape, merged.shape)
+        (7326, 11) (9894, 11) (17220, 11)
+        """
+        return self.merge(other, new_obj=True)
     
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)

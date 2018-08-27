@@ -57,7 +57,47 @@ TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
                           'daily'   :   'D',
                           'monthly' :   'M', #Month start !
                           'yearly'  :   'Y'}
- 
+
+NUM_KEYS_META = ['stat_lon', 'stat_lat', 'stat_alt',
+                 'longitude', 'latitude', 'altitude']
+
+def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
+                   num_keys=NUM_KEYS_META, num_rtol=1e-2):
+    """Compare meta dictionaries
+    
+    Parameters
+    ----------
+    meta1 : dict
+        meta dictionary that is to be compared with ``meta2``
+    meta2 : dict
+        meta dictionary that is to be compared with ``meta1``
+    ignore_keys : list
+        list containing meta keys that are supposed to be ignored
+    num_keys : keys that contain numerical values
+    num_rtol : float
+        relative tolerance level for comparison of numerical values
+        
+    Returns
+    -------
+    bool 
+        True, if dictionaries are the same, else False
+    """
+    if not meta1.keys() == meta2.keys():
+        return False
+    for k, v in meta1.items():
+        if k in ignore_keys:
+            continue
+        elif k in num_keys:
+            if not np.isclose(v, meta2[k], rtol=num_rtol):
+                return False
+        elif isinstance(v, dict):
+            if not same_meta_dict(v, meta2[k]):
+                return False
+        else:
+            if not v == meta2[k]:
+                return False
+    return True
+            
 def str_to_iris(key, **kwargs):
     """Mapping function that converts strings into iris analysis objects
     

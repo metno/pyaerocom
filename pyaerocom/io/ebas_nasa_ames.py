@@ -631,15 +631,20 @@ class EbasNasaAmesFile(NasaAmesHeader):
         return s
     
 if __name__=="__main__":
-    DIR_MC = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data"
-    FILES_MC = ["DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas",]
+    DIR_MC = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/"
+    FILES_MC = ['DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas',
+                'CA0420G.20040101000000.20150618072433.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.11w.1h.CA01L_Radiance-Research_PSAP-3W_ALT.CA01L_abs_coef..nas']
+    
     
     file_mc = os.path.join(DIR_MC, FILES_MC[0])
     
     f = open(file_mc)
     lines = f.readlines()
     
-    mc = EbasNasaAmesFile(file_mc)
-    print(mc)
-    
-#    print(mc.to_dataframe())
+# =============================================================================
+#     mc = EbasNasaAmesFile(file_mc)
+#     print(mc)
+#     
+# =============================================================================
+    alert = EbasNasaAmesFile(DIR_MC + FILES_MC[1])
+    print(alert)
