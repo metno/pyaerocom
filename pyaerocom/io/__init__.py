@@ -45,5 +45,6 @@ from .ebas_file_index import EbasSQLRequest, EbasFileIndex
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
+from .read_aeolus_l2a_data import ReadAeolusL2aData
 
 from . import testfiles
