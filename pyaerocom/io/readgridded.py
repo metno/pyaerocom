@@ -125,9 +125,11 @@ class ReadGridded(object):
     """
     _start_time = None
     _stop_time = None
-    # Directory containing model data for this species
+    #: Directory containing model data for this species
     _data_dir = ""
-
+    
+    
+    VALID_COORD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
     def __init__(self, name="", start_time=None, stop_time=None,
                  file_convention="aerocom3", io_opts=const, 
                  init=True):
@@ -427,9 +429,12 @@ class ReadGridded(object):
             
         Returns
         --------
-        list
-            list of filepaths matching variable name, ts_type and either of the
-            years specified by years_to_load
+        tuple
+            2-element tuple, containing
+            
+            -list of filepaths matching variable name, ts_type and either of \
+            the years specified by years_to_load
+            - str specifying ts_type of files
             
         Raises
         ------
@@ -437,8 +442,9 @@ class ReadGridded(object):
             if not files could be found
         """
         try:
-            return self.find_var_files_in_timeperiod(var_name, ts_type_init,
-                                                     years_to_load)
+            files = self.find_var_files_in_timeperiod(var_name, ts_type_init,
+                                                      years_to_load)
+            return (files, ts_type_init)
         except IOError as e:
             self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
                                 'Trying other available ts_types {}'
@@ -446,9 +452,11 @@ class ReadGridded(object):
             for ts_type in self.ts_types:
                 if not ts_type == ts_type_init: #this already did not work
                     try:
-                        return self.find_var_files_in_timeperiod(var_name, 
-                                                                 ts_type,
-                                                                 years_to_load)
+                        files = self.find_var_files_in_timeperiod(var_name, 
+                                                                  ts_type,
+                                                                  years_to_load)
+                        return (files, ts_type)
+                    
                     except IOError as e:
                         self.logger.warning(repr(e))
         raise IOError("No files could be found for dataset {}, variable {}, "
@@ -709,8 +717,8 @@ class ReadGridded(object):
                              "in model directory: {}".format(var_name, 
                                                   self.data_dir))
         
-        match_files = self.find_var_files_flex_ts_type(var_name, 
-                                                       ts_type_init=ts_type)
+        match_files, ts_type = self.find_var_files_flex_ts_type(var_name, 
+                                                                ts_type_init=ts_type)
         cubes = self.load_files(var_name, match_files)
         
         try:
@@ -903,9 +911,9 @@ class ReadGridded(object):
                 self.data_yearly[var] = od()
                 
             for year in years_to_load:
-                match_files = self.find_var_files_flex_ts_type(var,
-                                                               ts_type,
-                                                               year)
+                match_files, ts_type = self.find_var_files_flex_ts_type(var,
+                                                                        ts_type,
+                                                                        year)
                 cubes = self.load_files(var, match_files)
                 if len(cubes) > 1:
                     raise NotImplementedError('Coming soon...')
