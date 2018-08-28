@@ -33,6 +33,26 @@
 
 # =============================================================================
 # from .read_aeronet_sdav2 import ReadAeronetSDAV2
+def geopy_available():
+    """Helper method that checks if geopy library is available 
+    
+    Required for import of ReadAeolusL2aData
+    
+    Returns
+    -------
+    bool
+        True, if library is available, else False
+    """
+    try:
+        import geopy
+        return True
+    except ModuleNotFoundError:
+        from logging import getLogger
+        logger = getLogger('pyaerocom')
+        logger.warning('geopy library is not available. Aeolus data read not '
+                       'enabled')
+    return False
+
 from .aerocom_browser import AerocomBrowser
 from .readungriddedbase import ReadUngriddedBase
 
@@ -53,6 +73,7 @@ from .read_ebas import ReadEbas
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
-from .read_aeolus_l2a_data import ReadAeolusL2aData
-
+if geopy_available():
+    from .read_aeolus_l2a_data import ReadAeolusL2aData    
+    
 from . import testfiles
