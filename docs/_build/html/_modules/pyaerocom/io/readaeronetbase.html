@@ -175,7 +175,7 @@
 <span class="sd">    Extended abstract base class, derived from low-level base class</span>
 <span class="sd">    :class:`ReadUngriddedBase` that contains some more functionality.</span>
 <span class="sd">    &quot;&quot;&quot;</span>    
-    <span class="n">__baseversion__</span> <span class="o">=</span> <span class="s1">&#39;0.03_&#39;</span> <span class="o">+</span> <span class="n">ReadUngriddedBase</span><span class="o">.</span><span class="n">__baseversion__</span>
+    <span class="n">__baseversion__</span> <span class="o">=</span> <span class="s1">&#39;0.04_&#39;</span> <span class="o">+</span> <span class="n">ReadUngriddedBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: column delimiter in data block of files</span>
     <span class="n">COL_DELIM</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span>
@@ -198,7 +198,7 @@
     <span class="c1">#: &#39;station_name&#39;, &#39;longitude&#39;, &#39;latitude&#39;, &#39;altitude&#39;)</span>
     <span class="n">META_NAMES_FILE</span> <span class="o">=</span> <span class="p">{}</span>
     
-    
+    <span class="n">INSTRUMENT_NAME</span> <span class="o">=</span> <span class="s1">&#39;sun_photometer&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ReadAeronetBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">)</span>
         
@@ -467,6 +467,11 @@
             <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
             <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPE</span>
             <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;variables&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vars_to_retrieve</span>
+            <span class="k">if</span> <span class="s1">&#39;instrument_name&#39;</span> <span class="ow">in</span> <span class="n">station_data</span><span class="p">:</span>
+                <span class="n">instr</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">instr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTRUMENT_NAME</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">meta_key</span><span class="p">][</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">instr</span>
             <span class="c1"># this is a list with indices of this station for each variable</span>
             <span class="c1"># not sure yet, if we really need that or if it speeds up things</span>
             <span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>

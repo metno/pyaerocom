@@ -173,7 +173,6 @@
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.utils</span> <span class="k">import</span> <span class="n">BrowseDict</span>
 
-
 <div class="viewcode-block" id="AerocomBrowser"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.aerocom_browser.AerocomBrowser">[docs]</a><span class="k">class</span> <span class="nc">AerocomBrowser</span><span class="p">(</span><span class="n">BrowseDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface for browsing all Aerocom data direcories</span>
 <span class="sd">    </span>
@@ -368,6 +367,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_browse</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">ignorecase</span><span class="o">=</span><span class="n">ignorecase</span><span class="p">,</span>
                             <span class="n">return_if_match</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1">#returns list</span></div></div>
+        
         
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">browser</span> <span class="o">=</span> <span class="n">AerocomBrowser</span><span class="p">()</span>

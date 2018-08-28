@@ -18,6 +18,11 @@ class Filter(BrowseDict):
     ----
     BETA version (currently being tested)
     
+    Todo
+    ----
+    Include also temporal filtering and other filter options (e.g. variable, 
+    etc.)
+    
     Attributes
     ----------
     lon_range : list
@@ -26,6 +31,19 @@ class Filter(BrowseDict):
         2-element list or array specifying latitude range
     alt_range : list
         2-element list or array specifying altitude range
+        
+    Example
+    -------
+    >>> import pyaerocom as pya
+    >>> data = pya.io.ReadGridded('ECMWF_OSUITE').read_var('od550aer')
+    >>> data
+    pyaerocom.GriddedData
+    Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 3287; latitude: 161; longitude: 320)>
+    >>> regfilter = pya.Filter('EUROPE-noMOUNTAINS')
+    >>> data_filtered = regfilter(data)
+    >>> data_filtered
+    pyaerocom.GriddedData
+    Grid data: <iris 'Cube' of Aerosol optical depth at 550 nm / (1) (time: 3287; latitude: 45; longitude: 80)>
     """
     #: dictionary specifying altitude filters
     ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for

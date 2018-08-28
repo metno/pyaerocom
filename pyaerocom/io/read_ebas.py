@@ -211,11 +211,6 @@ class ReadEbas(ReadUngriddedBase):
         precipitable water (EBAS matrix: precip) or in air (e.g. matrix aerosol,
         pm1, pm10 ...)
         
-        Todo
-        ----
-        After searching file list for each variable, find common files for all
-        variables and make one list ``common`` that can then be used to avoid 
-        that several files are read multiple times.
         
         Parameters
         ----------

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Aug 16 14:55:01 2018
-
-@author: jonasg
-"""
 from pyaerocom import logger
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_datestring_YYYYMMDD, to_pandas_timestamp

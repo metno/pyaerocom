@@ -179,9 +179,13 @@
 <div class="section" id="collocating-gridded-data-with-discrete-observations">
 <h1>Collocating gridded data with discrete observations<a class="headerlink" href="#collocating-gridded-data-with-discrete-observations" title="Permalink to this headline">¶</a></h1>
 <p>This notebook gives an introduction into collocation of gridded data
-with observations. Here, AODs of the ECMWF CAMS reanalysis model are
-compared with global daily observations from the AeroNet V2 (Level 2)
-for the years of 2010-2018.</p>
+with observations. Here, the 550 nm AODs of the ECMWF CAMS reanalysis
+model are compared with global daily AeroNet Sun V2 (Level 2) data for
+the year 2010. The collocated data will be analysed and visualised in
+monthly resolution. The analysis results will be plotted in the form of
+the well known Aerocom loglog scatter plots as can be found in the
+online interface (see e.g.
+<a class="reference external" href="http://aerocom.met.no/cgi-bin/aerocom/surfobs_annualrs.pl">here</a>).</p>
 <div class="section" id="note">
 <h2>NOTE<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h2>
 <blockquote>
@@ -189,79 +193,184 @@ for the years of 2010-2018.</p>
 </div>
 <div class="section" id="import-setup-and-imports">
 <h2>Import setup and imports<a class="headerlink" href="#import-setup-and-imports" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
+<span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
 
-<span class="n">start</span><span class="o">=</span><span class="mi">2000</span>
-<span class="n">stop</span><span class="o">=</span><span class="mi">2018</span>
-
-<span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
-
-<span class="n">ts_type</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
-
-<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span>
-<span class="n">obs_id</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span>
-<span class="n">obs_id</span>
+<span class="n">YEAR</span> <span class="o">=</span> <span class="mi">2010</span>
+<span class="n">VAR</span> <span class="o">=</span> <span class="s2">&quot;od550aer&quot;</span>
+<span class="n">TS_TYPE</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
+<span class="n">MODEL_ID</span> <span class="o">=</span> <span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span>
+<span class="n">OBS_ID</span> <span class="o">=</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;AeronetSunV2Lev2.daily&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">28</span> <span class="mi">14</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">21</span><span class="p">,</span><span class="mi">873</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="n">Reading</span> <span class="n">aliases</span> <span class="n">ini</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">cloned</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">aliases</span><span class="o">.</span><span class="n">ini</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">28</span> <span class="mi">14</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">22</span><span class="p">,</span><span class="mi">654</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="n">geopy</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">available</span><span class="o">.</span> <span class="n">Aeolus</span> <span class="n">data</span> <span class="n">read</span> <span class="ow">not</span> <span class="n">enabled</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="import-of-model-data">
 <h2>Import of model data<a class="headerlink" href="#import-of-model-data" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_io</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model_io</span><span class="p">)</span>
+<p>Create reader instance for model data and print overview of what is in
+there.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">MODEL_ID</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model_reader</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
 <span class="o">---------------------</span>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
+<span class="n">Data</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">time</span> <span class="n">resolutions</span> <span class="p">[</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
-    <span class="n">model_io</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+<p>Since we are only interested in a single year we can use the method</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read_result</span> <span class="o">=</span> <span class="n">model_reader</span><span class="o">.</span><span class="n">read_individual_years</span><span class="p">(</span><span class="n">VAR</span><span class="p">,</span> <span class="n">YEAR</span><span class="p">)</span>
+<span class="n">model_data</span> <span class="o">=</span> <span class="n">read_result</span><span class="p">[</span><span class="n">VAR</span><span class="p">][</span><span class="n">YEAR</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model_data</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">model_io</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
+<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span> <span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">161</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">320</span><span class="p">)</span>
+     <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
+          <span class="n">time</span>                             <span class="n">x</span>              <span class="o">-</span>               <span class="o">-</span>
+          <span class="n">latitude</span>                         <span class="o">-</span>              <span class="n">x</span>               <span class="o">-</span>
+          <span class="n">longitude</span>                        <span class="o">-</span>              <span class="o">-</span>               <span class="n">x</span>
+     <span class="n">Attributes</span><span class="p">:</span>
+          <span class="n">Conventions</span><span class="p">:</span> <span class="n">CF</span><span class="o">-</span><span class="mf">1.6</span>
+          <span class="n">NCO</span><span class="p">:</span> <span class="s2">&quot;4.5.4&quot;</span>
+          <span class="n">history</span><span class="p">:</span> <span class="n">Sat</span> <span class="n">May</span> <span class="mi">26</span> <span class="mi">21</span><span class="p">:</span><span class="mi">08</span><span class="p">:</span><span class="mi">48</span> <span class="mi">2018</span><span class="p">:</span> <span class="n">ncecat</span> <span class="o">-</span><span class="n">O</span> <span class="o">-</span><span class="n">u</span> <span class="n">time</span> <span class="o">-</span><span class="n">n</span> <span class="mi">365</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span> <span class="n">CAMS_REAN_001</span><span class="o">.</span><span class="n">nc</span><span class="o">...</span>
+          <span class="n">nco_openmp_thread_number</span><span class="p">:</span> <span class="mi">1</span>
+     <span class="n">Cell</span> <span class="n">methods</span><span class="p">:</span>
+          <span class="n">mean</span><span class="p">:</span> <span class="n">step</span>
+          <span class="n">mean</span><span class="p">:</span> <span class="n">time</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
-<span class="o">---------------------</span>
-<span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
-<span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
-<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tut06_collocation_7_0.png" src="_images/tut06_collocation_7_0.png" />
+</div>
+<div class="section" id="import-of-aeronet-sun-v3-data-level-2">
+<h2>Import of AeroNet Sun V3 data (Level 2)<a class="headerlink" href="#import-of-aeronet-sun-v3-data-level-2" title="Permalink to this headline">¶</a></h2>
+<p>Import Aeronet data and apply filter that selects only stations that are
+located at altitudes between 0 and 1000 m.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs_reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="n">OBS_ID</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">VAR</span><span class="p">)</span>
+<span class="n">obs_data</span> <span class="o">=</span> <span class="n">obs_reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by_meta</span><span class="p">(</span><span class="n">stat_alt</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">obs_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">UngriddedData</span>
+<span class="o">-----------------------</span>
+<span class="n">Contains</span> <span class="n">networks</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">]</span>
+<span class="n">Contains</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
+<span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[]</span>
+<span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">985</span>
+<span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
+ <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20180828141929</span>
+    <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values">
+<h1>Now perform collocation and plot corresponding scatter plots with statistical values<a class="headerlink" href="#now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="monthly-world-no-mountains">
+<h2>2010 monthly World no mountains<a class="headerlink" href="#monthly-world-no-mountains" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_colloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">collocation</span><span class="o">.</span><span class="n">collocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
+                                                             <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-noMOUNTAINS&#39;</span><span class="p">)</span>
+<span class="n">data_colloc</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span> <span class="s1">&#39;od550aer&#39;</span> <span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="n">station_name</span><span class="p">:</span> <span class="mi">278</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">array</span><span class="p">([[[</span>     <span class="n">nan</span><span class="p">,</span> <span class="mf">0.117798</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
+        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span> <span class="mf">0.132204</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="p">[</span><span class="mf">0.132491</span><span class="p">,</span> <span class="mf">0.19501</span> <span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
+        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span> <span class="mf">0.098458</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">]],</span>
 
-<span class="n">Loaded</span> <span class="n">GriddedData</span> <span class="n">objects</span><span class="p">:</span>
+       <span class="p">[[</span><span class="mf">0.189948</span><span class="p">,</span> <span class="mf">0.140062</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.079353</span><span class="p">,</span> <span class="mf">0.204337</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.150408</span><span class="p">,</span> <span class="mf">0.190089</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.10622</span> <span class="p">,</span> <span class="mf">0.257806</span><span class="p">],</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="p">[</span><span class="mf">0.159844</span><span class="p">,</span> <span class="mf">0.178564</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.054091</span><span class="p">,</span> <span class="mf">0.239393</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.147172</span><span class="p">,</span> <span class="mf">0.138039</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.077916</span><span class="p">,</span> <span class="mf">0.19986</span> <span class="p">]]])</span>
+<span class="n">Coordinates</span><span class="p">:</span>
+  <span class="o">*</span> <span class="n">data_source</span>   <span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U22</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span>
+  <span class="o">*</span> <span class="n">time</span>          <span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="n">datetime64</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">01</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">01</span> <span class="o">...</span>
+  <span class="o">*</span> <span class="n">station_name</span>  <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U19</span> <span class="s1">&#39;ARM_Darwin&#39;</span> <span class="s1">&#39;ATHENS-NOA&#39;</span> <span class="s1">&#39;Agoufou&#39;</span> <span class="o">...</span>
+    <span class="n">latitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="o">-</span><span class="mf">12.43</span> <span class="mf">37.97</span> <span class="mf">15.35</span> <span class="o">-</span><span class="mf">9.871</span> <span class="mf">42.02</span> <span class="o">...</span>
+    <span class="n">longitude</span>     <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">130.9</span> <span class="mf">23.72</span> <span class="o">-</span><span class="mf">1.479</span> <span class="o">-</span><span class="mf">56.1</span> <span class="o">-</span><span class="mf">93.77</span> <span class="o">...</span>
+    <span class="n">altitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">29.9</span> <span class="mf">130.0</span> <span class="mf">305.0</span> <span class="mf">277.0</span> <span class="mf">338.0</span> <span class="mf">49.0</span> <span class="o">...</span>
+<span class="n">Attributes</span><span class="p">:</span>
+    <span class="n">data_source_idx</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
+    <span class="n">var_name</span><span class="p">:</span>         <span class="n">od550aer</span>
+    <span class="n">ts_type</span><span class="p">:</span>          <span class="n">monthly</span>
+    <span class="n">start</span><span class="p">:</span>            <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+    <span class="n">stop</span><span class="p">:</span>             <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+    <span class="n">filter_name</span><span class="p">:</span>      <span class="n">WORLD</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
+    <span class="n">region</span><span class="p">:</span>           <span class="n">WORLD</span>
+    <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
+    <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
+    <span class="n">alt_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_colloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f911050bcf8</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<img alt="_images/tut06_collocation_13_1.png" src="_images/tut06_collocation_13_1.png" />
+</div>
+<div class="section" id="daily-europe-no-mountains">
+<h2>2010 daily Europe no mountains<a class="headerlink" href="#daily-europe-no-mountains" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_colloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">collocation</span><span class="o">.</span><span class="n">collocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span>
+                                                             <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;EUROPE-noMOUNTAINS&#39;</span><span class="p">)</span>
+<span class="n">data_colloc</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span> <span class="s1">&#39;od550aer&#39;</span> <span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">,</span> <span class="n">station_name</span><span class="p">:</span> <span class="mi">89</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="n">array</span><span class="p">([[[</span><span class="mf">0.163582</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.078742</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
+        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">]],</span>
 
-<span class="n">Pyaerocom</span> <span class="n">GriddedData</span>
-<span class="o">---------------------</span>
-<span class="n">Variable</span><span class="p">:</span> <span class="n">od550aer</span>
-<span class="n">Temporal</span> <span class="n">resolution</span><span class="p">:</span> <span class="n">daily</span>
-<span class="n">Start</span> <span class="o">/</span> <span class="n">Stop</span><span class="p">:</span> <span class="mi">2003</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span> <span class="o">-</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">00.000000</span>
+       <span class="p">[[</span><span class="mf">0.086522</span><span class="p">,</span> <span class="mf">0.015151</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.075447</span><span class="p">,</span> <span class="mf">0.03005</span> <span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.067198</span><span class="p">,</span> <span class="mf">0.043074</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.103671</span><span class="p">,</span> <span class="mf">0.042999</span><span class="p">],</span>
+        <span class="o">...</span><span class="p">,</span>
+        <span class="p">[</span><span class="mf">0.242585</span><span class="p">,</span> <span class="mf">0.186407</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.053797</span><span class="p">,</span> <span class="mf">0.011344</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.079498</span><span class="p">,</span> <span class="mf">0.122098</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.027066</span><span class="p">,</span> <span class="mf">0.019639</span><span class="p">]]])</span>
+<span class="n">Coordinates</span><span class="p">:</span>
+  <span class="o">*</span> <span class="n">data_source</span>   <span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U22</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span>
+  <span class="o">*</span> <span class="n">time</span>          <span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="n">datetime64</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span> <span class="o">...</span>
+  <span class="o">*</span> <span class="n">station_name</span>  <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U19</span> <span class="s1">&#39;ATHENS-NOA&#39;</span> <span class="s1">&#39;Andenes&#39;</span> <span class="s1">&#39;Arcachon&#39;</span> <span class="o">...</span>
+    <span class="n">latitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">37.97</span> <span class="mf">69.28</span> <span class="mf">44.66</span> <span class="mf">45.76</span> <span class="mf">42.0</span> <span class="mf">43.93</span> <span class="o">...</span>
+    <span class="n">longitude</span>     <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">23.72</span> <span class="mf">16.01</span> <span class="o">-</span><span class="mf">1.163</span> <span class="mf">3.111</span> <span class="o">-</span><span class="mf">4.603</span> <span class="o">...</span>
+    <span class="n">altitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">130.0</span> <span class="mf">379.0</span> <span class="mf">11.0</span> <span class="mf">423.0</span> <span class="mf">873.0</span> <span class="mf">32.0</span> <span class="o">...</span>
+<span class="n">Attributes</span><span class="p">:</span>
+    <span class="n">data_source_idx</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
+    <span class="n">var_name</span><span class="p">:</span>         <span class="n">od550aer</span>
+    <span class="n">ts_type</span><span class="p">:</span>          <span class="n">daily</span>
+    <span class="n">start</span><span class="p">:</span>            <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+    <span class="n">stop</span><span class="p">:</span>             <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+    <span class="n">filter_name</span><span class="p">:</span>      <span class="n">EUROPE</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
+    <span class="n">region</span><span class="p">:</span>           <span class="n">EUROPE</span>
+    <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
+    <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
+    <span class="n">alt_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_data</span> <span class="o">=</span> <span class="n">model_io</span><span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_colloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f91106428d0</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/tut06_collocation_8_0.png" src="_images/tut06_collocation_8_0.png" />
-</div>
-<div class="section" id="import-of-aeronet-v2-data-level-2">
-<h2>Import of AeroNet V2 data (Level 2)<a class="headerlink" href="#import-of-aeronet-v2-data-level-2" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadAeronetSunV2</span><span class="p">()</span>
-<span class="n">obs_data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">169</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
-<span class="n">searching</span> <span class="k">for</span> <span class="n">data</span> <span class="n">files</span><span class="o">.</span> <span class="n">This</span> <span class="n">might</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">...</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">254</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
-<span class="n">Reading</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">AEROCOM_OBSDATA</span><span class="o">/</span><span class="n">AeronetRaw2</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="mi">920801</span><span class="n">_180519_UNC</span><span class="o">-</span><span class="n">Palmira</span><span class="o">.</span><span class="n">lev20</span>
-</pre></div>
-</div>
+<img alt="_images/tut06_collocation_16_1.png" src="_images/tut06_collocation_16_1.png" />
 </div>
 </div>
 

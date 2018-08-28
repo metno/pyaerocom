@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.io.utils &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">Tests (for developers)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.io.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.io.utils</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">High level I/O utility methods for pyaerocom</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom.io.aerocom_browser</span> <span class="k">import</span> <span class="n">AerocomBrowser</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readgridded</span> <span class="k">import</span> <span class="n">ReadGridded</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.readungridded</span> <span class="k">import</span> <span class="n">ReadUngridded</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">change_verbosity</span>
+
+<div class="viewcode-block" id="browse_database"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.utils.browse_database">[docs]</a><span class="k">def</span> <span class="nf">browse_database</span><span class="p">(</span><span class="n">model_or_obs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Browse Aerocom database using model or obs ID (or wildcard)</span>
+<span class="sd">    </span>
+<span class="sd">    Searches database for matches and prints information about all matches </span>
+<span class="sd">    found (e.g. available variables, years, etc.)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_or_obs : str</span>
+<span class="sd">        model or obs ID or search pattern </span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        if True, verbosity level will be set to debug, else to critical</span>
+<span class="sd">        </span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; import pyaerocom as pya</span>
+<span class="sd">    &gt;&gt;&gt; pya.io.browse_database(&#39;AATSR*ORAC*v4*&#39;)</span>
+<span class="sd">    Pyaerocom ReadGridded</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    Model ID: AATSR_ORAC_v4.01</span>
+<span class="sd">    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_ORAC_v4.01/renamed</span>
+<span class="sd">    Available variables: [&#39;abs550aer&#39;, &#39;ang4487aer&#39;, &#39;clt&#39;, &#39;landseamask&#39;, &#39;od550aer&#39;, &#39;od550dust&#39;, &#39;od550gt1aer&#39;, &#39;od550lt1aer&#39;, &#39;pixelcount&#39;]</span>
+<span class="sd">    Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]</span>
+<span class="sd">    Available time resolutions [&#39;daily&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">)</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="n">AerocomBrowser</span><span class="p">()</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">find_matches</span><span class="p">(</span><span class="n">model_or_obs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No match could be found for </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_or_obs</span><span class="p">))</span>
+        <span class="k">return</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found more than 20 matches for based on input string </span><span class="si">{}</span><span class="s1">:</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+              <span class="s1">&#39;Matches: </span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+              <span class="s1">&#39;To receive more detailed information, please specify search ID &#39;</span>
+              <span class="s1">&#39;more accurately&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_or_obs</span><span class="p">,</span> <span class="n">matches</span><span class="p">))</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">const</span><span class="o">.</span><span class="n">OBS_IDS</span><span class="p">:</span>
+            <span class="n">reader</span> <span class="o">=</span> <span class="n">ReadUngridded</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reader</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span></div>
+    
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    
+    <span class="n">obs_id</span> <span class="o">=</span> <span class="s1">&#39;AATSR*&#39;</span>
+    
+    <span class="n">browse_database</span><span class="p">(</span><span class="s1">&#39;AATSR_SU*&#39;</span><span class="p">)</span>
+    
+    <span class="n">browse_database</span><span class="p">(</span><span class="s1">&#39;AATSR*ORAC*v4*&#39;</span><span class="p">)</span>
+    
+    <span class="n">browse_database</span><span class="p">(</span><span class="n">obs_id</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

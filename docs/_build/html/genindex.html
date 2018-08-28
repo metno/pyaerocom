@@ -207,8 +207,6 @@
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.all_datapoints_var">all_datapoints_var() (pyaerocom.ungriddeddata.UngriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.all_datasets">all_datasets (pyaerocom.ungriddeddata.UngriddedData attribute)</a>
-</li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.ALL_INSTRUMENTS">ALL_INSTRUMENTS (pyaerocom.io.ebas_file_index.EbasFileIndex attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.ALL_MATRICES">ALL_MATRICES (pyaerocom.io.ebas_file_index.EbasFileIndex attribute)</a>
@@ -220,6 +218,8 @@
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.ALL_STATISTICS_PARAMS">ALL_STATISTICS_PARAMS (pyaerocom.io.ebas_file_index.EbasFileIndex attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.ALL_VARIABLES">ALL_VARIABLES (pyaerocom.io.ebas_file_index.EbasFileIndex attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.filter.Filter.alt_range">alt_range (pyaerocom.filter.Filter attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.ALT_VAR_NAMES_FILE">ALT_VAR_NAMES_FILE (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
 
@@ -237,9 +237,13 @@
         <li><a href="api.html#pyaerocom.io.readaeronetbase.ReadAeronetBase.ALT_VAR_NAMES_FILE">(pyaerocom.io.readaeronetbase.ReadAeronetBase attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.filter.Filter.ALTITUDE_FILTERS">ALTITUDE_FILTERS (pyaerocom.filter.Filter attribute)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.altitude_range">altitude_range (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.append">append() (pyaerocom.ungriddeddata.UngriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.filter.Filter.apply">apply() (pyaerocom.filter.Filter method)</a>
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.area_weighted_mean">area_weighted_mean() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
@@ -323,6 +327,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pyaerocom.io.utils.browse_database">browse_database() (in module pyaerocom.io.utils)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.browser">browser (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
   </ul></td>
@@ -343,6 +349,12 @@
 </li>
       <li><a href="api.html#pyaerocom.mathutils.calc_od550lt1aer">calc_od550lt1aer() (in module pyaerocom.mathutils)</a>
 </li>
+      <li><a href="api.html#pyaerocom.mathutils.calc_statistics">calc_statistics() (in module pyaerocom.mathutils)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.calc_statistics">(pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
+      </ul></li>
       <li><a href="api.html#pyaerocom.helpers.cftime_to_datetime64">cftime_to_datetime64() (in module pyaerocom.helpers)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.change_data_level">change_data_level() (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 method)</a>
@@ -356,6 +368,10 @@
       <li><a href="api.html#pyaerocom.io.ebas_varinfo.check_all_variables">check_all_variables() (in module pyaerocom.io.ebas_varinfo)</a>
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.check_and_regrid_lons">check_and_regrid_lons() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.check_coord_order">check_coord_order() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.check_dimensions">check_dimensions() (pyaerocom.collocateddata.CollocatedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.stationdata.StationData.check_dtime">check_dtime() (pyaerocom.stationdata.StationData method)</a>
 </li>
@@ -441,7 +457,11 @@
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.collapsed">collapsed() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.collocate">collocate() (pyaerocom.griddeddata.GriddedData method)</a>
+      <li><a href="api.html#pyaerocom.collocation.collocate_gridded_gridded">collocate_gridded_gridded() (in module pyaerocom.collocation)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocation.collocate_gridded_ungridded_2D">collocate_gridded_ungridded_2D() (in module pyaerocom.collocation)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData">CollocatedData (class in pyaerocom.collocateddata)</a>
 </li>
       <li><a href="api.html#pyaerocom.plot.config.ColorTheme.color_coastline">color_coastline (pyaerocom.plot.config.ColorTheme attribute)</a>
 </li>
@@ -487,6 +507,10 @@
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_coordinates">contains_coordinates() (pyaerocom.io.ebas_file_index.EbasFileIndex method)</a>
 </li>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.contains_datasets">contains_datasets (pyaerocom.ungriddeddata.UngriddedData attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.contains_instruments">contains_instruments (pyaerocom.ungriddeddata.UngriddedData attribute)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_matrices">contains_matrices() (pyaerocom.io.ebas_file_index.EbasFileIndex method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasFileIndex.contains_station_names">contains_station_names() (pyaerocom.io.ebas_file_index.EbasFileIndex method)</a>
@@ -525,9 +549,11 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.data">data (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.data">data (pyaerocom.collocateddata.CollocatedData attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.data">(pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.data">(pyaerocom.io.readgridded.ReadGridded attribute)</a>, <a href="api.html#pyaerocom.io.readgridded.ReadGridded.data">[1]</a>
 </li>
         <li><a href="api.html#pyaerocom.vertical_profile.VerticalProfile.data">(pyaerocom.vertical_profile.VerticalProfile attribute)</a>
@@ -683,6 +709,8 @@
       </ul></li>
       <li><a href="api.html#pyaerocom.plot.heatmaps.df_to_heatmap">df_to_heatmap() (in module pyaerocom.plot.heatmaps)</a>
 </li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.downscale_time">downscale_time() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.stationdata.StationData.dtime">dtime (pyaerocom.stationdata.StationData attribute)</a>
 </li>
   </ul></td>
@@ -733,6 +761,10 @@
 </li>
       <li><a href="api.html#pyaerocom.io.read_ebas.ReadEbas.files_contain">files_contain (pyaerocom.io.read_ebas.ReadEbas attribute)</a>
 </li>
+      <li><a href="api.html#pyaerocom.filter.Filter">Filter (class in pyaerocom.filter)</a>
+</li>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.filter_by_meta">filter_by_meta() (pyaerocom.ungriddeddata.UngriddedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.find_common_data_points">find_common_data_points() (pyaerocom.ungriddeddata.UngriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.find_common_stations">find_common_stations() (pyaerocom.ungriddeddata.UngriddedData method)</a>
@@ -774,6 +806,10 @@
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.flag_id">flag_id (pyaerocom.io.ebas_nasa_ames.EbasColDef attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.flags">flags (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.from_csv">from_csv() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.from_dataframe">from_dataframe() (pyaerocom.collocateddata.CollocatedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.from_dict">from_dict() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 
@@ -839,6 +875,8 @@
 </li>
       <li><a href="api.html#pyaerocom.station.Station.get_meta">get_meta() (pyaerocom.station.Station method)</a>
 </li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.get_meta_from_filename">get_meta_from_filename() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.helpers.get_obsnetwork_dir">get_obsnetwork_dir() (in module pyaerocom.io.helpers)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readungridded.ReadUngridded.get_reader">get_reader() (pyaerocom.io.readungridded.ReadUngridded method)</a>
@@ -875,12 +913,18 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pyaerocom.io.read_ebas.ReadEbas.IGNORE_STATISTICS">IGNORE_STATISTICS (pyaerocom.io.read_ebas.ReadEbas attribute)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.import_default">import_default() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
 
       <ul>
         <li><a href="api.html#pyaerocom.region.Region.import_default">(pyaerocom.region.Region method)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.mathutils.in_range">in_range() (in module pyaerocom.mathutils)</a>
+</li>
+      <li><a href="api.html#pyaerocom.filter.Filter.infer_from_name">infer_from_name() (pyaerocom.filter.Filter method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.infer_wavelength_colname">infer_wavelength_colname() (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 method)</a>
 
       <ul>
@@ -899,21 +943,41 @@
       </ul></li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.init_flags">init_flags() (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.init_results">init_results() (pyaerocom.io.readgridded.ReadGriddedMulti method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.instrument">instrument (pyaerocom.io.ebas_varinfo.EbasVarInfo attribute)</a>
 </li>
+      <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.INSTRUMENT_NAME">INSTRUMENT_NAME (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.INSTRUMENT_NAME">(pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3 attribute)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.INSTRUMENT_NAME">(pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2 attribute)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.INSTRUMENT_NAME">(pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3 attribute)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.INSTRUMENT_NAME">(pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2 attribute)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.INSTRUMENT_NAME">(pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3 attribute)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.readaeronetbase.ReadAeronetBase.INSTRUMENT_NAME">(pyaerocom.io.readaeronetbase.ReadAeronetBase attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.instrument_type">instrument_type (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.interpolate">interpolate() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.intersection">intersection() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.is_climatology">is_climatology (pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.is_cube">is_cube (pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.is_empty">is_empty (pyaerocom.ungriddeddata.UngriddedData attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.is_filtered">is_filtered (pyaerocom.ungriddeddata.UngriddedData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.is_flag">is_flag (pyaerocom.io.ebas_nasa_ames.EbasColDef attribute)</a>
 </li>
@@ -927,54 +991,64 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.lat_range">lat_range (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.last_filter_applied">last_filter_applied() (pyaerocom.ungriddeddata.UngriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.filter.Filter.lat_range">lat_range (pyaerocom.filter.Filter attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.lat_range">(pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.region.Region.lat_range">(pyaerocom.region.Region attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.region.Region.lat_range_plot">lat_range_plot (pyaerocom.region.Region attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.latitude">latitude (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.latitude">latitude (pyaerocom.collocateddata.CollocatedData attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.latitude">(pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.latitude">(pyaerocom.ungriddeddata.UngriddedData attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.plot.config.ColorTheme.load_default">load_default() (pyaerocom.plot.config.ColorTheme method)</a>
 </li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.load_fake_data">load_fake_data() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.load_files">load_files() (pyaerocom.io.readgridded.ReadGridded method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.load_input">load_input() (pyaerocom.griddeddata.GriddedData method)</a>
 
       <ul>
         <li><a href="api.html#pyaerocom.plot.config.MapPlotSettings.load_input">(pyaerocom.plot.config.MapPlotSettings method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_ebas.ReadEbas.loaded_aerocom_vars">loaded_aerocom_vars (pyaerocom.io.read_ebas.ReadEbas attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.loaded_files">loaded_files (pyaerocom.io.readgridded.ReadGridded attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readungriddedbase.ReadUngriddedBase.logger">logger (pyaerocom.io.readungriddedbase.ReadUngriddedBase attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.lon_range">lon_range (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
+      <li><a href="api.html#pyaerocom.filter.Filter.lon_range">lon_range (pyaerocom.filter.Filter attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.lon_range">(pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.region.Region.lon_range">(pyaerocom.region.Region attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.region.Region.lon_range_plot">lon_range_plot (pyaerocom.region.Region attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.longitude">longitude (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.longitude">longitude (pyaerocom.collocateddata.CollocatedData attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.longitude">(pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.longitude">(pyaerocom.ungriddeddata.UngriddedData attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.lonlat_resolution">lonlat_resolution() (pyaerocom.griddeddata.GriddedData method)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -1003,10 +1077,16 @@
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.merge">merge() (pyaerocom.ungriddeddata.UngriddedData method)</a>
 </li>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.merge_common_meta">merge_common_meta() (pyaerocom.ungriddeddata.UngriddedData method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.meta">meta (pyaerocom.io.ebas_nasa_ames.NasaAmesHeader attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.meta">meta (pyaerocom.collocateddata.CollocatedData attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.meta">(pyaerocom.io.ebas_nasa_ames.NasaAmesHeader attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api.html#pyaerocom.station.Station.META_KEYS">META_KEYS (pyaerocom.station.Station attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.META_NAMES_FILE">META_NAMES_FILE (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
@@ -1037,9 +1117,13 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.name">name (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.name">name (pyaerocom.collocateddata.CollocatedData attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.filter.Filter.name">(pyaerocom.filter.Filter attribute)</a>
+</li>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.name">(pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.name">(pyaerocom.io.ebas_nasa_ames.EbasColDef attribute)</a>
 </li>
         <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.name">(pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
@@ -1048,7 +1132,7 @@
 </li>
         <li><a href="api.html#pyaerocom.plot.config.ColorTheme.name">(pyaerocom.plot.config.ColorTheme attribute)</a>
 </li>
-        <li><a href="api.html#pyaerocom.region.Region.name">(pyaerocom.region.Region attribute)</a>
+        <li><a href="api.html#pyaerocom.region.Region.name">(pyaerocom.region.Region attribute)</a>, <a href="api.html#pyaerocom.region.Region.name">[1]</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.names">names (pyaerocom.io.readgridded.ReadGriddedMulti attribute)</a>
@@ -1079,7 +1163,15 @@
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesVariableError">NasaAmesVariableError</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.ndim">ndim (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.ndim">ndim (pyaerocom.collocateddata.CollocatedData attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.ndim">(pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api.html#pyaerocom.filter.Filter.NO_FILTER_NAME">NO_FILTER_NAME (pyaerocom.filter.Filter attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.num_grid_points">num_grid_points (pyaerocom.collocateddata.CollocatedData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.num_obs_var_valid">num_obs_var_valid() (pyaerocom.ungriddeddata.UngriddedData method)</a>
 </li>
@@ -1097,6 +1189,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.open">open() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.open_config">open_config() (pyaerocom.io.ebas_varinfo.EbasVarInfo static method)</a>
 </li>
   </ul></td>
@@ -1110,6 +1204,8 @@
       <li><a href="api.html#pyaerocom.plot.mapping.plot_map">plot_map() (in module pyaerocom.plot.mapping)</a>
 </li>
       <li><a href="api.html#pyaerocom.plot.mapping.plot_map_aerocom">plot_map_aerocom() (in module pyaerocom.plot.mapping)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.plot_scatter">plot_scatter() (pyaerocom.collocateddata.CollocatedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.plot.plotseries.plot_series_year">plot_series_year() (in module pyaerocom.plot.plotseries)</a>
 </li>
@@ -1165,18 +1261,24 @@
       </ul></li>
       <li><a href="api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.PROVIDES_VARIABLES">PROVIDES_VARIABLES() (pyaerocom.io.ebas_varinfo.EbasVarInfo static method)</a>
 </li>
+      <li><a href="api.html#module-pyaerocom.collocateddata">pyaerocom.collocateddata (module)</a>
+</li>
+      <li><a href="api.html#module-pyaerocom.collocation">pyaerocom.collocation (module)</a>
+</li>
+      <li><a href="api.html#module-pyaerocom.filter">pyaerocom.filter (module)</a>
+</li>
       <li><a href="api.html#module-pyaerocom.griddeddata">pyaerocom.griddeddata (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.helpers">pyaerocom.helpers (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.aerocom_browser">pyaerocom.io.aerocom_browser (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#module-pyaerocom.io.ebas_file_index">pyaerocom.io.ebas_file_index (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.ebas_nasa_ames">pyaerocom.io.ebas_nasa_ames (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#module-pyaerocom.io.ebas_varinfo">pyaerocom.io.ebas_varinfo (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.fileconventions">pyaerocom.io.fileconventions (module)</a>
@@ -1214,6 +1316,8 @@
       <li><a href="api_testsuite.html#module-pyaerocom.io.test.test_readgriddedmulti">pyaerocom.io.test.test_readgriddedmulti (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.io.testfiles">pyaerocom.io.testfiles (module)</a>
+</li>
+      <li><a href="api.html#module-pyaerocom.io.utils">pyaerocom.io.utils (module)</a>
 </li>
       <li><a href="api.html#module-pyaerocom.mathutils">pyaerocom.mathutils (module)</a>
 </li>
@@ -1343,6 +1447,8 @@
         <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.read_individual_years">(pyaerocom.io.readgridded.ReadGriddedMulti method)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.read_netcdf">read_netcdf() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_station">read_station() (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 method)</a>
@@ -1399,6 +1505,10 @@
 </li>
       <li><a href="api.html#pyaerocom.region.Region">Region (class in pyaerocom.region)</a>
 </li>
+      <li><a href="api.html#pyaerocom.filter.Filter.region_name">region_name (pyaerocom.filter.Filter attribute)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.regrid">regrid() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.requires">requires (pyaerocom.io.ebas_varinfo.EbasVarInfo attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.results">results (pyaerocom.io.readgridded.ReadGriddedMulti attribute)</a>, <a href="api.html#pyaerocom.io.readgridded.ReadGriddedMulti.results">[1]</a>
@@ -1431,6 +1541,10 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pyaerocom.helpers.same_meta_dict">same_meta_dict() (in module pyaerocom.helpers)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.save_name_aerocom">save_name_aerocom (pyaerocom.collocateddata.CollocatedData attribute)</a>
+</li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.search_all_files">search_all_files() (pyaerocom.io.readgridded.ReadGridded method)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.readgridded.ReadGridded.search_data_dir">search_data_dir() (pyaerocom.io.readgridded.ReadGridded method)</a>
@@ -1439,15 +1553,23 @@
 </li>
       <li><a href="api.html#pyaerocom.io.helpers.search_names">search_names() (in module pyaerocom.io.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.shape">shape (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.filter.Filter.set_altitude_filter">set_altitude_filter() (pyaerocom.filter.Filter method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.filter.Filter.set_region">set_region() (pyaerocom.filter.Filter method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.shape">shape (pyaerocom.collocateddata.CollocatedData attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.shape">(pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.shape">(pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
 </li>
         <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.shape">(pyaerocom.ungriddeddata.UngriddedData attribute)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.short_str">short_str() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.start">start (pyaerocom.collocateddata.CollocatedData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.start_date">start_date (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
 </li>
@@ -1463,6 +1585,8 @@
 </li>
       <li><a href="api.html#pyaerocom.station.Station">Station (class in pyaerocom.station)</a>
 </li>
+      <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.station_data_to_ascii">station_data_to_ascii() (pyaerocom.ungriddeddata.UngriddedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.station.Station.station_name">station_name (pyaerocom.station.Station attribute)</a>
 
       <ul>
@@ -1471,6 +1595,8 @@
       </ul></li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.station_names">station_names (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.stationdata.StationData">StationData (class in pyaerocom.stationdata)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.statistics">statistics (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
@@ -1479,9 +1605,9 @@
         <li><a href="api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.statistics">(pyaerocom.io.ebas_varinfo.EbasVarInfo attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.std">std() (pyaerocom.griddeddata.GriddedData method)</a>
+</li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.stop">stop (pyaerocom.collocateddata.CollocatedData attribute)</a>
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_file_index.EbasSQLRequest.stop_date">stop_date (pyaerocom.io.ebas_file_index.EbasSQLRequest attribute)</a>
 </li>
@@ -1559,9 +1685,11 @@
 </li>
       <li><a href="api_testsuite.html#pyaerocom.io.test.test_readgridded.test_years_available">test_years_available() (in module pyaerocom.io.test.test_readgridded)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.time">time (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.time">time (pyaerocom.collocateddata.CollocatedData attribute)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.time">(pyaerocom.griddeddata.GriddedData attribute)</a>
+</li>
         <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.time">(pyaerocom.ungriddeddata.UngriddedData attribute)</a>
 </li>
       </ul></li>
@@ -1573,33 +1701,45 @@
 </li>
       <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.TIMEUNIT2SECFAC">TIMEUNIT2SECFAC (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile attribute)</a>
 </li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.to_csv">to_csv() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.to_daily">to_daily() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">to_dataframe() (pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile method)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.to_dataframe">to_dataframe() (pyaerocom.collocateddata.CollocatedData method)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">(pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile method)</a>
+</li>
         <li><a href="api.html#pyaerocom.stationdata.StationData.to_dataframe">(pyaerocom.stationdata.StationData method)</a>
 </li>
       </ul></li>
       <li><a href="api.html#pyaerocom.helpers.to_datestring_YYYYMMDD">to_datestring_YYYYMMDD() (in module pyaerocom.helpers)</a>
 </li>
-      <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.to_dict">to_dict() (pyaerocom.io.fileconventions.FileConventionRead method)</a>
+      <li><a href="api.html#pyaerocom.filter.Filter.to_dict">to_dict() (pyaerocom.filter.Filter method)</a>
 
       <ul>
+        <li><a href="api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict">(pyaerocom.io.ebas_nasa_ames.EbasColDef method)</a>
+</li>
+        <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.to_dict">(pyaerocom.io.fileconventions.FileConventionRead method)</a>
+</li>
         <li><a href="api.html#pyaerocom.plot.config.ColorTheme.to_dict">(pyaerocom.plot.config.ColorTheme method)</a>
 </li>
       </ul></li>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.to_netcdf">to_netcdf() (pyaerocom.collocateddata.CollocatedData method)</a>
+</li>
       <li><a href="api.html#pyaerocom.helpers.to_pandas_timestamp">to_pandas_timestamp() (in module pyaerocom.helpers)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.to_station_data">to_station_data() (pyaerocom.ungriddeddata.UngriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.ungriddeddata.UngriddedData.to_station_data_all">to_station_data_all() (pyaerocom.ungriddeddata.UngriddedData method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pyaerocom.griddeddata.GriddedData.to_time_series">to_time_series() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.helpers.to_time_series_griesie">to_time_series_griesie() (in module pyaerocom.helpers)</a>
+</li>
+      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.to_time_series_single_coord">to_time_series_single_coord() (pyaerocom.griddeddata.GriddedData method)</a>
 </li>
       <li><a href="api.html#pyaerocom.stationdata.StationData.to_timeseries">to_timeseries() (pyaerocom.stationdata.StationData method)</a>
 
@@ -1611,8 +1751,12 @@
 </li>
       <li><a href="api.html#pyaerocom.io.fileconventions.FileConventionRead.ts_pos">ts_pos (pyaerocom.io.fileconventions.FileConventionRead attribute)</a>
 </li>
-      <li><a href="api.html#pyaerocom.griddeddata.GriddedData.ts_type">ts_type (pyaerocom.griddeddata.GriddedData attribute)</a>
+      <li><a href="api.html#pyaerocom.collocateddata.CollocatedData.ts_type">ts_type (pyaerocom.collocateddata.CollocatedData attribute)</a>
+
+      <ul>
+        <li><a href="api.html#pyaerocom.griddeddata.GriddedData.ts_type">(pyaerocom.griddeddata.GriddedData attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api.html#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.TS_TYPE">TS_TYPE (pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2 attribute)</a>
 
       <ul>

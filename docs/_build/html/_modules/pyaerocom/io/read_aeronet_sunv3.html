@@ -213,7 +213,7 @@
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.lev30&#39;</span>
     
     <span class="c1">#: version log of this class (for caching)</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.04_&#39;</span> <span class="o">+</span> <span class="n">ReadAeronetBase</span><span class="o">.</span><span class="n">__baseversion__</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.05_&#39;</span> <span class="o">+</span> <span class="n">ReadAeronetBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: Name of dataset (OBS_ID)</span>
     <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L15_AOD_DAILY_NAME</span>
@@ -243,7 +243,7 @@
     <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AOD_500nm&#39;</span>
     <span class="c1"># VAR_NAMES_FILE[&#39;od865aer&#39;] = &#39;AOD_865nm&#39;</span>
     <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AOD_870nm&#39;</span>
-    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;440-870_Angstrom_Exponent&#39;</span>
+    <span class="n">VAR_NAMES_FILE</span><span class="p">[</span><span class="s1">&#39;ang4487aer_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;440-870_Angstrom_Exponent&#39;</span>
 
     <span class="c1">#: dictionary specifying the file column names (values) for each </span>
     <span class="c1">#: metadata key (cf. attributes of :class:`StationData`, e.g.</span>
@@ -262,15 +262,15 @@
     <span class="c1">#: dictionary containing information about additionally required variables</span>
     <span class="c1">#: for each auxiliary variable (i.e. each variable that is not provided</span>
     <span class="c1">#: by the original data but computed on import)</span>
-    <span class="n">AUX_REQUIRES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ang4487aer_calc&#39;</span>   <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span>
-                                             <span class="s1">&#39;od870aer&#39;</span><span class="p">],</span>
-                    <span class="s1">&#39;od550aer&#39;</span>          <span class="p">:</span>     <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> 
-                                               <span class="s1">&#39;od500aer&#39;</span><span class="p">,</span>
-                                               <span class="s1">&#39;ang4487aer&#39;</span><span class="p">]}</span>
+    <span class="n">AUX_REQUIRES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ang4487aer&#39;</span>   <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;od870aer&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;od550aer&#39;</span>     <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> 
+                                        <span class="s1">&#39;od500aer&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;ang4487aer&#39;</span><span class="p">]}</span>
                     
     <span class="c1">#: Functions that are used to compute additional variables (i.e. one </span>
     <span class="c1">#: for each variable defined in AUX_REQUIRES)</span>
-    <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ang4487aer_calc&#39;</span>   <span class="p">:</span>   <span class="n">calc_ang4487aer</span><span class="p">,</span>
+    <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ang4487aer&#39;</span>   <span class="p">:</span>   <span class="n">calc_ang4487aer</span><span class="p">,</span>
                 <span class="s1">&#39;od550aer&#39;</span>          <span class="p">:</span>   <span class="n">calc_od550aer</span><span class="p">}</span>
     
     <span class="c1">#: List of variables that are provided by this dataset (will be extended </span>
@@ -318,10 +318,11 @@
         <span class="c1"># Iterate over the lines of the file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
-            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
-            <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">_lines_ignored</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">_lines_ignored</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="n">_lines_ignored</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="n">_lines_ignored</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+            <span class="n">_lines_ignored</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
             <span class="c1"># PI line</span>
             <span class="n">dummy_arr</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dummy_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
@@ -329,6 +330,7 @@
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPE</span>
 
             <span class="n">data_type_comment</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">_lines_ignored</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_type_comment</span><span class="p">)</span>
             <span class="c1"># TODO: delete later</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Data type comment: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_type_comment</span><span class="p">))</span>
             
@@ -408,10 +410,28 @@
                                               <span class="n">index</span><span class="o">=</span><span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">del</span> <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-            
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;The following lines were ignored: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">_lines_ignored</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">data_out</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    
+    <span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="s1">&#39;../../dev_scripts/out/anstrom_analysis/&#39;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
+        
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">plot_angstrom</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">):</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ang4487aer_file</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">ang4487aer</span><span class="p">,</span> <span class="s1">&#39; *&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Angstrom coeff 440-870 nm (from data)&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Angstrom coeff 440-870 nm (calculated)&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">station_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s1">&#39;AeronetV3_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">station_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+        <span class="k">return</span> <span class="n">ax</span>
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSunV3</span><span class="p">()</span>
     <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
     
@@ -419,18 +439,21 @@
     
     <span class="n">files_berlin</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">find_in_file_list</span><span class="p">(</span><span class="s1">&#39;*Berlin*&#39;</span><span class="p">)</span>
     <span class="n">berlin</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">files_berlin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                            <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ang4487aer_calc&#39;</span><span class="p">,</span>
-                                              <span class="s1">&#39;ang4487aer&#39;</span><span class="p">])</span>
+                            <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span>
+                                              <span class="s1">&#39;ang4487aer_file&#39;</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">berlin</span><span class="p">)</span>
     
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_angstrom</span><span class="p">(</span><span class="n">berlin</span><span class="p">)</span>
     
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">berlin</span><span class="o">.</span><span class="n">ang4487aer</span><span class="p">,</span> <span class="n">berlin</span><span class="o">.</span><span class="n">ang4487aer_calc</span><span class="p">,</span> <span class="s1">&#39; *&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Angstrom coeff 440-870 nm (from data)&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Angstrom coeff 440-870 nm (calculated)&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">50</span><span class="p">]:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;ang4487aer_file&#39;</span><span class="p">])</span>
+                        
+        <span class="n">plot_angstrom</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    
+    
+    
 </pre></div>
 
            </div>

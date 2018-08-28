@@ -8,8 +8,7 @@ import numpy as np
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   CollocationError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
-                               TS_TYPE_TO_PANDAS_FREQ,
-                               TS_TYPE_TO_NUMPY_FREQ)
+                               TS_TYPE_TO_PANDAS_FREQ)
 from pyaerocom.filter import Filter
 from pyaerocom.collocateddata import CollocatedData
 
@@ -18,6 +17,9 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
                               filter_name='WORLD-wMountains', **regrid_opts):
     """Collocate 2 gridded data objects
     
+    Todo
+    ----
+    Complete docstring
     """
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start_time)

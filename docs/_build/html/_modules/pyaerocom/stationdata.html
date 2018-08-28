@@ -185,9 +185,6 @@
                          <span class="s1">&#39;altitude&#39;</span> <span class="p">:</span> <span class="s1">&#39;stat_alt&#39;</span><span class="p">}</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">StationData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dtime</span> <span class="o">=</span> <span class="p">[]</span>
-        
         <span class="c1"># these three variables may or may not be set. As you can see in the </span>
         <span class="c1"># methods __getitem__ and __setitem__, if they are not set</span>
         <span class="c1"># explicitely, the returned value is the corresponding station </span>
@@ -197,6 +194,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;latitude&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">,</span> 
                              <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="s1">&#39;altitude&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtime</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instrument_name</span><span class="o">=</span><span class="kc">None</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StationData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -413,6 +413,7 @@
     <span class="n">d</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="mf">42.</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
         
+    
         
         
 

@@ -167,6 +167,80 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">pearsonr</span><span class="p">,</span> <span class="n">spearmanr</span>
+<span class="c1">### LAMBDA FUNCTIONS</span>
+<span class="n">in_range</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">:</span> <span class="n">low</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">high</span>
+
+<span class="c1">### OTHER FUNCTIONS</span>
+<div class="viewcode-block" id="calc_statistics"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.calc_statistics">[docs]</a><span class="k">def</span> <span class="nf">calc_statistics</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calc statistical properties from two data arrays</span>
+<span class="sd">    </span>
+<span class="sd">    Calculates the following statistical properties based on the two provided</span>
+<span class="sd">    1-dimensional data arrays and returns them in a dictionary (keys are </span>
+<span class="sd">    provided after the arrows):</span>
+<span class="sd">        </span>
+<span class="sd">        - Mean value of both arrays -&gt; refdata_mean, data_mean</span>
+<span class="sd">        - RMS (Root mean square) -&gt; rms</span>
+<span class="sd">        - NMB (Normalised mean bias), in percent-&gt; nmb</span>
+<span class="sd">        - MNMB (Modified normalised mean bias), in percent -&gt; mnmb</span>
+<span class="sd">        - FGE (Fractional gross error), in percent -&gt; fge</span>
+<span class="sd">        - R (Pearson correlation coefficient) -&gt; R</span>
+<span class="sd">        - R_spearman (Spearman corr. coeff) -&gt; R_spearman</span>
+<span class="sd">        </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Nans are removed from the input arrays, information about no. of removed</span>
+<span class="sd">    points can be inferred from keys `totnum` and `success` in return dict.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : ndarray</span>
+<span class="sd">        array containing data, that is supposed to be compared with reference</span>
+<span class="sd">        data</span>
+<span class="sd">    ref_data : ndarray</span>
+<span class="sd">        array containing data, that is used to compare `data` array with</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        dictionary containing computed statistics    </span>
+<span class="sd">    </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError </span>
+<span class="sd">        if either of the input arrays has dimension other than 1</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">reference_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ref_data</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ref_data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid input. Data arrays must be one dimensional&#39;</span><span class="p">)</span>
+        
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">reference_data</span><span class="p">)</span> <span class="o">*</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    <span class="n">data</span><span class="p">,</span> <span class="n">reference_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">reference_data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    
+    <span class="n">difference</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">reference_data</span>
+    <span class="n">num_points</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;refdata_mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">reference_data</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;data_mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;rms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">difference</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">num_points</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;nmb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">difference</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">reference_data</span><span class="p">)</span><span class="o">*</span><span class="mf">100.</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">difference</span> <span class="o">/</span> <span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">reference_data</span><span class="p">)</span>
+    
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;mnmb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="n">num_points</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;fge&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">/</span> <span class="n">num_points</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span> <span class="o">*</span> <span class="mf">100.</span>
+    <span class="c1">#result[&#39;fge&#39;] = 2. / np.sum(np.abs(tmp)) * 100.</span>
+    
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">reference_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;R_spearman&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spearmanr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">reference_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;totnum&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_points</span>
+    
+    <span class="k">return</span> <span class="n">result</span></div>
 
 <div class="viewcode-block" id="numbers_in_str"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.numbers_in_str">[docs]</a><span class="k">def</span> <span class="nf">numbers_in_str</span><span class="p">(</span><span class="n">input_string</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;This method finds all numbers in a string</span>

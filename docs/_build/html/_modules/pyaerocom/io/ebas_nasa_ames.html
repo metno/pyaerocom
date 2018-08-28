@@ -229,6 +229,11 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Wavelength definition is not in nm&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;nm&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
         
+<div class="viewcode-block" id="EbasColDef.to_dict"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+            
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
     
@@ -261,19 +266,19 @@
     <span class="n">_STARTDATE_FMT</span> <span class="o">=</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span>
 
     <span class="n">_H_FIXLINES_YIELD</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;num_head_lines&quot;</span><span class="p">,</span> <span class="s2">&quot;num_head_fmt&quot;</span><span class="p">],</span> <span class="c1">#line 1</span>
-                    <span class="s2">&quot;data_originator&quot;</span><span class="p">,</span> <span class="c1">#line 2</span>
-                    <span class="s2">&quot;sponsor_organisation&quot;</span><span class="p">,</span> <span class="c1">#3</span>
-                    <span class="s2">&quot;submitter&quot;</span><span class="p">,</span> <span class="c1">#4</span>
-                    <span class="s2">&quot;project_association&quot;</span><span class="p">,</span> <span class="c1">#5</span>
-                    <span class="p">[</span><span class="s2">&quot;vol_num&quot;</span><span class="p">,</span> <span class="s2">&quot;vol_totnum&quot;</span><span class="p">],</span> <span class="c1">#6</span>
-                    <span class="p">[</span><span class="s2">&quot;ref_date&quot;</span><span class="p">,</span> <span class="s2">&quot;revision_date&quot;</span><span class="p">],</span> <span class="c1">#7</span>
-                    <span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="c1">#8</span>
-                    <span class="s2">&quot;descr_time_unit&quot;</span><span class="p">,</span> <span class="c1">#9</span>
-                    <span class="s2">&quot;num_cols_dependent&quot;</span><span class="p">,</span> <span class="c1">#10</span>
-                    <span class="s2">&quot;mul_factors&quot;</span><span class="p">,</span> <span class="c1">#11</span>
-                    <span class="s2">&quot;vals_invalid&quot;</span><span class="p">,</span> <span class="c1">#12</span>
-                    <span class="s2">&quot;descr_first_col&quot;</span><span class="p">,</span> <span class="c1">#13</span>
-                    <span class="p">]</span>
+                         <span class="s2">&quot;data_originator&quot;</span><span class="p">,</span> <span class="c1">#line 2</span>
+                         <span class="s2">&quot;sponsor_organisation&quot;</span><span class="p">,</span> <span class="c1">#3</span>
+                         <span class="s2">&quot;submitter&quot;</span><span class="p">,</span> <span class="c1">#4</span>
+                         <span class="s2">&quot;project_association&quot;</span><span class="p">,</span> <span class="c1">#5</span>
+                         <span class="p">[</span><span class="s2">&quot;vol_num&quot;</span><span class="p">,</span> <span class="s2">&quot;vol_totnum&quot;</span><span class="p">],</span> <span class="c1">#6</span>
+                         <span class="p">[</span><span class="s2">&quot;ref_date&quot;</span><span class="p">,</span> <span class="s2">&quot;revision_date&quot;</span><span class="p">],</span> <span class="c1">#7</span>
+                         <span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="c1">#8</span>
+                         <span class="s2">&quot;descr_time_unit&quot;</span><span class="p">,</span> <span class="c1">#9</span>
+                         <span class="s2">&quot;num_cols_dependent&quot;</span><span class="p">,</span> <span class="c1">#10</span>
+                         <span class="s2">&quot;mul_factors&quot;</span><span class="p">,</span> <span class="c1">#11</span>
+                         <span class="s2">&quot;vals_invalid&quot;</span><span class="p">,</span> <span class="c1">#12</span>
+                         <span class="s2">&quot;descr_first_col&quot;</span><span class="p">,</span> <span class="c1">#13</span>
+                         <span class="p">]</span>
     
     <span class="n">_H_FIXLINES_CONV</span> <span class="o">=</span> <span class="p">[</span><span class="n">CONV_MULTIINT</span><span class="p">,</span> <span class="c1">#1 -&gt; yields 2</span>
                         <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#2</span>
@@ -482,13 +487,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">base_date</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Base date of data&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Base date of data as numpy.datetime64[s]&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;timezone&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Fatal: could not infer base date. Timezone &quot;</span>
                                  <span class="s2">&quot;is not available in file header&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;utc&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TimeZoneError</span><span class="p">(</span><span class="s2">&quot;Timezones other than UTC are not yet supported&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startdate</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startdate</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">),</span>
+                             <span class="s1">&#39;s&#39;</span><span class="p">)</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">time_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -786,18 +792,23 @@
         <span class="k">return</span> <span class="n">s</span></div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">DIR_MC</span> <span class="o">=</span> <span class="s2">&quot;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data&quot;</span>
-    <span class="n">FILES_MC</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas&quot;</span><span class="p">,]</span>
+    <span class="n">DIR_MC</span> <span class="o">=</span> <span class="s2">&quot;/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/&quot;</span>
+    <span class="n">FILES_MC</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;CA0420G.20040101000000.20150618072433.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.11w.1h.CA01L_Radiance-Research_PSAP-3W_ALT.CA01L_abs_coef..nas&#39;</span><span class="p">]</span>
+    
     
     <span class="n">file_mc</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DIR_MC</span><span class="p">,</span> <span class="n">FILES_MC</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     
     <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_mc</span><span class="p">)</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
     
-    <span class="n">mc</span> <span class="o">=</span> <span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">file_mc</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
-    
-<span class="c1">#    print(mc.to_dataframe())</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     mc = EbasNasaAmesFile(file_mc)</span>
+<span class="c1">#     print(mc)</span>
+<span class="c1">#     </span>
+<span class="c1"># =============================================================================</span>
+    <span class="n">alert</span> <span class="o">=</span> <span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">DIR_MC</span> <span class="o">+</span> <span class="n">FILES_MC</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">alert</span><span class="p">)</span>
 </pre></div>
 
            </div>

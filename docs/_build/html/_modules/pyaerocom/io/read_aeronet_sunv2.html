@@ -223,7 +223,7 @@
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.lev20&#39;</span>
     
     <span class="c1">#: version log of this class (for caching)</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.13_&quot;</span> <span class="o">+</span> <span class="n">ReadAeronetBase</span><span class="o">.</span><span class="n">__baseversion__</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.14_&quot;</span> <span class="o">+</span> <span class="n">ReadAeronetBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: Name of dataset (OBS_ID)</span>
     <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span>
@@ -258,7 +258,8 @@
                    <span class="n">od500aer</span>       <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                    <span class="n">od440aer</span>       <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
                    <span class="n">od380aer</span>       <span class="o">=</span> <span class="mi">17</span><span class="p">,</span>
-                   <span class="n">od340aer</span>       <span class="o">=</span> <span class="mi">18</span><span class="p">)</span>
+                   <span class="n">od340aer</span>       <span class="o">=</span> <span class="mi">18</span><span class="p">,</span>
+                   <span class="n">ang4487aer_file</span><span class="o">=</span> <span class="mi">37</span><span class="p">)</span>
     
     <span class="c1">#: dictionary containing information about additionally required variables</span>
     <span class="c1">#: for each auxiliary variable (i.e. each variable that is not provided</span>
@@ -277,9 +278,7 @@
     <span class="c1">#: List of variables that are provided by this dataset (will be extended </span>
     <span class="c1">#: by auxiliary variables on class init, for details see __init__ method of</span>
     <span class="c1">#: base class ReadUngriddedBase)</span>
-    <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od500aer&#39;</span><span class="p">,</span> 
-                          <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> 
-                          <span class="s1">&#39;od870aer&#39;</span><span class="p">]</span>
+    <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">COL_INDEX</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">col_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -348,6 +347,7 @@
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;Location&#39;</span><span class="p">]</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_loc</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPE</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">INSTRUMENT_NAME</span>
             
             <span class="n">c_dummy</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
         
@@ -391,6 +391,8 @@
         <span class="k">return</span> <span class="n">data_out</span></div></div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
+    <span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">failed</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ReadAeronetSunV2</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">:</span>
@@ -407,17 +409,22 @@
     
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">()</span>
     
-    <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
+    <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;critical&#39;</span>
     <span class="n">first_ten</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">last_file</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
     
     <span class="n">data0</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">(</span><span class="n">vars_as_series</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">first_ten</span><span class="o">.</span><span class="n">to_station_data_all</span><span class="p">()</span>
+    
         
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> 
+                                                  <span class="s1">&#39;ang4487aer_file&#39;</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    
+    
     
 </pre></div>
 

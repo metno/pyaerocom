@@ -49,8 +49,16 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    Installation base directory: /home/jonasg/github/pyaerocom/pyaerocom
-    Version: 0.0.1.dev1
+    2018-08-28 13:50:46,397:INFO:
+    Reading aliases ini file: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/aliases.ini
+    2018-08-28 13:50:47,147:WARNING:
+    geopy library is not available. Aeolus data read not enabled
+
+
+.. parsed-literal::
+
+    Installation base directory: /home/jonasg/github/cloned/pyaerocom/pyaerocom
+    Version: 0.3.0
 
 
 Setting global environment variables
@@ -70,15 +78,20 @@ via an instance of the ``Config`` class.
     Pyaerocom Config
     ----------------
     
-    VERBOSE: True
     MIN_YEAR: 0
-    MAX_YEAR: 3000
+    MAX_YEAR: 20000
     GRID_IO: 
     Pyaerocom GridIO
     ----------------
     
        FILE_TYPE: .nc
-       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       TS_TYPES (list, 5 items)
+       ['hourly'
+        '3hourly'
+        ...
+        'monthly'
+        'yearly']
+    
        DEL_TIME_BOUNDS: True
        SHIFT_LONS: True
        CHECK_TIME_FILENAME: True
@@ -86,6 +99,8 @@ via an instance of the ``Config`` class.
        USE_RENAMED_DIR: True
        USE_FILECONVENTION: True
        INCLUDE_SUBDIRS: False
+    OBS_WAVELENGTH_TOL_NM: 10.0
+    OBS_ALLOW_ALT_WAVELENGTHS: True
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -114,20 +129,48 @@ via an instance of the ``Config`` class.
     EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
-       [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-        /lustre/storeA/project/aerocom/aerocom1/
+       ['/lustre/storeA/project/aerocom/aerocom1/'
+        '/lustre/storeA/project/aerocom/aerocom2/'
         ...
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/]
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
     
     MODELBASEDIR: /lustre/storeA/project/aerocom/
     OBSBASEDIR: /lustre/storeA/project/aerocom/
     OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
     OUT_BASEDIR: /home/jonasg/pyaerocom
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    _config_ini: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/paths.ini
+    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
+    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
     DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
     PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM (dict)
+    VAR_PARAM: 
+    ----------------------
+    Pyaerocom AllVariables
+    ----------------------
+    DEFAULT
+    od550aer
+    od550lt1aer
+    od550gt1aer
+    abs550aer
+    od440aer
+    abs440aer
+    ec550aer
+    scatc550aer
+    scatc550lt1aer
+    bscatc550aer
+    absc550lt1aer
+    ssa440aer
+    ssa675aer
+    ssa870aer
+    ssa1020aer
+    ang4487aer
+    angabs4487aer
+    zdust
+    
+    Aliases
+    .......
+    absc550aer = abs550aer
 
 
 You can check if the relevant base directories ``MODELBASEDIR`` and
@@ -169,6 +212,14 @@ options to do this:
     All paths valid? False
 
 
+.. parsed-literal::
+
+    /home/jonasg/github/cloned/pyaerocom/pyaerocom/config.py:296: UserWarning: Model base directory %s does not exist
+      warn("Model base directory %s does not exist")
+    /home/jonasg/github/cloned/pyaerocom/pyaerocom/config.py:299: UserWarning: Observations base directory %s does not exist
+      warn("Observations base directory %s does not exist")
+
+
 See what’s currently in there.
 
 .. code:: ipython3
@@ -182,15 +233,20 @@ See what’s currently in there.
     Pyaerocom Config
     ----------------
     
-    VERBOSE: True
     MIN_YEAR: 0
-    MAX_YEAR: 3000
+    MAX_YEAR: 20000
     GRID_IO: 
     Pyaerocom GridIO
     ----------------
     
        FILE_TYPE: .nc
-       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       TS_TYPES (list, 5 items)
+       ['hourly'
+        '3hourly'
+        ...
+        'monthly'
+        'yearly']
+    
        DEL_TIME_BOUNDS: True
        SHIFT_LONS: True
        CHECK_TIME_FILENAME: True
@@ -198,6 +254,8 @@ See what’s currently in there.
        USE_RENAMED_DIR: True
        USE_FILECONVENTION: True
        INCLUDE_SUBDIRS: False
+    OBS_WAVELENGTH_TOL_NM: 10.0
+    OBS_ALLOW_ALT_WAVELENGTHS: True
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -226,20 +284,48 @@ See what’s currently in there.
     EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
-       [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-        /lustre/storeA/project/aerocom/aerocom1/
+       ['/lustre/storeA/project/aerocom/aerocom1/'
+        '/lustre/storeA/project/aerocom/aerocom2/'
         ...
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/]
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
     
     MODELBASEDIR: path/that/does/not/exist
     OBSBASEDIR: path/that/does/not/exist
     OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
     OUT_BASEDIR: /home/jonasg/pyaerocom
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    _config_ini: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/paths.ini
+    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
+    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
     DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
     PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM (dict)
+    VAR_PARAM: 
+    ----------------------
+    Pyaerocom AllVariables
+    ----------------------
+    DEFAULT
+    od550aer
+    od550lt1aer
+    od550gt1aer
+    abs550aer
+    od440aer
+    abs440aer
+    ec550aer
+    scatc550aer
+    scatc550lt1aer
+    bscatc550aer
+    absc550lt1aer
+    ssa440aer
+    ssa675aer
+    ssa870aer
+    ssa1020aer
+    ang4487aer
+    angabs4487aer
+    zdust
+    
+    Aliases
+    .......
+    absc550aer = abs550aer
 
 
 As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
@@ -260,15 +346,20 @@ the method ``load_config(config_file)`` or the wrapper method
     Pyaerocom Config
     ----------------
     
-    VERBOSE: True
     MIN_YEAR: 0
-    MAX_YEAR: 3000
+    MAX_YEAR: 20000
     GRID_IO: 
     Pyaerocom GridIO
     ----------------
     
        FILE_TYPE: .nc
-       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       TS_TYPES (list, 5 items)
+       ['hourly'
+        '3hourly'
+        ...
+        'monthly'
+        'yearly']
+    
        DEL_TIME_BOUNDS: True
        SHIFT_LONS: True
        CHECK_TIME_FILENAME: True
@@ -276,6 +367,8 @@ the method ``load_config(config_file)`` or the wrapper method
        USE_RENAMED_DIR: True
        USE_FILECONVENTION: True
        INCLUDE_SUBDIRS: False
+    OBS_WAVELENGTH_TOL_NM: 10.0
+    OBS_ALLOW_ALT_WAVELENGTHS: True
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -304,20 +397,48 @@ the method ``load_config(config_file)`` or the wrapper method
     EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
-       [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-        /lustre/storeA/project/aerocom/aerocom1/
+       ['/lustre/storeA/project/aerocom/aerocom1/'
+        '/lustre/storeA/project/aerocom/aerocom2/'
         ...
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/]
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
     
     MODELBASEDIR: /lustre/storeA/project/aerocom/
     OBSBASEDIR: /lustre/storeA/project/aerocom/
     OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
     OUT_BASEDIR: /home/jonasg/pyaerocom
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    _config_ini: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/paths.ini
+    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
+    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
     DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
     PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM (dict)
+    VAR_PARAM: 
+    ----------------------
+    Pyaerocom AllVariables
+    ----------------------
+    DEFAULT
+    od550aer
+    od550lt1aer
+    od550gt1aer
+    abs550aer
+    od440aer
+    abs440aer
+    ec550aer
+    scatc550aer
+    scatc550lt1aer
+    bscatc550aer
+    absc550lt1aer
+    ssa440aer
+    ssa675aer
+    ssa870aer
+    ssa1020aer
+    ang4487aer
+    angabs4487aer
+    zdust
+    
+    Aliases
+    .......
+    absc550aer = abs550aer
 
 
 The ``reload`` (and ``load_config``) method actually checks if the
@@ -344,15 +465,20 @@ choose valid paths, this should work.
     Pyaerocom Config
     ----------------
     
-    VERBOSE: True
     MIN_YEAR: 0
-    MAX_YEAR: 3000
+    MAX_YEAR: 20000
     GRID_IO: 
     Pyaerocom GridIO
     ----------------
     
        FILE_TYPE: .nc
-       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       TS_TYPES (list, 5 items)
+       ['hourly'
+        '3hourly'
+        ...
+        'monthly'
+        'yearly']
+    
        DEL_TIME_BOUNDS: True
        SHIFT_LONS: True
        CHECK_TIME_FILENAME: True
@@ -360,6 +486,8 @@ choose valid paths, this should work.
        USE_RENAMED_DIR: True
        USE_FILECONVENTION: True
        INCLUDE_SUBDIRS: False
+    OBS_WAVELENGTH_TOL_NM: 10.0
+    OBS_ALLOW_ALT_WAVELENGTHS: True
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -388,20 +516,48 @@ choose valid paths, this should work.
     EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
-       [.aerocom-users-database/ECMWF/
-        .aerocom1/
+       ['.aerocom1/'
+        '.aerocom2/'
         ...
-        .aerocom-users-database/AEROCOM-PHASE-II-IND3/
-        .aerocom-users-database/AEROCOM-PHASE-II-IND2/]
+        '.aerocom-users-database/AEROCOM-PHASE-II-IND3/'
+        '.aerocom-users-database/AEROCOM-PHASE-II-IND2/']
     
     MODELBASEDIR: .
     OBSBASEDIR: .
     OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
     OUT_BASEDIR: /home/jonasg/pyaerocom
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    _config_ini: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/paths.ini
+    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
+    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
     DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
     PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM (dict)
+    VAR_PARAM: 
+    ----------------------
+    Pyaerocom AllVariables
+    ----------------------
+    DEFAULT
+    od550aer
+    od550lt1aer
+    od550gt1aer
+    abs550aer
+    od440aer
+    abs440aer
+    ec550aer
+    scatc550aer
+    scatc550lt1aer
+    bscatc550aer
+    absc550lt1aer
+    ssa440aer
+    ssa675aer
+    ssa870aer
+    ssa1020aer
+    ang4487aer
+    angabs4487aer
+    zdust
+    
+    Aliases
+    .......
+    absc550aer = abs550aer
 
 
 This is it! Note, however, that we just inserted the current directory
@@ -420,15 +576,20 @@ have to reload the config as it was at the beginning:
     Pyaerocom Config
     ----------------
     
-    VERBOSE: True
     MIN_YEAR: 0
-    MAX_YEAR: 3000
+    MAX_YEAR: 20000
     GRID_IO: 
     Pyaerocom GridIO
     ----------------
     
        FILE_TYPE: .nc
-       TS_TYPES: ['hourly', '3hourly', 'daily', 'monthly']
+       TS_TYPES (list, 5 items)
+       ['hourly'
+        '3hourly'
+        ...
+        'monthly'
+        'yearly']
+    
        DEL_TIME_BOUNDS: True
        SHIFT_LONS: True
        CHECK_TIME_FILENAME: True
@@ -436,6 +597,8 @@ have to reload the config as it was at the beginning:
        USE_RENAMED_DIR: True
        USE_FILECONVENTION: True
        INCLUDE_SUBDIRS: False
+    OBS_WAVELENGTH_TOL_NM: 10.0
+    OBS_ALLOW_ALT_WAVELENGTHS: True
     GCOSPERCENTCRIT: 0.1
     GCOSABSCRIT: 0.04
     OBSNET_NONE: NONE
@@ -464,20 +627,48 @@ have to reload the config as it was at the beginning:
     EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
-       [/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/
-        /lustre/storeA/project/aerocom/aerocom1/
+       ['/lustre/storeA/project/aerocom/aerocom1/'
+        '/lustre/storeA/project/aerocom/aerocom2/'
         ...
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/
-        /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/]
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
+        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
     
     MODELBASEDIR: /lustre/storeA/project/aerocom/
     OBSBASEDIR: /lustre/storeA/project/aerocom/
     OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
     OUT_BASEDIR: /home/jonasg/pyaerocom
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    _config_ini: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/paths.ini
+    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
+    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
     DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
     PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM (dict)
+    VAR_PARAM: 
+    ----------------------
+    Pyaerocom AllVariables
+    ----------------------
+    DEFAULT
+    od550aer
+    od550lt1aer
+    od550gt1aer
+    abs550aer
+    od440aer
+    abs440aer
+    ec550aer
+    scatc550aer
+    scatc550lt1aer
+    bscatc550aer
+    absc550lt1aer
+    ssa440aer
+    ssa675aer
+    ssa870aer
+    ssa1020aer
+    ang4487aer
+    angabs4487aer
+    zdust
+    
+    Aliases
+    .......
+    absc550aer = abs550aer
 
 
 Now with everything being set up correctly, we can start analysing the
@@ -509,7 +700,49 @@ find a unique ID and thus raise an Exception):
 
 .. parsed-literal::
 
-    OSError("No unique match found for ID ot pattern CAM*CTRL*. Found multiple matches. Please choose from the following list: ['CAMS_REANCTRL', 'CAMS_REANCTRL', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM4-Oslo_Vprelim.A2.CTRL', 'CAM5-MAM3-PNNL.A2.CTRL', 'CAM4-Oslo-Vcmip5online.A2.CTRL', 'CAM4-Oslo-Vcmip5.A2.CTRL', 'CAM4-Oslo-Vcmip5emi2000.A2.CTRL', 'CAM5.1-MAM3-PNNL.A2.CTRL', 'CAM3.A2.CTRL', 'CAM4-Oslo.A2.CTRL', 'BCC_AGCM2.0.1_CAM.A2.CTRL', 'ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD', 'ECMWF-IFS-CY43R1-CAMS-NITRATE-DEV_AP3-CTRL2016-PD', 'CAM5.4_CTRL2016', 'CAM5_CTRL2016', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']",)
+    2018-08-28 13:50:47,244:INFO:
+    Searching database for CAM*CTRL*
+    2018-08-28 13:50:49,183:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,487:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,491:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,495:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,500:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,504:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,508:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,512:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,516:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,520:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,524:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,543:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,547:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,551:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,555:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,559:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,563:INFO:
+    Checking if renamed directory exists
+    2018-08-28 13:50:51,568:INFO:
+    Checking if renamed directory exists
+
+
+.. parsed-literal::
+
+    OSError("Found multiple matches for search pattern CAM*CTRL*. Please choose from ['CAMS_REANCTRL', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM4-Oslo_Vprelim.A2.CTRL', 'CAM5-MAM3-PNNL.A2.CTRL', 'CAM4-Oslo-Vcmip5online.A2.CTRL', 'CAM4-Oslo-Vcmip5.A2.CTRL', 'CAM4-Oslo-Vcmip5emi2000.A2.CTRL', 'CAM5.1-MAM3-PNNL.A2.CTRL', 'CAM3.A2.CTRL', 'CAM4-Oslo.A2.CTRL', 'BCC_AGCM2.0.1_CAM.A2.CTRL', 'ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD', 'ECMWF-IFS-CY43R1-CAMS-NITRATE-DEV_AP3-CTRL2016-PD', 'CAM5.4_CTRL2016', 'CAM5_CTRL2016', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']",)
 
 
 Reading the aerosol optical detph at 550nm using a specified model ID
@@ -528,9 +761,114 @@ data import since we know the model and run ID from the previous cell
 
 .. parsed-literal::
 
-    Found match for ID CAM5.3-Oslo_CTRL2016
+    2018-08-28 13:50:51,663:INFO:
+    Searching database for CAM5.3-Oslo_CTRL2016
+    2018-08-28 13:50:51,911:INFO:
     Checking if renamed directory exists
-    Found directory /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
+    2018-08-28 13:50:51,914:INFO:
+    Found match for ID CAM5.3-Oslo_CTRL2016
+    2018-08-28 13:50:52,194:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2006_daily.nc
+    2018-08-28 13:50:52,196:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2008_daily.nc
+    2018-08-28 13:50:52,198:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,200:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2008_daily.nc
+    2018-08-28 13:50:52,202:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2008_daily.nc
+    2018-08-28 13:50:52,204:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,206:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,208:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2010_daily.nc
+    2018-08-28 13:50:52,210:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,212:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2006_daily.nc
+    2018-08-28 13:50:52,213:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2010_daily.nc
+    2018-08-28 13:50:52,215:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,217:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2006_daily.nc
+    2018-08-28 13:50:52,219:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,220:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,222:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2006_daily.nc
+    2018-08-28 13:50:52,223:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2010_daily.nc
+    2018-08-28 13:50:52,224:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,225:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,226:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,227:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2008_daily.nc
+    2018-08-28 13:50:52,228:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2010_daily.nc
+    2018-08-28 13:50:52,229:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2006_daily.nc
+    2018-08-28 13:50:52,230:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,230:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,231:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
+    2018-08-28 13:50:52,232:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,232:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,233:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,234:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2010_daily.nc
+    2018-08-28 13:50:52,234:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2008_daily.nc
+    2018-08-28 13:50:52,235:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2006_daily.nc
+    2018-08-28 13:50:52,235:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2008_daily.nc
+    2018-08-28 13:50:52,236:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2006_daily.nc
+    2018-08-28 13:50:52,236:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,237:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer3d_ModelLevel_2010_3hourly.nc
+    2018-08-28 13:50:52,237:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,238:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2006_3hourly.nc
+    2018-08-28 13:50:52,238:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
+    2018-08-28 13:50:52,239:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2008_daily.nc
+    2018-08-28 13:50:52,239:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,240:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2008_daily.nc
+    2018-08-28 13:50:52,240:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2010_daily.nc
+    2018-08-28 13:50:52,241:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2006_daily.nc
+    2018-08-28 13:50:52,241:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,242:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,242:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,242:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_deltaz3d_ModelLevel_2010_3hourly.nc
+    2018-08-28 13:50:52,243:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2008_3hourly.nc
+    2018-08-28 13:50:52,243:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
+    2018-08-28 13:50:52,244:DEBUG:
+    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_humidity3d_ModelLevel_2010_3hourly.nc
 
 
 Okay, let’s see what is in there.
@@ -546,8 +884,10 @@ Okay, let’s see what is in there.
     Pyaerocom ReadGridded
     ---------------------
     Model ID: CAM5.3-Oslo_CTRL2016
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
     Available years: [2006, 2008, 2010]
+    Available time resolutions ['3hourly', 'daily']
 
 
 Let’s load results for the aerosol optical depth (*od550aer*) for march
@@ -564,9 +904,18 @@ data object has to be accessed using the first index of the tuple.
 
 .. parsed-literal::
 
-    FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
+    2018-08-28 13:50:52,288:DEBUG:
+    FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
+    2018-08-28 13:51:16,876:WARNING:
+    Invalid time dimension.
+    Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
+    2018-08-28 13:51:16,877:WARNING:
+    Invalid time axis in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. Attempting to correct.
+    2018-08-28 13:51:17,414:INFO:
     Rolling longitudes to -180 -> 180 definition
+    2018-08-28 13:51:17,418:INFO:
     Applying temporal cropping of result cube
+    2018-08-28 13:51:17,418:INFO:
     Cropping along time axis based on Timestamps
 
 
@@ -585,20 +934,18 @@ is in there.
 .. parsed-literal::
 
     pyaerocom.GriddedData: CAM5.3-Oslo_CTRL2016
-    Grid data: Aerosol optical depth at 550nm / (1) (time: 31; latitude: 192; longitude: 288)
+    Grid data: Aerosol optical depth at 550nm / (1) (time: 248; latitude: 192; longitude: 288)
          Dimension coordinates:
-              time                            x             -               -
-              latitude                        -             x               -
-              longitude                       -             -               x
+              time                            x              -               -
+              latitude                        -              x               -
+              longitude                       -              -               x
          Attributes:
-              CDI: Climate Data Interface version 1.8.2 (http://mpimet.mpg.de/cdi)
-              CDO: Climate Data Operators version 1.8.2 (http://mpimet.mpg.de/cdo)
               Conventions: CF-1.0
               NCO: 4.3.7
               Version: $Name$
               case: optINSITUnRemote
-              frequency: day
-              history: Thu Oct 05 12:45:21 2017: cdo daymean ./aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc...
+              history: Wed Feb  8 11:55:24 2017: ncatted -O -a units,od550aer,o,c,1 TMPmnth_od550aer.2010-01.nc
+    Wed...
               host: r10i0n0
               initial_file: /work/shared/noresm/inputdata/atm/cam/inic/fv/cami-mam3_0000-01-01_0.9...
               logname: kirkevag
@@ -632,30 +979,171 @@ that we extracted.
     weighted_mean
 
 
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/analysis/cartography.py:377: UserWarning: Using DEFAULT_SPHERICAL_EARTH_RADIUS.
+      warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+
+
 
 
 .. parsed-literal::
 
-    masked_array(data=[0.13791640320289586, 0.14124750077282458,
-                       0.14026821774460266, 0.13765764062688907,
-                       0.13799386441924807, 0.13356850899504383,
-                       0.1360614300579914, 0.13855871749949283,
-                       0.13865845188822973, 0.1418257387148213,
-                       0.14057638401825043, 0.1383954795505587,
-                       0.1439754144248747, 0.1461116937705798,
-                       0.14848172934485668, 0.1504189577232701,
-                       0.15773716932199822, 0.1669795588240825,
-                       0.17558162125906104, 0.17707022826867758,
-                       0.17843404416301747, 0.18309553886295593,
-                       0.17637980641255796, 0.16969895404314983,
-                       0.16454942855787366, 0.16468216159671398,
-                       0.1701799164857099, 0.17152435759051723,
-                       0.17110234928683343, 0.16790393840056056,
-                       0.1654223999902774],
+    masked_array(data=[0.13707124521646233, 0.1373723321458452,
+                       0.13640485953205256, 0.13661781887097216,
+                       0.13832752529888542, 0.13943940046228157,
+                       0.13906411166070964, 0.13903393246626614,
+                       0.1389572414826536, 0.1387749384645807,
+                       0.13859131867159108, 0.1392616918989809,
+                       0.14148057496888855, 0.14422837963496726,
+                       0.14485939091969455, 0.14382647033828228,
+                       0.1429247987684401, 0.14132091948668582,
+                       0.13963221183937138, 0.13899722350877253,
+                       0.1397316309699972, 0.140429463344697,
+                       0.13979820277861796, 0.13931129118926358,
+                       0.1382730558010573, 0.13705837683541341,
+                       0.13626943214697504, 0.13656861866930264,
+                       0.13828947462737487, 0.13862655803764867,
+                       0.13801004090860575, 0.13816556759043425,
+                       0.13891506072795737, 0.13885491398159325,
+                       0.13791297848698755, 0.13786872604208614,
+                       0.1383256634671104, 0.13802173506964452,
+                       0.13734295888393036, 0.13670887870882611,
+                       0.13583143441388867, 0.134603109796585,
+                       0.1333276946610027, 0.13244025688660607,
+                       0.13297618583370702, 0.13337864744931724,
+                       0.13325346476065494, 0.13273727817161787,
+                       0.13272747346724398, 0.1333092276404929,
+                       0.1333797519133725, 0.13433262445580588,
+                       0.13693531065433906, 0.13957995569444528,
+                       0.13962851699132414, 0.13859857966249953,
+                       0.13791145087797585, 0.13739929473269538,
+                       0.13723982261191392, 0.1380459466011261,
+                       0.13946419690290854, 0.14042819240907664,
+                       0.13931406757480316, 0.13866676878977408,
+                       0.13822170463985428, 0.13778772182438,
+                       0.13651838547716436, 0.13615014242990736,
+                       0.13744348000076528, 0.13995109480361492,
+                       0.1411970413507769, 0.14199804429653667,
+                       0.14258413847594195, 0.14220802982119984,
+                       0.14140121976767336, 0.14120394722823995,
+                       0.14162688135139243, 0.14188006322900268,
+                       0.1414684469806162, 0.14223318292711828,
+                       0.14334570700875637, 0.14337269717823287,
+                       0.1421074317050635, 0.14175130499968785,
+                       0.14035452134831083, 0.1388756394628699,
+                       0.13762539366487916, 0.13717837639346694,
+                       0.13737289737903915, 0.13747045610992034,
+                       0.13745494956066656, 0.1378100303636898,
+                       0.1382755441221473, 0.13892579338926514,
+                       0.13933988912083564, 0.14051427623407034,
+                       0.142736023510284, 0.14312065245179398,
+                       0.14234607987063616, 0.14275634737217646,
+                       0.1437991330395562, 0.14502984115661513,
+                       0.14599941360148747, 0.14601582462470347,
+                       0.14640728011839496, 0.14610034153933943,
+                       0.14537368722625044, 0.14578767727711434,
+                       0.14607726598563622, 0.14605008459289356,
+                       0.1460609898662843, 0.14703622375646566,
+                       0.1478730521106064, 0.14803795993760244,
+                       0.14711712713761174, 0.14729376248796983,
+                       0.14851956275002343, 0.14967160487601566,
+                       0.14983351441403536, 0.1495072510640238,
+                       0.14926850286432325, 0.14944789863237368,
+                       0.14876039934421642, 0.1488120453274109,
+                       0.1498588856911828, 0.15175075392107956,
+                       0.15258806488973015, 0.15286511152135315,
+                       0.15386619169423127, 0.15464113549871336,
+                       0.15379449982944376, 0.1543578549941653,
+                       0.15808873311045932, 0.16173720799971888,
+                       0.16307998367790294, 0.16233174812565518,
+                       0.1622602797752089, 0.16177535638150164,
+                       0.16164991550698743, 0.16343753440952663,
+                       0.16855594710934646, 0.1719380617102505,
+                       0.173537727285836, 0.17268164846620168,
+                       0.17202374731742412, 0.17073150361330935,
+                       0.1704552789189035, 0.17349453196470094,
+                       0.17750026098212954, 0.17998882407680658,
+                       0.18054660903180453, 0.17991221467411075,
+                       0.17879081786543402, 0.17698044738876634,
+                       0.17481216302184016, 0.1751095588835362,
+                       0.17730235300005773, 0.17828917633948513,
+                       0.17798693352549597, 0.1772903761042442,
+                       0.17719593452088098, 0.1767203402146187,
+                       0.17450815886422721, 0.17625358243592468,
+                       0.17887701620267582, 0.1808136330474918,
+                       0.1813785961957623, 0.18172509147369986,
+                       0.18184876453017618, 0.18271725245843057,
+                       0.18252036797692608, 0.183265249795722,
+                       0.1844909214607128, 0.18434110595951833,
+                       0.1836490864781075, 0.1819315626374836,
+                       0.18101720818481568, 0.17955118573504456,
+                       0.17735986473912252, 0.17627436278489908,
+                       0.17619709057120855, 0.17565989305918675,
+                       0.173237661796461, 0.17174118540853084,
+                       0.1715433743879658, 0.17103179349744851,
+                       0.17009143210388886, 0.17036903993748823,
+                       0.1701968332986933, 0.16931755448903732,
+                       0.16809969031904087, 0.16694191454539364,
+                       0.16614923082470998, 0.16574702124976093,
+                       0.16442009711927774, 0.163817742262745,
+                       0.16433976044469292, 0.16499539122759532,
+                       0.16405480998741243, 0.1628713751723746,
+                       0.16180210801804973, 0.16132300069909628,
+                       0.16076469208509833, 0.1619812080249729,
+                       0.16568802507402378, 0.16834462196868816,
+                       0.1688091207855011, 0.16874451605557048,
+                       0.16918274517630819, 0.16976238755144346,
+                       0.16853813844367546, 0.1689505218199379,
+                       0.17008794466862398, 0.1713995695153675,
+                       0.17160758485378236, 0.1719104396714293,
+                       0.17141519454588505, 0.17098573396603006,
+                       0.17014341748677245, 0.17124457916107655,
+                       0.17343997831072036, 0.17267167552123458,
+                       0.17119276567171318, 0.17110151528151052,
+                       0.17129777088602452, 0.1706512286992157,
+                       0.1697909385002585, 0.1701305419449026,
+                       0.17177346958794434, 0.17199251637814433,
+                       0.1717777280458928, 0.17140460031838234,
+                       0.1708872614290405, 0.16939067518025105,
+                       0.16730749171621387, 0.16687632033654826,
+                       0.16768823626524956, 0.16777431113498986,
+                       0.16696977975746236, 0.1663374313210154,
+                       0.16650691596502723, 0.16594519982156614,
+                       0.1651931704892058, 0.1651909843511451,
+                       0.16565543871393762, 0.1660138264006659,
+                       0.16468225292020627, 0.16419141107042712],
                  mask=[False, False, False, False, False, False, False, False,
                        False, False, False, False, False, False, False, False,
                        False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False],
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False,
+                       False, False, False, False, False, False, False, False],
            fill_value=1e+20)
 
 
@@ -670,7 +1158,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f189525b8d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f5c680b50b8>
 
 
 

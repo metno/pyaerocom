@@ -12,6 +12,16 @@ an interface for importing results from a single dataset.
 
     import os
     import pyaerocom as pya
+    pya.change_verbosity('critical')
+
+
+.. parsed-literal::
+
+    2018-08-28 14:17:50,070:INFO:
+    Reading aliases ini file: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/aliases.ini
+    2018-08-28 14:17:50,897:WARNING:
+    geopy library is not available. Aeolus data read not enabled
+
 
 Define two models (this list can contain as many models as you like)
 
@@ -32,12 +42,6 @@ aerosol-climate model, you may search if data exists …
     except Exception as e:
         print(repr(e))
 
-
-.. parsed-literal::
-
-    Found exactly one match for search pattern *ECHAM*salsa*CTRL*2015: ECHAM6-SALSA_AP3-CTRL2015
-
-
 … and include it:
 
 .. code:: ipython3
@@ -52,7 +56,7 @@ done in a later process.
 
 .. code:: ipython3
 
-    read = pya.io.ReadGriddedMulti(models, '2010','2011', verbose=False)
+    read = pya.io.ReadGriddedMulti(models, '2010','2011')
     print(read)
 
 
@@ -68,20 +72,26 @@ done in a later process.
     Pyaerocom ReadGridded
     ---------------------
     Model ID: AATSR_SU_v4.3
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
     Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    Available time resolutions ['daily']
     
     Pyaerocom ReadGridded
     ---------------------
     Model ID: CAM5.3-Oslo_CTRL2016
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
     Available years: [2006, 2008, 2010]
+    Available time resolutions ['3hourly', 'daily']
     
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECHAM6-SALSA_AP3-CTRL2015
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/ECHAM6-SALSA_AP3-CTRL2015/renamed
     Available variables: ['depbc', 'depdust', 'depoa', 'depso4', 'depss', 'emibc', 'emidms', 'emidust', 'emiso2', 'emiso4', 'emiss', 'emivoc', 'emivoct', 'loadbc', 'loaddust', 'loadoa', 'loadso4', 'loadss', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'sconcbc', 'sconcdust', 'sconcoa', 'sconcso4', 'sconcss']
     Available years: [2010]
+    Available time resolutions ['monthly']
 
 
 As you can see, the 3 different instances of the ``ReadGridded`` class
@@ -102,13 +112,6 @@ Read all variables for all models
 
     result_dict = read.read(test_vars, ts_type="daily")
 
-
-.. parsed-literal::
-
-    OSError('No files could be found for dataset ECHAM6-SALSA_AP3-CTRL2015, variable od550aer and daily data in specified time interval 2010-01-01 00:00:00-2011-01-01 00:00:00',)
-    OSError('No files could be found for dataset ECHAM6-SALSA_AP3-CTRL2015, variable od550dust and daily data in specified time interval 2010-01-01 00:00:00-2011-01-01 00:00:00',)
-
-
 As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
 this data manually.
@@ -119,16 +122,6 @@ this data manually.
     r.vars
     r.verbose = True
     r.read_var("od550aer", ts_type="monthly")
-
-
-.. parsed-literal::
-
-    FOUND MATCH: aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc
-    Invalid time dimension.
-    Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since  2001-01-01 00:00:00): ['2010-01' '2010-02' '2010-03' '2010-08']\nReceived values after conversion: ['2010-01' '2010-03' '2010-04' '2010-09']",)
-    Invalid time axis in file aerocom3_ECHAM6-SALSA_AP3-CTRL2015_od550aer_Column_2010_monthly.nc. Attempting to correct.
-    Applying temporal cropping of result cube
-    Cropping along time axis based on Timestamps
 
 
 
@@ -161,8 +154,10 @@ string representation)
     Pyaerocom ReadGridded
     ---------------------
     Model ID: AATSR_SU_v4.3
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
     Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    Available time resolutions ['daily']
     
     Loaded GriddedData objects:
     
@@ -181,8 +176,10 @@ string representation)
     Pyaerocom ReadGridded
     ---------------------
     Model ID: CAM5.3-Oslo_CTRL2016
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
     Available years: [2006, 2008, 2010]
+    Available time resolutions ['3hourly', 'daily']
     
     Loaded GriddedData objects:
     
@@ -201,8 +198,10 @@ string representation)
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECHAM6-SALSA_AP3-CTRL2015
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/ECHAM6-SALSA_AP3-CTRL2015/renamed
     Available variables: ['depbc', 'depdust', 'depoa', 'depso4', 'depss', 'emibc', 'emidms', 'emidust', 'emiso2', 'emiso4', 'emiss', 'emivoc', 'emivoct', 'loadbc', 'loaddust', 'loadoa', 'loadso4', 'loadss', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'sconcbc', 'sconcdust', 'sconcoa', 'sconcso4', 'sconcss']
     Available years: [2010]
+    Available time resolutions ['monthly']
     
     Loaded GriddedData objects:
     
@@ -277,7 +276,6 @@ containing the od550aer values and draw a map.
     
     Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
     
-    Cropping along time axis based on Timestamps
     Start / stop after crop: 2010-03-15 10:30:00 - 2010-06-22 10:30:00
 
 

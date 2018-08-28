@@ -8,6 +8,64 @@ Documentation of the pyaerocom programming interface.
 	1. The code documentation is far from complete 
 	2. For developers: please use the `NumPy docstring standard <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html>`__. 
 
+Data types and data representation
+----------------------------------
+
+..todo::
+
+	Introduce for main data classes :class:`UngriddedData`, :class:`GriddedData`, :class:`StationData` and :class:`CollocatedData`
+	
+Gridded data
+^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.griddeddata
+   :members:
+   :undoc-members:
+
+.. _ungriddeddata:
+
+Ungridded data 
+^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.ungriddeddata
+   :members:
+   :undoc-members:
+
+Collocated data
+^^^^^^^^^^^^^^^
+
+.. note::
+
+	This module is a beta version and currently more a draft for handling of merged and temorally regularised data objects. It may undergo significant changes in the near future.
+	
+.. automodule:: pyaerocom.collocateddata
+   :members:
+   :undoc-members:
+   
+Other data classes
+^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.station
+   :members:
+   :undoc-members:
+   
+.. automodule:: pyaerocom.stationdata
+   :members:
+   :undoc-members:
+   
+.. automodule:: pyaerocom.vertical_profile
+   :members:
+   :undoc-members:
+
+Collocation of data
+-------------------
+
+This module contains collocation methods (cf. :class:`CollocatedData`)
+
+.. automodule:: pyaerocom.collocation
+   :members:
+   :undoc-members:
+   
 .. _reading: 
 
 Data import (io module)
@@ -130,41 +188,6 @@ EBAS I/O (low level)
 .. automodule:: pyaerocom.io.ebas_varinfo
    :members:
    :undoc-members:
-  
-Data types and data representation
-----------------------------------
-
-Gridded data
-^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.griddeddata
-   :members:
-   :undoc-members:
-
-.. _ungriddeddata:
-
-Ungridded data 
-^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.ungriddeddata
-   :members:
-   :undoc-members:
-   
-   
-Other data classes
-^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.station
-   :members:
-   :undoc-members:
-   
-.. automodule:: pyaerocom.stationdata
-   :members:
-   :undoc-members:
-   
-.. automodule:: pyaerocom.vertical_profile
-   :members:
-   :undoc-members:
 
 .. _io: 
 
@@ -190,9 +213,13 @@ File naming conventions
    :members:
    :undoc-members:
    
-I/O helper methods
+I/O helpers and utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. automodule:: pyaerocom.io.utils
+   :members:
+   :undoc-members:
+   
 .. automodule:: pyaerocom.io.helpers
    :members:
    :undoc-members:
@@ -204,13 +231,16 @@ Test file access
    :members:
    :undoc-members:
    
-Regions / Domains
--------------------------
+Regions and  data filtering
+----------------------------
 
 .. automodule:: pyaerocom.region
    :members:
    :undoc-members:
 
+.. automodule:: pyaerocom.filter
+   :members:
+   :undoc-members:
   
 Plotting / Visualisation
 -------------------------

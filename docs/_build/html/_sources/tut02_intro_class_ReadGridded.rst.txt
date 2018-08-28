@@ -30,11 +30,19 @@ information about what is in there.
 .. code:: ipython3
 
     import pyaerocom as pya
+    pya.change_verbosity('critical')
     read = pya.io.ReadGridded(name="ECMWF_CAMS_REAN",
                               start_time="1-1-2003",
-                              stop_time="31-12-2007", 
-                              verbose=False)
+                              stop_time="31-12-2007")
     print(read)
+
+
+.. parsed-literal::
+
+    2018-08-28 14:17:24,431:INFO:
+    Reading aliases ini file: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/aliases.ini
+    2018-08-28 14:17:25,154:WARNING:
+    geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
@@ -43,8 +51,10 @@ information about what is in there.
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECMWF_CAMS_REAN
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
     Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 9999]
+    Available time resolutions ['daily', 'monthly']
 
 
 The output contains information about all variables that were found and
@@ -140,8 +150,10 @@ Now let’s double check if all variables have been imported.
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECMWF_CAMS_REAN
-    Available variables: ['od550bc', 'od550dust', 'od550oa', 'od550so4']
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
+    Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 9999]
+    Available time resolutions ['daily', 'monthly']
     
     Loaded GriddedData objects:
     
@@ -264,8 +276,14 @@ series at the coordinates in the city of Leipzig, Germany.
     tit = ax.set_title("AOD @ 550nm")
 
 
+.. parsed-literal::
 
-.. image:: tut02_intro_class_ReadGridded/tut02_intro_class_ReadGridded_17_0.png
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/analysis/cartography.py:377: UserWarning: Using DEFAULT_SPHERICAL_EARTH_RADIUS.
+      warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+
+
+
+.. image:: tut02_intro_class_ReadGridded/tut02_intro_class_ReadGridded_17_1.png
 
 
 In the following section, the ``ReadGriddedMulti`` class is introduced,
