@@ -433,6 +433,9 @@ class CollocatedData(object):
     def __contains__(self, val):
         return self.data.__contains__(val)
     
+    def __repr__(self):
+        return repr(self.data)
+    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")

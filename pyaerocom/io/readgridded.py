@@ -1162,9 +1162,9 @@ class ReadGriddedMulti(object):
             try:
                 reader.read(var_names, start_time, stop_time, ts_type)
             except Exception as e:
-                self.logger.exception('Failed to read data of {}\n'
-                                      'Error message: {}'.format(name,
-                                                      repr(e)))
+                reader.logger.exception('Failed to read data of {}\n'
+                                        'Error message: {}'.format(name,
+                                                                   repr(e)))
         return self.results
     
     def read_individual_years(self, var_names, years_to_load, 
