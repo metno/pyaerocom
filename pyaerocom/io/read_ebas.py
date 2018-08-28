@@ -60,7 +60,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.04_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.05_" + ReadUngriddedBase.__baseversion__
     
     #: preferred order of data statistics. Some files may contain multiple 
     #: columns for one variable, where each column corresponds to one of the
@@ -543,8 +543,8 @@ class ReadEbas(ReadUngriddedBase):
         data_alt = stat_alt + meas_height
             
         
-        data_out['stat_lon'] = float(meta['station_latitude'])
-        data_out['stat_lat'] = float(meta['station_longitude'])
+        data_out['stat_lon'] = float(meta['station_longitude'])
+        data_out['stat_lat'] = float(meta['station_latitude'])
         data_out['stat_alt'] = stat_alt
         data_out['station_name'] = meta['station_name']
         data_out['PI'] = meta['submitter']
