@@ -519,6 +519,23 @@ class ReadGridded(object):
         self.match_files = match_files
         return match_files
     
+    def _check_coord_defs(self, cube):
+        """Checks, and if necessary and applicable, updates coords names in Cube
+        
+        Parameters
+        ----------
+        cube : iris.cube.Cube
+            input cube
+        
+        Returns
+        -------
+        iris.cube.Cube
+            updated or unchanged cube
+        """
+        for c in cube.coords():
+            print(c.long_name, c.name, c.standard_name)
+        return cube
+    
     def load_files(self, var_name, files):
         """Load list of files containing variable to read into Cube instances
         
@@ -548,6 +565,7 @@ class ReadGridded(object):
             try:
                 finfo = self.file_convention.get_info_from_file(_file)
                 cube = iris.load_cube(_file, var_constraint)
+                #cube = 
                 if const.GRID_IO["CHECK_TIME_FILENAME"]:
                     
                     if not check_time_coord(cube, ts_type=finfo["ts_type"], 

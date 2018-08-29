@@ -98,7 +98,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
                    od440aer       = 15,
                    od380aer       = 17,
                    od340aer       = 18,
-                   ang4487aer_file= 37)
+                   ang4487aer     = 37)
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -106,13 +106,13 @@ class ReadAeronetSunV2(ReadAeronetBase):
     AUX_REQUIRES = {'od550aer'   :   ['od440aer', 
                                       'od500aer',
                                       'ang4487aer'],
-                    'ang4487aer' :   ['od440aer',
-                                      'od870aer']}
+                    'ang4487aer_calc' :   ['od440aer',
+                                           'od870aer']}
                     
     #: Functions that are used to compute additional variables (i.e. one 
     #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {'od550aer'   :   calc_od550aer,
-                'ang4487aer' :   calc_ang4487aer}
+    AUX_FUNS = {'od550aer'          :   calc_od550aer,
+                'ang4487aer_calc'   :   calc_ang4487aer}
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -260,7 +260,7 @@ if __name__=="__main__":
         
     read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
     data = read.read_first_file(vars_to_retrieve=['ang4487aer', 
-                                                  'ang4487aer_file'])
+                                                  'ang4487aer_calc'])
     print(data)
     
     
