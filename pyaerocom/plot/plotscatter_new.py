@@ -14,19 +14,33 @@ from pyaerocom.mathutils import calc_statistics
 def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None, 
                  obs_id=None, start=None, stop=None, 
                  ts_type=None, stations_ok=None, filter_name=None, 
-                 statistics=None, savefig=False, save_dir=None, save_name=None,
-                 add_data_missing_note=False, ax=None):
+                 lowlim_stats=None, highlim_stats=None, savefig=False, 
+                 save_dir=None, save_name=None, add_data_missing_note=False, 
+                 ax=None, loglog=True):
     
+    if isinstance(model_vals, list):
+        model_vals = np.asarray(model_vals)
+    if isinstance(obs_vals, list):
+        obs_vals = np.asarray(obs_vals)
+    try:
+        VAR_PARAM = const.VAR_PARAM[var_name]
+    except:
+        VAR_PARAM = const.VAR_PARAM.DEFAULT
+    xlim = VAR_PARAM['scat_xlim']
+    ylim = VAR_PARAM['scat_ylim'] 
     if ax is None:
         fig, ax = plt.subplots(figsize=(10,8))
     if var_name is None:
         var_name = 'n/d'
+
     
-    if statistics is None:
-        statistics = calc_statistics(model_vals, obs_vals)
+    statistics = calc_statistics(model_vals, obs_vals,
+                                 lowlim_stats, highlim_stats)
     
-    ax.loglog(obs_vals, model_vals, ' k+')
-    
+    if loglog:
+        ax.loglog(obs_vals, model_vals, ' k+')
+    else:
+        ax.plot(obs_vals, model_vals, ' k+')
     
     try:
         freq_np =TS_TYPE_TO_NUMPY_FREQ[ts_type]
@@ -39,12 +53,12 @@ def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None,
     except:
         start_str = 'n/d'
         stop_str = 'n/d'
-    try:
-        VAR_PARAM = const.VAR_PARAM[var_name]
-    except:
-        VAR_PARAM = const.VAR_PARAM.DEFAULT
-    ax.set_xlim(VAR_PARAM['scat_xlim'])
-    ax.set_ylim(VAR_PARAM['scat_ylim'])
+    
+    if not loglog:
+        xlim[0] = 0
+        ylim[0] = 0
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
     ax.set_xlabel('Obs: {}'.format(obs_id), fontsize=14)
     ax.set_ylabel('{}'.format(model_id), fontsize=14)
     ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type))
@@ -92,13 +106,18 @@ def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None,
                         xy=xypos[xypos_index], xycoords='axes fraction', 
                         fontsize=10, color='red')
     xypos_index += 1
-    ax.annotate('R: {:.3f}'.format(statistics['R']),
+    ax.annotate('R (Pearson): {:.3f}'.format(statistics['R']),
                         xy=xypos[xypos_index], xycoords='axes fraction', 
                         fontsize=10, color='red')
     xypos_index += 1
     ax.annotate('RMS: {:.3f}'.format(statistics['rms']),
                         xy=xypos[xypos_index], xycoords='axes fraction', 
                         fontsize=10, color='red')
+    xypos_index += 1
+    ax.annotate('R (Kendall): {:.3f}%'.format(statistics['R_kendall']),
+                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+    
     xypos_index += 1
     ax.annotate('FGE: {:.1f}%'.format(statistics['fge']),
                         xy=xypos[xypos_index], xycoords='axes fraction', 

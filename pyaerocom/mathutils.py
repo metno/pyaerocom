@@ -6,12 +6,12 @@ Mathematical low level utility methods ofcd pyaerocom
 
 import numpy as np
 from pyaerocom import const, logger
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import pearsonr, spearmanr, kendalltau
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
 ### OTHER FUNCTIONS
-def calc_statistics(data, ref_data):
+def calc_statistics(data, ref_data, lowlim=None, highlim=None):
     """Calc statistical properties from two data arrays
     
     Calculates the following statistical properties based on the two provided
@@ -38,7 +38,12 @@ def calc_statistics(data, ref_data):
         data
     ref_data : ndarray
         array containing data, that is used to compare `data` array with
-    
+    lowlim : float
+        lower end of considered value range (e.g. if set 0, then all datapoints
+        where either ``data`` or ``ref_data`` is smaller than 0 are removed)
+    highlim : float
+        upper end of considered value range
+        
     Returns
     -------
     dict
@@ -51,31 +56,40 @@ def calc_statistics(data, ref_data):
         
     """
     data = np.asarray(data)
-    reference_data = np.asarray(ref_data)
+    ref_data = np.asarray(ref_data)
     
     if not data.ndim == 1 or not ref_data.ndim == 1:
         raise ValueError('Invalid input. Data arrays must be one dimensional')
         
     result = {}
-    mask = ~np.isnan(reference_data) * ~np.isnan(data)
+    mask = ~np.isnan(ref_data) * ~np.isnan(data)
     
-    data, reference_data = data[mask], reference_data[mask]
+    data, ref_data = data[mask], ref_data[mask]
+    if lowlim is not None:
+        valid = np.logical_and(data>lowlim, ref_data>lowlim)
+        data = data[valid]
+        ref_data = ref_data[valid]
+    if highlim is not None:
+        valid = np.logical_and(data<highlim, ref_data<highlim)
+        data = data[valid]
+        ref_data = ref_data[valid]
     
-    difference = data - reference_data
+    difference = data - ref_data
     num_points = sum(mask)
     
-    result['refdata_mean'] = np.mean(reference_data)
+    result['refdata_mean'] = np.mean(ref_data)
     result['data_mean'] = np.mean(data)
     result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
-    result['nmb'] = np.sum(difference) / np.sum(reference_data)*100.
-    tmp = difference / (data + reference_data)
+    result['nmb'] = np.sum(difference) / np.sum(ref_data)*100.
+    tmp = difference / (data + ref_data)
     
     result['mnmb'] = 2. / num_points * np.sum(tmp) * 100.
     result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) * 100.
     #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
     
-    result['R'] = pearsonr(data, reference_data)[0]
-    result['R_spearman'] = spearmanr(data, reference_data)[0]
+    result['R'] = pearsonr(data, ref_data)[0]
+    result['R_spearman'] = spearmanr(data, ref_data)[0]
+    result['R_kendall'] = kendalltau(data, ref_data)[0]
     result['totnum'] = len(mask)
     result['success'] = num_points
     

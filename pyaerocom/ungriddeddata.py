@@ -12,7 +12,8 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
 from pyaerocom import StationData
 from pyaerocom.utils import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
-from pyaerocom.helpers import to_pandas_timestamp, same_meta_dict
+from pyaerocom.helpers import (to_pandas_timestamp, same_meta_dict, 
+                               TS_TYPE_TO_PANDAS_FREQ)
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -321,7 +322,8 @@ class UngriddedData(object):
         
         Todo
         ----
-        Review for retrieval of profile data (e.g. Lidar data)
+        - Review for retrieval of profile data (e.g. Lidar data)
+        - Handle stop time if only year is provided 
         
         Parameters
         ----------
@@ -337,7 +339,8 @@ class UngriddedData(object):
             stop time, optional (if not None, input must be convertible into
             pandas.Timestamp)
         freq : str
-            pandas frequency string (e.g. 'D' for daily, 'M' for month end)
+            pandas frequency string (e.g. 'D' for daily, 'M' for month end) or
+            valid pyaerocom ts_type
         interp_nans : bool
             if True, all NaN values in the time series for each 
             variable are interpolated using linear interpolation
@@ -369,7 +372,10 @@ class UngriddedData(object):
             stop = pd.Timestamp('2200')
         else:
             stop = to_pandas_timestamp(stop)
-            
+        
+        if freq in TS_TYPE_TO_PANDAS_FREQ:
+            freq = TS_TYPE_TO_PANDAS_FREQ[freq]
+        
         temp_dict = StationData()
         val = self.metadata[meta_idx]
         
@@ -431,6 +437,92 @@ class UngriddedData(object):
             temp_dict[var] = data
         return temp_dict
     
+    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
+                            freq=None, interp_nans=False, 
+                            min_coverage_interp=0.68):
+        """Convert all possible stations to :class:`StationData` objects
+
+        Parameters
+        ----------
+        vars_to_convert : :obj:`list` or :obj:`str`, optional
+            variables that are supposed to be converted. If None, use all 
+            variables that are available for this station
+        start
+            start time, optional (if not None, input must be convertible into
+            pandas.Timestamp)
+        stop 
+            stop time, optional (if not None, input must be convertible into
+            pandas.Timestamp)
+        freq : str
+            pandas frequency string (e.g. 'D' for daily, 'M' for month end)
+        interp_nans : bool
+            if True, all NaN values in the time series for each 
+            variable are interpolated using linear interpolation
+        min_coverage_interp : float
+            required coverage fraction for interpolation (default is 0.68, i.e.
+            roughly corresponding to 1 sigma)
+
+        Returns
+        -------
+        list 
+            list containing loaded instances of :class:`StationData` for each
+            station in :attr:`metadata`, where :func:`to_station_data` was 
+            successful, and ``None`` entries for meta data indices where 
+            :func:`to_station_data` failed (e.g. because no temporal match, 
+            etc.)
+
+        """
+        out_data = []
+        for index, val in self.metadata.items():
+            try:
+                data = self.to_station_data(index, vars_to_convert, start, 
+                                            stop, freq, interp_nans, 
+                                            min_coverage_interp)
+                
+                out_data.append(data)
+            # catch the exceptions that are acceptable
+            except (VarNotAvailableError, TimeMatchError, 
+                    DataCoverageError) as e:
+                logger.warning('Failed to convert to StationData '
+                               'Error: {}'.format(repr(e)))
+                # append None to make sure indices of stations are 
+                # preserved in output array
+                out_data.append(None)
+        return out_data
+    
+    # TODO: check more general cases (i.e. no need to convert to StationData
+    # if no time conversion is required)
+    def get_variable_data(self, variables, start=None, stop=None,
+                          ts_type=None, **kwargs):
+        """Extract all data points of a certain variable
+        
+        Parameters
+        ----------
+        vars_to_extract : :obj:`str` or :obj:`list`
+            all variables that are supposed to be accessed
+        """
+        if isinstance(variables, str):
+            variables = [variables]
+        all_stations = self.to_station_data_all(variables, start, stop, 
+                                                freq=ts_type, **kwargs)
+        result = {}
+        num_stats = {}
+        for var in variables:
+            result[var] = []
+            num_stats[var] = 0
+        for stat_data in all_stations:
+            if stat_data is not None:
+                num_points = len(stat_data.dtime)
+                for var in variables:
+                    if var in stat_data:
+                        num_stats[var] += 1
+                        result[var].extend(stat_data[var])
+                    else:
+                        result[var].extend([np.nan]*num_points)
+        result['num_stats'] = num_stats
+        return result
+                     
+        
     def _check_filter_match(self, meta, str_f, list_f, range_f):
         """Helper method that checks if station meta item matches filters
         
@@ -635,61 +727,7 @@ class UngriddedData(object):
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
         new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
         return new
-            
-            
-    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
-                            freq=None, interp_nans=False, 
-                            min_coverage_interp=0.68):
-        """Convert all possible stations to :class:`StationData` objects
-
-        Parameters
-        ----------
-        vars_to_convert : :obj:`list` or :obj:`str`, optional
-            variables that are supposed to be converted. If None, use all 
-            variables that are available for this station
-        start
-            start time, optional (if not None, input must be convertible into
-            pandas.Timestamp)
-        stop 
-            stop time, optional (if not None, input must be convertible into
-            pandas.Timestamp)
-        freq : str
-            pandas frequency string (e.g. 'D' for daily, 'M' for month end)
-        interp_nans : bool
-            if True, all NaN values in the time series for each 
-            variable are interpolated using linear interpolation
-        min_coverage_interp : float
-            required coverage fraction for interpolation (default is 0.68, i.e.
-            roughly corresponding to 1 sigma)
-
-        Returns
-        -------
-        list 
-            list containing loaded instances of :class:`StationData` for each
-            station in :attr:`metadata`, where :func:`to_station_data` was 
-            successful, and ``None`` entries for meta data indices where 
-            :func:`to_station_data` failed (e.g. because no temporal match, 
-            etc.)
-
-        """
-        out_data = []
-        for index, val in self.metadata.items():
-            try:
-                data = self.to_station_data(index, vars_to_convert, start, 
-                                            stop, freq, interp_nans, 
-                                            min_coverage_interp)
-                
-                out_data.append(data)
-            # catch the exceptions that are acceptable
-            except (VarNotAvailableError, TimeMatchError, 
-                    DataCoverageError) as e:
-                logger.warning('Failed to convert to StationData '
-                               'Error: {}'.format(repr(e)))
-                # append None to make sure indices of stations are 
-                # preserved in output array
-                out_data.append(None)
-        return out_data
-    
+        
     def station_data_to_ascii(self, vars_to_convert=None, start=None, stop=None, 
                               freq=None, interp_nans=False, 
                               min_coverage_interp=0.68):
@@ -1008,14 +1046,14 @@ class UngriddedData(object):
             station in the other object
             
         """
-        if len(self.all_datasets) > 1:
+        if len(self.contains_datasets) > 1:
             raise NotImplementedError('This data object contains data from '
                                       'more than one dataset and thus may '
                                       'include multiple station matches for '
                                       'each station ID. This method, however '
                                       'is implemented such, that it checks '
                                       'only the first match for each station')
-        elif len(other.all_datasets) > 1:
+        elif len(other.contains_datasets) > 1:
             raise NotImplementedError('Other data object contains data from '
                                       'more than one dataset and thus may '
                                       'include multiple station matches for '
@@ -1136,15 +1174,6 @@ class UngriddedData(object):
         
         return (dates, data_this_match, data_other_match)
     
-    ### Plotting and visualisation
-    def plot_scatter(self, var1, var2, **filter_attributes):
-        if filter_attributes:
-            data = self.filter_by_meta(**filter_attributes)
-        else:
-            data = self
-        
-        raise NotImplementedError
-     
     def __contains__(self, key):
         """Check if input key (str) is valid dataset, variable, instrument or
         station name
@@ -1263,6 +1292,8 @@ if __name__ == "__main__":
     read_v2 = ReadAeronetSunV2()
     read_v3 = ReadAeronetSunV3()
     
+    read_v2.read_first_file()
+    
     data_v2 = read_v2.read(vars_to_retrieve=read_v2.PROVIDES_VARIABLES, 
                            last_file=20)
     data_v3 = read_v3.read(vars_to_retrieve=read_v3.PROVIDES_VARIABLES, 
@@ -1280,7 +1311,10 @@ if __name__ == "__main__":
     plt.ylabel('AOD 550 nm, Aeronet Sun V3')
     plt.xlim([0,8])
     plt.ylim([0,8])
-    plt.grid()    
+    plt.grid()  
+    
+    data_monthly = data_v3.get_variable_data('od550aer',ts_type='monthly')['od550aer']
+    print(data_monthly)
     #t0_red = reduce_array_closest(t1, t0)
     
     
