@@ -1135,7 +1135,52 @@ class UngriddedData(object):
                     data_other_match.append(data_other[matches[0]])
         
         return (dates, data_this_match, data_other_match)
+    
+    ### Plotting and visualisation
+    def plot_scatter(self, var1, var2, **filter_attributes):
+        if filter_attributes:
+            data = self.filter_by_meta(**filter_attributes)
+        else:
+            data = self
+        
+        raise NotImplementedError
+     
+    def __contains__(self, key):
+        """Check if input key (str) is valid dataset, variable, instrument or
+        station name
+        
+        
+        Parameters
+        ----------
+        key : str
+            search key
             
+        Returns
+        -------
+        bool
+            True, if key can be found, False if not
+        """
+        
+        if not isinstance(key, str):
+            raise ValueError('Need string (e.g. variable name, station name, '
+                             'instrument name')
+        if key in self.contains_datasets:
+            return True
+        elif key in self.contains_vars:
+            return True
+        elif key in self.station_name:
+            return True
+        elif key in self.contains_instruments:
+            return True
+        return False
+        
+    def __repr__(self):
+        return ('{} <networks: {}; vars: {}; instruments: {};'
+                'No. of stations: {}'
+                .format(type(self).__name__,self.contains_datasets,
+                        self.contains_vars, self.contains_instruments,
+                        len(self.metadata)))
+        
     def __getitem__(self, key):
         return self.to_station_data(key)
     
