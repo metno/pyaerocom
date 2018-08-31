@@ -6,6 +6,7 @@ Low level classes and methods for io
 from collections import OrderedDict as od
 from os.path import join, exists, basename, splitext
 from pyaerocom import const
+from pyaerocom.exceptions import FileConventionError
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -29,21 +30,28 @@ class FileConventionRead(object):
     ts_pos : int
         position of information of temporal resolution in filename after 
         splitting using delimiter :attr:`file_sep` 
+    vert_pos : int
+        position of information about vertical resolution of data
     """
     _io_opts = const
-    def __init__(self, name="aerocom3", file_sep="", year_pos=-1,
-                 var_pos=-1, ts_pos=-1):
+    AEROCOM3_VERT_INFO = {'2d'  : ['surface', 'column', 'modellevel'],
+                          '3d'  : ['modellevelatstations']}
+    
+    def __init__(self, name="aerocom3", file_sep="", year_pos=None,
+                 var_pos=None, ts_pos=None, vert_pos=None):
        self.name = name
        self.file_sep = file_sep
        self.year_pos = year_pos
        self.var_pos = var_pos
        self.ts_pos = ts_pos
+       self.vert_pos = vert_pos
        
        try:
            self.import_default(self.name) 
        except:
            pass
       
+        
     def from_file(self, file):
         """Identify convention from a file
         
@@ -62,7 +70,7 @@ class FileConventionRead(object):
             
         Raises
         ------
-        NameError
+        FileConventionError
             if convention cannot be identified
             
         Example
@@ -83,19 +91,20 @@ class FileConventionRead(object):
         elif basename(file).count(".") >= 4:
             self.import_default("aerocom2")
         else:
-            raise NameError("Could not identify convention from input file %s"
-                            %basename(file))
+            raise FileConventionError('Could not identify convention from '
+                                      'input file {}'.format(basename(file)))
         self.check_validity(file)
         return self
     
     def check_validity(self, file):
+        """Check if filename is valid"""
         info = self.get_info_from_file(file)
         year = info["year"]
         if not info['ts_type'] in self._io_opts.GRID_IO.TS_TYPES:
-            raise IOError("Invalid ts_type %s in filename %s"
-                          %(info['ts_type'], basename(file)))
-        elif not (0 <= year <= 3000 or year == 9999):
-            raise IOError("Invalid year %d in filename %s"
+            raise FileConventionError("Invalid ts_type %s in filename %s"
+                                           %(info['ts_type'], basename(file)))
+        elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
+            raise FileConventionError("Invalid year %d in filename %s"
                           %(info['year'], basename(file)))
     
     def _info_from_aerocom3(self, file):
@@ -106,38 +115,47 @@ class FileConventionRead(object):
         #remove .nc before splitting using delimiter "_"
         info = od(year=None, var_name=None, ts_type=None)
         spl = splitext(basename(file))[0].split(self.file_sep)
-        data_types = ['surface', 'column', 'modellevel']
         # phase 3 file naming convention
         try:
             info["year"] = int(spl[self.year_pos])
         except:
-            raise IOError("Failed to extract year information from file %s "
-                          "using file convention %s" 
-                          %(basename(file), self.name))
+            msg = ("Failed to extract year information from file {} "
+                   "using file convention Aerocom 3".format(basename(file), 
+                                                            self.name))
+            raise IOError(msg)
         try:
             # include vars for the surface
-            if spl[-3].lower() in data_types:
+            if spl[self.vert_pos].lower() in self.AEROCOM3_VERT_INFO['2d']:
                 info["var_name"] = spl[self.var_pos]
             # also include 3d vars that provide station based data
             # and contain the string vmr in this case the variable name has to 
             # be slightly changed to the  aerocom phase 2 naming
-            elif spl[-3].lower() == 'modellevelatstations':
-                if 'vmr' in spl[-4]:
-                    info["var_name"] = spl[-4].replace('vmr', 'vmr3d')
-                else:
-                    raise IOError("Invalid file name for Aerocom3 convention")    
+            elif spl[self.vert_pos].lower() in self.AEROCOM3_VERT_INFO['3d']:
+                if 'vmr' in spl[self.var_pos]:
+                    info['var_name'] = spl[self.var_pos].replace('vmr', 'vmr3d')   
             else:
-                raise IOError("Invalid file name for Aerocom3 convention")
+                raise FileConventionError('Invalid file name (Aerocom 3 '
+                                          'naming convention).\n'
+                                          '{}\nInvalid string identifier for '
+                                          'vertical coordinate: {}'
+                                          .format(file, spl[self.vert_pos]))
         except Exception as e:
-            raise IOError("Failed to extract variable name from file %s "
-                          "using file convention %s.\nError: %s" 
-                          %(basename(file), self.name, repr(e)))
+            raise FileConventionError('Failed to extract variable name from '
+                                      'file {} using file convention {}.\n'
+                                      'Error: {}'.format(basename(file), 
+                                                         self.name, repr(e)))
         try:
             info["ts_type"] = spl[self.ts_pos]
         except:
-            raise IOError("Failed to extract ts_type from file %s "
-                          "using file convention %s" 
-                          %(basename(file), self.name))
+            raise FileConventionError('Failed to extract ts_type from '
+                                      'file {} using file convention {}' 
+                                      .format(basename(file), self.name))
+        try:
+            info["vert_pos"] = spl[self.vert_pos]
+        except:
+            raise FileConventionError('Failed to extract vert_pos from '
+                                      'file {} using file convention {}' 
+                                      .format(basename(file), self.name))
             
         return info
     
@@ -160,7 +178,7 @@ class FileConventionRead(object):
             
         Raises
         ------
-        IOError
+        FileConventionError
             if convention cannot be identified
             
         Example
@@ -177,7 +195,7 @@ class FileConventionRead(object):
         if self.name == "aerocom3":
             return self._info_from_aerocom3(file)
         else:
-            info = od(year=None, var_name=None, ts_type=None)
+            info = od(year=None, var_name=None, ts_type=None, vert_info=None)
             if self.file_sep is ".":
                 spl = basename(file).split(self.file_sep)
             else:
@@ -185,21 +203,31 @@ class FileConventionRead(object):
             try:
                 info["year"] = int(spl[self.year_pos])
             except:
-                raise IOError("Failed to extract year information from file %s "
-                              "using file convention %s" 
-                              %(basename(file), self.name))
+                raise FileConventionError('Failed to extract year information '
+                                          'from file {} using file '
+                                          'convention {}' 
+                                          .format(basename(file), self.name))
             try:
                 info["var_name"] = spl[self.var_pos]
             except:
-                raise IOError("Failed to extract variable name from file %s "
-                              "using file convention %s" 
-                              %(basename(file), self.name))
+                raise FileConventionError('Failed to extract variable information '
+                                          'from file {} using file '
+                                          'convention {}' 
+                                          .format(basename(file), self.name))
             try:
                 info["ts_type"] = spl[self.ts_pos]
             except:
-                raise IOError("Failed to extract ts_type from file %s "
-                              "using file convention %s" 
-                              %(basename(file), self.name))
+                raise FileConventionError('Failed to extract ts_type '
+                                          'from file {} using file '
+                                          'convention {}' 
+                                          .format(basename(file), self.name))
+            try:
+                info["vert_info"] = spl[self.vert_pos]
+            except:
+                raise FileConventionError('Failed to extract information about '
+                                          'vertical dimension from file {} '
+                                          'using file convention {}' 
+                                          .format(basename(file), self.name))
                 
         return info
     
@@ -283,13 +311,14 @@ class FileConventionRead(object):
                   file_sep = self.file_sep,
                   year_pos = self.year_pos,
                   var_pos = self.var_pos,
-                  ts_pos = self.ts_pos)
+                  ts_pos = self.ts_pos,
+                  vert_pos = self.vert_pos)
       
     def __repr__(self):
        return ("%s %s" %(self.name, super(FileConventionRead, self).__repr__()))
    
     def __str__(self):
-        s = "pyaeorocom FileConventionRead"
+        s = "\npyaeorocom FileConventionRead"
         for k, v in self.to_dict().items():
             s += "\n%s: %s" %(k, v)
         return s
@@ -314,9 +343,10 @@ if __name__=="__main__":
     
     conf = FileConventionRead(name="aerocom2")
     print(conf)
-
     
-    import doctest
-    doctest.testmod()
+    fname = 'aerocom3_TM5_AP3-INSITU_vmrch4_ModelLevelAtStations_2010_monthly.nc'
+    
+    print('\nFrom file: {}'.format(conf.from_file(fname)))
+    print(conf.get_info_from_file(fname))
     
     

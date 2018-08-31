@@ -41,6 +41,9 @@ class DataExtractionError(ValueError):
 class EbasFileError(ValueError):
     pass
 
+class FileConventionError(IOError):
+    pass
+
 class IllegalArgumentError(ValueError):
     pass
 
@@ -54,6 +57,9 @@ class NetworkNotSupported(NotImplementedError):
     pass
 
 class NetworkNotImplemented(NotImplementedError):
+    pass
+
+class NetcdfError(IOError):
     pass
 
 class NotInFileError(IOError):
