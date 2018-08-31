@@ -6,7 +6,6 @@ def _init_logger():
 # http://eric.themoritzfamily.com/learning-python-logging.html
     logger = logging.getLogger('pyaerocom')
     
-    
     default_formatter = logging.Formatter(\
        "%(asctime)s:%(levelname)s:\n%(message)s")
     

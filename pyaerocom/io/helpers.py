@@ -36,6 +36,24 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
+def add_file_to_log(filepath, err_msg, model_or_obs_id):
+    logdir = const.LOGFILESDIR
+    found = False
+    logfile = join(logdir, model_or_obs_id + '.log')
+    if exists(logfile):
+        with open(logfile, 'r') as f:
+            for line in f:
+                if filepath == line.strip():
+                    found = True
+                    break
+        
+    if not found:
+        with open(logfile, 'a+') as f:
+            f.write(filepath + '\n')
+        with open(join(logdir, model_or_obs_id + '_ERR.log'), 'a+') as ferr:
+            ferr.write('{}\n{}\n\n'.format(filepath,
+                                           err_msg))
+        
 
 def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
     """Search Aerocom data directory based on model / data ID

@@ -353,8 +353,14 @@ class GriddedData(object):
             
         """
         raise NotImplementedError
-       
+
     def check_coord_order(self):
+        """Wrapper for :func:`check_dimcoords_order`"""
+        logger.warn(DeprecationWarning('Method was renamed, please use '
+                                       'check_dimcoords_order'))
+        return self.check_dimcoords_order()
+    
+    def check_dimcoords_order(self):
         check = self.coords_order[:3]
         for i, item in enumerate(check):
             if not item == self._COORDS_ORDER[i]:
@@ -432,7 +438,7 @@ class GriddedData(object):
             list of result dictionaries for each coordinate. Dictionary keys
             are: ``longitude, latitude, var_name``
         """
-        self.check_coord_order()
+        self.check_dimcoords_order()
         if not self.ndim == 3:
             raise DataDimensionError('So far, timeseries can only be extracted '
                                      'from 3 dimensional data...')
@@ -481,7 +487,7 @@ class GriddedData(object):
         dict
             dictionary containing results
         """
-        self.check_coord_order()
+        self.check_dimcoords_order()
         if not self.ndim == 3:
             raise DataDimensionError('So far, timeseries can only be extracted '
                                      'from 3 dimensional data...')
@@ -922,7 +928,7 @@ class GriddedData(object):
             self.longitude.guess_bounds()
         if self.latitude.bounds is None:
             self.latitude.guess_bounds()
-            
+
     def _init_testdata_default(self):
         """Helper method that loads ECMWF_OSUITE test data"""
         from pyaerocom.io.testfiles import get

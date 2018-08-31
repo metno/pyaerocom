@@ -40,17 +40,18 @@ from os.path import isdir, basename
 from collections import OrderedDict as od
 import numpy as np
 import pandas as pd
-
+from datetime import datetime
 import iris
 
-from pyaerocom import const
+from pyaerocom import const as CONST
 from pyaerocom.exceptions import (IllegalArgumentError, 
                                   YearNotAvailableError,
-                                  VarNotAvailableError)
+                                  VarNotAvailableError,
+                                  NetcdfError)
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.helpers import (check_time_coord, correct_time_coord, 
-                                  concatenate_iris_cubes)
+                                  concatenate_iris_cubes, add_file_to_log)
 from pyaerocom.griddeddata import GriddedData
 
 class ReadGridded(object):
@@ -128,11 +129,9 @@ class ReadGridded(object):
     #: Directory containing model data for this species
     _data_dir = ""
     
-    
-    VALID_COORD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
+    VALID_DIM_STANDARD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
     def __init__(self, name="", start_time=None, stop_time=None,
-                 file_convention="aerocom3", io_opts=const, 
-                 init=True):
+                 file_convention="aerocom3", init=True):
         # model ID
         if not isinstance(name, str):
             if isinstance(name, list):
@@ -166,7 +165,6 @@ class ReadGridded(object):
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
         # automatically updated in class ReadGridded
-        self.io_opts = io_opts
         self.file_convention = FileConventionRead(file_convention)
         
         #: All files that were found for this model (updated, e.g. in class
@@ -201,6 +199,7 @@ class ReadGridded(object):
         #: This object can be used to 
         self.browser = AerocomBrowser()
         
+        self.read_errors = {}
         if init and name:
             self.search_data_dir()
             self.search_all_files()
@@ -228,13 +227,13 @@ class ReadGridded(object):
     @property
     def file_type(self):
         """File type of data files"""
-        return self.io_opts.GRID_IO.FILE_TYPE
+        return CONST.GRID_IO.FILE_TYPE
     
     @property
     def TS_TYPES(self):
         """List with valid filename encryptions specifying temporal resolution
         """
-        return self.io_opts.GRID_IO.TS_TYPES
+        return CONST.GRID_IO.TS_TYPES
     
     @property
     def start_time(self):
@@ -330,8 +329,15 @@ class ReadGridded(object):
     def search_all_files(self, update_file_convention=True):
         """Search all valid model files for this model
         
+        This method browses the data directory and finds all valid files, that
+        is, file that are named according to one of the aerocom file naming
+        conventions. The file list is stored in :attr:`files`.
         
-        This method 
+        Note
+        ----
+        It is presumed, that naming conventions of files in
+        the data directory are not mixed but all correspond to either of the 
+        conventions defined in 
         
         Parameters
         ----------
@@ -339,10 +345,11 @@ class ReadGridded(object):
             if True, the first file in `data_dir` is used to identify the
             file naming convention (cf. :class:`FileConventionRead`)
             
-        Note
-        ----
-        This function does not seperate by variable or time, it gets you all
-        valid files for all variables and times for this model.
+        Raises
+        ------
+        IOError
+            if none of the files in the data directory follows either of the 
+            available naming conventions (cf. data file *fileconventions.ini*)
         """
         # get all netcdf files in folder
         nc_files = glob(self.data_dir + '/*{}'.format(self.file_type))
@@ -370,18 +377,26 @@ class ReadGridded(object):
         for _file in nc_files:
             try:
                 info = self.file_convention.get_info_from_file(_file)
+                
                 _vars_temp.append(info["var_name"])
+                if info['var_name'] is None:
+                    raise Exception
                 _years_temp.append(info["year"])
                 _ts_types_temp.append(info["ts_type"])
                 self.files.append(_file)
                 self.logger.debug('Read file {}'.format(_file))
             except Exception as e:
-                self.logger.warning("Failed to import file {}\nModel: {}\n"
-                               "Error: {}".format(basename(_file), 
-                               self.name, repr(e)))
+                msg = ("Failed to import file {}\nModel: {}\n"
+                      "Error: {}".format(basename(_file), 
+                                         self.name, repr(e)))
+                self.logger.warning(msg)
+                if CONST.WRITE_FILEIO_ERR_LOG:
+                    add_file_to_log(_file, msg, self.name)
+                    
         if not _vars_temp or not len(_vars_temp) == len(_years_temp):
             raise IOError("Failed to extract information from filenames")
         # make sorted list of unique vars
+
         self.vars = sorted(od.fromkeys(_vars_temp))
         self.years = sorted(od.fromkeys(_years_temp))
         
@@ -494,7 +509,7 @@ class ReadGridded(object):
         elif isinstance(years_to_load, (float, int, np.floating, np.integer)):
             years_to_load = [years_to_load]
         for year in years_to_load:
-            if const.MIN_YEAR <= year <= const.MAX_YEAR:
+            if CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
                 # search for filename in self.files using ts_type as default ts size
                 for _file in self.files:
                     #new file naming convention (aerocom3)
@@ -508,8 +523,8 @@ class ReadGridded(object):
 
             else:
                 self.logger.warning('Ignoring data from year {}. Year is out of '
-                               'allowed bounds ({:d} - {:d})'
-                               .format(year, const.MIN_YEAR, const.MAX_YEAR))
+                                    'allowed bounds ({:d} - {:d})'
+                                    .format(year, CONST.MIN_YEAR, CONST.MAX_YEAR))
            
         if len(match_files) == 0:
             raise IOError("No files could be found for dataset {}, variable {}, "
@@ -519,7 +534,7 @@ class ReadGridded(object):
         self.match_files = match_files
         return match_files
     
-    def _check_coord_defs(self, cube):
+    def _check_dim_coords(self, cube):
         """Checks, and if necessary and applicable, updates coords names in Cube
         
         Parameters
@@ -532,8 +547,23 @@ class ReadGridded(object):
         iris.cube.Cube
             updated or unchanged cube
         """
-        for c in cube.coords():
-            print(c.long_name, c.name, c.standard_name)
+# =============================================================================
+#         if cube.ndim == 4:
+#             raise NotImplementedError('Cannot handle 4D data yet')
+# =============================================================================
+        if not cube.ndim == len(cube.dim_coords):
+            dim_names = [c.name() for c in cube.dim_coords]
+            raise NetcdfError('Dimension mismatch between data and coords.'
+                              'Cube dimension: {}. Registered dimensions : {}'
+                              .format(cube.ndim, dim_names))
+        for coord in cube.dim_coords:
+            if not coord.standard_name in self.VALID_DIM_STANDARD_NAMES:
+                raise NetcdfError('Invalid standard name of dimension coord. '
+                                  'var_name: {}; standard_name: {}; '
+                                  'long_name: {}'.format(coord.var_name,
+                                                         coord.standard_name, 
+                                                         coord.long_name))
+
         return cube
     
     def load_files(self, var_name, files):
@@ -553,6 +583,8 @@ class ReadGridded(object):
             
         Raises
         ------
+        NotImplementedError
+            if any of the variable grids is in 4D
         """
         # Define Iris var_constraint -> ensures that only the current 
         # variable is extracted from the netcdf file 
@@ -565,8 +597,10 @@ class ReadGridded(object):
             try:
                 finfo = self.file_convention.get_info_from_file(_file)
                 cube = iris.load_cube(_file, var_constraint)
+                cube = self._check_dim_coords(cube)
+                
                 #cube = 
-                if const.GRID_IO["CHECK_TIME_FILENAME"]:
+                if CONST.GRID_IO["CHECK_TIME_FILENAME"]:
                     
                     if not check_time_coord(cube, ts_type=finfo["ts_type"], 
                                             year=finfo["year"]):
@@ -588,15 +622,25 @@ class ReadGridded(object):
                 cubes.append(cube)
                 loaded_files.append(_file)
             except Exception as e:
-                self.logger.warning("Failed to load {} as Iris cube.\n"
-                               "Error: {}".format(_file, repr(e)))
+                msg = ("Failed to load {} as Iris cube. Error: {}"
+                       .format(_file, repr(e)))
+                self.logger.warning(msg)
+                self.read_errors[datetime.now()] = msg
+                if CONST.WRITE_FILEIO_ERR_LOG:
+                    add_file_to_log(_file, msg, self.name)
+                    
+                    
         
         if len(loaded_files) == 0:
-            raise IOError("None of the found files for variable {} "
+            err_str = ''
+            for error in self.read_errors.values():
+                err_str += '\n{}'.format(msg)
+            raise IOError("None of the files found for variable {} "
                           "in specified time interval\n{}-{}\n"
-                          "could be loaded".format(self.name,
-                                                   self.start_time,
-                                                   self.stop_time))
+                          "could be loaded. Errors: {}".format(self.name,
+                                                               self.start_time,
+                                                               self.stop_time,
+                                                               err_str))
     
         self.cubes[var_name] = cubes
         self.loaded_files[var_name] = loaded_files
@@ -661,7 +705,18 @@ class ReadGridded(object):
         return cubes_concat
     
     def _check_ts_type(self, ts_type):
-        """Check and, if applicable, update ts_type"""
+        """Check and, if applicable, update ts_type
+        
+        Returns
+        -------
+        str
+            valid ts_type
+        
+        Raises
+        ------
+        ValueError
+            
+        """
         if ts_type is None:
             if len(self.ts_types) == 0:
                 raise AttributeError('Apparently no files with a valid ts_type '
@@ -675,7 +730,7 @@ class ReadGridded(object):
         return ts_type
     
     def read_var(self, var_name, start_time=None, stop_time=None, 
-                 ts_type=None):
+                 ts_type=None, at_stations=False):
         """Read model data for a specific variable
         
         This method searches all valid files for a given variable and for a 
@@ -711,6 +766,8 @@ class ReadGridded(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
+        at_stations : bool
+            boolean specifying whether 
             
         Returns
         -------
@@ -737,40 +794,43 @@ class ReadGridded(object):
         
         match_files, ts_type = self.find_var_files_flex_ts_type(var_name, 
                                                                 ts_type_init=ts_type)
-        cubes = self.load_files(var_name, match_files)
-        
         try:
-            cubes_concat = self.concatenate_cubes(cubes)
-        except iris.exceptions.ConcatenateError:
-            raise NotImplementedError('Can not yet handle partial '
-                                      'concatenation in pyaerocom')
-        
-        #create instance of pyaerocom.GriddedData
-        data = GriddedData(input=cubes_concat[0], 
-                           from_files=self.loaded_files,
-                           name=self.name, ts_type=ts_type)
-        # crop cube in time (if applicable)
-        if self.start_time and self.stop_time:
-            self.logger.info("Applying temporal cropping of result cube")
+            cubes = self.load_files(var_name, match_files)
+        except Exception as e:
+            self.logger.exception(repr(e))
+        else:
             try:
-# =============================================================================
-#                 t_constraint = data.get_time_constraint(self.start_time, 
-#                                                         self.stop_time)
-#                 _data = data.extract(t_constraint)
-# =============================================================================
-                _data = data.crop(time_range=(self.start_time,
-                                              self.stop_time))
-                data = _data
-            except Exception as e:
-                self.logger.warning("Failed to crop data for {} in time.\n"
-                               "Error: {}".format(var_name, repr(e)))
-        
-        if var_name in self.data:
-            self.logger.warning("Warning: Data for variable {} already exists "
-                           "and will be overwritten".format(var_name))
-        self.data[var_name] = data
-        
-        return data
+                cubes_concat = self.concatenate_cubes(cubes)
+            except iris.exceptions.ConcatenateError:
+                raise NotImplementedError('Can not yet handle partial '
+                                          'concatenation in pyaerocom')
+            
+            #create instance of pyaerocom.GriddedData
+            data = GriddedData(input=cubes_concat[0], 
+                               from_files=self.loaded_files,
+                               name=self.name, ts_type=ts_type)
+            # crop cube in time (if applicable)
+            if self.start_time and self.stop_time:
+                self.logger.info("Applying temporal cropping of result cube")
+                try:
+    # =============================================================================
+    #                 t_constraint = data.get_time_constraint(self.start_time, 
+    #                                                         self.stop_time)
+    #                 _data = data.extract(t_constraint)
+    # =============================================================================
+                    _data = data.crop(time_range=(self.start_time,
+                                                  self.stop_time))
+                    data = _data
+                except Exception as e:
+                    self.logger.warning("Failed to crop data for {} in time.\n"
+                                   "Error: {}".format(var_name, repr(e)))
+            
+            if var_name in self.data:
+                self.logger.warning("Warning: Data for variable {} already exists "
+                               "and will be overwritten".format(var_name))
+            self.data[var_name] = data
+            
+            return data
     
                 
     def read(self, var_names=None, start_time=None, stop_time=None, 
@@ -897,7 +957,7 @@ class ReadGridded(object):
         ts_type = self._check_ts_type(ts_type)
         if not isinstance(years_to_load, (list, np.ndarray)):
             year = int(years_to_load)
-            if not const.MIN_YEAR <= year <= const.MAX_YEAR:
+            if not CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
                 raise IOError('Invalid input for years_to_load')
             years_to_load = [year]
         if require_all_years_avail:
@@ -932,18 +992,22 @@ class ReadGridded(object):
                 match_files, ts_type = self.find_var_files_flex_ts_type(var,
                                                                         ts_type,
                                                                         year)
-                cubes = self.load_files(var, match_files)
-                if len(cubes) > 1:
-                    raise NotImplementedError('Coming soon...')
-                data = GriddedData(input=cubes[0], 
-                                   from_files=self.loaded_files,
-                                   name=self.name, 
-                                   ts_type=ts_type)
-                if year in self.data_yearly[var]:
-                    self.logger.warning('Individual data of year {} and var {} '
-                                        'already exists and will be '
-                                        'overwritten'.format(year, var))
-                self.data_yearly[var][year] = data
+                try:
+                    cubes = self.load_files(var, match_files)
+                except Exception as e:
+                    self.logger.exception(repr(e))
+                else:
+                    if len(cubes) > 1:
+                        raise NotImplementedError('Coming soon...')
+                    data = GriddedData(input=cubes[0], 
+                                       from_files=self.loaded_files,
+                                       name=self.name, 
+                                       ts_type=ts_type)
+                    if year in self.data_yearly[var]:
+                        self.logger.warning('Individual data of year {} and var {} '
+                                            'already exists and will be '
+                                            'overwritten'.format(year, var))
+                    self.data_yearly[var][year] = data
         return self.data_yearly
     
     def __getitem__(self, var_name):
