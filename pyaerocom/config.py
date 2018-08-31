@@ -176,7 +176,7 @@ class Config(object):
     
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  out_base_dir=None, config_file=None, 
-                 obs_cache_dir=None):
+                 obs_cache_dir=None, write_fileio_err_log=True):
         
         #: Lowest possible year in data
         self.MIN_YEAR = 0
@@ -245,9 +245,12 @@ class Config(object):
         # Directories
         self.MODELBASEDIR = None
         self.OBSBASEDIR = None
+        
         self.OBSDATACACHEDIR = None
+        self.LOGFILESDIR = None
         self.OUT_BASEDIR = None
         
+        self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
         if isinstance(config_file, str) and os.path.exists(config_file):
             self._config_ini = config_file
         else:
@@ -276,6 +279,10 @@ class Config(object):
             self.OBSDATACACHEDIR = os.path.join(self.OUT_BASEDIR, "_cache")
             if not os.path.exists(self.OBSDATACACHEDIR):
                 os.mkdir(self.OBSDATACACHEDIR)
+        if not self.check_dir(self.LOGFILESDIR):
+            self.LOGFILESDIR = os.path.join(self.OUT_BASEDIR, "_log")
+            if not os.path.exists(self.LOGFILESDIR):
+                os.mkdir(self.LOGFILESDIR)
         
         # if this file exists no cache file is read
         # used to ease debugging
@@ -300,7 +307,7 @@ class Config(object):
             ok=False
         if not self.check_dir(self.OBSDATACACHEDIR):
             warn("Observations cache directory %s does not exist")
-        return ok
+        return ok 
     
     @property
     def EBASMC_SQL_DATABASE(self):
