@@ -150,10 +150,7 @@ def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
     ax.annotate('{}'.format(filter_name),
                         xy=xypos[-1], xycoords='axes fraction', ha='center', 
                         fontsize=10, color='black')
-    if add_data_missing_note:
-        ax.annotate('NO MODEL DATA',
-                    xy=(0.4, 0.3), xycoords='axes fraction', ha='center', 
-                    fontsize=20, color='red')
+    
     ax.set_aspect('equal')
     
     if savefig:
