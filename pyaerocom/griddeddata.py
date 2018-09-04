@@ -6,8 +6,7 @@ Pyaerocom GriddedData class
 from os.path import exists
 from copy import deepcopy
 from collections import OrderedDict as od
-from iris import Constraint, load, load_cube
-from iris.cube import Cube, CubeList
+import iris
 from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
 from pandas import Timestamp, Series
@@ -15,6 +14,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from pyaerocom import const, logger
+
 from pyaerocom.exceptions import (DataExtractionError,
                                   TemporalResolutionError,
                                   DataDimensionError)
@@ -181,7 +181,7 @@ class GriddedData(object):
     
     @grid.setter
     def grid(self, value):
-        if not isinstance(value, Cube):
+        if not isinstance(value, iris.cube.Cube):
             raise TypeError("Grid data format %s is not supported, need Cube" 
                             %type(value))
         self._grid = value
@@ -216,7 +216,7 @@ class GriddedData(object):
     @property
     def is_cube(self):
         """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
-        return True if isinstance(self.grid, Cube) else False
+        return True if isinstance(self.grid, iris.cube.Cube) else False
     
     @property
     def is_climatology(self):
@@ -286,8 +286,8 @@ class GriddedData(object):
             return np.nan
         return cftime_to_datetime64(self.time[-1])[0]
         
-    def load_input(self, input, var_name=None):
-        """Interprete and load input
+    def load_input(self, input, var_name):
+        """Import input as cube
         
         Parameters
         ----------
@@ -296,36 +296,59 @@ class GriddedData(object):
         var_name : :obj:`str`, optional
             variable name that is extracted if `input` is a file path . Irrelevant
             if `input` is preloaded Cube
+            
         """
-        if isinstance(input, str) and exists(input):
-            if not isinstance(var_name, str):
-                _var_names = []
-                try:
-                    ctemp = load(input)
-                    if isinstance(ctemp, CubeList):
-                        _var_names = [x.var_name for x in ctemp]
-                        _addstr = ("The following variable names exist in "
-                                   "input file: %s" %_var_names)
-                except:
-                    _addstr = ""
-                            
-                raise ValueError("Loading data from input file %s requires "
-                                 "specification of a variable name using "
-                                 "input parameter var_name. %s" %(input, _addstr))
-            func = lambda c: c.var_name == var_name
-            constraint = Constraint(cube_func=func)
-            self.grid = load_cube(input, constraint) #instance of CubeList
-            self.suppl_info["from_files"].append(input)
-        elif isinstance(input, Cube):
+        if isinstance(input, iris.cube.Cube):
             self.grid = input #instance of Cube
-        try:
-            if self._GRID_IO["DEL_TIME_BOUNDS"]:
-                self.grid.coord("time").bounds = None
-        except:
-            logger.warning("Failed to access time coordinate in GriddedData")
-        if self._GRID_IO["SHIFT_LONS"]:
-            self.check_and_regrid_lons()
-        #if isinstance(sel)
+        elif isinstance(input, str) and exists(input):
+            from pyaerocom.io.iris_io import load_cube_custom
+            self.grid = load_cube_custom(input, var_name)
+            self.suppl_info["from_files"].append(input)
+        else:
+            raise IOError('Failed to load input: {}'.format(input))
+            
+# =============================================================================
+#     def load_input_old(self, input, var_name=None):
+#         """Interpret and load input
+#         
+#         Parameters
+#         ----------
+#         input : :obj:`str:` or :obj:`Cube`
+#             data input. Can be a single .nc file or a preloaded iris Cube.
+#         var_name : :obj:`str`, optional
+#             variable name that is extracted if `input` is a file path . Irrelevant
+#             if `input` is preloaded Cube
+#         """
+#         if isinstance(input, str) and exists(input):
+#             if not isinstance(var_name, str):
+#                 _var_names = []
+#                 try:
+#                     ctemp = iris.load(input)
+#                     if isinstance(ctemp, iris.cube.CubeList):
+#                         _var_names = [x.var_name for x in ctemp]
+#                         _addstr = ("The following variable names exist in "
+#                                    "input file: %s" %_var_names)
+#                 except:
+#                     _addstr = ""
+#                             
+#                 raise ValueError("Loading data from input file %s requires "
+#                                  "specification of a variable name using "
+#                                  "input parameter var_name. %s" %(input, _addstr))
+#             func = lambda c: c.var_name == var_name
+#             constraint = iris.Constraint(cube_func=func)
+#             self.grid = iris.load_cube(input, constraint) #instance of CubeList
+#             self.suppl_info["from_files"].append(input)
+#         elif isinstance(input, iris.cube.Cube):
+#             self.grid = input #instance of Cube
+#         try:
+#             if self._GRID_IO["DEL_TIME_BOUNDS"]:
+#                 self.grid.coord("time").bounds = None
+#         except:
+#             logger.warning("Failed to access time coordinate in GriddedData")
+#         if self._GRID_IO["SHIFT_LONS"]:
+#             self.check_and_regrid_lons()
+#         #if isinstance(sel)
+# =============================================================================
             
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -553,27 +576,7 @@ class GriddedData(object):
         self._check_lonlat_bounds()
         self._area_weights = area_weights(self.grid)
         return self.area_weights
-        
-    def check_and_regrid_lons(self):
-        """Checks and corrects for if longitudes of :attr:`grid` are 0 -> 360
-        
-        Note
-        ----
-        This method checks if the maximum of the current longitudes array
-        exceeds 180. Thus, it is not recommended to use this function after
-        subsetting a cube, rather, it should be checked directly when the 
-        file is loaded (cf. :func:`load_input`)
-        
-        Returns
-        -------
-        bool
-            True, if longitudes were on 0 -> 360 and have been rolled, else
-            False
-        """
-        if self.grid.coord("longitude").points.max() > 180:
-            logger.info("Rolling longitudes to -180 -> 180 definition")
-            self.grid = self.grid.intersection(longitude=(-180, 180))
-        
+                
     def crop(self, lon_range=None, lat_range=None, 
              time_range=None, region=None):
         """High level function that applies cropping along multiple axes

@@ -195,21 +195,32 @@ class CollocatedData(object):
                                self.data.values[0].flatten())
         
     def plot_scatter(self, **kwargs):
-        """Create scatter plot of data"""
-        statistics = self.calc_statistics()
+        """Create scatter plot of data
+        
+        Parameters
+        ----------
+        **kwargs
+            keyword args passed to :func:`pyaerocom.plot.plotscatter_new.plot_scatter`
+            
+        Returns
+        -------
+        ax 
+            matplotlib axes instance
+        """
         meta = self.meta
         num_points = self.num_grid_points
-        return plot_scatter(model_vals=self.data.values[1].flatten(), 
-                            obs_vals=self.data.values[0].flatten(), 
-                            model_id=meta['data_source_idx'][1], 
+    
+        return plot_scatter(x_vals=self.data.values[0].flatten(), 
+                            y_vals=self.data.values[1].flatten(),
                             var_name=meta['var_name'],
-                            obs_id=meta['data_source_idx'][0],
+                            x_name=meta['data_source_idx'][0],
+                            y_name=meta['data_source_idx'][1], 
                             start=meta['start'], 
                             stop=meta['stop'], 
                             ts_type=meta['ts_type'], 
                             stations_ok=num_points,
                             filter_name=meta['filter_name'], 
-                            statistics=statistics, **kwargs)
+                            **kwargs)
     
     
     def load_fake_data(self, num_stations=1000, num_tstamps=365):

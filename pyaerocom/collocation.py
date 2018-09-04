@@ -14,7 +14,7 @@ from pyaerocom.collocateddata import CollocatedData
 
 def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
                               start=None, stop=None, 
-                              filter_name='WORLD-wMountains', **regrid_opts):
+                              filter_name='WORLD-wMOUNTAINS', **regrid_opts):
     """Collocate 2 gridded data objects
     
     Todo
@@ -58,7 +58,7 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
     if not gridded_data.shape == gridded_data_ref.shape:
         raise CollocationError('Shape mismatch between two collocated data '
                                'arrays, please debug')
-
+    
     meta = {'data_source_idx'   :   [gridded_data_ref.name,
                                     gridded_data.name],
             'var_name'          :   gridded_data.var_name,

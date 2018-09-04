@@ -11,17 +11,37 @@ from pyaerocom import const
 from pyaerocom.helpers import to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.mathutils import calc_statistics
 
-def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None, 
-                 obs_id=None, start=None, stop=None, 
-                 ts_type=None, stations_ok=None, filter_name=None, 
-                 lowlim_stats=None, highlim_stats=None, savefig=False, 
-                 save_dir=None, save_name=None, add_data_missing_note=False, 
-                 ax=None, loglog=True):
+def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
+                 start=None, stop=None, ts_type=None, stations_ok=None, 
+                 filter_name=None, lowlim_stats=None, highlim_stats=None, 
+                 loglog=True, savefig=False, save_dir=None, save_name=None, 
+                 ax=None):
+    """Method that performs a scatter plot of data in AEROCOM format
     
-    if isinstance(model_vals, list):
-        model_vals = np.asarray(model_vals)
-    if isinstance(obs_vals, list):
-        obs_vals = np.asarray(obs_vals)
+    Parameters
+    ----------
+    y_vals : ndarray
+        1D array (or list) of model data points (y-axis)
+    x_vals : ndarray
+        1D array (or list) of observation data points (x-axis)
+    y_name : :obj:`str`, optional
+        Name / ID of model
+    var_name : :obj:`str`, optional
+        name of variable that is plotted
+    x_name : :obj:`str`, optional
+        Name of observation network
+    start : :obj:`str` or :obj`datetime` or similar
+        start time of data
+    stop : :obj:`str` or :obj`datetime` or similar
+        stop time of data
+    
+    
+    """
+    
+    if isinstance(y_vals, list):
+        y_vals = np.asarray(y_vals)
+    if isinstance(x_vals, list):
+        x_vals = np.asarray(x_vals)
     try:
         VAR_PARAM = const.VAR_PARAM[var_name]
     except:
@@ -34,13 +54,13 @@ def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None,
         var_name = 'n/d'
 
     
-    statistics = calc_statistics(model_vals, obs_vals,
+    statistics = calc_statistics(y_vals, x_vals,
                                  lowlim_stats, highlim_stats)
     
     if loglog:
-        ax.loglog(obs_vals, model_vals, ' k+')
+        ax.loglog(x_vals, y_vals, ' k+')
     else:
-        ax.plot(obs_vals, model_vals, ' k+')
+        ax.plot(x_vals, y_vals, ' k+')
     
     try:
         freq_np =TS_TYPE_TO_NUMPY_FREQ[ts_type]
@@ -59,8 +79,8 @@ def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None,
         ylim[0] = 0
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    ax.set_xlabel('Obs: {}'.format(obs_id), fontsize=14)
-    ax.set_ylabel('{}'.format(model_id), fontsize=14)
+    ax.set_xlabel('{}'.format(x_name), fontsize=14)
+    ax.set_ylabel('{}'.format(y_name), fontsize=14)
     ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
@@ -90,11 +110,11 @@ def plot_scatter(model_vals, obs_vals, model_id=None, var_name=None,
                         xy=xypos[xypos_index], xycoords='axes fraction', 
                         fontsize=14, color='red')
     xypos_index += 1
-    ax.annotate('Obs: {:.3f}'.format(statistics['refdata_mean']),
+    ax.annotate('Mean (x-data): {:.3f}'.format(statistics['refdata_mean']),
                         xy=xypos[xypos_index], xycoords='axes fraction', 
                         fontsize=10, color='red')
     xypos_index += 1
-    ax.annotate('Mod: {:.3f}'.format(statistics['data_mean']),
+    ax.annotate('Mean (y-data): {:.3f}'.format(statistics['data_mean']),
                         xy=xypos[xypos_index], xycoords='axes fraction', 
                         fontsize=10, color='red')
     xypos_index += 1

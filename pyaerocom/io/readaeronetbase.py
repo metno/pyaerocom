@@ -14,7 +14,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.04_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.05_' + ReadUngriddedBase.__baseversion__
     
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -306,7 +306,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve
-            if 'instrument_name' in station_data:
+            if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                 instr = station_data['instrument_name']
             else:
                 instr = self.INSTRUMENT_NAME

@@ -46,12 +46,11 @@ import iris
 from pyaerocom import const as CONST
 from pyaerocom.exceptions import (IllegalArgumentError, 
                                   YearNotAvailableError,
-                                  VarNotAvailableError,
-                                  NetcdfError)
+                                  VarNotAvailableError)
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.io.helpers import (check_time_coord, correct_time_coord, 
-                                  concatenate_iris_cubes, add_file_to_log)
+from pyaerocom.io.iris_io import load_cube_custom, concatenate_iris_cubes
+from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
 
 class ReadGridded(object):
@@ -129,7 +128,7 @@ class ReadGridded(object):
     #: Directory containing model data for this species
     _data_dir = ""
     
-    VALID_DIM_STANDARD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
+    #VALID_DIM_STANDARD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
     def __init__(self, name="", start_time=None, stop_time=None,
                  file_convention="aerocom3", init=True):
         # model ID
@@ -391,7 +390,7 @@ class ReadGridded(object):
                                          self.name, repr(e)))
                 self.logger.warning(msg)
                 if CONST.WRITE_FILEIO_ERR_LOG:
-                    add_file_to_log(_file, msg, self.name)
+                    add_file_to_log(_file, msg)
                     
         if not _vars_temp or not len(_vars_temp) == len(_years_temp):
             raise IOError("Failed to extract information from filenames")
@@ -534,39 +533,15 @@ class ReadGridded(object):
         self.match_files = match_files
         return match_files
     
-    def _check_dim_coords(self, cube):
-        """Checks, and if necessary and applicable, updates coords names in Cube
+    def _set_year_climatology(self, cube):
+        """Update time axis in cube in case of climatology data 
         
-        Parameters
-        ----------
-        cube : iris.cube.Cube
-            input cube
-        
-        Returns
-        -------
-        iris.cube.Cube
-            updated or unchanged cube
+        Climatology files are identified by 9999 in filename at position of 
+        year and correspond to 10 year averages between 2000 and 2010.
         """
-# =============================================================================
-#         if cube.ndim == 4:
-#             raise NotImplementedError('Cannot handle 4D data yet')
-# =============================================================================
-        if not cube.ndim == len(cube.dim_coords):
-            dim_names = [c.name() for c in cube.dim_coords]
-            raise NetcdfError('Dimension mismatch between data and coords.'
-                              'Cube dimension: {}. Registered dimensions : {}'
-                              .format(cube.ndim, dim_names))
-        for coord in cube.dim_coords:
-            if not coord.standard_name in self.VALID_DIM_STANDARD_NAMES:
-                raise NetcdfError('Invalid standard name of dimension coord. '
-                                  'var_name: {}; standard_name: {}; '
-                                  'long_name: {}'.format(coord.var_name,
-                                                         coord.standard_name, 
-                                                         coord.long_name))
-
-        return cube
-    
-    def load_files(self, var_name, files):
+        raise NotImplementedError
+        
+    def _load_files(self, files, var_name, quality_check=True):
         """Load list of files containing variable to read into Cube instances
         
         Parameters
@@ -580,45 +555,14 @@ class ReadGridded(object):
         -------
         CubeList
             list of loaded Cube instances
-            
-        Raises
-        ------
-        NotImplementedError
-            if any of the variable grids is in 4D
         """
-        # Define Iris var_constraint -> ensures that only the current 
-        # variable is extracted from the netcdf file 
-        var_constraint = iris.Constraint(cube_func=lambda c: c.var_name==var_name)
-        
         # read files using iris
         cubes = iris.cube.CubeList()
         loaded_files = []
         for _file in files:
             try:
-                finfo = self.file_convention.get_info_from_file(_file)
-                cube = iris.load_cube(_file, var_constraint)
-                cube = self._check_dim_coords(cube)
-                
-                #cube = 
-                if CONST.GRID_IO["CHECK_TIME_FILENAME"]:
-                    
-                    if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                            year=finfo["year"]):
-                        
-                        self.logger.warning("Invalid time axis in file {}. " 
-                                       "Attempting to correct.".format(
-                                        basename(_file)))
-                        
-                        cube = correct_time_coord(cube, 
-                                                  ts_type=finfo["ts_type"],
-                                                  year=finfo["year"])
-                        
-                else:
-                    self.logger.warning("WARNING: Automatic check of time "
-                                   "array in netCDF files is deactivated."
-                                   " This may cause problems in case "
-                                   "the time dimension is not CF conform.")
-                
+                cube = load_cube_custom(_file, var_name,
+                                        file_convention=self.file_convention)
                 cubes.append(cube)
                 loaded_files.append(_file)
             except Exception as e:
@@ -627,7 +571,7 @@ class ReadGridded(object):
                 self.logger.warning(msg)
                 self.read_errors[datetime.now()] = msg
                 if CONST.WRITE_FILEIO_ERR_LOG:
-                    add_file_to_log(_file, msg, self.name)
+                    add_file_to_log(_file, msg)
                     
                     
         
@@ -730,7 +674,7 @@ class ReadGridded(object):
         return ts_type
     
     def read_var(self, var_name, start_time=None, stop_time=None, 
-                 ts_type=None, at_stations=False):
+                 ts_type=None, at_stations=False, flex_ts_type=True):
         """Read model data for a specific variable
         
         This method searches all valid files for a given variable and for a 
@@ -768,6 +712,9 @@ class ReadGridded(object):
             of the available resolutions is used
         at_stations : bool
             boolean specifying whether 
+        flex_ts_type : bool
+            if True and if applicable, then another ts_type is used in case 
+            the input ts_type is not available for this variable
             
         Returns
         -------
@@ -791,11 +738,14 @@ class ReadGridded(object):
             raise ValueError("Error: variable {} not found in files contained "
                              "in model directory: {}".format(var_name, 
                                                   self.data_dir))
-        
-        match_files, ts_type = self.find_var_files_flex_ts_type(var_name, 
-                                                                ts_type_init=ts_type)
+        if flex_ts_type:
+            match_files, ts_type = self.find_var_files_flex_ts_type(var_name, 
+                                                                    ts_type)
+        else:
+            match_files = self.find_var_files_in_timeperiod(var_name, 
+                                                            ts_type)
         try:
-            cubes = self.load_files(var_name, match_files)
+            cubes = self._load_files(match_files, var_name)
         except Exception as e:
             self.logger.exception(repr(e))
         else:
@@ -813,11 +763,6 @@ class ReadGridded(object):
             if self.start_time and self.stop_time:
                 self.logger.info("Applying temporal cropping of result cube")
                 try:
-    # =============================================================================
-    #                 t_constraint = data.get_time_constraint(self.start_time, 
-    #                                                         self.stop_time)
-    #                 _data = data.extract(t_constraint)
-    # =============================================================================
                     _data = data.crop(time_range=(self.start_time,
                                                   self.stop_time))
                     data = _data
@@ -834,7 +779,7 @@ class ReadGridded(object):
     
                 
     def read(self, var_names=None, start_time=None, stop_time=None, 
-                 ts_type=None, require_all_vars_avail=False):
+                 ts_type=None, require_all_vars_avail=False, **kwargs):
         """Read all variables that could be found 
         
         Reads all variables that are available (i.e. in :attr:`vars`)
@@ -856,6 +801,8 @@ class ReadGridded(object):
         require_all_vars_avail : bool
             if True, it is strictly required that all input variables are 
             available. 
+        **kwargs
+            additional keyword args passed to :func:`read_var`
         
         Returns
         -------
@@ -993,7 +940,7 @@ class ReadGridded(object):
                                                                         ts_type,
                                                                         year)
                 try:
-                    cubes = self.load_files(var, match_files)
+                    cubes = self._load_files(match_files, var)
                 except Exception as e:
                     self.logger.exception(repr(e))
                 else:
@@ -1347,12 +1294,12 @@ class ReadGriddedMulti(object):
 if __name__=="__main__":
     read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015")
     
-    cube = iris.load_cube(read.files[0])
     
     data = read.read_var("od550aer", "2009", "2011", ts_type="monthly")
     
     read_caliop = ReadGridded('CALIOP3')
-    cp = read_caliop.read_var('z3d', ts_type='monthly')
+    alt = read_caliop.read_var('z3d', ts_type='monthly')
+    ec532aer = read_caliop.read_var('ec5323Daer', ts_type='monthly')
 
     
 

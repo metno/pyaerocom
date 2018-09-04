@@ -70,12 +70,16 @@ class GridIO(object):
         0 <= lon <= 360. Aerocom default is True.
     CHECK_TIME_FILENAME : bool
         the times stored in NetCDF files may be wrong or not stored according
-        to the CF conventions. If True, the times are checked and, if 
-        applicable, corrected for on data import based what is encrypted in the 
+        to the CF conventions. If True, the times are checked and if 
+        :attr:`CORRECT_TIME_FILENAME`, corrected for on data import based what
+        is encrypted in the 
         file name. In case of Aerocom models, it is ensured that the filename 
         contains both the year and the temporal resolution in the filenames 
         (for details see :class:`pyaerocom.io.FileConventionRead`).
         Aerocom default is True
+    CORRECT_TIME_FILENAME : bool
+        if True and time dimension in data is found to be different from 
+        filename, it is attempted to be corrected
     EQUALISE_METADATA : bool
         if True (and if metadata varies between different NetCDF files that are
         supposed to be merged in time), the metadata in all loaded objects is 
@@ -106,15 +110,16 @@ class GridIO(object):
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
         self.SHIFT_LONS = True 
-        #check and correct time axis (if applicable)        
+        
         self.CHECK_TIME_FILENAME = True
+        self.CORRECT_TIME_FILENAME = True
+        
+        self.CHECK_DIM_COORDS = True
          # check and update metadata dictionary on Cube load since 
          # iris concatenate of Cubes only works if metadata is equal
         self.EQUALISE_METADATA = True
         
         self.USE_RENAMED_DIR = True
-        
-        self.USE_FILECONVENTION = True
         
         self.INCLUDE_SUBDIRS = False
         

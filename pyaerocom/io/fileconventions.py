@@ -38,18 +38,21 @@ class FileConventionRead(object):
                           '3d'  : ['modellevelatstations']}
     
     def __init__(self, name="aerocom3", file_sep="", year_pos=None,
-                 var_pos=None, ts_pos=None, vert_pos=None):
-       self.name = name
-       self.file_sep = file_sep
-       self.year_pos = year_pos
-       self.var_pos = var_pos
-       self.ts_pos = ts_pos
-       self.vert_pos = vert_pos
+                 var_pos=None, ts_pos=None, vert_pos=None, from_file=None):
        
-       try:
-           self.import_default(self.name) 
-       except:
-           pass
+        self.name = name
+        self.file_sep = file_sep
+        self.year_pos = year_pos
+        self.var_pos = var_pos
+        self.ts_pos = ts_pos
+        self.vert_pos = vert_pos
+        if from_file is not None:
+            self.from_file(from_file)
+        else:
+            try:
+                self.import_default(self.name) 
+            except:
+                pass
       
     @property
     def info_init(self):
@@ -217,14 +220,9 @@ class FileConventionRead(object):
                                       'from file {} using file '
                                       'convention {}' 
                                       .format(basename(file), self.name))
-        try:
-            info["vert_info"] = spl[self.vert_pos]
-        except:
-            raise FileConventionError('Failed to extract information about '
-                                      'vertical dimension from file {} '
-                                      'using file convention {}' 
-                                      .format(basename(file), self.name))
-        if'atstations' in file.lower():
+
+        
+        if 'atstations' in file.lower():
             raise Exception('Developers: please debug (file convention '
                             'Aerocom 2 should not have atstations '
                             'encoded in file name)')
@@ -388,4 +386,5 @@ if __name__=="__main__":
     print('\nFrom file: {}'.format(conf.from_file(fname)))
     print(conf.get_info_from_file(fname))
     
-    
+    ff = FileConventionRead(from_file='aerocom.CALIOP3.monthly.ec5323Ddust.2006.nc')
+    print(ff)
