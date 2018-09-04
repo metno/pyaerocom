@@ -175,7 +175,7 @@
 
 <div class="viewcode-block" id="collocate_gridded_gridded"><a class="viewcode-back" href="../../api.html#pyaerocom.collocation.collocate_gridded_gridded">[docs]</a><span class="k">def</span> <span class="nf">collocate_gridded_gridded</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">gridded_data_ref</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;yearly&#39;</span><span class="p">,</span>
                               <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                              <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMountains&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regrid_opts</span><span class="p">):</span>
+                              <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regrid_opts</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Collocate 2 gridded data objects</span>
 <span class="sd">    </span>
 <span class="sd">    Todo</span>
@@ -219,7 +219,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">CollocationError</span><span class="p">(</span><span class="s1">&#39;Shape mismatch between two collocated data &#39;</span>
                                <span class="s1">&#39;arrays, please debug&#39;</span><span class="p">)</span>
-
+    
     <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source_idx&#39;</span>   <span class="p">:</span>   <span class="p">[</span><span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                     <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
             <span class="s1">&#39;var_name&#39;</span>          <span class="p">:</span>   <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span>

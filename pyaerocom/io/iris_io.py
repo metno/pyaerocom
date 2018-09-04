@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep  3 15:53:55 2018
+Module containing helper functions related to iris I/O methods. These contain
+reading of Cubes, and some methods to perform quality checks of the data, e.g.
 
-@author: jonasg
+1. checking and correction of time definition
+2. number and length of dimension coordinates must match data array
+3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
+
 """
 import os
 from datetime import datetime
@@ -16,6 +20,7 @@ from iris.experimental.equalise_cubes import equalise_attributes
 from pyaerocom import const, logger
 from pyaerocom.exceptions import NetcdfError
 from pyaerocom.helpers import cftime_to_datetime64
+from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
 TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
@@ -97,14 +102,17 @@ def load_cube_custom(file, var_name=None, grid_io=None,
             if not check_time_coord(cube, ts_type=finfo["ts_type"], 
                                     year=finfo["year"]):
             
-                msg = ("Invalid time axis in file {}. " 
-                       "Attempting to correct.".format(
-                        os.path.basename(file)))
+                msg = ("Invalid time dimension coordinate in file {}. " 
+                       .format(os.path.basename(file)))
                 logger.warning(msg)
                 if grid_io.CORRECT_TIME_FILENAME:
+                    logger.warning("Attempting to correct time coordinate "
+                                   "using information in file name")
                     cube = correct_time_coord(cube, 
                                               ts_type=finfo["ts_type"],
-                                              year=finfo["year"])                
+                                              year=finfo["year"]) 
+                if const.WRITE_FILEIO_ERR_LOG:
+                    add_file_to_log(file, 'Invalid time dimension')
         else:
             logger.warning("WARNING: Automatic check of time "
                            "array in netCDF files is deactivated. "

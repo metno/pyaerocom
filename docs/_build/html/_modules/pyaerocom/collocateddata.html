@@ -356,21 +356,32 @@
                                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span></div>
         
 <div class="viewcode-block" id="CollocatedData.plot_scatter"><a class="viewcode-back" href="../../api.html#pyaerocom.collocateddata.CollocatedData.plot_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create scatter plot of data&quot;&quot;&quot;</span>
-        <span class="n">statistics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_statistics</span><span class="p">()</span>
+        <span class="sd">&quot;&quot;&quot;Create scatter plot of data</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            keyword args passed to :func:`pyaerocom.plot.plotscatter_new.plot_scatter`</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ax </span>
+<span class="sd">            matplotlib axes instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span>
         <span class="n">num_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_grid_points</span>
-        <span class="k">return</span> <span class="n">plot_scatter</span><span class="p">(</span><span class="n">model_vals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> 
-                            <span class="n">obs_vals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> 
-                            <span class="n">model_id</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source_idx&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> 
+    
+        <span class="k">return</span> <span class="n">plot_scatter</span><span class="p">(</span><span class="n">x_vals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> 
+                            <span class="n">y_vals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
                             <span class="n">var_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">],</span>
-                            <span class="n">obs_id</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source_idx&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">x_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source_idx&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="n">y_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source_idx&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> 
                             <span class="n">start</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> 
                             <span class="n">stop</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span><span class="p">],</span> 
                             <span class="n">ts_type</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">],</span> 
                             <span class="n">stations_ok</span><span class="o">=</span><span class="n">num_points</span><span class="p">,</span>
                             <span class="n">filter_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;filter_name&#39;</span><span class="p">],</span> 
-                            <span class="n">statistics</span><span class="o">=</span><span class="n">statistics</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+                            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
     
     
 <div class="viewcode-block" id="CollocatedData.load_fake_data"><a class="viewcode-back" href="../../api.html#pyaerocom.collocateddata.CollocatedData.load_fake_data">[docs]</a>    <span class="k">def</span> <span class="nf">load_fake_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_stations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">num_tstamps</span><span class="o">=</span><span class="mi">365</span><span class="p">):</span>

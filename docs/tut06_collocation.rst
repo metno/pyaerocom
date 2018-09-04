@@ -127,10 +127,10 @@ located at altitudes between 0 and 1000 m.
 
 
 Now perform collocation and plot corresponding scatter plots with statistical values
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2010 monthly World no mountains
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+'''''''''''''''''''''''''''''''
 
 .. code:: ipython3
 
@@ -194,7 +194,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 
 2010 daily Europe no mountains
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+''''''''''''''''''''''''''''''
 
 .. code:: ipython3
 

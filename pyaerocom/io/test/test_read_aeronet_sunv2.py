@@ -23,8 +23,7 @@ def test_load_berlin(dataset):
     data = dataset.read_file(files[0],
                              vars_to_retrieve=['od550aer'])
     
-    test_vars = ['od870aer',
-                 'od440aer',
+    test_vars = ['od440aer',
                  'od500aer',
                  'od550aer',
                  'ang4487aer']
@@ -38,7 +37,7 @@ def test_load_berlin(dataset):
     
     first_vals = [data[var][0] for var in test_vars]
     
-    nominal = [0.059786, 0.229427, 0.18302 , 0.151651, 1.972681]
+    nominal = [0.229427, 0.18302 , 0.151227, 2.002052]
     npt.assert_allclose(actual=first_vals, desired=nominal, rtol=TEST_RTOL)
     
     

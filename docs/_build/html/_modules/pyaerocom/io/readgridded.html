@@ -201,17 +201,17 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">import</span> <span class="nn">iris</span>
 
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">CONST</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">IllegalArgumentError</span><span class="p">,</span> 
                                   <span class="n">YearNotAvailableError</span><span class="p">,</span>
                                   <span class="n">VarNotAvailableError</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io.fileconventions</span> <span class="k">import</span> <span class="n">FileConventionRead</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">AerocomBrowser</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">check_time_coord</span><span class="p">,</span> <span class="n">correct_time_coord</span><span class="p">,</span> 
-                                  <span class="n">concatenate_iris_cubes</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.iris_io</span> <span class="k">import</span> <span class="n">load_cube_custom</span><span class="p">,</span> <span class="n">concatenate_iris_cubes</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.io.helpers</span> <span class="k">import</span> <span class="n">add_file_to_log</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.griddeddata</span> <span class="k">import</span> <span class="n">GriddedData</span>
 
 <div class="viewcode-block" id="ReadGridded"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded">[docs]</a><span class="k">class</span> <span class="nc">ReadGridded</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -286,12 +286,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1"># Directory containing model data for this species</span>
+    <span class="c1">#: Directory containing model data for this species</span>
     <span class="n">_data_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-
+    
+    <span class="c1">#VALID_DIM_STANDARD_NAMES = [&#39;longitude&#39;, &#39;latitude&#39;, &#39;altitude&#39;, &#39;time&#39;]</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">file_convention</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">io_opts</span><span class="o">=</span><span class="n">const</span><span class="p">,</span> 
-                 <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                 <span class="n">file_convention</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="c1"># model ID</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -325,7 +325,6 @@
         <span class="c1"># file naming convention. Default is aerocom3 file convention, change </span>
         <span class="c1"># using self.file_convention.import_default(&quot;aerocom2&quot;). Is </span>
         <span class="c1"># automatically updated in class ReadGridded</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">io_opts</span> <span class="o">=</span> <span class="n">io_opts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span> <span class="o">=</span> <span class="n">FileConventionRead</span><span class="p">(</span><span class="n">file_convention</span><span class="p">)</span>
         
         <span class="c1">#: All files that were found for this model (updated, e.g. in class</span>
@@ -360,6 +359,7 @@
         <span class="c1">#: This object can be used to </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">browser</span> <span class="o">=</span> <span class="n">AerocomBrowser</span><span class="p">()</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_errors</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">init</span> <span class="ow">and</span> <span class="n">name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">search_data_dir</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span>
@@ -387,13 +387,13 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">file_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;File type of data files&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_opts</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">FILE_TYPE</span>
+        <span class="k">return</span> <span class="n">CONST</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">FILE_TYPE</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">TS_TYPES</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;List with valid filename encryptions specifying temporal resolution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_opts</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">TS_TYPES</span>
+        <span class="k">return</span> <span class="n">CONST</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">TS_TYPES</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -489,8 +489,15 @@
 <div class="viewcode-block" id="ReadGridded.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_file_convention</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search all valid model files for this model</span>
 <span class="sd">        </span>
+<span class="sd">        This method browses the data directory and finds all valid files, that</span>
+<span class="sd">        is, file that are named according to one of the aerocom file naming</span>
+<span class="sd">        conventions. The file list is stored in :attr:`files`.</span>
 <span class="sd">        </span>
-<span class="sd">        This method </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        It is presumed, that naming conventions of files in</span>
+<span class="sd">        the data directory are not mixed but all correspond to either of the </span>
+<span class="sd">        conventions defined in </span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -498,10 +505,11 @@
 <span class="sd">            if True, the first file in `data_dir` is used to identify the</span>
 <span class="sd">            file naming convention (cf. :class:`FileConventionRead`)</span>
 <span class="sd">            </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This function does not seperate by variable or time, it gets you all</span>
-<span class="sd">        valid files for all variables and times for this model.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        IOError</span>
+<span class="sd">            if none of the files in the data directory follows either of the </span>
+<span class="sd">            available naming conventions (cf. data file *fileconventions.ini*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># get all netcdf files in folder</span>
         <span class="n">nc_files</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;/*</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_type</span><span class="p">))</span>
@@ -529,18 +537,26 @@
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">nc_files</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+                
                 <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;var_name&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span>
                 <span class="n">_years_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
                 <span class="n">_ts_types_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">])</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Read file </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_file</span><span class="p">))</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to import file </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Model: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                               <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> 
-                               <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Failed to import file </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Model: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">),</span> 
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">CONST</span><span class="o">.</span><span class="n">WRITE_FILEIO_ERR_LOG</span><span class="p">:</span>
+                    <span class="n">add_file_to_log</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                    
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_vars_temp</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to extract information from filenames&quot;</span><span class="p">)</span>
         <span class="c1"># make sorted list of unique vars</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">))</span>
         
@@ -588,9 +604,12 @@
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
-<span class="sd">        list</span>
-<span class="sd">            list of filepaths matching variable name, ts_type and either of the</span>
-<span class="sd">            years specified by years_to_load</span>
+<span class="sd">        tuple</span>
+<span class="sd">            2-element tuple, containing</span>
+<span class="sd">            </span>
+<span class="sd">            -list of filepaths matching variable name, ts_type and either of \</span>
+<span class="sd">            the years specified by years_to_load</span>
+<span class="sd">            - str specifying ts_type of files</span>
 <span class="sd">            </span>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -598,8 +617,9 @@
 <span class="sd">            if not files could be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type_init</span><span class="p">,</span>
-                                                     <span class="n">years_to_load</span><span class="p">)</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type_init</span><span class="p">,</span>
+                                                      <span class="n">years_to_load</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">ts_type_init</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No file match for ts_type </span><span class="si">{}</span><span class="s1">. Error: </span><span class="si">{}</span><span class="se">\n\n</span><span class="s1"> &#39;</span>
                                 <span class="s1">&#39;Trying other available ts_types </span><span class="si">{}</span><span class="s1">&#39;</span>
@@ -607,9 +627,11 @@
             <span class="k">for</span> <span class="n">ts_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_types</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">ts_type</span> <span class="o">==</span> <span class="n">ts_type_init</span><span class="p">:</span> <span class="c1">#this already did not work</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
-                                                                 <span class="n">ts_type</span><span class="p">,</span>
-                                                                 <span class="n">years_to_load</span><span class="p">)</span>
+                        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
+                                                                  <span class="n">ts_type</span><span class="p">,</span>
+                                                                  <span class="n">years_to_load</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span>
+                    
                     <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be found for dataset </span><span class="si">{}</span><span class="s2">, variable </span><span class="si">{}</span><span class="s2">, &quot;</span>
@@ -647,7 +669,7 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">years_to_load</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
             <span class="n">years_to_load</span> <span class="o">=</span> <span class="p">[</span><span class="n">years_to_load</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years_to_load</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">const</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
                 <span class="c1"># search for filename in self.files using ts_type as default ts size</span>
                 <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
                     <span class="c1">#new file naming convention (aerocom3)</span>
@@ -661,8 +683,8 @@
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Ignoring data from year </span><span class="si">{}</span><span class="s1">. Year is out of &#39;</span>
-                               <span class="s1">&#39;allowed bounds (</span><span class="si">{:d}</span><span class="s1"> - </span><span class="si">{:d}</span><span class="s1">)&#39;</span>
-                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">MIN_YEAR</span><span class="p">,</span> <span class="n">const</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">))</span>
+                                    <span class="s1">&#39;allowed bounds (</span><span class="si">{:d}</span><span class="s1"> - </span><span class="si">{:d}</span><span class="s1">)&#39;</span>
+                                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MIN_YEAR</span><span class="p">,</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">))</span>
            
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;No files could be found for dataset </span><span class="si">{}</span><span class="s2">, variable </span><span class="si">{}</span><span class="s2">, &quot;</span>
@@ -672,7 +694,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">match_files</span> <span class="o">=</span> <span class="n">match_files</span>
         <span class="k">return</span> <span class="n">match_files</span></div>
     
-<div class="viewcode-block" id="ReadGridded.load_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.load_files">[docs]</a>    <span class="k">def</span> <span class="nf">load_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_set_year_climatology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cube</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update time axis in cube in case of climatology data </span>
+<span class="sd">        </span>
+<span class="sd">        Climatology files are identified by 9999 in filename at position of </span>
+<span class="sd">        year and correspond to 10 year averages between 2000 and 2010.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        
+    <span class="k">def</span> <span class="nf">_load_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">quality_check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Load list of files containing variable to read into Cube instances</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -686,56 +716,40 @@
 <span class="sd">        -------</span>
 <span class="sd">        CubeList</span>
 <span class="sd">            list of loaded Cube instances</span>
-<span class="sd">            </span>
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Define Iris var_constraint -&gt; ensures that only the current </span>
-        <span class="c1"># variable is extracted from the netcdf file </span>
-        <span class="n">var_constraint</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">Constraint</span><span class="p">(</span><span class="n">cube_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">var_name</span><span class="o">==</span><span class="n">var_name</span><span class="p">)</span>
-        
         <span class="c1"># read files using iris</span>
         <span class="n">cubes</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">CubeList</span><span class="p">()</span>
         <span class="n">loaded_files</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">finfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-                <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_cube</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">var_constraint</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">const</span><span class="o">.</span><span class="n">GRID_IO</span><span class="p">[</span><span class="s2">&quot;CHECK_TIME_FILENAME&quot;</span><span class="p">]:</span>
-                    
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span> 
-                                            <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]):</span>
-                        
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Invalid time axis in file </span><span class="si">{}</span><span class="s2">. &quot;</span> 
-                                       <span class="s2">&quot;Attempting to correct.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                        <span class="n">basename</span><span class="p">(</span><span class="n">_file</span><span class="p">)))</span>
-                        
-                        <span class="n">cube</span> <span class="o">=</span> <span class="n">correct_time_coord</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> 
-                                                  <span class="n">ts_type</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">],</span>
-                                                  <span class="n">year</span><span class="o">=</span><span class="n">finfo</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
-                        
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WARNING: Automatic check of time &quot;</span>
-                                   <span class="s2">&quot;array in netCDF files is deactivated.&quot;</span>
-                                   <span class="s2">&quot; This may cause problems in case &quot;</span>
-                                   <span class="s2">&quot;the time dimension is not CF conform.&quot;</span><span class="p">)</span>
-                
+                <span class="n">cube</span> <span class="o">=</span> <span class="n">load_cube_custom</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span>
+                                        <span class="n">file_convention</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="p">)</span>
                 <span class="n">cubes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cube</span><span class="p">)</span>
                 <span class="n">loaded_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">{}</span><span class="s2"> as Iris cube.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                               <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Failed to load </span><span class="si">{}</span><span class="s2"> as Iris cube. Error: </span><span class="si">{}</span><span class="s2">&quot;</span>
+                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read_errors</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()]</span> <span class="o">=</span> <span class="n">msg</span>
+                <span class="k">if</span> <span class="n">CONST</span><span class="o">.</span><span class="n">WRITE_FILEIO_ERR_LOG</span><span class="p">:</span>
+                    <span class="n">add_file_to_log</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                    
+                    
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the found files for variable </span><span class="si">{}</span><span class="s2"> &quot;</span>
+            <span class="n">err_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_errors</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">err_str</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;None of the files found for variable </span><span class="si">{}</span><span class="s2"> &quot;</span>
                           <span class="s2">&quot;in specified time interval</span><span class="se">\n</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                          <span class="s2">&quot;could be loaded&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                                   <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
-                                                   <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+                          <span class="s2">&quot;could be loaded. Errors: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                               <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                                               <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span>
+                                                               <span class="n">err_str</span><span class="p">))</span>
     
         <span class="bp">self</span><span class="o">.</span><span class="n">cubes</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cubes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">loaded_files</span>
-        <span class="k">return</span> <span class="n">cubes</span></div>
+        <span class="k">return</span> <span class="n">cubes</span>
     
 <div class="viewcode-block" id="ReadGridded.concatenate_cubes"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.concatenate_cubes">[docs]</a>    <span class="k">def</span> <span class="nf">concatenate_cubes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cubes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Concatenate list of cubes into one cube</span>
@@ -796,7 +810,18 @@
         <span class="k">return</span> <span class="n">cubes_concat</span></div>
     
     <span class="k">def</span> <span class="nf">_check_ts_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check and, if applicable, update ts_type&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Check and, if applicable, update ts_type</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            valid ts_type</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">ts_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_types</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Apparently no files with a valid ts_type &#39;</span>
@@ -810,7 +835,7 @@
         <span class="k">return</span> <span class="n">ts_type</span>
     
 <div class="viewcode-block" id="ReadGridded.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">at_stations</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read model data for a specific variable</span>
 <span class="sd">        </span>
 <span class="sd">        This method searches all valid files for a given variable and for a </span>
@@ -846,6 +871,11 @@
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;). If None, prioritised </span>
 <span class="sd">            of the available resolutions is used</span>
+<span class="sd">        at_stations : bool</span>
+<span class="sd">            boolean specifying whether </span>
+<span class="sd">        flex_ts_type : bool</span>
+<span class="sd">            if True and if applicable, then another ts_type is used in case </span>
+<span class="sd">            the input ts_type is not available for this variable</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -869,47 +899,48 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: variable </span><span class="si">{}</span><span class="s2"> not found in files contained &quot;</span>
                              <span class="s2">&quot;in model directory: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
                                                   <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">))</span>
-        
-        <span class="n">match_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_flex_ts_type</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
-                                                       <span class="n">ts_type_init</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
-        <span class="n">cubes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_files</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">match_files</span><span class="p">)</span>
-        
+        <span class="k">if</span> <span class="n">flex_ts_type</span><span class="p">:</span>
+            <span class="n">match_files</span><span class="p">,</span> <span class="n">ts_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_flex_ts_type</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
+                                                                    <span class="n">ts_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">match_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
+                                                            <span class="n">ts_type</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">cubes_concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concatenate_cubes</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">iris</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConcatenateError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Can not yet handle partial &#39;</span>
-                                      <span class="s1">&#39;concatenation in pyaerocom&#39;</span><span class="p">)</span>
-        
-        <span class="c1">#create instance of pyaerocom.GriddedData</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
-                           <span class="n">from_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">,</span>
-                           <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
-        <span class="c1"># crop cube in time (if applicable)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
+            <span class="n">cubes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_files</span><span class="p">(</span><span class="n">match_files</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-<span class="c1"># =============================================================================</span>
-<span class="c1">#                 t_constraint = data.get_time_constraint(self.start_time, </span>
-<span class="c1">#                                                         self.stop_time)</span>
-<span class="c1">#                 _data = data.extract(t_constraint)</span>
-<span class="c1"># =============================================================================</span>
-                <span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
-                                              <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">_data</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to crop data for </span><span class="si">{}</span><span class="s2"> in time.</span><span class="se">\n</span><span class="s2">&quot;</span>
-                               <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
-        
-        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: Data for variable </span><span class="si">{}</span><span class="s2"> already exists &quot;</span>
-                           <span class="s2">&quot;and will be overwritten&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
-        
-        <span class="k">return</span> <span class="n">data</span></div>
+                <span class="n">cubes_concat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concatenate_cubes</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">iris</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConcatenateError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Can not yet handle partial &#39;</span>
+                                          <span class="s1">&#39;concatenation in pyaerocom&#39;</span><span class="p">)</span>
+            
+            <span class="c1">#create instance of pyaerocom.GriddedData</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes_concat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
+                               <span class="n">from_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">,</span>
+                               <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
+            <span class="c1"># crop cube in time (if applicable)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">))</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">_data</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to crop data for </span><span class="si">{}</span><span class="s2"> in time.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                                   <span class="s2">&quot;Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+            
+            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: Data for variable </span><span class="si">{}</span><span class="s2"> already exists &quot;</span>
+                               <span class="s2">&quot;and will be overwritten&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            
+            <span class="k">return</span> <span class="n">data</span></div>
     
                 
 <div class="viewcode-block" id="ReadGridded.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">require_all_vars_avail</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                 <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">require_all_vars_avail</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read all variables that could be found </span>
 <span class="sd">        </span>
 <span class="sd">        Reads all variables that are available (i.e. in :attr:`vars`)</span>
@@ -931,6 +962,8 @@
 <span class="sd">        require_all_vars_avail : bool</span>
 <span class="sd">            if True, it is strictly required that all input variables are </span>
 <span class="sd">            available. </span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional keyword args passed to :func:`read_var`</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1032,7 +1065,7 @@
         <span class="n">ts_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ts_type</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">years_to_load</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
             <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">years_to_load</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">const</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">const</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Invalid input for years_to_load&#39;</span><span class="p">)</span>
             <span class="n">years_to_load</span> <span class="o">=</span> <span class="p">[</span><span class="n">year</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">require_all_years_avail</span><span class="p">:</span>
@@ -1064,21 +1097,25 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_yearly</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
                 
             <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years_to_load</span><span class="p">:</span>
-                <span class="n">match_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_flex_ts_type</span><span class="p">(</span><span class="n">var</span><span class="p">,</span>
-                                                               <span class="n">ts_type</span><span class="p">,</span>
-                                                               <span class="n">year</span><span class="p">)</span>
-                <span class="n">cubes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_files</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">match_files</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Coming soon...&#39;</span><span class="p">)</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
-                                   <span class="n">from_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">,</span>
-                                   <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
-                                   <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_yearly</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Individual data of year </span><span class="si">{}</span><span class="s1"> and var </span><span class="si">{}</span><span class="s1"> &#39;</span>
-                                        <span class="s1">&#39;already exists and will be &#39;</span>
-                                        <span class="s1">&#39;overwritten&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data_yearly</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">year</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="n">match_files</span><span class="p">,</span> <span class="n">ts_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_flex_ts_type</span><span class="p">(</span><span class="n">var</span><span class="p">,</span>
+                                                                        <span class="n">ts_type</span><span class="p">,</span>
+                                                                        <span class="n">year</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cubes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_files</span><span class="p">(</span><span class="n">match_files</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cubes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Coming soon...&#39;</span><span class="p">)</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cubes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
+                                       <span class="n">from_files</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">,</span>
+                                       <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
+                                       <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_yearly</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Individual data of year </span><span class="si">{}</span><span class="s1"> and var </span><span class="si">{}</span><span class="s1"> &#39;</span>
+                                            <span class="s1">&#39;already exists and will be &#39;</span>
+                                            <span class="s1">&#39;overwritten&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data_yearly</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">year</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_yearly</span></div>
     
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
@@ -1418,12 +1455,12 @@
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">)</span>
     
-    <span class="n">cube</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_cube</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     
     <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;2009&quot;</span><span class="p">,</span> <span class="s2">&quot;2011&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
     
     <span class="n">read_caliop</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;CALIOP3&#39;</span><span class="p">)</span>
-    <span class="n">cp</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;z3d&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+    <span class="n">alt</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;z3d&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+    <span class="n">ec532aer</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;ec5323Daer&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
 
     
 

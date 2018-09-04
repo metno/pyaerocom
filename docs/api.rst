@@ -213,30 +213,39 @@ File naming conventions
    :members:
    :undoc-members:
    
-I/O helpers and utils
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Iris helpers
+^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.iris_io
+   :members:
+   :undoc-members:
+
+
+I/O utils
+^^^^^^^^^
 
 .. automodule:: pyaerocom.io.utils
    :members:
    :undoc-members:
    
+I/O helpers
+^^^^^^^^^^^^
 .. automodule:: pyaerocom.io.helpers
    :members:
    :undoc-members:
 
-Test file access
-^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.io.testfiles
-   :members:
-   :undoc-members:
-   
 Regions and  data filtering
 ----------------------------
+
+Region defintions
+^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.region
    :members:
    :undoc-members:
+
+Class for filtering
+^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.filter
    :members:
