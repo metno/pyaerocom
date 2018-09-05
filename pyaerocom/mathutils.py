@@ -374,7 +374,7 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     
     try:
         # now replace all values with NaNs that are below the global lower threshold
-        below_thresh = result < const.VAR_PARAM[var_name]['lower_limit']
+        below_thresh = result < const.VAR_PARAM[var_name]['minimum']
         result[below_thresh] = np.nan
     except:
         logger.warn("Could not access lower limit from global settings for "

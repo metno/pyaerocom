@@ -756,8 +756,9 @@ class ReadGridded(object):
                                           'concatenation in pyaerocom')
             
             #create instance of pyaerocom.GriddedData
+            from_files = [f for f in self.loaded_files[var_name]]
             data = GriddedData(input=cubes_concat[0], 
-                               from_files=self.loaded_files,
+                               from_files=from_files,
                                name=self.name, ts_type=ts_type)
             # crop cube in time (if applicable)
             if self.start_time and self.stop_time:
@@ -946,8 +947,9 @@ class ReadGridded(object):
                 else:
                     if len(cubes) > 1:
                         raise NotImplementedError('Coming soon...')
+                    from_files = [f for f in self.loaded_files[var]]    
                     data = GriddedData(input=cubes[0], 
-                                       from_files=self.loaded_files,
+                                       from_files=from_files,
                                        name=self.name, 
                                        ts_type=ts_type)
                     if year in self.data_yearly[var]:

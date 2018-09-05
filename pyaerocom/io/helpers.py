@@ -7,6 +7,9 @@ from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
 from pyaerocom import __dir__
 import os
+from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
+
+
 from collections import OrderedDict as od
 
 TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
@@ -54,6 +57,32 @@ def add_file_to_log(filepath, err_msg):
                                            err_msg))
         
 
+def get_standard_name(var_name):
+    """Get standard name of aerocom variable
+    
+    Parameters
+    ----------
+    var_name : str
+        HTAP2 variable name
+    
+    Returns
+    --------
+    str
+        corresponding standard name
+        
+    Raises
+    ------
+    VarNotAvailableError
+        if input variable is not defined in *variables.ini* file
+    VariableDefinitionError
+        if standarad name is not set for variable in *variables.ini* file
+    """
+    if not var_name in const.VAR_PARAM:
+        raise VarNotAvailableError('No such variable {}. Check variables.ini'.format(var_name))
+    name = const.VAR_PARAM[var_name].standard_name
+    if name is None:
+        raise VariableDefinitionError('standard_name not defined for variable')
+    return name
 
 def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
     """Search Aerocom data directory based on model / data ID

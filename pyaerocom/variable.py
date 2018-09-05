@@ -44,7 +44,7 @@ class Variable(BrowseDict):
         unit of variable (None if no unit)
     aliases : list
         list of alternative names for this variable
-    lower_limit : float
+    minimum : float
         lower limit of allowed value range
     upper_limit : float
         upper limit of allowed value range
@@ -78,14 +78,32 @@ class Variable(BrowseDict):
     map_cbar_ticks : :obj:`list`, optional
         colorbar ticks
     """
+    literal_eval_list = lambda val: list(literal_eval(val))
+        
+    _TYPE_CONV={'wavelength_nm': float,
+               'minimum': float,
+               'maximum': float,
+               'obs_wavelength_tol_nm': float,
+               'scat_xlim': float,
+               'scat_ylim': float,
+               'scat_loglog': bool,
+               'scat_scale_factor': float,
+               'map_vmin': float,
+               'map_vmax': float,
+               'map_cbar_levels': literal_eval_list,
+               'map_cbar_ticks': literal_eval_list}
+    
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         self.var_name = var_name
-        
+        self.standard_name = None
         self.unit = None
         self.aliases = []
         self.wavelength_nm = None
-        self.lower_limit = -9e30
-        self.upper_limit = 9e30
+        self.dimensions = None
+        self.minimum = -9e30
+        self.maximum = 9e30
+        self.description = None
+        self.comments_and_purpose = None
         
         # parameters for reading of obsdata
         
@@ -114,7 +132,20 @@ class Variable(BrowseDict):
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
-                
+    
+    
+    @property
+    def lower_limit(self):
+        """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
+        logger.warning(DeprecationWarning('Old name for attribute minimum'))
+        return self.minimum
+     
+    @property
+    def upper_limit(self):
+        """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
+        logger.warning(DeprecationWarning('Old name for attribute minimum'))
+        return self.maximum 
+    
     @property
     def unit_str(self):
         if self.unit is None:
@@ -181,26 +212,12 @@ class Variable(BrowseDict):
             else:
                 ok = False
             if ok:
-                if val == '[]':
-                    val = []
-                elif val == 'None':
-                    val = None
-                elif "," in val:
-                    val = list(literal_eval(val))# [float(x) for x in val.split(",")]
-                else:
-                    if key == 'unit':
+                if key in self._TYPE_CONV:
+                    try:
+                        val = self._TYPE_CONV[key](val)
+                    except:
                         pass
-                    else:
-                        try:
-                            val = int(val)
-                        except:
-                            try:
-                                val = float(val)
-                            except:
-                                try:
-                                    val = bool(val)
-                                except:
-                                    pass
+                
                 self[key] = val
         
     def __repr__(self):
@@ -226,11 +243,13 @@ class AllVariables(object):
     """Container class that handles access to all available variables"""
     _var_ini = None
     _alias_ini = None
-    def __init__(self, var_ini=None, alias_ini=None):
+    def __init__(self, var_ini=None, alias_ini=None, var_csv=None):
         
         self.var_ini = var_ini
+        self.var_csv = var_csv
         
         self._cfg = self._read_ini()
+        
         self.all_vars = [k for k in self._cfg.keys()]
         
         self.alias_ini = alias_ini
@@ -238,7 +257,7 @@ class AllVariables(object):
             logger.info("Reading aliases ini file: {}".format(self.alias_ini))
             self.alias_info = self._import_aliases()
             self.all_vars.extend(list(self.alias_info.keys()))
-        
+            
     @property
     def var_ini(self):
         """Config file specifying variable information"""
@@ -253,6 +272,8 @@ class AllVariables(object):
                           %var_ini)
         self._var_ini = var_ini
     
+    
+        
     @property
     def alias_ini(self):
         """Config file specifying alias information for variables"""

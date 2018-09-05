@@ -308,7 +308,7 @@ Length: 1424, dtype: float64, 'data_quality_level': ['lev15', 'l...
                         data_out['od550aer'][-1] = (data_out['od440aer'][-1] * (0.55 / 0.44) **
                                                     (np.float_(-1.) * data_out['ang4487aer'][-1]))
                 # apply the lower limit for od550aer
-                if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
+                if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['minimum']:
                     data_out['od550aer'][-1] = np.nan
                 data_line_no += 1
 

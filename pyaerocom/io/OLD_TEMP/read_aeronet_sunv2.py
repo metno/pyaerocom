@@ -234,7 +234,7 @@ Length: 223, dtype: float64}
                     temp = data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
                     if not np.isnan(temp) and temp > 0.:
                         data_out['od550aer'][-1] = temp #data_out['od440aer'][-1] * (0.55 / 0.44) ** (np.float_(-1.) * data_out['ang4487aer'][-1])
-                if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
+                if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['minimum']:
                    data_out['od550aer'][-1] = np.nan
 
         # convert  the vars in vars_to_retrieve to pandas time series

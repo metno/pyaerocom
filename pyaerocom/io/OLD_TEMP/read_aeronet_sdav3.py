@@ -266,7 +266,7 @@ class ReadAeronetSdaV3:
 
 
                 # # apply the lower limit for od550aer
-                # if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['lower_limit']:
+                # if data_out['od550aer'][-1] < const.VAR_PARAM['od550aer']['minimum']:
                 #     data_out['od550aer'][-1] = np.nan
                 data_line_no += 1
 

@@ -161,9 +161,6 @@ class GridIO(object):
         
         GridIO["<key>"] => value
         
-        Returns
-        -------
-        
         """
         if not key in self.__dict__.keys():
             raise IOError("Invalid attribute")

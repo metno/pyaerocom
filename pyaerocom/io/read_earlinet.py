@@ -213,7 +213,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 if not val.ndim == 0:
                     raise ValueError('Fatal: dust layer height data must be '
                                      'single value')
-                if np.isnan(val) or not info.lower_limit <= val <= info.upper_limit :
+                if np.isnan(val) or not info.minimum <= val <= info.maximum:
                     self.logger.warning("Invalid value of variable zdust "
                                         "in file {}. Skipping...!".format(filename))
                     continue
