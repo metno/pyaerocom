@@ -49,9 +49,9 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    2018-09-04 14:15:26,239:INFO:
+    2018-09-05 14:05:01,277:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
-    2018-09-04 14:15:27,084:WARNING:
+    2018-09-05 14:05:02,151:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -170,6 +170,439 @@ via an instance of the ``Config`` class.
     ang4487aer
     angabs4487aer
     zdust
+    time
+    time_bnds
+    lon
+    lon_bnds
+    lat
+    lat_bnds
+    growvegbnds
+    areacella
+    landf
+    orog
+    landcBF
+    landcNF
+    landcCP
+    landcSa
+    landcGS
+    landcST
+    landcBS
+    landcW
+    landcO
+    landcCPC3
+    landcCPC4
+    landcSaC3
+    landcSaC4
+    landcGSC3
+    landcGSC4
+    lai
+    mrso
+    snd
+    uas
+    vas
+    was
+    uapbl
+    vapbl
+    ts
+    ps
+    tasmin
+    tasmax
+    tas
+    prc
+    pr
+    airmass
+    zmlay
+    eminox
+    emino
+    emino2
+    eminosoil
+    emico
+    emivoc
+    emivoct
+    emic2h6
+    emic3h8
+    emic2h2
+    emic2h4
+    emic3h6
+    emialkanes
+    emialkenes
+    emihcho
+    emich3cho
+    emiacetone
+    emimethanol
+    emitolu
+    emiaro
+    emiisop
+    emimntp
+    emisestp
+    emibvoc
+    eminh3
+    emiso2
+    emidms
+    emiso4
+    emioa
+    emioc
+    emisoa
+    emibc
+    emiss
+    emidust
+    emipm10
+    emipm2p5
+    emipm10ss
+    emipm10dust
+    emipm2p5ss
+    emipm2p5dust
+    emipm1ss
+    emipm1dust
+    emipcb153
+    emiahch
+    reemipcb153
+    reemiahch
+    emihg0
+    emihg2
+    emihgp
+    emiahg0
+    emiahg2
+    emiahgp
+    reemihg0
+    dryhno3
+    dryno3
+    dryno2
+    dryn2o5
+    drypan
+    dryorgn
+    dryhono
+    dryhno4
+    drynoy
+    drynh3
+    drynh4
+    dryso2
+    dryso4
+    drymsa
+    drydms
+    dryss
+    drydust
+    drypm1no3
+    drypm2p5no3
+    drypm10no3
+    dryo3
+    stoo3
+    dryhcho
+    drych3cho
+    dryalde
+    dryhcooh
+    drych3cooh
+    dryh2o2
+    dryroor
+    excnh3
+    drybc
+    drypm10
+    drypm10ss
+    drypm10dust
+    drypm2p5
+    drypm2p5ss
+    drypm2p5dust
+    dryoc
+    dryoa
+    drysoa
+    drypcb153
+    dryahch
+    dryhg0
+    dryhg2
+    dryhgp
+    wethno3
+    wetn2o5
+    wetorgn
+    wetno3
+    wethono
+    wethno4
+    wetnoy
+    wetnh3
+    wetnh4
+    wetso2
+    wetso4
+    wetmsa
+    wetdms
+    wetbc
+    wetss
+    wetdust
+    wetpm1no3
+    wetpm2p5no3
+    wetpm10no3
+    wethcho
+    wetch3cho
+    wetalde
+    wethcooh
+    wetch3cooh
+    weth2o2
+    wetroor
+    wetpm10
+    wetpm10ss
+    wetpm10dust
+    wetpm2p5
+    wetpm2p5ss
+    wetpm2p5dust
+    wetoa
+    wetoc
+    wetsoa
+    wetpcb153
+    wetahch
+    wethg
+    wethg0
+    wethg2
+    wethgp
+    vmro3
+    vmrno
+    vmrno2
+    vmro32m
+    rc
+    ra
+    vmrco
+    vmrhno3
+    vmrn2o5
+    vmrpan
+    vmrhono
+    vmrhno4
+    vmrorgnit
+    vmrnoy
+    vmrvoc
+    vmrc2h6
+    vmrc3h8
+    vmrc2h4
+    vmrc3h6
+    vmralkanes
+    vmralkenes
+    vmrhcho
+    vmrch3cho
+    vmracetone
+    vmrglyoxal
+    vmrmethanol
+    vmrtolu
+    vmraro
+    vmrisop
+    vmrc10h16
+    vmrtp
+    vmrnh3
+    vmrso2
+    vmrdms
+    mmrpm10
+    mmrpm2p5
+    mmrpm1
+    mmrno3
+    mmrso4
+    mmrbc
+    mmroc
+    mmroa
+    mmrss
+    mmrdust
+    mmrmsa
+    mmrnh4
+    ncpm2p5
+    mmrpm1no3
+    mmrpm1ss
+    mmrpm1dust
+    mmrpm2p5no3
+    mmrpm2p5so4
+    mmrpm2p5bc
+    mmrpm2p5oc
+    mmrpm2p5oa
+    mmrpm2p5ss
+    mmrpm2p5dust
+    mmrpm2p5nh4
+    ncpm10
+    mmrpm10no3
+    mmrpm10so4
+    mmrpm10bc
+    mmrpm10oc
+    mmrpm10oa
+    mmrpm10ss
+    mmrpm10dust
+    mmrpm10nh4
+    vmrhg0
+    vmrhg2
+    vmrpcb153
+    vmrahch
+    mmrhgp
+    jno2
+    jo3o1d
+    rsdt
+    rsut
+    rsutcs
+    rsds
+    rsus
+    rsdsdir
+    rsdsdif
+    rsdscs
+    rsdscsdir
+    rsdscsdif
+    rlut
+    rlutcs
+    rlds
+    rlus
+    rsut0
+    rsuscs0
+    rsds0
+    rsus0
+    rsdsdir0
+    rsdsdif0
+    rsdscs0
+    rsdscsdir0
+    rsdscsdif0
+    rlut0
+    rlutcs0
+    rlds0
+    rlus0
+    rsutpm1no3
+    rsutpm10no3
+    rsutcspm1no3
+    rsutcsnpm10no3
+    longitude
+    latitude
+    abs388aer
+    abs388bc
+    abs388dust
+    abs388oa
+    abs550bc
+    abs550dust
+    abs550pm1
+    abs550pm10
+    abs550pm2p5
+    abs870aer
+    od388aer
+    od388bc
+    od388dust
+    od388oa
+    od500aer
+    od500pm10
+    od500pm2p5
+    od550aerh2o
+    od550bc
+    od550dust
+    od550nh4
+    od550no3
+    od550oa
+    od550pm1
+    od550pm1no3
+    od550pm10
+    od550pm10no3
+    od550pm2p5
+    od550pm2p5no3
+    od550so4
+    od550ss
+    od865aer
+    od870aer
+    cldf
+    abs550aerh2o
+    abs550nh4
+    abs550no3
+    abs550oa
+    abs550so4
+    abs550ss
+    loadno3
+    loadso4
+    loadbc
+    loadoc
+    loadoa
+    loadsoa
+    loadss
+    loaddust
+    loadmsa
+    loadnh4
+    loadno
+    loadno2
+    loadn2o5
+    loadpan
+    loadhono
+    loadhno3
+    loadhno4
+    loadorgnit
+    loadnoy
+    loadnh3
+    loaddms
+    loadso2
+    loadpm1no3
+    loadpm2p5no3
+    loadpm10no3
+    loadpm1ss
+    loadpm2p5ss
+    loadpm10ss
+    loadpm1dust
+    loadpm2p5dust
+    loadpm10dust
+    loadpm1
+    loadpm2p5
+    loadpm10
+    lev
+    lev_bnds
+    ptop
+    a
+    b
+    a_bnds
+    b_bnds
+    p0
+    ap
+    ap_bnds
+    ta
+    rho
+    dh
+    hus
+    mcu
+    hur
+    emilnox
+    eminoaircraft
+    vmroh
+    vmrh2o2
+    vmrho2
+    vmrcl
+    vmrbr
+    vmrbro
+    prodo3
+    losso3
+    lossch4
+    lossco
+    reacvoc
+    chepsoa
+    chepmsa
+    chegpso4
+    cheaqpso4
+    chegphno3
+    cheglhno3
+    cheaphno3
+    chealhno3
+    chepno3
+    chedustpno3
+    chesspno3
+    cheppm10no3
+    cheppm2p5no3
+    cheppm1no3
+    chegpnh3
+    chealnh3
+    chepnh4
+    mmrsoa
+    mmraerh2o
+    mmrpm10h2o
+    mmrpm2p5h2o
+    rh
+    vmrcodirect50d
+    vmrcodirect25d
+    station
+    network_stationid
+    networkid
+    stationid
+    station_elevation
+    td
+    hurs
+    huss
+    mmrpm10poa
+    mmrpm2p5poa
+    vmr5mo3
+    vmr10mo3
+    tcwv
+    tcno2
+    pres
+    ua
+    va
+    wa
     
     Aliases
     .......
@@ -217,9 +650,9 @@ options to do this:
 
 .. parsed-literal::
 
-    /home/jonasg/github/pyaerocom/pyaerocom/config.py:308: UserWarning: Model base directory %s does not exist
+    /home/jonasg/github/pyaerocom/pyaerocom/config.py:305: UserWarning: Model base directory %s does not exist
       warn("Model base directory %s does not exist")
-    /home/jonasg/github/pyaerocom/pyaerocom/config.py:311: UserWarning: Observations base directory %s does not exist
+    /home/jonasg/github/pyaerocom/pyaerocom/config.py:308: UserWarning: Observations base directory %s does not exist
       warn("Observations base directory %s does not exist")
 
 
@@ -328,6 +761,439 @@ See what’s currently in there.
     ang4487aer
     angabs4487aer
     zdust
+    time
+    time_bnds
+    lon
+    lon_bnds
+    lat
+    lat_bnds
+    growvegbnds
+    areacella
+    landf
+    orog
+    landcBF
+    landcNF
+    landcCP
+    landcSa
+    landcGS
+    landcST
+    landcBS
+    landcW
+    landcO
+    landcCPC3
+    landcCPC4
+    landcSaC3
+    landcSaC4
+    landcGSC3
+    landcGSC4
+    lai
+    mrso
+    snd
+    uas
+    vas
+    was
+    uapbl
+    vapbl
+    ts
+    ps
+    tasmin
+    tasmax
+    tas
+    prc
+    pr
+    airmass
+    zmlay
+    eminox
+    emino
+    emino2
+    eminosoil
+    emico
+    emivoc
+    emivoct
+    emic2h6
+    emic3h8
+    emic2h2
+    emic2h4
+    emic3h6
+    emialkanes
+    emialkenes
+    emihcho
+    emich3cho
+    emiacetone
+    emimethanol
+    emitolu
+    emiaro
+    emiisop
+    emimntp
+    emisestp
+    emibvoc
+    eminh3
+    emiso2
+    emidms
+    emiso4
+    emioa
+    emioc
+    emisoa
+    emibc
+    emiss
+    emidust
+    emipm10
+    emipm2p5
+    emipm10ss
+    emipm10dust
+    emipm2p5ss
+    emipm2p5dust
+    emipm1ss
+    emipm1dust
+    emipcb153
+    emiahch
+    reemipcb153
+    reemiahch
+    emihg0
+    emihg2
+    emihgp
+    emiahg0
+    emiahg2
+    emiahgp
+    reemihg0
+    dryhno3
+    dryno3
+    dryno2
+    dryn2o5
+    drypan
+    dryorgn
+    dryhono
+    dryhno4
+    drynoy
+    drynh3
+    drynh4
+    dryso2
+    dryso4
+    drymsa
+    drydms
+    dryss
+    drydust
+    drypm1no3
+    drypm2p5no3
+    drypm10no3
+    dryo3
+    stoo3
+    dryhcho
+    drych3cho
+    dryalde
+    dryhcooh
+    drych3cooh
+    dryh2o2
+    dryroor
+    excnh3
+    drybc
+    drypm10
+    drypm10ss
+    drypm10dust
+    drypm2p5
+    drypm2p5ss
+    drypm2p5dust
+    dryoc
+    dryoa
+    drysoa
+    drypcb153
+    dryahch
+    dryhg0
+    dryhg2
+    dryhgp
+    wethno3
+    wetn2o5
+    wetorgn
+    wetno3
+    wethono
+    wethno4
+    wetnoy
+    wetnh3
+    wetnh4
+    wetso2
+    wetso4
+    wetmsa
+    wetdms
+    wetbc
+    wetss
+    wetdust
+    wetpm1no3
+    wetpm2p5no3
+    wetpm10no3
+    wethcho
+    wetch3cho
+    wetalde
+    wethcooh
+    wetch3cooh
+    weth2o2
+    wetroor
+    wetpm10
+    wetpm10ss
+    wetpm10dust
+    wetpm2p5
+    wetpm2p5ss
+    wetpm2p5dust
+    wetoa
+    wetoc
+    wetsoa
+    wetpcb153
+    wetahch
+    wethg
+    wethg0
+    wethg2
+    wethgp
+    vmro3
+    vmrno
+    vmrno2
+    vmro32m
+    rc
+    ra
+    vmrco
+    vmrhno3
+    vmrn2o5
+    vmrpan
+    vmrhono
+    vmrhno4
+    vmrorgnit
+    vmrnoy
+    vmrvoc
+    vmrc2h6
+    vmrc3h8
+    vmrc2h4
+    vmrc3h6
+    vmralkanes
+    vmralkenes
+    vmrhcho
+    vmrch3cho
+    vmracetone
+    vmrglyoxal
+    vmrmethanol
+    vmrtolu
+    vmraro
+    vmrisop
+    vmrc10h16
+    vmrtp
+    vmrnh3
+    vmrso2
+    vmrdms
+    mmrpm10
+    mmrpm2p5
+    mmrpm1
+    mmrno3
+    mmrso4
+    mmrbc
+    mmroc
+    mmroa
+    mmrss
+    mmrdust
+    mmrmsa
+    mmrnh4
+    ncpm2p5
+    mmrpm1no3
+    mmrpm1ss
+    mmrpm1dust
+    mmrpm2p5no3
+    mmrpm2p5so4
+    mmrpm2p5bc
+    mmrpm2p5oc
+    mmrpm2p5oa
+    mmrpm2p5ss
+    mmrpm2p5dust
+    mmrpm2p5nh4
+    ncpm10
+    mmrpm10no3
+    mmrpm10so4
+    mmrpm10bc
+    mmrpm10oc
+    mmrpm10oa
+    mmrpm10ss
+    mmrpm10dust
+    mmrpm10nh4
+    vmrhg0
+    vmrhg2
+    vmrpcb153
+    vmrahch
+    mmrhgp
+    jno2
+    jo3o1d
+    rsdt
+    rsut
+    rsutcs
+    rsds
+    rsus
+    rsdsdir
+    rsdsdif
+    rsdscs
+    rsdscsdir
+    rsdscsdif
+    rlut
+    rlutcs
+    rlds
+    rlus
+    rsut0
+    rsuscs0
+    rsds0
+    rsus0
+    rsdsdir0
+    rsdsdif0
+    rsdscs0
+    rsdscsdir0
+    rsdscsdif0
+    rlut0
+    rlutcs0
+    rlds0
+    rlus0
+    rsutpm1no3
+    rsutpm10no3
+    rsutcspm1no3
+    rsutcsnpm10no3
+    longitude
+    latitude
+    abs388aer
+    abs388bc
+    abs388dust
+    abs388oa
+    abs550bc
+    abs550dust
+    abs550pm1
+    abs550pm10
+    abs550pm2p5
+    abs870aer
+    od388aer
+    od388bc
+    od388dust
+    od388oa
+    od500aer
+    od500pm10
+    od500pm2p5
+    od550aerh2o
+    od550bc
+    od550dust
+    od550nh4
+    od550no3
+    od550oa
+    od550pm1
+    od550pm1no3
+    od550pm10
+    od550pm10no3
+    od550pm2p5
+    od550pm2p5no3
+    od550so4
+    od550ss
+    od865aer
+    od870aer
+    cldf
+    abs550aerh2o
+    abs550nh4
+    abs550no3
+    abs550oa
+    abs550so4
+    abs550ss
+    loadno3
+    loadso4
+    loadbc
+    loadoc
+    loadoa
+    loadsoa
+    loadss
+    loaddust
+    loadmsa
+    loadnh4
+    loadno
+    loadno2
+    loadn2o5
+    loadpan
+    loadhono
+    loadhno3
+    loadhno4
+    loadorgnit
+    loadnoy
+    loadnh3
+    loaddms
+    loadso2
+    loadpm1no3
+    loadpm2p5no3
+    loadpm10no3
+    loadpm1ss
+    loadpm2p5ss
+    loadpm10ss
+    loadpm1dust
+    loadpm2p5dust
+    loadpm10dust
+    loadpm1
+    loadpm2p5
+    loadpm10
+    lev
+    lev_bnds
+    ptop
+    a
+    b
+    a_bnds
+    b_bnds
+    p0
+    ap
+    ap_bnds
+    ta
+    rho
+    dh
+    hus
+    mcu
+    hur
+    emilnox
+    eminoaircraft
+    vmroh
+    vmrh2o2
+    vmrho2
+    vmrcl
+    vmrbr
+    vmrbro
+    prodo3
+    losso3
+    lossch4
+    lossco
+    reacvoc
+    chepsoa
+    chepmsa
+    chegpso4
+    cheaqpso4
+    chegphno3
+    cheglhno3
+    cheaphno3
+    chealhno3
+    chepno3
+    chedustpno3
+    chesspno3
+    cheppm10no3
+    cheppm2p5no3
+    cheppm1no3
+    chegpnh3
+    chealnh3
+    chepnh4
+    mmrsoa
+    mmraerh2o
+    mmrpm10h2o
+    mmrpm2p5h2o
+    rh
+    vmrcodirect50d
+    vmrcodirect25d
+    station
+    network_stationid
+    networkid
+    stationid
+    station_elevation
+    td
+    hurs
+    huss
+    mmrpm10poa
+    mmrpm2p5poa
+    vmr5mo3
+    vmr10mo3
+    tcwv
+    tcno2
+    pres
+    ua
+    va
+    wa
     
     Aliases
     .......
@@ -444,6 +1310,439 @@ the method ``load_config(config_file)`` or the wrapper method
     ang4487aer
     angabs4487aer
     zdust
+    time
+    time_bnds
+    lon
+    lon_bnds
+    lat
+    lat_bnds
+    growvegbnds
+    areacella
+    landf
+    orog
+    landcBF
+    landcNF
+    landcCP
+    landcSa
+    landcGS
+    landcST
+    landcBS
+    landcW
+    landcO
+    landcCPC3
+    landcCPC4
+    landcSaC3
+    landcSaC4
+    landcGSC3
+    landcGSC4
+    lai
+    mrso
+    snd
+    uas
+    vas
+    was
+    uapbl
+    vapbl
+    ts
+    ps
+    tasmin
+    tasmax
+    tas
+    prc
+    pr
+    airmass
+    zmlay
+    eminox
+    emino
+    emino2
+    eminosoil
+    emico
+    emivoc
+    emivoct
+    emic2h6
+    emic3h8
+    emic2h2
+    emic2h4
+    emic3h6
+    emialkanes
+    emialkenes
+    emihcho
+    emich3cho
+    emiacetone
+    emimethanol
+    emitolu
+    emiaro
+    emiisop
+    emimntp
+    emisestp
+    emibvoc
+    eminh3
+    emiso2
+    emidms
+    emiso4
+    emioa
+    emioc
+    emisoa
+    emibc
+    emiss
+    emidust
+    emipm10
+    emipm2p5
+    emipm10ss
+    emipm10dust
+    emipm2p5ss
+    emipm2p5dust
+    emipm1ss
+    emipm1dust
+    emipcb153
+    emiahch
+    reemipcb153
+    reemiahch
+    emihg0
+    emihg2
+    emihgp
+    emiahg0
+    emiahg2
+    emiahgp
+    reemihg0
+    dryhno3
+    dryno3
+    dryno2
+    dryn2o5
+    drypan
+    dryorgn
+    dryhono
+    dryhno4
+    drynoy
+    drynh3
+    drynh4
+    dryso2
+    dryso4
+    drymsa
+    drydms
+    dryss
+    drydust
+    drypm1no3
+    drypm2p5no3
+    drypm10no3
+    dryo3
+    stoo3
+    dryhcho
+    drych3cho
+    dryalde
+    dryhcooh
+    drych3cooh
+    dryh2o2
+    dryroor
+    excnh3
+    drybc
+    drypm10
+    drypm10ss
+    drypm10dust
+    drypm2p5
+    drypm2p5ss
+    drypm2p5dust
+    dryoc
+    dryoa
+    drysoa
+    drypcb153
+    dryahch
+    dryhg0
+    dryhg2
+    dryhgp
+    wethno3
+    wetn2o5
+    wetorgn
+    wetno3
+    wethono
+    wethno4
+    wetnoy
+    wetnh3
+    wetnh4
+    wetso2
+    wetso4
+    wetmsa
+    wetdms
+    wetbc
+    wetss
+    wetdust
+    wetpm1no3
+    wetpm2p5no3
+    wetpm10no3
+    wethcho
+    wetch3cho
+    wetalde
+    wethcooh
+    wetch3cooh
+    weth2o2
+    wetroor
+    wetpm10
+    wetpm10ss
+    wetpm10dust
+    wetpm2p5
+    wetpm2p5ss
+    wetpm2p5dust
+    wetoa
+    wetoc
+    wetsoa
+    wetpcb153
+    wetahch
+    wethg
+    wethg0
+    wethg2
+    wethgp
+    vmro3
+    vmrno
+    vmrno2
+    vmro32m
+    rc
+    ra
+    vmrco
+    vmrhno3
+    vmrn2o5
+    vmrpan
+    vmrhono
+    vmrhno4
+    vmrorgnit
+    vmrnoy
+    vmrvoc
+    vmrc2h6
+    vmrc3h8
+    vmrc2h4
+    vmrc3h6
+    vmralkanes
+    vmralkenes
+    vmrhcho
+    vmrch3cho
+    vmracetone
+    vmrglyoxal
+    vmrmethanol
+    vmrtolu
+    vmraro
+    vmrisop
+    vmrc10h16
+    vmrtp
+    vmrnh3
+    vmrso2
+    vmrdms
+    mmrpm10
+    mmrpm2p5
+    mmrpm1
+    mmrno3
+    mmrso4
+    mmrbc
+    mmroc
+    mmroa
+    mmrss
+    mmrdust
+    mmrmsa
+    mmrnh4
+    ncpm2p5
+    mmrpm1no3
+    mmrpm1ss
+    mmrpm1dust
+    mmrpm2p5no3
+    mmrpm2p5so4
+    mmrpm2p5bc
+    mmrpm2p5oc
+    mmrpm2p5oa
+    mmrpm2p5ss
+    mmrpm2p5dust
+    mmrpm2p5nh4
+    ncpm10
+    mmrpm10no3
+    mmrpm10so4
+    mmrpm10bc
+    mmrpm10oc
+    mmrpm10oa
+    mmrpm10ss
+    mmrpm10dust
+    mmrpm10nh4
+    vmrhg0
+    vmrhg2
+    vmrpcb153
+    vmrahch
+    mmrhgp
+    jno2
+    jo3o1d
+    rsdt
+    rsut
+    rsutcs
+    rsds
+    rsus
+    rsdsdir
+    rsdsdif
+    rsdscs
+    rsdscsdir
+    rsdscsdif
+    rlut
+    rlutcs
+    rlds
+    rlus
+    rsut0
+    rsuscs0
+    rsds0
+    rsus0
+    rsdsdir0
+    rsdsdif0
+    rsdscs0
+    rsdscsdir0
+    rsdscsdif0
+    rlut0
+    rlutcs0
+    rlds0
+    rlus0
+    rsutpm1no3
+    rsutpm10no3
+    rsutcspm1no3
+    rsutcsnpm10no3
+    longitude
+    latitude
+    abs388aer
+    abs388bc
+    abs388dust
+    abs388oa
+    abs550bc
+    abs550dust
+    abs550pm1
+    abs550pm10
+    abs550pm2p5
+    abs870aer
+    od388aer
+    od388bc
+    od388dust
+    od388oa
+    od500aer
+    od500pm10
+    od500pm2p5
+    od550aerh2o
+    od550bc
+    od550dust
+    od550nh4
+    od550no3
+    od550oa
+    od550pm1
+    od550pm1no3
+    od550pm10
+    od550pm10no3
+    od550pm2p5
+    od550pm2p5no3
+    od550so4
+    od550ss
+    od865aer
+    od870aer
+    cldf
+    abs550aerh2o
+    abs550nh4
+    abs550no3
+    abs550oa
+    abs550so4
+    abs550ss
+    loadno3
+    loadso4
+    loadbc
+    loadoc
+    loadoa
+    loadsoa
+    loadss
+    loaddust
+    loadmsa
+    loadnh4
+    loadno
+    loadno2
+    loadn2o5
+    loadpan
+    loadhono
+    loadhno3
+    loadhno4
+    loadorgnit
+    loadnoy
+    loadnh3
+    loaddms
+    loadso2
+    loadpm1no3
+    loadpm2p5no3
+    loadpm10no3
+    loadpm1ss
+    loadpm2p5ss
+    loadpm10ss
+    loadpm1dust
+    loadpm2p5dust
+    loadpm10dust
+    loadpm1
+    loadpm2p5
+    loadpm10
+    lev
+    lev_bnds
+    ptop
+    a
+    b
+    a_bnds
+    b_bnds
+    p0
+    ap
+    ap_bnds
+    ta
+    rho
+    dh
+    hus
+    mcu
+    hur
+    emilnox
+    eminoaircraft
+    vmroh
+    vmrh2o2
+    vmrho2
+    vmrcl
+    vmrbr
+    vmrbro
+    prodo3
+    losso3
+    lossch4
+    lossco
+    reacvoc
+    chepsoa
+    chepmsa
+    chegpso4
+    cheaqpso4
+    chegphno3
+    cheglhno3
+    cheaphno3
+    chealhno3
+    chepno3
+    chedustpno3
+    chesspno3
+    cheppm10no3
+    cheppm2p5no3
+    cheppm1no3
+    chegpnh3
+    chealnh3
+    chepnh4
+    mmrsoa
+    mmraerh2o
+    mmrpm10h2o
+    mmrpm2p5h2o
+    rh
+    vmrcodirect50d
+    vmrcodirect25d
+    station
+    network_stationid
+    networkid
+    stationid
+    station_elevation
+    td
+    hurs
+    huss
+    mmrpm10poa
+    mmrpm2p5poa
+    vmr5mo3
+    vmr10mo3
+    tcwv
+    tcno2
+    pres
+    ua
+    va
+    wa
     
     Aliases
     .......
@@ -566,6 +1865,439 @@ choose valid paths, this should work.
     ang4487aer
     angabs4487aer
     zdust
+    time
+    time_bnds
+    lon
+    lon_bnds
+    lat
+    lat_bnds
+    growvegbnds
+    areacella
+    landf
+    orog
+    landcBF
+    landcNF
+    landcCP
+    landcSa
+    landcGS
+    landcST
+    landcBS
+    landcW
+    landcO
+    landcCPC3
+    landcCPC4
+    landcSaC3
+    landcSaC4
+    landcGSC3
+    landcGSC4
+    lai
+    mrso
+    snd
+    uas
+    vas
+    was
+    uapbl
+    vapbl
+    ts
+    ps
+    tasmin
+    tasmax
+    tas
+    prc
+    pr
+    airmass
+    zmlay
+    eminox
+    emino
+    emino2
+    eminosoil
+    emico
+    emivoc
+    emivoct
+    emic2h6
+    emic3h8
+    emic2h2
+    emic2h4
+    emic3h6
+    emialkanes
+    emialkenes
+    emihcho
+    emich3cho
+    emiacetone
+    emimethanol
+    emitolu
+    emiaro
+    emiisop
+    emimntp
+    emisestp
+    emibvoc
+    eminh3
+    emiso2
+    emidms
+    emiso4
+    emioa
+    emioc
+    emisoa
+    emibc
+    emiss
+    emidust
+    emipm10
+    emipm2p5
+    emipm10ss
+    emipm10dust
+    emipm2p5ss
+    emipm2p5dust
+    emipm1ss
+    emipm1dust
+    emipcb153
+    emiahch
+    reemipcb153
+    reemiahch
+    emihg0
+    emihg2
+    emihgp
+    emiahg0
+    emiahg2
+    emiahgp
+    reemihg0
+    dryhno3
+    dryno3
+    dryno2
+    dryn2o5
+    drypan
+    dryorgn
+    dryhono
+    dryhno4
+    drynoy
+    drynh3
+    drynh4
+    dryso2
+    dryso4
+    drymsa
+    drydms
+    dryss
+    drydust
+    drypm1no3
+    drypm2p5no3
+    drypm10no3
+    dryo3
+    stoo3
+    dryhcho
+    drych3cho
+    dryalde
+    dryhcooh
+    drych3cooh
+    dryh2o2
+    dryroor
+    excnh3
+    drybc
+    drypm10
+    drypm10ss
+    drypm10dust
+    drypm2p5
+    drypm2p5ss
+    drypm2p5dust
+    dryoc
+    dryoa
+    drysoa
+    drypcb153
+    dryahch
+    dryhg0
+    dryhg2
+    dryhgp
+    wethno3
+    wetn2o5
+    wetorgn
+    wetno3
+    wethono
+    wethno4
+    wetnoy
+    wetnh3
+    wetnh4
+    wetso2
+    wetso4
+    wetmsa
+    wetdms
+    wetbc
+    wetss
+    wetdust
+    wetpm1no3
+    wetpm2p5no3
+    wetpm10no3
+    wethcho
+    wetch3cho
+    wetalde
+    wethcooh
+    wetch3cooh
+    weth2o2
+    wetroor
+    wetpm10
+    wetpm10ss
+    wetpm10dust
+    wetpm2p5
+    wetpm2p5ss
+    wetpm2p5dust
+    wetoa
+    wetoc
+    wetsoa
+    wetpcb153
+    wetahch
+    wethg
+    wethg0
+    wethg2
+    wethgp
+    vmro3
+    vmrno
+    vmrno2
+    vmro32m
+    rc
+    ra
+    vmrco
+    vmrhno3
+    vmrn2o5
+    vmrpan
+    vmrhono
+    vmrhno4
+    vmrorgnit
+    vmrnoy
+    vmrvoc
+    vmrc2h6
+    vmrc3h8
+    vmrc2h4
+    vmrc3h6
+    vmralkanes
+    vmralkenes
+    vmrhcho
+    vmrch3cho
+    vmracetone
+    vmrglyoxal
+    vmrmethanol
+    vmrtolu
+    vmraro
+    vmrisop
+    vmrc10h16
+    vmrtp
+    vmrnh3
+    vmrso2
+    vmrdms
+    mmrpm10
+    mmrpm2p5
+    mmrpm1
+    mmrno3
+    mmrso4
+    mmrbc
+    mmroc
+    mmroa
+    mmrss
+    mmrdust
+    mmrmsa
+    mmrnh4
+    ncpm2p5
+    mmrpm1no3
+    mmrpm1ss
+    mmrpm1dust
+    mmrpm2p5no3
+    mmrpm2p5so4
+    mmrpm2p5bc
+    mmrpm2p5oc
+    mmrpm2p5oa
+    mmrpm2p5ss
+    mmrpm2p5dust
+    mmrpm2p5nh4
+    ncpm10
+    mmrpm10no3
+    mmrpm10so4
+    mmrpm10bc
+    mmrpm10oc
+    mmrpm10oa
+    mmrpm10ss
+    mmrpm10dust
+    mmrpm10nh4
+    vmrhg0
+    vmrhg2
+    vmrpcb153
+    vmrahch
+    mmrhgp
+    jno2
+    jo3o1d
+    rsdt
+    rsut
+    rsutcs
+    rsds
+    rsus
+    rsdsdir
+    rsdsdif
+    rsdscs
+    rsdscsdir
+    rsdscsdif
+    rlut
+    rlutcs
+    rlds
+    rlus
+    rsut0
+    rsuscs0
+    rsds0
+    rsus0
+    rsdsdir0
+    rsdsdif0
+    rsdscs0
+    rsdscsdir0
+    rsdscsdif0
+    rlut0
+    rlutcs0
+    rlds0
+    rlus0
+    rsutpm1no3
+    rsutpm10no3
+    rsutcspm1no3
+    rsutcsnpm10no3
+    longitude
+    latitude
+    abs388aer
+    abs388bc
+    abs388dust
+    abs388oa
+    abs550bc
+    abs550dust
+    abs550pm1
+    abs550pm10
+    abs550pm2p5
+    abs870aer
+    od388aer
+    od388bc
+    od388dust
+    od388oa
+    od500aer
+    od500pm10
+    od500pm2p5
+    od550aerh2o
+    od550bc
+    od550dust
+    od550nh4
+    od550no3
+    od550oa
+    od550pm1
+    od550pm1no3
+    od550pm10
+    od550pm10no3
+    od550pm2p5
+    od550pm2p5no3
+    od550so4
+    od550ss
+    od865aer
+    od870aer
+    cldf
+    abs550aerh2o
+    abs550nh4
+    abs550no3
+    abs550oa
+    abs550so4
+    abs550ss
+    loadno3
+    loadso4
+    loadbc
+    loadoc
+    loadoa
+    loadsoa
+    loadss
+    loaddust
+    loadmsa
+    loadnh4
+    loadno
+    loadno2
+    loadn2o5
+    loadpan
+    loadhono
+    loadhno3
+    loadhno4
+    loadorgnit
+    loadnoy
+    loadnh3
+    loaddms
+    loadso2
+    loadpm1no3
+    loadpm2p5no3
+    loadpm10no3
+    loadpm1ss
+    loadpm2p5ss
+    loadpm10ss
+    loadpm1dust
+    loadpm2p5dust
+    loadpm10dust
+    loadpm1
+    loadpm2p5
+    loadpm10
+    lev
+    lev_bnds
+    ptop
+    a
+    b
+    a_bnds
+    b_bnds
+    p0
+    ap
+    ap_bnds
+    ta
+    rho
+    dh
+    hus
+    mcu
+    hur
+    emilnox
+    eminoaircraft
+    vmroh
+    vmrh2o2
+    vmrho2
+    vmrcl
+    vmrbr
+    vmrbro
+    prodo3
+    losso3
+    lossch4
+    lossco
+    reacvoc
+    chepsoa
+    chepmsa
+    chegpso4
+    cheaqpso4
+    chegphno3
+    cheglhno3
+    cheaphno3
+    chealhno3
+    chepno3
+    chedustpno3
+    chesspno3
+    cheppm10no3
+    cheppm2p5no3
+    cheppm1no3
+    chegpnh3
+    chealnh3
+    chepnh4
+    mmrsoa
+    mmraerh2o
+    mmrpm10h2o
+    mmrpm2p5h2o
+    rh
+    vmrcodirect50d
+    vmrcodirect25d
+    station
+    network_stationid
+    networkid
+    stationid
+    station_elevation
+    td
+    hurs
+    huss
+    mmrpm10poa
+    mmrpm2p5poa
+    vmr5mo3
+    vmr10mo3
+    tcwv
+    tcno2
+    pres
+    ua
+    va
+    wa
     
     Aliases
     .......
@@ -680,6 +2412,439 @@ have to reload the config as it was at the beginning:
     ang4487aer
     angabs4487aer
     zdust
+    time
+    time_bnds
+    lon
+    lon_bnds
+    lat
+    lat_bnds
+    growvegbnds
+    areacella
+    landf
+    orog
+    landcBF
+    landcNF
+    landcCP
+    landcSa
+    landcGS
+    landcST
+    landcBS
+    landcW
+    landcO
+    landcCPC3
+    landcCPC4
+    landcSaC3
+    landcSaC4
+    landcGSC3
+    landcGSC4
+    lai
+    mrso
+    snd
+    uas
+    vas
+    was
+    uapbl
+    vapbl
+    ts
+    ps
+    tasmin
+    tasmax
+    tas
+    prc
+    pr
+    airmass
+    zmlay
+    eminox
+    emino
+    emino2
+    eminosoil
+    emico
+    emivoc
+    emivoct
+    emic2h6
+    emic3h8
+    emic2h2
+    emic2h4
+    emic3h6
+    emialkanes
+    emialkenes
+    emihcho
+    emich3cho
+    emiacetone
+    emimethanol
+    emitolu
+    emiaro
+    emiisop
+    emimntp
+    emisestp
+    emibvoc
+    eminh3
+    emiso2
+    emidms
+    emiso4
+    emioa
+    emioc
+    emisoa
+    emibc
+    emiss
+    emidust
+    emipm10
+    emipm2p5
+    emipm10ss
+    emipm10dust
+    emipm2p5ss
+    emipm2p5dust
+    emipm1ss
+    emipm1dust
+    emipcb153
+    emiahch
+    reemipcb153
+    reemiahch
+    emihg0
+    emihg2
+    emihgp
+    emiahg0
+    emiahg2
+    emiahgp
+    reemihg0
+    dryhno3
+    dryno3
+    dryno2
+    dryn2o5
+    drypan
+    dryorgn
+    dryhono
+    dryhno4
+    drynoy
+    drynh3
+    drynh4
+    dryso2
+    dryso4
+    drymsa
+    drydms
+    dryss
+    drydust
+    drypm1no3
+    drypm2p5no3
+    drypm10no3
+    dryo3
+    stoo3
+    dryhcho
+    drych3cho
+    dryalde
+    dryhcooh
+    drych3cooh
+    dryh2o2
+    dryroor
+    excnh3
+    drybc
+    drypm10
+    drypm10ss
+    drypm10dust
+    drypm2p5
+    drypm2p5ss
+    drypm2p5dust
+    dryoc
+    dryoa
+    drysoa
+    drypcb153
+    dryahch
+    dryhg0
+    dryhg2
+    dryhgp
+    wethno3
+    wetn2o5
+    wetorgn
+    wetno3
+    wethono
+    wethno4
+    wetnoy
+    wetnh3
+    wetnh4
+    wetso2
+    wetso4
+    wetmsa
+    wetdms
+    wetbc
+    wetss
+    wetdust
+    wetpm1no3
+    wetpm2p5no3
+    wetpm10no3
+    wethcho
+    wetch3cho
+    wetalde
+    wethcooh
+    wetch3cooh
+    weth2o2
+    wetroor
+    wetpm10
+    wetpm10ss
+    wetpm10dust
+    wetpm2p5
+    wetpm2p5ss
+    wetpm2p5dust
+    wetoa
+    wetoc
+    wetsoa
+    wetpcb153
+    wetahch
+    wethg
+    wethg0
+    wethg2
+    wethgp
+    vmro3
+    vmrno
+    vmrno2
+    vmro32m
+    rc
+    ra
+    vmrco
+    vmrhno3
+    vmrn2o5
+    vmrpan
+    vmrhono
+    vmrhno4
+    vmrorgnit
+    vmrnoy
+    vmrvoc
+    vmrc2h6
+    vmrc3h8
+    vmrc2h4
+    vmrc3h6
+    vmralkanes
+    vmralkenes
+    vmrhcho
+    vmrch3cho
+    vmracetone
+    vmrglyoxal
+    vmrmethanol
+    vmrtolu
+    vmraro
+    vmrisop
+    vmrc10h16
+    vmrtp
+    vmrnh3
+    vmrso2
+    vmrdms
+    mmrpm10
+    mmrpm2p5
+    mmrpm1
+    mmrno3
+    mmrso4
+    mmrbc
+    mmroc
+    mmroa
+    mmrss
+    mmrdust
+    mmrmsa
+    mmrnh4
+    ncpm2p5
+    mmrpm1no3
+    mmrpm1ss
+    mmrpm1dust
+    mmrpm2p5no3
+    mmrpm2p5so4
+    mmrpm2p5bc
+    mmrpm2p5oc
+    mmrpm2p5oa
+    mmrpm2p5ss
+    mmrpm2p5dust
+    mmrpm2p5nh4
+    ncpm10
+    mmrpm10no3
+    mmrpm10so4
+    mmrpm10bc
+    mmrpm10oc
+    mmrpm10oa
+    mmrpm10ss
+    mmrpm10dust
+    mmrpm10nh4
+    vmrhg0
+    vmrhg2
+    vmrpcb153
+    vmrahch
+    mmrhgp
+    jno2
+    jo3o1d
+    rsdt
+    rsut
+    rsutcs
+    rsds
+    rsus
+    rsdsdir
+    rsdsdif
+    rsdscs
+    rsdscsdir
+    rsdscsdif
+    rlut
+    rlutcs
+    rlds
+    rlus
+    rsut0
+    rsuscs0
+    rsds0
+    rsus0
+    rsdsdir0
+    rsdsdif0
+    rsdscs0
+    rsdscsdir0
+    rsdscsdif0
+    rlut0
+    rlutcs0
+    rlds0
+    rlus0
+    rsutpm1no3
+    rsutpm10no3
+    rsutcspm1no3
+    rsutcsnpm10no3
+    longitude
+    latitude
+    abs388aer
+    abs388bc
+    abs388dust
+    abs388oa
+    abs550bc
+    abs550dust
+    abs550pm1
+    abs550pm10
+    abs550pm2p5
+    abs870aer
+    od388aer
+    od388bc
+    od388dust
+    od388oa
+    od500aer
+    od500pm10
+    od500pm2p5
+    od550aerh2o
+    od550bc
+    od550dust
+    od550nh4
+    od550no3
+    od550oa
+    od550pm1
+    od550pm1no3
+    od550pm10
+    od550pm10no3
+    od550pm2p5
+    od550pm2p5no3
+    od550so4
+    od550ss
+    od865aer
+    od870aer
+    cldf
+    abs550aerh2o
+    abs550nh4
+    abs550no3
+    abs550oa
+    abs550so4
+    abs550ss
+    loadno3
+    loadso4
+    loadbc
+    loadoc
+    loadoa
+    loadsoa
+    loadss
+    loaddust
+    loadmsa
+    loadnh4
+    loadno
+    loadno2
+    loadn2o5
+    loadpan
+    loadhono
+    loadhno3
+    loadhno4
+    loadorgnit
+    loadnoy
+    loadnh3
+    loaddms
+    loadso2
+    loadpm1no3
+    loadpm2p5no3
+    loadpm10no3
+    loadpm1ss
+    loadpm2p5ss
+    loadpm10ss
+    loadpm1dust
+    loadpm2p5dust
+    loadpm10dust
+    loadpm1
+    loadpm2p5
+    loadpm10
+    lev
+    lev_bnds
+    ptop
+    a
+    b
+    a_bnds
+    b_bnds
+    p0
+    ap
+    ap_bnds
+    ta
+    rho
+    dh
+    hus
+    mcu
+    hur
+    emilnox
+    eminoaircraft
+    vmroh
+    vmrh2o2
+    vmrho2
+    vmrcl
+    vmrbr
+    vmrbro
+    prodo3
+    losso3
+    lossch4
+    lossco
+    reacvoc
+    chepsoa
+    chepmsa
+    chegpso4
+    cheaqpso4
+    chegphno3
+    cheglhno3
+    cheaphno3
+    chealhno3
+    chepno3
+    chedustpno3
+    chesspno3
+    cheppm10no3
+    cheppm2p5no3
+    cheppm1no3
+    chegpnh3
+    chealnh3
+    chepnh4
+    mmrsoa
+    mmraerh2o
+    mmrpm10h2o
+    mmrpm2p5h2o
+    rh
+    vmrcodirect50d
+    vmrcodirect25d
+    station
+    network_stationid
+    networkid
+    stationid
+    station_elevation
+    td
+    hurs
+    huss
+    mmrpm10poa
+    mmrpm2p5poa
+    vmr5mo3
+    vmr10mo3
+    tcwv
+    tcno2
+    pres
+    ua
+    va
+    wa
     
     Aliases
     .......
@@ -715,43 +2880,43 @@ find a unique ID and thus raise an Exception):
 
 .. parsed-literal::
 
-    2018-09-04 14:15:27,215:INFO:
+    2018-09-05 14:05:02,294:INFO:
     Searching database for CAM*CTRL*
-    2018-09-04 14:15:27,310:INFO:
+    2018-09-05 14:05:02,785:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,471:INFO:
+    2018-09-05 14:05:04,560:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,476:INFO:
+    2018-09-05 14:05:04,566:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,480:INFO:
+    2018-09-05 14:05:04,573:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,485:INFO:
+    2018-09-05 14:05:04,578:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,489:INFO:
+    2018-09-05 14:05:04,584:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,494:INFO:
+    2018-09-05 14:05:04,589:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,498:INFO:
+    2018-09-05 14:05:04,596:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,502:INFO:
+    2018-09-05 14:05:04,602:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,507:INFO:
+    2018-09-05 14:05:04,607:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,511:INFO:
+    2018-09-05 14:05:04,612:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,531:INFO:
+    2018-09-05 14:05:04,735:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,536:INFO:
+    2018-09-05 14:05:04,742:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,540:INFO:
+    2018-09-05 14:05:04,748:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,544:INFO:
+    2018-09-05 14:05:04,754:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,548:INFO:
+    2018-09-05 14:05:04,759:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,552:INFO:
+    2018-09-05 14:05:04,765:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,556:INFO:
+    2018-09-05 14:05:04,770:INFO:
     Checking if renamed directory exists
 
 
@@ -776,113 +2941,113 @@ data import since we know the model and run ID from the previous cell
 
 .. parsed-literal::
 
-    2018-09-04 14:15:27,650:INFO:
+    2018-09-05 14:05:05,076:INFO:
     Searching database for CAM5.3-Oslo_CTRL2016
-    2018-09-04 14:15:27,865:INFO:
+    2018-09-05 14:05:05,542:INFO:
     Checking if renamed directory exists
-    2018-09-04 14:15:27,867:INFO:
+    2018-09-05 14:05:05,544:INFO:
     Found match for ID CAM5.3-Oslo_CTRL2016
-    2018-09-04 14:15:27,880:DEBUG:
+    2018-09-05 14:05:05,984:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2006_daily.nc
-    2018-09-04 14:15:27,882:DEBUG:
+    2018-09-05 14:05:05,986:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2008_daily.nc
-    2018-09-04 14:15:27,883:DEBUG:
+    2018-09-05 14:05:05,990:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,885:DEBUG:
+    2018-09-05 14:05:05,992:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2008_daily.nc
-    2018-09-04 14:15:27,887:DEBUG:
+    2018-09-05 14:05:05,995:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2008_daily.nc
-    2018-09-04 14:15:27,889:DEBUG:
+    2018-09-05 14:05:05,998:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,891:DEBUG:
+    2018-09-05 14:05:06,001:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,893:DEBUG:
+    2018-09-05 14:05:06,003:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2010_daily.nc
-    2018-09-04 14:15:27,894:DEBUG:
+    2018-09-05 14:05:06,005:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,895:DEBUG:
+    2018-09-05 14:05:06,007:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2006_daily.nc
-    2018-09-04 14:15:27,897:DEBUG:
+    2018-09-05 14:05:06,009:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2010_daily.nc
-    2018-09-04 14:15:27,898:DEBUG:
+    2018-09-05 14:05:06,011:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,900:DEBUG:
+    2018-09-05 14:05:06,013:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2006_daily.nc
-    2018-09-04 14:15:27,902:DEBUG:
+    2018-09-05 14:05:06,015:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,903:DEBUG:
+    2018-09-05 14:05:06,017:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,904:DEBUG:
+    2018-09-05 14:05:06,019:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2006_daily.nc
-    2018-09-04 14:15:27,906:DEBUG:
+    2018-09-05 14:05:06,021:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2010_daily.nc
-    2018-09-04 14:15:27,908:DEBUG:
+    2018-09-05 14:05:06,023:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,909:DEBUG:
+    2018-09-05 14:05:06,025:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,911:DEBUG:
+    2018-09-05 14:05:06,027:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,912:DEBUG:
+    2018-09-05 14:05:06,028:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2008_daily.nc
-    2018-09-04 14:15:27,914:DEBUG:
+    2018-09-05 14:05:06,030:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2010_daily.nc
-    2018-09-04 14:15:27,915:DEBUG:
+    2018-09-05 14:05:06,031:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2006_daily.nc
-    2018-09-04 14:15:27,917:DEBUG:
+    2018-09-05 14:05:06,033:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,918:DEBUG:
+    2018-09-05 14:05:06,035:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,919:DEBUG:
+    2018-09-05 14:05:06,036:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
-    2018-09-04 14:15:27,920:DEBUG:
+    2018-09-05 14:05:06,038:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,921:DEBUG:
+    2018-09-05 14:05:06,039:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,922:DEBUG:
+    2018-09-05 14:05:06,040:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,923:DEBUG:
+    2018-09-05 14:05:06,041:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2010_daily.nc
-    2018-09-04 14:15:27,924:DEBUG:
+    2018-09-05 14:05:06,042:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2008_daily.nc
-    2018-09-04 14:15:27,924:DEBUG:
+    2018-09-05 14:05:06,043:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2006_daily.nc
-    2018-09-04 14:15:27,925:DEBUG:
+    2018-09-05 14:05:06,044:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2008_daily.nc
-    2018-09-04 14:15:27,926:DEBUG:
+    2018-09-05 14:05:06,045:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2006_daily.nc
-    2018-09-04 14:15:27,927:DEBUG:
+    2018-09-05 14:05:06,045:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,927:DEBUG:
+    2018-09-05 14:05:06,046:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer3d_ModelLevel_2010_3hourly.nc
-    2018-09-04 14:15:27,928:DEBUG:
+    2018-09-05 14:05:06,047:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,928:DEBUG:
+    2018-09-05 14:05:06,047:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2006_3hourly.nc
-    2018-09-04 14:15:27,929:DEBUG:
+    2018-09-05 14:05:06,048:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
-    2018-09-04 14:15:27,930:DEBUG:
+    2018-09-05 14:05:06,049:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2008_daily.nc
-    2018-09-04 14:15:27,930:DEBUG:
+    2018-09-05 14:05:06,049:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,931:DEBUG:
+    2018-09-05 14:05:06,050:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2008_daily.nc
-    2018-09-04 14:15:27,931:DEBUG:
+    2018-09-05 14:05:06,051:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2010_daily.nc
-    2018-09-04 14:15:27,932:DEBUG:
+    2018-09-05 14:05:06,051:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2006_daily.nc
-    2018-09-04 14:15:27,932:DEBUG:
+    2018-09-05 14:05:06,052:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,933:DEBUG:
+    2018-09-05 14:05:06,052:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,933:DEBUG:
+    2018-09-05 14:05:06,053:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,933:DEBUG:
+    2018-09-05 14:05:06,054:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_deltaz3d_ModelLevel_2010_3hourly.nc
-    2018-09-04 14:15:27,934:DEBUG:
+    2018-09-05 14:05:06,054:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2008_3hourly.nc
-    2018-09-04 14:15:27,934:DEBUG:
+    2018-09-05 14:05:06,055:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
-    2018-09-04 14:15:27,935:DEBUG:
+    2018-09-05 14:05:06,055:DEBUG:
     Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_humidity3d_ModelLevel_2010_3hourly.nc
 
 
@@ -919,23 +3084,23 @@ data object has to be accessed using the first index of the tuple.
 
 .. parsed-literal::
 
-    2018-09-04 14:15:27,981:DEBUG:
+    2018-09-05 14:05:06,117:DEBUG:
     FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
-    2018-09-04 14:15:34,844:WARNING:
+    2018-09-05 14:05:18,837:WARNING:
     File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
     1: gauss weights / (1)                 (latitude: 192)
-    2018-09-04 14:15:34,850:WARNING:
+    2018-09-05 14:05:18,865:WARNING:
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
-    2018-09-04 14:15:34,850:WARNING:
+    2018-09-05 14:05:18,866:WARNING:
     Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. 
-    2018-09-04 14:15:34,851:WARNING:
+    2018-09-05 14:05:18,867:WARNING:
     Attempting to correct time coordinate using information in file name
-    2018-09-04 14:15:35,425:INFO:
+    2018-09-05 14:05:19,434:INFO:
     Rolling longitudes to -180 -> 180 definition
-    2018-09-04 14:15:35,431:INFO:
+    2018-09-05 14:05:19,439:INFO:
     Applying temporal cropping of result cube
-    2018-09-04 14:15:35,432:INFO:
+    2018-09-05 14:05:19,440:INFO:
     Cropping along time axis based on Timestamps
 
 
@@ -1178,7 +3343,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f3fb913b320>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fbd009bf748>
 
 
 

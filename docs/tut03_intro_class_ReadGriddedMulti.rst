@@ -17,9 +17,9 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-04 14:16:03,165:INFO:
+    2018-09-05 14:05:53,422:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
-    2018-09-04 14:16:03,981:WARNING:
+    2018-09-05 14:05:54,233:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 

@@ -47,9 +47,9 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    2018-09-04 14:16:20,563:INFO:
+    2018-09-05 14:06:18,725:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
-    2018-09-04 14:16:21,331:WARNING:
+    2018-09-05 14:06:19,530:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -61,23 +61,23 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
       warnings.warn(msg)
-    2018-09-04 14:16:21,500:WARNING:
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
+      warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
+      warnings.warn(msg)
+    2018-09-05 14:06:19,718:WARNING:
     File /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc contains more than one data field: 0: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    1: Black Carbon Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    2: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    3: Organic Matter Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    4: Sulphate Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    2018-09-04 14:16:21,503:INFO:
+    1: Organic Matter Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    2: Sulphate Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    3: Black Carbon Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    4: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    2018-09-05 14:06:19,720:INFO:
     Rolling longitudes to -180 -> 180 definition
 
 
@@ -246,7 +246,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    125 ms ± 2.96 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    122 ms ± 2.32 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -257,7 +257,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    109 ms ± 2.13 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    106 ms ± 2.66 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -273,7 +273,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    140 ms ± 21.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    125 ms ± 2.97 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -284,7 +284,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    109 ms ± 4.46 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    109 ms ± 6.49 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -309,7 +309,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.66 ms ± 35.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.82 ms ± 185 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -439,7 +439,7 @@ Now let’s see how this one performs.
 
 .. parsed-literal::
 
-    55.4 µs ± 361 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    56.5 µs ± 814 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How pya does it
@@ -462,7 +462,7 @@ here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. parsed-literal::
 
-    348 µs ± 14.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    351 µs ± 2.62 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -476,7 +476,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    2.36 ms ± 297 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.72 ms ± 255 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -496,7 +496,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    368 µs ± 9.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    412 µs ± 35.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -507,5 +507,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.11 ms ± 14.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.14 ms ± 27.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

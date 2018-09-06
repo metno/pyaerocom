@@ -39,9 +39,9 @@ information about what is in there.
 
 .. parsed-literal::
 
-    2018-09-04 14:15:45,521:INFO:
+    2018-09-05 14:05:30,677:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
-    2018-09-04 14:15:46,348:WARNING:
+    2018-09-05 14:05:31,477:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
