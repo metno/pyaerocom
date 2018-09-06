@@ -114,7 +114,7 @@ class GridIO(object):
         self.CHECK_TIME_FILENAME = True
         self.CORRECT_TIME_FILENAME = True
         
-        self.CHECK_DIM_COORDS = True
+        self.CHECK_DIM_COORDS = False
          # check and update metadata dictionary on Cube load since 
          # iris concatenate of Cubes only works if metadata is equal
         self.EQUALISE_METADATA = True

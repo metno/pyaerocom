@@ -123,10 +123,6 @@ class GriddedData(object):
         """List with valid filename encryptions specifying temporal resolution
         """
         return self.io_opts.GRID_IO.TS_TYPES
-    
-    def to_daily(self):
-        """Convert this object to daily resolution"""
-        raise NotImplementedError
         
     @property
     def is_masked(self):
@@ -140,6 +136,22 @@ class GriddedData(object):
             raise AttributeError("Information cannot be accessed. Data is not "
                                  "available in memory (lazy loading)")
         return isinstance(self.grid.data, np.ma.core.MaskedArray)
+    
+    @property
+    def start_time(self):
+        """Start time of dataset as datetime64 object"""
+        if not self.is_cube:
+            logger.warning("Start time could not be accessed in GriddedData")
+            return np.nan
+        return cftime_to_datetime64(self.time[0])[0]
+    
+    @property
+    def stop_time(self):
+        """Start time of dataset as datetime64 object"""
+        if not self.is_cube:
+            logger.warning("Stop time could not be accessed in GriddedData")
+            return np.nan
+        return cftime_to_datetime64(self.time[-1])[0]
     
     @property
     def longitude(self):
@@ -205,8 +217,7 @@ class GriddedData(object):
         will be initiated with ``None``, in which case the Aerocom plot method
         uses
         """
-        from pyaerocom import Variable
-        return Variable(self.var_name)
+        return const.VAR_PARAM[self.var_name]
             
     @property 
     def name(self):
@@ -269,22 +280,10 @@ class GriddedData(object):
     @area_weights.setter
     def area_weights(self, val):
         raise AttributeError("Area weights cannot be set manually yet...")
-        
-    @property
-    def start_time(self):
-        """Start time of dataset as datetime64 object"""
-        if not self.is_cube:
-            logger.warning("Start time could not be accessed in GriddedData")
-            return np.nan
-        return cftime_to_datetime64(self.time[0])[0]
-    
-    @property
-    def stop_time(self):
-        """Start time of dataset as datetime64 object"""
-        if not self.is_cube:
-            logger.warning("Stop time could not be accessed in GriddedData")
-            return np.nan
-        return cftime_to_datetime64(self.time[-1])[0]
+      
+    def check_dim_coords(self):
+        """Check dimension coordinates of grid data"""
+        raise NotImplementedError
         
     def load_input(self, input, var_name):
         """Import input as cube

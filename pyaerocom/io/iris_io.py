@@ -374,7 +374,7 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     #now concatenate the cube list to one cube
     cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
     
-    return cubes_concat
+    return cubes_concat[0]
 
 if __name__== "__main__":
     import pyaerocom as pya
