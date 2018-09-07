@@ -184,8 +184,7 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                              <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">])</span>
     
-    <span class="n">test_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od870aer&#39;</span><span class="p">,</span>
-                 <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span>
+    <span class="n">test_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;od500aer&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;ang4487aer&#39;</span><span class="p">]</span>
@@ -199,7 +198,7 @@
     
     <span class="n">first_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">test_vars</span><span class="p">]</span>
     
-    <span class="n">nominal</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.059786</span><span class="p">,</span> <span class="mf">0.229427</span><span class="p">,</span> <span class="mf">0.18302</span> <span class="p">,</span> <span class="mf">0.151651</span><span class="p">,</span> <span class="mf">1.972681</span><span class="p">]</span>
+    <span class="n">nominal</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.229427</span><span class="p">,</span> <span class="mf">0.18302</span> <span class="p">,</span> <span class="mf">0.151227</span><span class="p">,</span> <span class="mf">2.002052</span><span class="p">]</span>
     <span class="n">npt</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">actual</span><span class="o">=</span><span class="n">first_vals</span><span class="p">,</span> <span class="n">desired</span><span class="o">=</span><span class="n">nominal</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">TEST_RTOL</span><span class="p">)</span></div>
     
     

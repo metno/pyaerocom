@@ -17,10 +17,24 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-05 14:05:53,422:INFO:
+    2018-09-07 17:43:25,244:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
-    2018-09-05 14:05:54,233:WARNING:
+
+
+.. parsed-literal::
+
+    Elapsed time init all variables: 0.03511834144592285 s
+
+
+.. parsed-literal::
+
+    2018-09-07 17:43:26,095:WARNING:
     geopy library is not available. Aeolus data read not enabled
+
+
+.. parsed-literal::
+
+    Elapsed time init pyaerocom: 0.9219846725463867 s
 
 
 Define two models (this list can contain as many models as you like)
@@ -210,6 +224,12 @@ string representation)
     Variable: od550aer
     Temporal resolution: monthly
     Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-01T00:00:00.000000
+    
+    Pyaerocom GriddedData
+    ---------------------
+    Variable: od550dust
+    Temporal resolution: monthly
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-01T00:00:00.000000
 
 
 Print some information about the different data objects
@@ -249,6 +269,10 @@ Print some information about the different data objects
     Current variable: od550aer
     pyaerocom.GriddedData
     Grid data: <iris 'Cube' of atmosphere_optical_thickness_due_to_ambient_aerosol_particles / (1) (time: 12; latitude: 96; longitude: 192)>
+    
+    Current variable: od550dust
+    pyaerocom.GriddedData
+    Grid data: <iris 'Cube' of atmosphere_optical_thickness_due_to_dust_ambient_aerosol_particles / (1) (time: 12; latitude: 96; longitude: 192)>
 
 
 Now get and arbitrarily crop the CAM5.3-Oslo_CTRL2016 data object
@@ -321,4 +345,8 @@ plots the first time stamp of each result file.
 
 
 .. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_4.png
+
+
+
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_5.png
 

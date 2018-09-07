@@ -535,7 +535,7 @@
     
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># now replace all values with NaNs that are below the global lower threshold</span>
-        <span class="n">below_thresh</span> <span class="o">=</span> <span class="n">result</span> <span class="o">&lt;</span> <span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_name</span><span class="p">][</span><span class="s1">&#39;lower_limit&#39;</span><span class="p">]</span>
+        <span class="n">below_thresh</span> <span class="o">=</span> <span class="n">result</span> <span class="o">&lt;</span> <span class="n">const</span><span class="o">.</span><span class="n">VAR_PARAM</span><span class="p">[</span><span class="n">var_name</span><span class="p">][</span><span class="s1">&#39;minimum&#39;</span><span class="p">]</span>
         <span class="n">result</span><span class="p">[</span><span class="n">below_thresh</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Could not access lower limit from global settings for &quot;</span>

@@ -169,7 +169,8 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">VarNotAvailableError</span><span class="p">,</span> <span class="n">TimeMatchError</span><span class="p">,</span>
                                   <span class="n">CollocationError</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">to_pandas_timestamp</span><span class="p">,</span> 
-                               <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">)</span>
+                               <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">,</span>
+                               <span class="n">to_datestring_YYYYMMDD</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.filter</span> <span class="k">import</span> <span class="n">Filter</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.collocateddata</span> <span class="k">import</span> <span class="n">CollocatedData</span>
 
@@ -186,6 +187,8 @@
     <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
     <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
     
+    <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
+    
     <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">grid_start</span>
     <span class="k">else</span><span class="p">:</span>
@@ -200,6 +203,9 @@
         <span class="k">raise</span> <span class="n">TimeMatchError</span><span class="p">(</span><span class="s1">&#39;Input time range </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1"> does not &#39;</span>
                              <span class="s1">&#39;overlap with data range: </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">&#39;</span>
                              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">grid_start</span><span class="p">,</span> <span class="n">grid_stop</span><span class="p">))</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+    <span class="n">gridded_data_ref</span> <span class="o">=</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+    
     <span class="c1"># get both objects in same time resolution</span>
     <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">downscale_time</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
     <span class="n">gridded_data_ref</span> <span class="o">=</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">downscale_time</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
@@ -220,13 +226,15 @@
         <span class="k">raise</span> <span class="n">CollocationError</span><span class="p">(</span><span class="s1">&#39;Shape mismatch between two collocated data &#39;</span>
                                <span class="s1">&#39;arrays, please debug&#39;</span><span class="p">)</span>
     
-    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source_idx&#39;</span>   <span class="p">:</span>   <span class="p">[</span><span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span>       <span class="p">:</span>   <span class="p">[</span><span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                     <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
             <span class="s1">&#39;var_name&#39;</span>          <span class="p">:</span>   <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span>
             <span class="s1">&#39;ts_type&#39;</span>           <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
-            <span class="s1">&#39;start&#39;</span>             <span class="p">:</span>   <span class="n">start</span><span class="p">,</span>
-            <span class="s1">&#39;stop&#39;</span>              <span class="p">:</span>   <span class="n">stop</span><span class="p">,</span>
-            <span class="s1">&#39;filter_name&#39;</span>       <span class="p">:</span>   <span class="n">filter_name</span><span class="p">}</span>
+            <span class="s1">&#39;filter_name&#39;</span>       <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src&#39;</span>       <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;start_str&#39;</span>         <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
+            <span class="s1">&#39;stop_str&#39;</span>          <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;data_level&#39;</span>        <span class="p">:</span>   <span class="s1">&#39;collocated&#39;</span><span class="p">}</span>
 
     
     <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">regfilter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
@@ -236,9 +244,10 @@
 
     <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">data_ref</span><span class="p">,</span>
                       <span class="n">gridded_data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
     <span class="c1"># create coordinates of DataArray</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span> <span class="p">:</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source_idx&#39;</span><span class="p">],</span>
-              <span class="s1">&#39;time&#39;</span>        <span class="p">:</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">(),</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span> <span class="p">:</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">],</span>
+              <span class="s1">&#39;time&#39;</span>        <span class="p">:</span> <span class="n">time</span><span class="p">,</span>
               <span class="s1">&#39;longitude&#39;</span>   <span class="p">:</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
               <span class="s1">&#39;latitude&#39;</span>    <span class="p">:</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span>
               <span class="p">}</span>
@@ -318,6 +327,8 @@
     <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
     <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
     <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
+    
+    <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
     
     <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">grid_start</span>
@@ -415,13 +426,15 @@
         <span class="k">raise</span> <span class="n">CollocationError</span><span class="p">(</span><span class="s1">&#39;No observations could be found that match &#39;</span>
                                <span class="s1">&#39;the collocation constraints&#39;</span><span class="p">)</span>
         
-    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source_idx&#39;</span>  <span class="p">:</span>   <span class="p">[</span><span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span>  <span class="p">:</span>   <span class="p">[</span><span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                     <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
             <span class="s1">&#39;var_name&#39;</span>      <span class="p">:</span>   <span class="n">var</span><span class="p">,</span>
             <span class="s1">&#39;ts_type&#39;</span>       <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
-            <span class="s1">&#39;start&#39;</span>         <span class="p">:</span>   <span class="n">start</span><span class="p">,</span>
-            <span class="s1">&#39;stop&#39;</span>          <span class="p">:</span>   <span class="n">stop</span><span class="p">,</span>
-            <span class="s1">&#39;filter_name&#39;</span>   <span class="p">:</span>   <span class="n">filter_name</span><span class="p">}</span>
+            <span class="s1">&#39;filter_name&#39;</span>   <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src&#39;</span>   <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;start_str&#39;</span>     <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
+            <span class="s1">&#39;stop_str&#39;</span>      <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;data_level&#39;</span>    <span class="p">:</span>   <span class="s1">&#39;collocated&#39;</span><span class="p">}</span>
 
     
     <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">regfilter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
@@ -435,7 +448,7 @@
     <span class="c1">#.reshape((2, time_dim, stat_dim))</span>
     
     <span class="c1"># create coordinates of DataArray</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span> <span class="p">:</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source_idx&#39;</span><span class="p">],</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span> <span class="p">:</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">],</span>
               <span class="s1">&#39;time&#39;</span>        <span class="p">:</span> <span class="n">TIME_IDX</span><span class="p">,</span>
               <span class="s1">&#39;station_name&#39;</span><span class="p">:</span> <span class="n">station_names</span><span class="p">,</span>
               <span class="s1">&#39;latitude&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="n">lats</span><span class="p">),</span>

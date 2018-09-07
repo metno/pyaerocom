@@ -331,12 +331,6 @@ the metadata representation of the underlying data object)</p>
 <dd><p>List with valid filename encryptions specifying temporal resolution</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyaerocom.griddeddata.GriddedData.to_daily">
-<code class="descname">to_daily</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_daily"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_daily" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert this object to daily resolution</p>
-</dd></dl>
-
 <dl class="attribute">
 <dt id="pyaerocom.griddeddata.GriddedData.is_masked">
 <code class="descname">is_masked</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.is_masked" title="Permalink to this definition">¶</a></dt>
@@ -345,6 +339,18 @@ the metadata representation of the underlying data object)</p>
 <p class="first admonition-title">Note</p>
 <p class="last">This method only works if the data is loaded.</p>
 </div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.start_time">
+<code class="descname">start_time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start time of dataset as datetime64 object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.stop_time">
+<code class="descname">stop_time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.stop_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start time of dataset as datetime64 object</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -438,16 +444,10 @@ method simply returns <a class="reference internal" href="#pyaerocom.griddeddata
 <code class="descname">area_weights</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.area_weights" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.start_time">
-<code class="descname">start_time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.start_time" title="Permalink to this definition">¶</a></dt>
-<dd><p>Start time of dataset as datetime64 object</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.stop_time">
-<code class="descname">stop_time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.stop_time" title="Permalink to this definition">¶</a></dt>
-<dd><p>Start time of dataset as datetime64 object</p>
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.check_dim_coords">
+<code class="descname">check_dim_coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.check_dim_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.check_dim_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check dimension coordinates of grid data</p>
 </dd></dl>
 
 <dl class="method">
@@ -1651,20 +1651,15 @@ in case input <a href="#id7"><span class="problematic" id="id8">:arg:`data`</spa
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.load_fake_data">
-<code class="descname">load_fake_data</code><span class="sig-paren">(</span><em>num_stations=1000</em>, <em>num_tstamps=365</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.load_fake_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.load_fake_data" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="attribute">
 <dt id="pyaerocom.collocateddata.CollocatedData.save_name_aerocom">
 <code class="descname">save_name_aerocom</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.save_name_aerocom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default save name for data object following AeroCom convention</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="staticmethod">
 <dt id="pyaerocom.collocateddata.CollocatedData.get_meta_from_filename">
-<code class="descname">get_meta_from_filename</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.get_meta_from_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.get_meta_from_filename" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">get_meta_from_filename</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.get_meta_from_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.get_meta_from_filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get meta information from file name</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1700,6 +1695,20 @@ may include the delimiter _ in their name.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> – additional, optional keyword arguments passed to
 <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.DataArray.to_netdcf()</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.collocateddata.CollocatedData.read_netcdf">
+<code class="descname">read_netcdf</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.read_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.read_netcdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read data from NetCDF file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file path</td>
 </tr>
 </tbody>
 </table>
@@ -1760,20 +1769,6 @@ and methods that use the latter (e.g. <a class="reference internal" href="#pyaer
 <dt id="pyaerocom.collocateddata.CollocatedData.open">
 <code class="descname">open</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>High level helper for reading from supported file sources</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – file path</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.read_netcdf">
-<code class="descname">read_netcdf</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.read_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.read_netcdf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read data from NetCDF file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2240,13 +2235,6 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.readgridded.ReadGridded.data_yearly">
-<code class="descname">data_yearly</code><em class="property"> = None</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.data_yearly" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dictionary holding variable data for individual years (loaded
-using <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.read_individual_years" title="pyaerocom.io.readgridded.ReadGridded.read_individual_years"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_individual_years()</span></code></a>)</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt>
 <code class="descname">files</code><em class="property"> = None</em></dt>
 <dd><p>All files that were found for this model (updated, e.g. in class
@@ -2328,34 +2316,36 @@ private attribute <code class="xref py py-attr docutils literal notranslate"><sp
 <dl class="attribute">
 <dt>
 <code class="descname">start_time</code></dt>
-<dd><p>Start time of the dataset</p>
+<dd><p>First available year in the dataset (inferred from filenames)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If input is not <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
-into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
+<p class="last">This is not variable or ts_type specific, so it is not necessarily
+given that data from this year is available for all variables in
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.vars" title="pyaerocom.io.readgridded.ReadGridded.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a> or all frequencies liste in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.ts_types" title="pyaerocom.io.readgridded.ReadGridded.ts_types"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ts_types</span></code></a></p>
 </div>
 </dd></dl>
 
 <dl class="attribute">
 <dt>
 <code class="descname">stop_time</code></dt>
-<dd><p>Stop time of the dataset</p>
+<dd><p>Last available year in the dataset (inferred from filenames)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If input is not <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code>, it must be convertible
-into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</p>
+<p class="last">This is not variable or ts_type specific, so it is not necessarily
+given that data from this year is available for all variables in
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.vars" title="pyaerocom.io.readgridded.ReadGridded.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a> or all frequencies liste in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.ts_types" title="pyaerocom.io.readgridded.ReadGridded.ts_types"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ts_types</span></code></a></p>
 </div>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyaerocom.io.readgridded.ReadGridded.years_to_load">
-<code class="descname">years_to_load</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.years_to_load" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="pyaerocom.io.readgridded.ReadGridded.get_years_to_load">
+<code class="descname">get_years_to_load</code><span class="sig-paren">(</span><em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.get_years_to_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.get_years_to_load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array containing year numbers that are supposed to be loaded</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">all years to be loaded</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ndarray</td>
 </tr>
@@ -2426,7 +2416,7 @@ attributes such as <cite>data, data_dir, files</cite></td>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type">
-<code class="descname">find_var_files_flex_ts_type</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type_init</em>, <em>years_to_load=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_flex_ts_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_var_files_flex_ts_type</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type_init</em>, <em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_flex_ts_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find available files for a variable in a time period</p>
 <p>Like <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod" title="pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_var_files_in_timeperiod()</span></code></a> but this method also checks
 other available ts_types in case, no files can be found for the
@@ -2438,8 +2428,10 @@ desired temporal resolution</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable name</li>
 <li><strong>ts_type_init</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – desired temporal resolution of data</li>
-<li><strong>years_to_load</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list containing years to be loaded. If None, class attr.
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.years_to_load" title="pyaerocom.io.readgridded.ReadGridded.years_to_load"><code class="xref py py-attr docutils literal notranslate"><span class="pre">years_to_load</span></code></a> is used.</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data. If None, then the first available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a>)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data. If None, then the last available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.stop_time" title="pyaerocom.io.readgridded.ReadGridded.stop_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stop_time</span></code></a>)</li>
 </ul>
 </td>
 </tr>
@@ -2461,7 +2453,7 @@ desired temporal resolution</p>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod">
-<code class="descname">find_var_files_in_timeperiod</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type</em>, <em>years_to_load=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_in_timeperiod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_var_files_in_timeperiod</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type</em>, <em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_in_timeperiod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all files that match variable, time period and temporal res.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2470,8 +2462,10 @@ desired temporal resolution</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable name</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – temporal resolution of data</li>
-<li><strong>years_to_load</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list containing years to be loaded. If None, class attr.
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.years_to_load" title="pyaerocom.io.readgridded.ReadGridded.years_to_load"><code class="xref py py-attr docutils literal notranslate"><span class="pre">years_to_load</span></code></a> is used.</li>
+<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data. If None, then the first available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a>)</li>
+<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data. If None, then the last available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.stop_time" title="pyaerocom.io.readgridded.ReadGridded.stop_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stop_time</span></code></a>)</li>
 </ul>
 </td>
 </tr>
@@ -2540,7 +2534,7 @@ instance of <code class="xref py py-class docutils literal notranslate"><span cl
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.read_var">
-<code class="descname">read_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>at_stations=False</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read model data for a specific variable</p>
 <p>This method searches all valid files for a given variable and for a
 provided temporal resolution (e.g. <em>daily, monthly</em>), optionally
@@ -2571,7 +2565,6 @@ NetCDF import using the attribute <code class="xref py py-attr docutils literal 
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”). If None, prioritised
 of the available resolutions is used</li>
-<li><strong>at_stations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – boolean specifying whether</li>
 <li><strong>flex_ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True and if applicable, then another ts_type is used in case
 the input ts_type is not available for this variable</li>
 </ul>
@@ -2585,7 +2578,7 @@ the input ts_type is not available for this variable</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AttributeError</span></code></a> – if none of the ts_types identified from file names is valid</li>
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if specified ts_type is not supported</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">VarNotAvailableError</span></code> – if specified ts_type is not supported</li>
 </ul>
 </td>
 </tr>
@@ -2595,7 +2588,7 @@ the input ts_type is not available for this variable</li>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>require_all_vars_avail=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em>, <em>require_all_vars_avail=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all variables that could be found</p>
 <p>Reads all variables that are available (i.e. in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.vars" title="pyaerocom.io.readgridded.ReadGridded.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a>)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2611,9 +2604,10 @@ the input ts_type is not available for this variable</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”). If None, prioritised
 of the available resolutions is used</li>
+<li><strong>flex_ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True and if applicable, then another ts_type is used in case
+the input ts_type is not available for this variable</li>
 <li><strong>require_all_vars_avail</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, it is strictly required that all input variables are
 available.</li>
-<li><strong>**kwargs</strong> – additional keyword args passed to <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="pyaerocom.io.readgridded.ReadGridded.read_var"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_var()</span></code></a></li>
 </ul>
 </td>
 </tr>
@@ -2625,57 +2619,6 @@ available.</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if input variable names is not list or string</li>
-<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">VarNotAvailableError</span></code> – 1. if <code class="docutils literal notranslate"><span class="pre">require_all_vars_avail=True</span></code> and one or more of the
-desired variables is not available in this class
-2. if <code class="docutils literal notranslate"><span class="pre">require_all_vars_avail=True</span></code> and if none of the input
-variables is available in this object</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.io.readgridded.ReadGridded.read_individual_years">
-<code class="descname">read_individual_years</code><span class="sig-paren">(</span><em>var_names</em>, <em>years_to_load</em>, <em>ts_type=None</em>, <em>require_all_years_avail=False</em>, <em>require_all_vars_avail=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read_individual_years"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read_individual_years" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read individual years into instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code></p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Other than methods <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="pyaerocom.io.readgridded.ReadGridded.read_var"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_var()</span></code></a> and <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.read" title="pyaerocom.io.readgridded.ReadGridded.read"><code class="xref py py-func docutils literal notranslate"><span class="pre">read()</span></code></a>, this method does
-not write into <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.data" title="pyaerocom.io.readgridded.ReadGridded.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data</span></code></a> but into <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.data_yearly" title="pyaerocom.io.readgridded.ReadGridded.data_yearly"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data_yearly</span></code></a>. Since for
-each provided variable, multiple years are loaded, the structure of
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.data_yearly" title="pyaerocom.io.readgridded.ReadGridded.data_yearly"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data_yearly</span></code></a> is a nested dictionary and the yearly data may
-be accessed as shown in the below example.</p>
-</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – variables that are supposed to be read</li>
-<li><strong>years_to_load</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list specifying the years to be loaded</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
-“hourly”, “3hourly”, “daily”, “monthly”). If None, prioritised
-of the available resolutions is used</li>
-<li><strong>require_all_years_avail</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, it is strictly required that all input years are
-available.</li>
-<li><strong>require_all_vars_avail</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, it is strictly required that all input variables are
-available.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">nested dictionary dictionary containing the results for each
-variable and for each year</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">YearNotAvailableError</span></code> – 1. if <code class="docutils literal notranslate"><span class="pre">require_all_years_avail=True</span></code> and one or more of the provided
-years is not available in this class
-2. if none of the required years is available in this object</li>
 <li><code class="xref py py-exc docutils literal notranslate"><span class="pre">VarNotAvailableError</span></code> – 1. if <code class="docutils literal notranslate"><span class="pre">require_all_vars_avail=True</span></code> and one or more of the
 desired variables is not available in this class
 2. if <code class="docutils literal notranslate"><span class="pre">require_all_vars_avail=True</span></code> and if none of the input
@@ -3495,7 +3438,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f6edcd92488&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f6edcdc7ae8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f4dfe1e40d0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f4dfdc6b730&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -3896,7 +3839,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f6edcd92488&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f6edcdc7ae8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f6edca44bf8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f6edca44c80&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f4dfe1e40d0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f4dfdc6b730&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f4dfdc74840&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f4dfdc748c8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4302,7 +4245,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f6edca44b70&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f6edcdc7ae8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f4dfdc747b8&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f4dfdc6b730&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4726,7 +4669,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f6edcd92488&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f6edcdc7ae8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f4dfe1e40d0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f4dfdc6b730&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5124,7 +5067,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f6edcdc7ae8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f6edca44bf8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f6edca44c80&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f4dfdc6b730&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f4dfdc74840&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f4dfdc748c8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5518,7 +5461,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f6edca44b70&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f6edcdc7ae8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f4dfdc747b8&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f4dfdc6b730&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -8191,6 +8134,33 @@ found (e.g. available variables, years, etc.)</p>
 <dt id="pyaerocom.io.helpers.add_file_to_log">
 <code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">add_file_to_log</code><span class="sig-paren">(</span><em>filepath</em>, <em>err_msg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#add_file_to_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.add_file_to_log" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.io.helpers.get_standard_name">
+<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_standard_name</code><span class="sig-paren">(</span><em>var_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_standard_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_standard_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get standard name of aerocom variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – HTAP2 variable name</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">corresponding standard name</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">VarNotAvailableError</span></code> – if input variable is not defined in <em>variables.ini</em> file</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">VariableDefinitionError</span></code> – if standarad name is not set for variable in <em>variables.ini</em> file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="pyaerocom.io.helpers.search_data_dir_aerocom">

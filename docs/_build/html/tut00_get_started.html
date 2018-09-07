@@ -210,13 +210,19 @@ pyaerocom from within a Python3 console.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pya</span>.__version__)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">239</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">37</span><span class="p">,</span><span class="mi">640</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Reading</span> <span class="n">aliases</span> <span class="n">ini</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">aliases</span><span class="o">.</span><span class="n">ini</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">084</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Elapsed</span> <span class="n">time</span> <span class="n">init</span> <span class="nb">all</span> <span class="n">variables</span><span class="p">:</span> <span class="mf">0.04709625244140625</span> <span class="n">s</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">651</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">geopy</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">available</span><span class="o">.</span> <span class="n">Aeolus</span> <span class="n">data</span> <span class="n">read</span> <span class="ow">not</span> <span class="n">enabled</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Installation</span> <span class="n">base</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Elapsed</span> <span class="n">time</span> <span class="n">init</span> <span class="n">pyaerocom</span><span class="p">:</span> <span class="mf">1.116868019104004</span> <span class="n">s</span>
+<span class="n">Installation</span> <span class="n">base</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span>
 <span class="n">Version</span><span class="p">:</span> <span class="mf">0.3</span><span class="o">.</span><span class="mi">0</span>
 </pre></div>
 </div>
@@ -250,7 +256,7 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
    <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CORRECT_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
-   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">False</span>
    <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
@@ -313,6 +319,7 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">od440aer</span>
 <span class="n">abs440aer</span>
 <span class="n">ec550aer</span>
+<span class="n">ec532aer</span>
 <span class="n">scatc550aer</span>
 <span class="n">scatc550lt1aer</span>
 <span class="n">bscatc550aer</span>
@@ -324,6 +331,439 @@ via an instance of the <code class="docutils literal notranslate"><span class="p
 <span class="n">ang4487aer</span>
 <span class="n">angabs4487aer</span>
 <span class="n">zdust</span>
+<span class="n">time</span>
+<span class="n">time_bnds</span>
+<span class="n">lon</span>
+<span class="n">lon_bnds</span>
+<span class="n">lat</span>
+<span class="n">lat_bnds</span>
+<span class="n">growvegbnds</span>
+<span class="n">areacella</span>
+<span class="n">landf</span>
+<span class="n">orog</span>
+<span class="n">landcBF</span>
+<span class="n">landcNF</span>
+<span class="n">landcCP</span>
+<span class="n">landcSa</span>
+<span class="n">landcGS</span>
+<span class="n">landcST</span>
+<span class="n">landcBS</span>
+<span class="n">landcW</span>
+<span class="n">landcO</span>
+<span class="n">landcCPC3</span>
+<span class="n">landcCPC4</span>
+<span class="n">landcSaC3</span>
+<span class="n">landcSaC4</span>
+<span class="n">landcGSC3</span>
+<span class="n">landcGSC4</span>
+<span class="n">lai</span>
+<span class="n">mrso</span>
+<span class="n">snd</span>
+<span class="n">uas</span>
+<span class="n">vas</span>
+<span class="n">was</span>
+<span class="n">uapbl</span>
+<span class="n">vapbl</span>
+<span class="n">ts</span>
+<span class="n">ps</span>
+<span class="n">tasmin</span>
+<span class="n">tasmax</span>
+<span class="n">tas</span>
+<span class="n">prc</span>
+<span class="n">pr</span>
+<span class="n">airmass</span>
+<span class="n">zmlay</span>
+<span class="n">eminox</span>
+<span class="n">emino</span>
+<span class="n">emino2</span>
+<span class="n">eminosoil</span>
+<span class="n">emico</span>
+<span class="n">emivoc</span>
+<span class="n">emivoct</span>
+<span class="n">emic2h6</span>
+<span class="n">emic3h8</span>
+<span class="n">emic2h2</span>
+<span class="n">emic2h4</span>
+<span class="n">emic3h6</span>
+<span class="n">emialkanes</span>
+<span class="n">emialkenes</span>
+<span class="n">emihcho</span>
+<span class="n">emich3cho</span>
+<span class="n">emiacetone</span>
+<span class="n">emimethanol</span>
+<span class="n">emitolu</span>
+<span class="n">emiaro</span>
+<span class="n">emiisop</span>
+<span class="n">emimntp</span>
+<span class="n">emisestp</span>
+<span class="n">emibvoc</span>
+<span class="n">eminh3</span>
+<span class="n">emiso2</span>
+<span class="n">emidms</span>
+<span class="n">emiso4</span>
+<span class="n">emioa</span>
+<span class="n">emioc</span>
+<span class="n">emisoa</span>
+<span class="n">emibc</span>
+<span class="n">emiss</span>
+<span class="n">emidust</span>
+<span class="n">emipm10</span>
+<span class="n">emipm2p5</span>
+<span class="n">emipm10ss</span>
+<span class="n">emipm10dust</span>
+<span class="n">emipm2p5ss</span>
+<span class="n">emipm2p5dust</span>
+<span class="n">emipm1ss</span>
+<span class="n">emipm1dust</span>
+<span class="n">emipcb153</span>
+<span class="n">emiahch</span>
+<span class="n">reemipcb153</span>
+<span class="n">reemiahch</span>
+<span class="n">emihg0</span>
+<span class="n">emihg2</span>
+<span class="n">emihgp</span>
+<span class="n">emiahg0</span>
+<span class="n">emiahg2</span>
+<span class="n">emiahgp</span>
+<span class="n">reemihg0</span>
+<span class="n">dryhno3</span>
+<span class="n">dryno3</span>
+<span class="n">dryno2</span>
+<span class="n">dryn2o5</span>
+<span class="n">drypan</span>
+<span class="n">dryorgn</span>
+<span class="n">dryhono</span>
+<span class="n">dryhno4</span>
+<span class="n">drynoy</span>
+<span class="n">drynh3</span>
+<span class="n">drynh4</span>
+<span class="n">dryso2</span>
+<span class="n">dryso4</span>
+<span class="n">drymsa</span>
+<span class="n">drydms</span>
+<span class="n">dryss</span>
+<span class="n">drydust</span>
+<span class="n">drypm1no3</span>
+<span class="n">drypm2p5no3</span>
+<span class="n">drypm10no3</span>
+<span class="n">dryo3</span>
+<span class="n">stoo3</span>
+<span class="n">dryhcho</span>
+<span class="n">drych3cho</span>
+<span class="n">dryalde</span>
+<span class="n">dryhcooh</span>
+<span class="n">drych3cooh</span>
+<span class="n">dryh2o2</span>
+<span class="n">dryroor</span>
+<span class="n">excnh3</span>
+<span class="n">drybc</span>
+<span class="n">drypm10</span>
+<span class="n">drypm10ss</span>
+<span class="n">drypm10dust</span>
+<span class="n">drypm2p5</span>
+<span class="n">drypm2p5ss</span>
+<span class="n">drypm2p5dust</span>
+<span class="n">dryoc</span>
+<span class="n">dryoa</span>
+<span class="n">drysoa</span>
+<span class="n">drypcb153</span>
+<span class="n">dryahch</span>
+<span class="n">dryhg0</span>
+<span class="n">dryhg2</span>
+<span class="n">dryhgp</span>
+<span class="n">wethno3</span>
+<span class="n">wetn2o5</span>
+<span class="n">wetorgn</span>
+<span class="n">wetno3</span>
+<span class="n">wethono</span>
+<span class="n">wethno4</span>
+<span class="n">wetnoy</span>
+<span class="n">wetnh3</span>
+<span class="n">wetnh4</span>
+<span class="n">wetso2</span>
+<span class="n">wetso4</span>
+<span class="n">wetmsa</span>
+<span class="n">wetdms</span>
+<span class="n">wetbc</span>
+<span class="n">wetss</span>
+<span class="n">wetdust</span>
+<span class="n">wetpm1no3</span>
+<span class="n">wetpm2p5no3</span>
+<span class="n">wetpm10no3</span>
+<span class="n">wethcho</span>
+<span class="n">wetch3cho</span>
+<span class="n">wetalde</span>
+<span class="n">wethcooh</span>
+<span class="n">wetch3cooh</span>
+<span class="n">weth2o2</span>
+<span class="n">wetroor</span>
+<span class="n">wetpm10</span>
+<span class="n">wetpm10ss</span>
+<span class="n">wetpm10dust</span>
+<span class="n">wetpm2p5</span>
+<span class="n">wetpm2p5ss</span>
+<span class="n">wetpm2p5dust</span>
+<span class="n">wetoa</span>
+<span class="n">wetoc</span>
+<span class="n">wetsoa</span>
+<span class="n">wetpcb153</span>
+<span class="n">wetahch</span>
+<span class="n">wethg</span>
+<span class="n">wethg0</span>
+<span class="n">wethg2</span>
+<span class="n">wethgp</span>
+<span class="n">vmro3</span>
+<span class="n">vmrno</span>
+<span class="n">vmrno2</span>
+<span class="n">vmro32m</span>
+<span class="n">rc</span>
+<span class="n">ra</span>
+<span class="n">vmrco</span>
+<span class="n">vmrhno3</span>
+<span class="n">vmrn2o5</span>
+<span class="n">vmrpan</span>
+<span class="n">vmrhono</span>
+<span class="n">vmrhno4</span>
+<span class="n">vmrorgnit</span>
+<span class="n">vmrnoy</span>
+<span class="n">vmrvoc</span>
+<span class="n">vmrc2h6</span>
+<span class="n">vmrc3h8</span>
+<span class="n">vmrc2h4</span>
+<span class="n">vmrc3h6</span>
+<span class="n">vmralkanes</span>
+<span class="n">vmralkenes</span>
+<span class="n">vmrhcho</span>
+<span class="n">vmrch3cho</span>
+<span class="n">vmracetone</span>
+<span class="n">vmrglyoxal</span>
+<span class="n">vmrmethanol</span>
+<span class="n">vmrtolu</span>
+<span class="n">vmraro</span>
+<span class="n">vmrisop</span>
+<span class="n">vmrc10h16</span>
+<span class="n">vmrtp</span>
+<span class="n">vmrnh3</span>
+<span class="n">vmrso2</span>
+<span class="n">vmrdms</span>
+<span class="n">mmrpm10</span>
+<span class="n">mmrpm2p5</span>
+<span class="n">mmrpm1</span>
+<span class="n">mmrno3</span>
+<span class="n">mmrso4</span>
+<span class="n">mmrbc</span>
+<span class="n">mmroc</span>
+<span class="n">mmroa</span>
+<span class="n">mmrss</span>
+<span class="n">mmrdust</span>
+<span class="n">mmrmsa</span>
+<span class="n">mmrnh4</span>
+<span class="n">ncpm2p5</span>
+<span class="n">mmrpm1no3</span>
+<span class="n">mmrpm1ss</span>
+<span class="n">mmrpm1dust</span>
+<span class="n">mmrpm2p5no3</span>
+<span class="n">mmrpm2p5so4</span>
+<span class="n">mmrpm2p5bc</span>
+<span class="n">mmrpm2p5oc</span>
+<span class="n">mmrpm2p5oa</span>
+<span class="n">mmrpm2p5ss</span>
+<span class="n">mmrpm2p5dust</span>
+<span class="n">mmrpm2p5nh4</span>
+<span class="n">ncpm10</span>
+<span class="n">mmrpm10no3</span>
+<span class="n">mmrpm10so4</span>
+<span class="n">mmrpm10bc</span>
+<span class="n">mmrpm10oc</span>
+<span class="n">mmrpm10oa</span>
+<span class="n">mmrpm10ss</span>
+<span class="n">mmrpm10dust</span>
+<span class="n">mmrpm10nh4</span>
+<span class="n">vmrhg0</span>
+<span class="n">vmrhg2</span>
+<span class="n">vmrpcb153</span>
+<span class="n">vmrahch</span>
+<span class="n">mmrhgp</span>
+<span class="n">jno2</span>
+<span class="n">jo3o1d</span>
+<span class="n">rsdt</span>
+<span class="n">rsut</span>
+<span class="n">rsutcs</span>
+<span class="n">rsds</span>
+<span class="n">rsus</span>
+<span class="n">rsdsdir</span>
+<span class="n">rsdsdif</span>
+<span class="n">rsdscs</span>
+<span class="n">rsdscsdir</span>
+<span class="n">rsdscsdif</span>
+<span class="n">rlut</span>
+<span class="n">rlutcs</span>
+<span class="n">rlds</span>
+<span class="n">rlus</span>
+<span class="n">rsut0</span>
+<span class="n">rsuscs0</span>
+<span class="n">rsds0</span>
+<span class="n">rsus0</span>
+<span class="n">rsdsdir0</span>
+<span class="n">rsdsdif0</span>
+<span class="n">rsdscs0</span>
+<span class="n">rsdscsdir0</span>
+<span class="n">rsdscsdif0</span>
+<span class="n">rlut0</span>
+<span class="n">rlutcs0</span>
+<span class="n">rlds0</span>
+<span class="n">rlus0</span>
+<span class="n">rsutpm1no3</span>
+<span class="n">rsutpm10no3</span>
+<span class="n">rsutcspm1no3</span>
+<span class="n">rsutcsnpm10no3</span>
+<span class="n">longitude</span>
+<span class="n">latitude</span>
+<span class="n">abs388aer</span>
+<span class="n">abs388bc</span>
+<span class="n">abs388dust</span>
+<span class="n">abs388oa</span>
+<span class="n">abs550bc</span>
+<span class="n">abs550dust</span>
+<span class="n">abs550pm1</span>
+<span class="n">abs550pm10</span>
+<span class="n">abs550pm2p5</span>
+<span class="n">abs870aer</span>
+<span class="n">od388aer</span>
+<span class="n">od388bc</span>
+<span class="n">od388dust</span>
+<span class="n">od388oa</span>
+<span class="n">od500aer</span>
+<span class="n">od500pm10</span>
+<span class="n">od500pm2p5</span>
+<span class="n">od550aerh2o</span>
+<span class="n">od550bc</span>
+<span class="n">od550dust</span>
+<span class="n">od550nh4</span>
+<span class="n">od550no3</span>
+<span class="n">od550oa</span>
+<span class="n">od550pm1</span>
+<span class="n">od550pm1no3</span>
+<span class="n">od550pm10</span>
+<span class="n">od550pm10no3</span>
+<span class="n">od550pm2p5</span>
+<span class="n">od550pm2p5no3</span>
+<span class="n">od550so4</span>
+<span class="n">od550ss</span>
+<span class="n">od865aer</span>
+<span class="n">od870aer</span>
+<span class="n">cldf</span>
+<span class="n">abs550aerh2o</span>
+<span class="n">abs550nh4</span>
+<span class="n">abs550no3</span>
+<span class="n">abs550oa</span>
+<span class="n">abs550so4</span>
+<span class="n">abs550ss</span>
+<span class="n">loadno3</span>
+<span class="n">loadso4</span>
+<span class="n">loadbc</span>
+<span class="n">loadoc</span>
+<span class="n">loadoa</span>
+<span class="n">loadsoa</span>
+<span class="n">loadss</span>
+<span class="n">loaddust</span>
+<span class="n">loadmsa</span>
+<span class="n">loadnh4</span>
+<span class="n">loadno</span>
+<span class="n">loadno2</span>
+<span class="n">loadn2o5</span>
+<span class="n">loadpan</span>
+<span class="n">loadhono</span>
+<span class="n">loadhno3</span>
+<span class="n">loadhno4</span>
+<span class="n">loadorgnit</span>
+<span class="n">loadnoy</span>
+<span class="n">loadnh3</span>
+<span class="n">loaddms</span>
+<span class="n">loadso2</span>
+<span class="n">loadpm1no3</span>
+<span class="n">loadpm2p5no3</span>
+<span class="n">loadpm10no3</span>
+<span class="n">loadpm1ss</span>
+<span class="n">loadpm2p5ss</span>
+<span class="n">loadpm10ss</span>
+<span class="n">loadpm1dust</span>
+<span class="n">loadpm2p5dust</span>
+<span class="n">loadpm10dust</span>
+<span class="n">loadpm1</span>
+<span class="n">loadpm2p5</span>
+<span class="n">loadpm10</span>
+<span class="n">lev</span>
+<span class="n">lev_bnds</span>
+<span class="n">ptop</span>
+<span class="n">a</span>
+<span class="n">b</span>
+<span class="n">a_bnds</span>
+<span class="n">b_bnds</span>
+<span class="n">p0</span>
+<span class="n">ap</span>
+<span class="n">ap_bnds</span>
+<span class="n">ta</span>
+<span class="n">rho</span>
+<span class="n">dh</span>
+<span class="n">hus</span>
+<span class="n">mcu</span>
+<span class="n">hur</span>
+<span class="n">emilnox</span>
+<span class="n">eminoaircraft</span>
+<span class="n">vmroh</span>
+<span class="n">vmrh2o2</span>
+<span class="n">vmrho2</span>
+<span class="n">vmrcl</span>
+<span class="n">vmrbr</span>
+<span class="n">vmrbro</span>
+<span class="n">prodo3</span>
+<span class="n">losso3</span>
+<span class="n">lossch4</span>
+<span class="n">lossco</span>
+<span class="n">reacvoc</span>
+<span class="n">chepsoa</span>
+<span class="n">chepmsa</span>
+<span class="n">chegpso4</span>
+<span class="n">cheaqpso4</span>
+<span class="n">chegphno3</span>
+<span class="n">cheglhno3</span>
+<span class="n">cheaphno3</span>
+<span class="n">chealhno3</span>
+<span class="n">chepno3</span>
+<span class="n">chedustpno3</span>
+<span class="n">chesspno3</span>
+<span class="n">cheppm10no3</span>
+<span class="n">cheppm2p5no3</span>
+<span class="n">cheppm1no3</span>
+<span class="n">chegpnh3</span>
+<span class="n">chealnh3</span>
+<span class="n">chepnh4</span>
+<span class="n">mmrsoa</span>
+<span class="n">mmraerh2o</span>
+<span class="n">mmrpm10h2o</span>
+<span class="n">mmrpm2p5h2o</span>
+<span class="n">rh</span>
+<span class="n">vmrcodirect50d</span>
+<span class="n">vmrcodirect25d</span>
+<span class="n">station</span>
+<span class="n">network_stationid</span>
+<span class="n">networkid</span>
+<span class="n">stationid</span>
+<span class="n">station_elevation</span>
+<span class="n">td</span>
+<span class="n">hurs</span>
+<span class="n">huss</span>
+<span class="n">mmrpm10poa</span>
+<span class="n">mmrpm2p5poa</span>
+<span class="n">vmr5mo3</span>
+<span class="n">vmr10mo3</span>
+<span class="n">tcwv</span>
+<span class="n">tcno2</span>
+<span class="n">pres</span>
+<span class="n">ua</span>
+<span class="n">va</span>
+<span class="n">wa</span>
 
 <span class="n">Aliases</span>
 <span class="o">.......</span>
@@ -360,9 +800,9 @@ class, as follows:</li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>All paths valid? False
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">308</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Model</span> <span class="n">base</span> <span class="n">directory</span> <span class="o">%</span><span class="n">s</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">exist</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">307</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Model</span> <span class="n">base</span> <span class="n">directory</span> <span class="o">%</span><span class="n">s</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">exist</span>
   <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Model base directory </span><span class="si">%s</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">311</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Observations</span> <span class="n">base</span> <span class="n">directory</span> <span class="o">%</span><span class="n">s</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">exist</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">github</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">pyaerocom</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">310</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Observations</span> <span class="n">base</span> <span class="n">directory</span> <span class="o">%</span><span class="n">s</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">exist</span>
   <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Observations base directory </span><span class="si">%s</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -392,7 +832,7 @@ class, as follows:</li>
    <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CORRECT_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
-   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">False</span>
    <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
@@ -455,6 +895,7 @@ class, as follows:</li>
 <span class="n">od440aer</span>
 <span class="n">abs440aer</span>
 <span class="n">ec550aer</span>
+<span class="n">ec532aer</span>
 <span class="n">scatc550aer</span>
 <span class="n">scatc550lt1aer</span>
 <span class="n">bscatc550aer</span>
@@ -466,6 +907,439 @@ class, as follows:</li>
 <span class="n">ang4487aer</span>
 <span class="n">angabs4487aer</span>
 <span class="n">zdust</span>
+<span class="n">time</span>
+<span class="n">time_bnds</span>
+<span class="n">lon</span>
+<span class="n">lon_bnds</span>
+<span class="n">lat</span>
+<span class="n">lat_bnds</span>
+<span class="n">growvegbnds</span>
+<span class="n">areacella</span>
+<span class="n">landf</span>
+<span class="n">orog</span>
+<span class="n">landcBF</span>
+<span class="n">landcNF</span>
+<span class="n">landcCP</span>
+<span class="n">landcSa</span>
+<span class="n">landcGS</span>
+<span class="n">landcST</span>
+<span class="n">landcBS</span>
+<span class="n">landcW</span>
+<span class="n">landcO</span>
+<span class="n">landcCPC3</span>
+<span class="n">landcCPC4</span>
+<span class="n">landcSaC3</span>
+<span class="n">landcSaC4</span>
+<span class="n">landcGSC3</span>
+<span class="n">landcGSC4</span>
+<span class="n">lai</span>
+<span class="n">mrso</span>
+<span class="n">snd</span>
+<span class="n">uas</span>
+<span class="n">vas</span>
+<span class="n">was</span>
+<span class="n">uapbl</span>
+<span class="n">vapbl</span>
+<span class="n">ts</span>
+<span class="n">ps</span>
+<span class="n">tasmin</span>
+<span class="n">tasmax</span>
+<span class="n">tas</span>
+<span class="n">prc</span>
+<span class="n">pr</span>
+<span class="n">airmass</span>
+<span class="n">zmlay</span>
+<span class="n">eminox</span>
+<span class="n">emino</span>
+<span class="n">emino2</span>
+<span class="n">eminosoil</span>
+<span class="n">emico</span>
+<span class="n">emivoc</span>
+<span class="n">emivoct</span>
+<span class="n">emic2h6</span>
+<span class="n">emic3h8</span>
+<span class="n">emic2h2</span>
+<span class="n">emic2h4</span>
+<span class="n">emic3h6</span>
+<span class="n">emialkanes</span>
+<span class="n">emialkenes</span>
+<span class="n">emihcho</span>
+<span class="n">emich3cho</span>
+<span class="n">emiacetone</span>
+<span class="n">emimethanol</span>
+<span class="n">emitolu</span>
+<span class="n">emiaro</span>
+<span class="n">emiisop</span>
+<span class="n">emimntp</span>
+<span class="n">emisestp</span>
+<span class="n">emibvoc</span>
+<span class="n">eminh3</span>
+<span class="n">emiso2</span>
+<span class="n">emidms</span>
+<span class="n">emiso4</span>
+<span class="n">emioa</span>
+<span class="n">emioc</span>
+<span class="n">emisoa</span>
+<span class="n">emibc</span>
+<span class="n">emiss</span>
+<span class="n">emidust</span>
+<span class="n">emipm10</span>
+<span class="n">emipm2p5</span>
+<span class="n">emipm10ss</span>
+<span class="n">emipm10dust</span>
+<span class="n">emipm2p5ss</span>
+<span class="n">emipm2p5dust</span>
+<span class="n">emipm1ss</span>
+<span class="n">emipm1dust</span>
+<span class="n">emipcb153</span>
+<span class="n">emiahch</span>
+<span class="n">reemipcb153</span>
+<span class="n">reemiahch</span>
+<span class="n">emihg0</span>
+<span class="n">emihg2</span>
+<span class="n">emihgp</span>
+<span class="n">emiahg0</span>
+<span class="n">emiahg2</span>
+<span class="n">emiahgp</span>
+<span class="n">reemihg0</span>
+<span class="n">dryhno3</span>
+<span class="n">dryno3</span>
+<span class="n">dryno2</span>
+<span class="n">dryn2o5</span>
+<span class="n">drypan</span>
+<span class="n">dryorgn</span>
+<span class="n">dryhono</span>
+<span class="n">dryhno4</span>
+<span class="n">drynoy</span>
+<span class="n">drynh3</span>
+<span class="n">drynh4</span>
+<span class="n">dryso2</span>
+<span class="n">dryso4</span>
+<span class="n">drymsa</span>
+<span class="n">drydms</span>
+<span class="n">dryss</span>
+<span class="n">drydust</span>
+<span class="n">drypm1no3</span>
+<span class="n">drypm2p5no3</span>
+<span class="n">drypm10no3</span>
+<span class="n">dryo3</span>
+<span class="n">stoo3</span>
+<span class="n">dryhcho</span>
+<span class="n">drych3cho</span>
+<span class="n">dryalde</span>
+<span class="n">dryhcooh</span>
+<span class="n">drych3cooh</span>
+<span class="n">dryh2o2</span>
+<span class="n">dryroor</span>
+<span class="n">excnh3</span>
+<span class="n">drybc</span>
+<span class="n">drypm10</span>
+<span class="n">drypm10ss</span>
+<span class="n">drypm10dust</span>
+<span class="n">drypm2p5</span>
+<span class="n">drypm2p5ss</span>
+<span class="n">drypm2p5dust</span>
+<span class="n">dryoc</span>
+<span class="n">dryoa</span>
+<span class="n">drysoa</span>
+<span class="n">drypcb153</span>
+<span class="n">dryahch</span>
+<span class="n">dryhg0</span>
+<span class="n">dryhg2</span>
+<span class="n">dryhgp</span>
+<span class="n">wethno3</span>
+<span class="n">wetn2o5</span>
+<span class="n">wetorgn</span>
+<span class="n">wetno3</span>
+<span class="n">wethono</span>
+<span class="n">wethno4</span>
+<span class="n">wetnoy</span>
+<span class="n">wetnh3</span>
+<span class="n">wetnh4</span>
+<span class="n">wetso2</span>
+<span class="n">wetso4</span>
+<span class="n">wetmsa</span>
+<span class="n">wetdms</span>
+<span class="n">wetbc</span>
+<span class="n">wetss</span>
+<span class="n">wetdust</span>
+<span class="n">wetpm1no3</span>
+<span class="n">wetpm2p5no3</span>
+<span class="n">wetpm10no3</span>
+<span class="n">wethcho</span>
+<span class="n">wetch3cho</span>
+<span class="n">wetalde</span>
+<span class="n">wethcooh</span>
+<span class="n">wetch3cooh</span>
+<span class="n">weth2o2</span>
+<span class="n">wetroor</span>
+<span class="n">wetpm10</span>
+<span class="n">wetpm10ss</span>
+<span class="n">wetpm10dust</span>
+<span class="n">wetpm2p5</span>
+<span class="n">wetpm2p5ss</span>
+<span class="n">wetpm2p5dust</span>
+<span class="n">wetoa</span>
+<span class="n">wetoc</span>
+<span class="n">wetsoa</span>
+<span class="n">wetpcb153</span>
+<span class="n">wetahch</span>
+<span class="n">wethg</span>
+<span class="n">wethg0</span>
+<span class="n">wethg2</span>
+<span class="n">wethgp</span>
+<span class="n">vmro3</span>
+<span class="n">vmrno</span>
+<span class="n">vmrno2</span>
+<span class="n">vmro32m</span>
+<span class="n">rc</span>
+<span class="n">ra</span>
+<span class="n">vmrco</span>
+<span class="n">vmrhno3</span>
+<span class="n">vmrn2o5</span>
+<span class="n">vmrpan</span>
+<span class="n">vmrhono</span>
+<span class="n">vmrhno4</span>
+<span class="n">vmrorgnit</span>
+<span class="n">vmrnoy</span>
+<span class="n">vmrvoc</span>
+<span class="n">vmrc2h6</span>
+<span class="n">vmrc3h8</span>
+<span class="n">vmrc2h4</span>
+<span class="n">vmrc3h6</span>
+<span class="n">vmralkanes</span>
+<span class="n">vmralkenes</span>
+<span class="n">vmrhcho</span>
+<span class="n">vmrch3cho</span>
+<span class="n">vmracetone</span>
+<span class="n">vmrglyoxal</span>
+<span class="n">vmrmethanol</span>
+<span class="n">vmrtolu</span>
+<span class="n">vmraro</span>
+<span class="n">vmrisop</span>
+<span class="n">vmrc10h16</span>
+<span class="n">vmrtp</span>
+<span class="n">vmrnh3</span>
+<span class="n">vmrso2</span>
+<span class="n">vmrdms</span>
+<span class="n">mmrpm10</span>
+<span class="n">mmrpm2p5</span>
+<span class="n">mmrpm1</span>
+<span class="n">mmrno3</span>
+<span class="n">mmrso4</span>
+<span class="n">mmrbc</span>
+<span class="n">mmroc</span>
+<span class="n">mmroa</span>
+<span class="n">mmrss</span>
+<span class="n">mmrdust</span>
+<span class="n">mmrmsa</span>
+<span class="n">mmrnh4</span>
+<span class="n">ncpm2p5</span>
+<span class="n">mmrpm1no3</span>
+<span class="n">mmrpm1ss</span>
+<span class="n">mmrpm1dust</span>
+<span class="n">mmrpm2p5no3</span>
+<span class="n">mmrpm2p5so4</span>
+<span class="n">mmrpm2p5bc</span>
+<span class="n">mmrpm2p5oc</span>
+<span class="n">mmrpm2p5oa</span>
+<span class="n">mmrpm2p5ss</span>
+<span class="n">mmrpm2p5dust</span>
+<span class="n">mmrpm2p5nh4</span>
+<span class="n">ncpm10</span>
+<span class="n">mmrpm10no3</span>
+<span class="n">mmrpm10so4</span>
+<span class="n">mmrpm10bc</span>
+<span class="n">mmrpm10oc</span>
+<span class="n">mmrpm10oa</span>
+<span class="n">mmrpm10ss</span>
+<span class="n">mmrpm10dust</span>
+<span class="n">mmrpm10nh4</span>
+<span class="n">vmrhg0</span>
+<span class="n">vmrhg2</span>
+<span class="n">vmrpcb153</span>
+<span class="n">vmrahch</span>
+<span class="n">mmrhgp</span>
+<span class="n">jno2</span>
+<span class="n">jo3o1d</span>
+<span class="n">rsdt</span>
+<span class="n">rsut</span>
+<span class="n">rsutcs</span>
+<span class="n">rsds</span>
+<span class="n">rsus</span>
+<span class="n">rsdsdir</span>
+<span class="n">rsdsdif</span>
+<span class="n">rsdscs</span>
+<span class="n">rsdscsdir</span>
+<span class="n">rsdscsdif</span>
+<span class="n">rlut</span>
+<span class="n">rlutcs</span>
+<span class="n">rlds</span>
+<span class="n">rlus</span>
+<span class="n">rsut0</span>
+<span class="n">rsuscs0</span>
+<span class="n">rsds0</span>
+<span class="n">rsus0</span>
+<span class="n">rsdsdir0</span>
+<span class="n">rsdsdif0</span>
+<span class="n">rsdscs0</span>
+<span class="n">rsdscsdir0</span>
+<span class="n">rsdscsdif0</span>
+<span class="n">rlut0</span>
+<span class="n">rlutcs0</span>
+<span class="n">rlds0</span>
+<span class="n">rlus0</span>
+<span class="n">rsutpm1no3</span>
+<span class="n">rsutpm10no3</span>
+<span class="n">rsutcspm1no3</span>
+<span class="n">rsutcsnpm10no3</span>
+<span class="n">longitude</span>
+<span class="n">latitude</span>
+<span class="n">abs388aer</span>
+<span class="n">abs388bc</span>
+<span class="n">abs388dust</span>
+<span class="n">abs388oa</span>
+<span class="n">abs550bc</span>
+<span class="n">abs550dust</span>
+<span class="n">abs550pm1</span>
+<span class="n">abs550pm10</span>
+<span class="n">abs550pm2p5</span>
+<span class="n">abs870aer</span>
+<span class="n">od388aer</span>
+<span class="n">od388bc</span>
+<span class="n">od388dust</span>
+<span class="n">od388oa</span>
+<span class="n">od500aer</span>
+<span class="n">od500pm10</span>
+<span class="n">od500pm2p5</span>
+<span class="n">od550aerh2o</span>
+<span class="n">od550bc</span>
+<span class="n">od550dust</span>
+<span class="n">od550nh4</span>
+<span class="n">od550no3</span>
+<span class="n">od550oa</span>
+<span class="n">od550pm1</span>
+<span class="n">od550pm1no3</span>
+<span class="n">od550pm10</span>
+<span class="n">od550pm10no3</span>
+<span class="n">od550pm2p5</span>
+<span class="n">od550pm2p5no3</span>
+<span class="n">od550so4</span>
+<span class="n">od550ss</span>
+<span class="n">od865aer</span>
+<span class="n">od870aer</span>
+<span class="n">cldf</span>
+<span class="n">abs550aerh2o</span>
+<span class="n">abs550nh4</span>
+<span class="n">abs550no3</span>
+<span class="n">abs550oa</span>
+<span class="n">abs550so4</span>
+<span class="n">abs550ss</span>
+<span class="n">loadno3</span>
+<span class="n">loadso4</span>
+<span class="n">loadbc</span>
+<span class="n">loadoc</span>
+<span class="n">loadoa</span>
+<span class="n">loadsoa</span>
+<span class="n">loadss</span>
+<span class="n">loaddust</span>
+<span class="n">loadmsa</span>
+<span class="n">loadnh4</span>
+<span class="n">loadno</span>
+<span class="n">loadno2</span>
+<span class="n">loadn2o5</span>
+<span class="n">loadpan</span>
+<span class="n">loadhono</span>
+<span class="n">loadhno3</span>
+<span class="n">loadhno4</span>
+<span class="n">loadorgnit</span>
+<span class="n">loadnoy</span>
+<span class="n">loadnh3</span>
+<span class="n">loaddms</span>
+<span class="n">loadso2</span>
+<span class="n">loadpm1no3</span>
+<span class="n">loadpm2p5no3</span>
+<span class="n">loadpm10no3</span>
+<span class="n">loadpm1ss</span>
+<span class="n">loadpm2p5ss</span>
+<span class="n">loadpm10ss</span>
+<span class="n">loadpm1dust</span>
+<span class="n">loadpm2p5dust</span>
+<span class="n">loadpm10dust</span>
+<span class="n">loadpm1</span>
+<span class="n">loadpm2p5</span>
+<span class="n">loadpm10</span>
+<span class="n">lev</span>
+<span class="n">lev_bnds</span>
+<span class="n">ptop</span>
+<span class="n">a</span>
+<span class="n">b</span>
+<span class="n">a_bnds</span>
+<span class="n">b_bnds</span>
+<span class="n">p0</span>
+<span class="n">ap</span>
+<span class="n">ap_bnds</span>
+<span class="n">ta</span>
+<span class="n">rho</span>
+<span class="n">dh</span>
+<span class="n">hus</span>
+<span class="n">mcu</span>
+<span class="n">hur</span>
+<span class="n">emilnox</span>
+<span class="n">eminoaircraft</span>
+<span class="n">vmroh</span>
+<span class="n">vmrh2o2</span>
+<span class="n">vmrho2</span>
+<span class="n">vmrcl</span>
+<span class="n">vmrbr</span>
+<span class="n">vmrbro</span>
+<span class="n">prodo3</span>
+<span class="n">losso3</span>
+<span class="n">lossch4</span>
+<span class="n">lossco</span>
+<span class="n">reacvoc</span>
+<span class="n">chepsoa</span>
+<span class="n">chepmsa</span>
+<span class="n">chegpso4</span>
+<span class="n">cheaqpso4</span>
+<span class="n">chegphno3</span>
+<span class="n">cheglhno3</span>
+<span class="n">cheaphno3</span>
+<span class="n">chealhno3</span>
+<span class="n">chepno3</span>
+<span class="n">chedustpno3</span>
+<span class="n">chesspno3</span>
+<span class="n">cheppm10no3</span>
+<span class="n">cheppm2p5no3</span>
+<span class="n">cheppm1no3</span>
+<span class="n">chegpnh3</span>
+<span class="n">chealnh3</span>
+<span class="n">chepnh4</span>
+<span class="n">mmrsoa</span>
+<span class="n">mmraerh2o</span>
+<span class="n">mmrpm10h2o</span>
+<span class="n">mmrpm2p5h2o</span>
+<span class="n">rh</span>
+<span class="n">vmrcodirect50d</span>
+<span class="n">vmrcodirect25d</span>
+<span class="n">station</span>
+<span class="n">network_stationid</span>
+<span class="n">networkid</span>
+<span class="n">stationid</span>
+<span class="n">station_elevation</span>
+<span class="n">td</span>
+<span class="n">hurs</span>
+<span class="n">huss</span>
+<span class="n">mmrpm10poa</span>
+<span class="n">mmrpm2p5poa</span>
+<span class="n">vmr5mo3</span>
+<span class="n">vmr10mo3</span>
+<span class="n">tcwv</span>
+<span class="n">tcno2</span>
+<span class="n">pres</span>
+<span class="n">ua</span>
+<span class="n">va</span>
+<span class="n">wa</span>
 
 <span class="n">Aliases</span>
 <span class="o">.......</span>
@@ -503,7 +1377,7 @@ the method <code class="docutils literal notranslate"><span class="pre">load_con
    <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CORRECT_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
-   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">False</span>
    <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
@@ -566,6 +1440,7 @@ the method <code class="docutils literal notranslate"><span class="pre">load_con
 <span class="n">od440aer</span>
 <span class="n">abs440aer</span>
 <span class="n">ec550aer</span>
+<span class="n">ec532aer</span>
 <span class="n">scatc550aer</span>
 <span class="n">scatc550lt1aer</span>
 <span class="n">bscatc550aer</span>
@@ -577,6 +1452,439 @@ the method <code class="docutils literal notranslate"><span class="pre">load_con
 <span class="n">ang4487aer</span>
 <span class="n">angabs4487aer</span>
 <span class="n">zdust</span>
+<span class="n">time</span>
+<span class="n">time_bnds</span>
+<span class="n">lon</span>
+<span class="n">lon_bnds</span>
+<span class="n">lat</span>
+<span class="n">lat_bnds</span>
+<span class="n">growvegbnds</span>
+<span class="n">areacella</span>
+<span class="n">landf</span>
+<span class="n">orog</span>
+<span class="n">landcBF</span>
+<span class="n">landcNF</span>
+<span class="n">landcCP</span>
+<span class="n">landcSa</span>
+<span class="n">landcGS</span>
+<span class="n">landcST</span>
+<span class="n">landcBS</span>
+<span class="n">landcW</span>
+<span class="n">landcO</span>
+<span class="n">landcCPC3</span>
+<span class="n">landcCPC4</span>
+<span class="n">landcSaC3</span>
+<span class="n">landcSaC4</span>
+<span class="n">landcGSC3</span>
+<span class="n">landcGSC4</span>
+<span class="n">lai</span>
+<span class="n">mrso</span>
+<span class="n">snd</span>
+<span class="n">uas</span>
+<span class="n">vas</span>
+<span class="n">was</span>
+<span class="n">uapbl</span>
+<span class="n">vapbl</span>
+<span class="n">ts</span>
+<span class="n">ps</span>
+<span class="n">tasmin</span>
+<span class="n">tasmax</span>
+<span class="n">tas</span>
+<span class="n">prc</span>
+<span class="n">pr</span>
+<span class="n">airmass</span>
+<span class="n">zmlay</span>
+<span class="n">eminox</span>
+<span class="n">emino</span>
+<span class="n">emino2</span>
+<span class="n">eminosoil</span>
+<span class="n">emico</span>
+<span class="n">emivoc</span>
+<span class="n">emivoct</span>
+<span class="n">emic2h6</span>
+<span class="n">emic3h8</span>
+<span class="n">emic2h2</span>
+<span class="n">emic2h4</span>
+<span class="n">emic3h6</span>
+<span class="n">emialkanes</span>
+<span class="n">emialkenes</span>
+<span class="n">emihcho</span>
+<span class="n">emich3cho</span>
+<span class="n">emiacetone</span>
+<span class="n">emimethanol</span>
+<span class="n">emitolu</span>
+<span class="n">emiaro</span>
+<span class="n">emiisop</span>
+<span class="n">emimntp</span>
+<span class="n">emisestp</span>
+<span class="n">emibvoc</span>
+<span class="n">eminh3</span>
+<span class="n">emiso2</span>
+<span class="n">emidms</span>
+<span class="n">emiso4</span>
+<span class="n">emioa</span>
+<span class="n">emioc</span>
+<span class="n">emisoa</span>
+<span class="n">emibc</span>
+<span class="n">emiss</span>
+<span class="n">emidust</span>
+<span class="n">emipm10</span>
+<span class="n">emipm2p5</span>
+<span class="n">emipm10ss</span>
+<span class="n">emipm10dust</span>
+<span class="n">emipm2p5ss</span>
+<span class="n">emipm2p5dust</span>
+<span class="n">emipm1ss</span>
+<span class="n">emipm1dust</span>
+<span class="n">emipcb153</span>
+<span class="n">emiahch</span>
+<span class="n">reemipcb153</span>
+<span class="n">reemiahch</span>
+<span class="n">emihg0</span>
+<span class="n">emihg2</span>
+<span class="n">emihgp</span>
+<span class="n">emiahg0</span>
+<span class="n">emiahg2</span>
+<span class="n">emiahgp</span>
+<span class="n">reemihg0</span>
+<span class="n">dryhno3</span>
+<span class="n">dryno3</span>
+<span class="n">dryno2</span>
+<span class="n">dryn2o5</span>
+<span class="n">drypan</span>
+<span class="n">dryorgn</span>
+<span class="n">dryhono</span>
+<span class="n">dryhno4</span>
+<span class="n">drynoy</span>
+<span class="n">drynh3</span>
+<span class="n">drynh4</span>
+<span class="n">dryso2</span>
+<span class="n">dryso4</span>
+<span class="n">drymsa</span>
+<span class="n">drydms</span>
+<span class="n">dryss</span>
+<span class="n">drydust</span>
+<span class="n">drypm1no3</span>
+<span class="n">drypm2p5no3</span>
+<span class="n">drypm10no3</span>
+<span class="n">dryo3</span>
+<span class="n">stoo3</span>
+<span class="n">dryhcho</span>
+<span class="n">drych3cho</span>
+<span class="n">dryalde</span>
+<span class="n">dryhcooh</span>
+<span class="n">drych3cooh</span>
+<span class="n">dryh2o2</span>
+<span class="n">dryroor</span>
+<span class="n">excnh3</span>
+<span class="n">drybc</span>
+<span class="n">drypm10</span>
+<span class="n">drypm10ss</span>
+<span class="n">drypm10dust</span>
+<span class="n">drypm2p5</span>
+<span class="n">drypm2p5ss</span>
+<span class="n">drypm2p5dust</span>
+<span class="n">dryoc</span>
+<span class="n">dryoa</span>
+<span class="n">drysoa</span>
+<span class="n">drypcb153</span>
+<span class="n">dryahch</span>
+<span class="n">dryhg0</span>
+<span class="n">dryhg2</span>
+<span class="n">dryhgp</span>
+<span class="n">wethno3</span>
+<span class="n">wetn2o5</span>
+<span class="n">wetorgn</span>
+<span class="n">wetno3</span>
+<span class="n">wethono</span>
+<span class="n">wethno4</span>
+<span class="n">wetnoy</span>
+<span class="n">wetnh3</span>
+<span class="n">wetnh4</span>
+<span class="n">wetso2</span>
+<span class="n">wetso4</span>
+<span class="n">wetmsa</span>
+<span class="n">wetdms</span>
+<span class="n">wetbc</span>
+<span class="n">wetss</span>
+<span class="n">wetdust</span>
+<span class="n">wetpm1no3</span>
+<span class="n">wetpm2p5no3</span>
+<span class="n">wetpm10no3</span>
+<span class="n">wethcho</span>
+<span class="n">wetch3cho</span>
+<span class="n">wetalde</span>
+<span class="n">wethcooh</span>
+<span class="n">wetch3cooh</span>
+<span class="n">weth2o2</span>
+<span class="n">wetroor</span>
+<span class="n">wetpm10</span>
+<span class="n">wetpm10ss</span>
+<span class="n">wetpm10dust</span>
+<span class="n">wetpm2p5</span>
+<span class="n">wetpm2p5ss</span>
+<span class="n">wetpm2p5dust</span>
+<span class="n">wetoa</span>
+<span class="n">wetoc</span>
+<span class="n">wetsoa</span>
+<span class="n">wetpcb153</span>
+<span class="n">wetahch</span>
+<span class="n">wethg</span>
+<span class="n">wethg0</span>
+<span class="n">wethg2</span>
+<span class="n">wethgp</span>
+<span class="n">vmro3</span>
+<span class="n">vmrno</span>
+<span class="n">vmrno2</span>
+<span class="n">vmro32m</span>
+<span class="n">rc</span>
+<span class="n">ra</span>
+<span class="n">vmrco</span>
+<span class="n">vmrhno3</span>
+<span class="n">vmrn2o5</span>
+<span class="n">vmrpan</span>
+<span class="n">vmrhono</span>
+<span class="n">vmrhno4</span>
+<span class="n">vmrorgnit</span>
+<span class="n">vmrnoy</span>
+<span class="n">vmrvoc</span>
+<span class="n">vmrc2h6</span>
+<span class="n">vmrc3h8</span>
+<span class="n">vmrc2h4</span>
+<span class="n">vmrc3h6</span>
+<span class="n">vmralkanes</span>
+<span class="n">vmralkenes</span>
+<span class="n">vmrhcho</span>
+<span class="n">vmrch3cho</span>
+<span class="n">vmracetone</span>
+<span class="n">vmrglyoxal</span>
+<span class="n">vmrmethanol</span>
+<span class="n">vmrtolu</span>
+<span class="n">vmraro</span>
+<span class="n">vmrisop</span>
+<span class="n">vmrc10h16</span>
+<span class="n">vmrtp</span>
+<span class="n">vmrnh3</span>
+<span class="n">vmrso2</span>
+<span class="n">vmrdms</span>
+<span class="n">mmrpm10</span>
+<span class="n">mmrpm2p5</span>
+<span class="n">mmrpm1</span>
+<span class="n">mmrno3</span>
+<span class="n">mmrso4</span>
+<span class="n">mmrbc</span>
+<span class="n">mmroc</span>
+<span class="n">mmroa</span>
+<span class="n">mmrss</span>
+<span class="n">mmrdust</span>
+<span class="n">mmrmsa</span>
+<span class="n">mmrnh4</span>
+<span class="n">ncpm2p5</span>
+<span class="n">mmrpm1no3</span>
+<span class="n">mmrpm1ss</span>
+<span class="n">mmrpm1dust</span>
+<span class="n">mmrpm2p5no3</span>
+<span class="n">mmrpm2p5so4</span>
+<span class="n">mmrpm2p5bc</span>
+<span class="n">mmrpm2p5oc</span>
+<span class="n">mmrpm2p5oa</span>
+<span class="n">mmrpm2p5ss</span>
+<span class="n">mmrpm2p5dust</span>
+<span class="n">mmrpm2p5nh4</span>
+<span class="n">ncpm10</span>
+<span class="n">mmrpm10no3</span>
+<span class="n">mmrpm10so4</span>
+<span class="n">mmrpm10bc</span>
+<span class="n">mmrpm10oc</span>
+<span class="n">mmrpm10oa</span>
+<span class="n">mmrpm10ss</span>
+<span class="n">mmrpm10dust</span>
+<span class="n">mmrpm10nh4</span>
+<span class="n">vmrhg0</span>
+<span class="n">vmrhg2</span>
+<span class="n">vmrpcb153</span>
+<span class="n">vmrahch</span>
+<span class="n">mmrhgp</span>
+<span class="n">jno2</span>
+<span class="n">jo3o1d</span>
+<span class="n">rsdt</span>
+<span class="n">rsut</span>
+<span class="n">rsutcs</span>
+<span class="n">rsds</span>
+<span class="n">rsus</span>
+<span class="n">rsdsdir</span>
+<span class="n">rsdsdif</span>
+<span class="n">rsdscs</span>
+<span class="n">rsdscsdir</span>
+<span class="n">rsdscsdif</span>
+<span class="n">rlut</span>
+<span class="n">rlutcs</span>
+<span class="n">rlds</span>
+<span class="n">rlus</span>
+<span class="n">rsut0</span>
+<span class="n">rsuscs0</span>
+<span class="n">rsds0</span>
+<span class="n">rsus0</span>
+<span class="n">rsdsdir0</span>
+<span class="n">rsdsdif0</span>
+<span class="n">rsdscs0</span>
+<span class="n">rsdscsdir0</span>
+<span class="n">rsdscsdif0</span>
+<span class="n">rlut0</span>
+<span class="n">rlutcs0</span>
+<span class="n">rlds0</span>
+<span class="n">rlus0</span>
+<span class="n">rsutpm1no3</span>
+<span class="n">rsutpm10no3</span>
+<span class="n">rsutcspm1no3</span>
+<span class="n">rsutcsnpm10no3</span>
+<span class="n">longitude</span>
+<span class="n">latitude</span>
+<span class="n">abs388aer</span>
+<span class="n">abs388bc</span>
+<span class="n">abs388dust</span>
+<span class="n">abs388oa</span>
+<span class="n">abs550bc</span>
+<span class="n">abs550dust</span>
+<span class="n">abs550pm1</span>
+<span class="n">abs550pm10</span>
+<span class="n">abs550pm2p5</span>
+<span class="n">abs870aer</span>
+<span class="n">od388aer</span>
+<span class="n">od388bc</span>
+<span class="n">od388dust</span>
+<span class="n">od388oa</span>
+<span class="n">od500aer</span>
+<span class="n">od500pm10</span>
+<span class="n">od500pm2p5</span>
+<span class="n">od550aerh2o</span>
+<span class="n">od550bc</span>
+<span class="n">od550dust</span>
+<span class="n">od550nh4</span>
+<span class="n">od550no3</span>
+<span class="n">od550oa</span>
+<span class="n">od550pm1</span>
+<span class="n">od550pm1no3</span>
+<span class="n">od550pm10</span>
+<span class="n">od550pm10no3</span>
+<span class="n">od550pm2p5</span>
+<span class="n">od550pm2p5no3</span>
+<span class="n">od550so4</span>
+<span class="n">od550ss</span>
+<span class="n">od865aer</span>
+<span class="n">od870aer</span>
+<span class="n">cldf</span>
+<span class="n">abs550aerh2o</span>
+<span class="n">abs550nh4</span>
+<span class="n">abs550no3</span>
+<span class="n">abs550oa</span>
+<span class="n">abs550so4</span>
+<span class="n">abs550ss</span>
+<span class="n">loadno3</span>
+<span class="n">loadso4</span>
+<span class="n">loadbc</span>
+<span class="n">loadoc</span>
+<span class="n">loadoa</span>
+<span class="n">loadsoa</span>
+<span class="n">loadss</span>
+<span class="n">loaddust</span>
+<span class="n">loadmsa</span>
+<span class="n">loadnh4</span>
+<span class="n">loadno</span>
+<span class="n">loadno2</span>
+<span class="n">loadn2o5</span>
+<span class="n">loadpan</span>
+<span class="n">loadhono</span>
+<span class="n">loadhno3</span>
+<span class="n">loadhno4</span>
+<span class="n">loadorgnit</span>
+<span class="n">loadnoy</span>
+<span class="n">loadnh3</span>
+<span class="n">loaddms</span>
+<span class="n">loadso2</span>
+<span class="n">loadpm1no3</span>
+<span class="n">loadpm2p5no3</span>
+<span class="n">loadpm10no3</span>
+<span class="n">loadpm1ss</span>
+<span class="n">loadpm2p5ss</span>
+<span class="n">loadpm10ss</span>
+<span class="n">loadpm1dust</span>
+<span class="n">loadpm2p5dust</span>
+<span class="n">loadpm10dust</span>
+<span class="n">loadpm1</span>
+<span class="n">loadpm2p5</span>
+<span class="n">loadpm10</span>
+<span class="n">lev</span>
+<span class="n">lev_bnds</span>
+<span class="n">ptop</span>
+<span class="n">a</span>
+<span class="n">b</span>
+<span class="n">a_bnds</span>
+<span class="n">b_bnds</span>
+<span class="n">p0</span>
+<span class="n">ap</span>
+<span class="n">ap_bnds</span>
+<span class="n">ta</span>
+<span class="n">rho</span>
+<span class="n">dh</span>
+<span class="n">hus</span>
+<span class="n">mcu</span>
+<span class="n">hur</span>
+<span class="n">emilnox</span>
+<span class="n">eminoaircraft</span>
+<span class="n">vmroh</span>
+<span class="n">vmrh2o2</span>
+<span class="n">vmrho2</span>
+<span class="n">vmrcl</span>
+<span class="n">vmrbr</span>
+<span class="n">vmrbro</span>
+<span class="n">prodo3</span>
+<span class="n">losso3</span>
+<span class="n">lossch4</span>
+<span class="n">lossco</span>
+<span class="n">reacvoc</span>
+<span class="n">chepsoa</span>
+<span class="n">chepmsa</span>
+<span class="n">chegpso4</span>
+<span class="n">cheaqpso4</span>
+<span class="n">chegphno3</span>
+<span class="n">cheglhno3</span>
+<span class="n">cheaphno3</span>
+<span class="n">chealhno3</span>
+<span class="n">chepno3</span>
+<span class="n">chedustpno3</span>
+<span class="n">chesspno3</span>
+<span class="n">cheppm10no3</span>
+<span class="n">cheppm2p5no3</span>
+<span class="n">cheppm1no3</span>
+<span class="n">chegpnh3</span>
+<span class="n">chealnh3</span>
+<span class="n">chepnh4</span>
+<span class="n">mmrsoa</span>
+<span class="n">mmraerh2o</span>
+<span class="n">mmrpm10h2o</span>
+<span class="n">mmrpm2p5h2o</span>
+<span class="n">rh</span>
+<span class="n">vmrcodirect50d</span>
+<span class="n">vmrcodirect25d</span>
+<span class="n">station</span>
+<span class="n">network_stationid</span>
+<span class="n">networkid</span>
+<span class="n">stationid</span>
+<span class="n">station_elevation</span>
+<span class="n">td</span>
+<span class="n">hurs</span>
+<span class="n">huss</span>
+<span class="n">mmrpm10poa</span>
+<span class="n">mmrpm2p5poa</span>
+<span class="n">vmr5mo3</span>
+<span class="n">vmr10mo3</span>
+<span class="n">tcwv</span>
+<span class="n">tcno2</span>
+<span class="n">pres</span>
+<span class="n">ua</span>
+<span class="n">va</span>
+<span class="n">wa</span>
 
 <span class="n">Aliases</span>
 <span class="o">.......</span>
@@ -620,7 +1928,7 @@ Pyaerocom GridIO
    SHIFT_LONS: True
    CHECK_TIME_FILENAME: True
    CORRECT_TIME_FILENAME: True
-   CHECK_DIM_COORDS: True
+   CHECK_DIM_COORDS: False
    EQUALISE_METADATA: True
    USE_RENAMED_DIR: True
    INCLUDE_SUBDIRS: False
@@ -683,6 +1991,7 @@ abs550aer
 od440aer
 abs440aer
 ec550aer
+ec532aer
 scatc550aer
 scatc550lt1aer
 bscatc550aer
@@ -694,6 +2003,439 @@ ssa1020aer
 ang4487aer
 angabs4487aer
 zdust
+time
+time_bnds
+lon
+lon_bnds
+lat
+lat_bnds
+growvegbnds
+areacella
+landf
+orog
+landcBF
+landcNF
+landcCP
+landcSa
+landcGS
+landcST
+landcBS
+landcW
+landcO
+landcCPC3
+landcCPC4
+landcSaC3
+landcSaC4
+landcGSC3
+landcGSC4
+lai
+mrso
+snd
+uas
+vas
+was
+uapbl
+vapbl
+ts
+ps
+tasmin
+tasmax
+tas
+prc
+pr
+airmass
+zmlay
+eminox
+emino
+emino2
+eminosoil
+emico
+emivoc
+emivoct
+emic2h6
+emic3h8
+emic2h2
+emic2h4
+emic3h6
+emialkanes
+emialkenes
+emihcho
+emich3cho
+emiacetone
+emimethanol
+emitolu
+emiaro
+emiisop
+emimntp
+emisestp
+emibvoc
+eminh3
+emiso2
+emidms
+emiso4
+emioa
+emioc
+emisoa
+emibc
+emiss
+emidust
+emipm10
+emipm2p5
+emipm10ss
+emipm10dust
+emipm2p5ss
+emipm2p5dust
+emipm1ss
+emipm1dust
+emipcb153
+emiahch
+reemipcb153
+reemiahch
+emihg0
+emihg2
+emihgp
+emiahg0
+emiahg2
+emiahgp
+reemihg0
+dryhno3
+dryno3
+dryno2
+dryn2o5
+drypan
+dryorgn
+dryhono
+dryhno4
+drynoy
+drynh3
+drynh4
+dryso2
+dryso4
+drymsa
+drydms
+dryss
+drydust
+drypm1no3
+drypm2p5no3
+drypm10no3
+dryo3
+stoo3
+dryhcho
+drych3cho
+dryalde
+dryhcooh
+drych3cooh
+dryh2o2
+dryroor
+excnh3
+drybc
+drypm10
+drypm10ss
+drypm10dust
+drypm2p5
+drypm2p5ss
+drypm2p5dust
+dryoc
+dryoa
+drysoa
+drypcb153
+dryahch
+dryhg0
+dryhg2
+dryhgp
+wethno3
+wetn2o5
+wetorgn
+wetno3
+wethono
+wethno4
+wetnoy
+wetnh3
+wetnh4
+wetso2
+wetso4
+wetmsa
+wetdms
+wetbc
+wetss
+wetdust
+wetpm1no3
+wetpm2p5no3
+wetpm10no3
+wethcho
+wetch3cho
+wetalde
+wethcooh
+wetch3cooh
+weth2o2
+wetroor
+wetpm10
+wetpm10ss
+wetpm10dust
+wetpm2p5
+wetpm2p5ss
+wetpm2p5dust
+wetoa
+wetoc
+wetsoa
+wetpcb153
+wetahch
+wethg
+wethg0
+wethg2
+wethgp
+vmro3
+vmrno
+vmrno2
+vmro32m
+rc
+ra
+vmrco
+vmrhno3
+vmrn2o5
+vmrpan
+vmrhono
+vmrhno4
+vmrorgnit
+vmrnoy
+vmrvoc
+vmrc2h6
+vmrc3h8
+vmrc2h4
+vmrc3h6
+vmralkanes
+vmralkenes
+vmrhcho
+vmrch3cho
+vmracetone
+vmrglyoxal
+vmrmethanol
+vmrtolu
+vmraro
+vmrisop
+vmrc10h16
+vmrtp
+vmrnh3
+vmrso2
+vmrdms
+mmrpm10
+mmrpm2p5
+mmrpm1
+mmrno3
+mmrso4
+mmrbc
+mmroc
+mmroa
+mmrss
+mmrdust
+mmrmsa
+mmrnh4
+ncpm2p5
+mmrpm1no3
+mmrpm1ss
+mmrpm1dust
+mmrpm2p5no3
+mmrpm2p5so4
+mmrpm2p5bc
+mmrpm2p5oc
+mmrpm2p5oa
+mmrpm2p5ss
+mmrpm2p5dust
+mmrpm2p5nh4
+ncpm10
+mmrpm10no3
+mmrpm10so4
+mmrpm10bc
+mmrpm10oc
+mmrpm10oa
+mmrpm10ss
+mmrpm10dust
+mmrpm10nh4
+vmrhg0
+vmrhg2
+vmrpcb153
+vmrahch
+mmrhgp
+jno2
+jo3o1d
+rsdt
+rsut
+rsutcs
+rsds
+rsus
+rsdsdir
+rsdsdif
+rsdscs
+rsdscsdir
+rsdscsdif
+rlut
+rlutcs
+rlds
+rlus
+rsut0
+rsuscs0
+rsds0
+rsus0
+rsdsdir0
+rsdsdif0
+rsdscs0
+rsdscsdir0
+rsdscsdif0
+rlut0
+rlutcs0
+rlds0
+rlus0
+rsutpm1no3
+rsutpm10no3
+rsutcspm1no3
+rsutcsnpm10no3
+longitude
+latitude
+abs388aer
+abs388bc
+abs388dust
+abs388oa
+abs550bc
+abs550dust
+abs550pm1
+abs550pm10
+abs550pm2p5
+abs870aer
+od388aer
+od388bc
+od388dust
+od388oa
+od500aer
+od500pm10
+od500pm2p5
+od550aerh2o
+od550bc
+od550dust
+od550nh4
+od550no3
+od550oa
+od550pm1
+od550pm1no3
+od550pm10
+od550pm10no3
+od550pm2p5
+od550pm2p5no3
+od550so4
+od550ss
+od865aer
+od870aer
+cldf
+abs550aerh2o
+abs550nh4
+abs550no3
+abs550oa
+abs550so4
+abs550ss
+loadno3
+loadso4
+loadbc
+loadoc
+loadoa
+loadsoa
+loadss
+loaddust
+loadmsa
+loadnh4
+loadno
+loadno2
+loadn2o5
+loadpan
+loadhono
+loadhno3
+loadhno4
+loadorgnit
+loadnoy
+loadnh3
+loaddms
+loadso2
+loadpm1no3
+loadpm2p5no3
+loadpm10no3
+loadpm1ss
+loadpm2p5ss
+loadpm10ss
+loadpm1dust
+loadpm2p5dust
+loadpm10dust
+loadpm1
+loadpm2p5
+loadpm10
+lev
+lev_bnds
+ptop
+a
+b
+a_bnds
+b_bnds
+p0
+ap
+ap_bnds
+ta
+rho
+dh
+hus
+mcu
+hur
+emilnox
+eminoaircraft
+vmroh
+vmrh2o2
+vmrho2
+vmrcl
+vmrbr
+vmrbro
+prodo3
+losso3
+lossch4
+lossco
+reacvoc
+chepsoa
+chepmsa
+chegpso4
+cheaqpso4
+chegphno3
+cheglhno3
+cheaphno3
+chealhno3
+chepno3
+chedustpno3
+chesspno3
+cheppm10no3
+cheppm2p5no3
+cheppm1no3
+chegpnh3
+chealnh3
+chepnh4
+mmrsoa
+mmraerh2o
+mmrpm10h2o
+mmrpm2p5h2o
+rh
+vmrcodirect50d
+vmrcodirect25d
+station
+network_stationid
+networkid
+stationid
+station_elevation
+td
+hurs
+huss
+mmrpm10poa
+mmrpm2p5poa
+vmr5mo3
+vmr10mo3
+tcwv
+tcno2
+pres
+ua
+va
+wa
 
 Aliases
 .......
@@ -728,7 +2470,7 @@ have to reload the config as it was at the beginning:</p>
    <span class="n">SHIFT_LONS</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CHECK_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">CORRECT_TIME_FILENAME</span><span class="p">:</span> <span class="kc">True</span>
-   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">True</span>
+   <span class="n">CHECK_DIM_COORDS</span><span class="p">:</span> <span class="kc">False</span>
    <span class="n">EQUALISE_METADATA</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">USE_RENAMED_DIR</span><span class="p">:</span> <span class="kc">True</span>
    <span class="n">INCLUDE_SUBDIRS</span><span class="p">:</span> <span class="kc">False</span>
@@ -791,6 +2533,7 @@ have to reload the config as it was at the beginning:</p>
 <span class="n">od440aer</span>
 <span class="n">abs440aer</span>
 <span class="n">ec550aer</span>
+<span class="n">ec532aer</span>
 <span class="n">scatc550aer</span>
 <span class="n">scatc550lt1aer</span>
 <span class="n">bscatc550aer</span>
@@ -802,6 +2545,439 @@ have to reload the config as it was at the beginning:</p>
 <span class="n">ang4487aer</span>
 <span class="n">angabs4487aer</span>
 <span class="n">zdust</span>
+<span class="n">time</span>
+<span class="n">time_bnds</span>
+<span class="n">lon</span>
+<span class="n">lon_bnds</span>
+<span class="n">lat</span>
+<span class="n">lat_bnds</span>
+<span class="n">growvegbnds</span>
+<span class="n">areacella</span>
+<span class="n">landf</span>
+<span class="n">orog</span>
+<span class="n">landcBF</span>
+<span class="n">landcNF</span>
+<span class="n">landcCP</span>
+<span class="n">landcSa</span>
+<span class="n">landcGS</span>
+<span class="n">landcST</span>
+<span class="n">landcBS</span>
+<span class="n">landcW</span>
+<span class="n">landcO</span>
+<span class="n">landcCPC3</span>
+<span class="n">landcCPC4</span>
+<span class="n">landcSaC3</span>
+<span class="n">landcSaC4</span>
+<span class="n">landcGSC3</span>
+<span class="n">landcGSC4</span>
+<span class="n">lai</span>
+<span class="n">mrso</span>
+<span class="n">snd</span>
+<span class="n">uas</span>
+<span class="n">vas</span>
+<span class="n">was</span>
+<span class="n">uapbl</span>
+<span class="n">vapbl</span>
+<span class="n">ts</span>
+<span class="n">ps</span>
+<span class="n">tasmin</span>
+<span class="n">tasmax</span>
+<span class="n">tas</span>
+<span class="n">prc</span>
+<span class="n">pr</span>
+<span class="n">airmass</span>
+<span class="n">zmlay</span>
+<span class="n">eminox</span>
+<span class="n">emino</span>
+<span class="n">emino2</span>
+<span class="n">eminosoil</span>
+<span class="n">emico</span>
+<span class="n">emivoc</span>
+<span class="n">emivoct</span>
+<span class="n">emic2h6</span>
+<span class="n">emic3h8</span>
+<span class="n">emic2h2</span>
+<span class="n">emic2h4</span>
+<span class="n">emic3h6</span>
+<span class="n">emialkanes</span>
+<span class="n">emialkenes</span>
+<span class="n">emihcho</span>
+<span class="n">emich3cho</span>
+<span class="n">emiacetone</span>
+<span class="n">emimethanol</span>
+<span class="n">emitolu</span>
+<span class="n">emiaro</span>
+<span class="n">emiisop</span>
+<span class="n">emimntp</span>
+<span class="n">emisestp</span>
+<span class="n">emibvoc</span>
+<span class="n">eminh3</span>
+<span class="n">emiso2</span>
+<span class="n">emidms</span>
+<span class="n">emiso4</span>
+<span class="n">emioa</span>
+<span class="n">emioc</span>
+<span class="n">emisoa</span>
+<span class="n">emibc</span>
+<span class="n">emiss</span>
+<span class="n">emidust</span>
+<span class="n">emipm10</span>
+<span class="n">emipm2p5</span>
+<span class="n">emipm10ss</span>
+<span class="n">emipm10dust</span>
+<span class="n">emipm2p5ss</span>
+<span class="n">emipm2p5dust</span>
+<span class="n">emipm1ss</span>
+<span class="n">emipm1dust</span>
+<span class="n">emipcb153</span>
+<span class="n">emiahch</span>
+<span class="n">reemipcb153</span>
+<span class="n">reemiahch</span>
+<span class="n">emihg0</span>
+<span class="n">emihg2</span>
+<span class="n">emihgp</span>
+<span class="n">emiahg0</span>
+<span class="n">emiahg2</span>
+<span class="n">emiahgp</span>
+<span class="n">reemihg0</span>
+<span class="n">dryhno3</span>
+<span class="n">dryno3</span>
+<span class="n">dryno2</span>
+<span class="n">dryn2o5</span>
+<span class="n">drypan</span>
+<span class="n">dryorgn</span>
+<span class="n">dryhono</span>
+<span class="n">dryhno4</span>
+<span class="n">drynoy</span>
+<span class="n">drynh3</span>
+<span class="n">drynh4</span>
+<span class="n">dryso2</span>
+<span class="n">dryso4</span>
+<span class="n">drymsa</span>
+<span class="n">drydms</span>
+<span class="n">dryss</span>
+<span class="n">drydust</span>
+<span class="n">drypm1no3</span>
+<span class="n">drypm2p5no3</span>
+<span class="n">drypm10no3</span>
+<span class="n">dryo3</span>
+<span class="n">stoo3</span>
+<span class="n">dryhcho</span>
+<span class="n">drych3cho</span>
+<span class="n">dryalde</span>
+<span class="n">dryhcooh</span>
+<span class="n">drych3cooh</span>
+<span class="n">dryh2o2</span>
+<span class="n">dryroor</span>
+<span class="n">excnh3</span>
+<span class="n">drybc</span>
+<span class="n">drypm10</span>
+<span class="n">drypm10ss</span>
+<span class="n">drypm10dust</span>
+<span class="n">drypm2p5</span>
+<span class="n">drypm2p5ss</span>
+<span class="n">drypm2p5dust</span>
+<span class="n">dryoc</span>
+<span class="n">dryoa</span>
+<span class="n">drysoa</span>
+<span class="n">drypcb153</span>
+<span class="n">dryahch</span>
+<span class="n">dryhg0</span>
+<span class="n">dryhg2</span>
+<span class="n">dryhgp</span>
+<span class="n">wethno3</span>
+<span class="n">wetn2o5</span>
+<span class="n">wetorgn</span>
+<span class="n">wetno3</span>
+<span class="n">wethono</span>
+<span class="n">wethno4</span>
+<span class="n">wetnoy</span>
+<span class="n">wetnh3</span>
+<span class="n">wetnh4</span>
+<span class="n">wetso2</span>
+<span class="n">wetso4</span>
+<span class="n">wetmsa</span>
+<span class="n">wetdms</span>
+<span class="n">wetbc</span>
+<span class="n">wetss</span>
+<span class="n">wetdust</span>
+<span class="n">wetpm1no3</span>
+<span class="n">wetpm2p5no3</span>
+<span class="n">wetpm10no3</span>
+<span class="n">wethcho</span>
+<span class="n">wetch3cho</span>
+<span class="n">wetalde</span>
+<span class="n">wethcooh</span>
+<span class="n">wetch3cooh</span>
+<span class="n">weth2o2</span>
+<span class="n">wetroor</span>
+<span class="n">wetpm10</span>
+<span class="n">wetpm10ss</span>
+<span class="n">wetpm10dust</span>
+<span class="n">wetpm2p5</span>
+<span class="n">wetpm2p5ss</span>
+<span class="n">wetpm2p5dust</span>
+<span class="n">wetoa</span>
+<span class="n">wetoc</span>
+<span class="n">wetsoa</span>
+<span class="n">wetpcb153</span>
+<span class="n">wetahch</span>
+<span class="n">wethg</span>
+<span class="n">wethg0</span>
+<span class="n">wethg2</span>
+<span class="n">wethgp</span>
+<span class="n">vmro3</span>
+<span class="n">vmrno</span>
+<span class="n">vmrno2</span>
+<span class="n">vmro32m</span>
+<span class="n">rc</span>
+<span class="n">ra</span>
+<span class="n">vmrco</span>
+<span class="n">vmrhno3</span>
+<span class="n">vmrn2o5</span>
+<span class="n">vmrpan</span>
+<span class="n">vmrhono</span>
+<span class="n">vmrhno4</span>
+<span class="n">vmrorgnit</span>
+<span class="n">vmrnoy</span>
+<span class="n">vmrvoc</span>
+<span class="n">vmrc2h6</span>
+<span class="n">vmrc3h8</span>
+<span class="n">vmrc2h4</span>
+<span class="n">vmrc3h6</span>
+<span class="n">vmralkanes</span>
+<span class="n">vmralkenes</span>
+<span class="n">vmrhcho</span>
+<span class="n">vmrch3cho</span>
+<span class="n">vmracetone</span>
+<span class="n">vmrglyoxal</span>
+<span class="n">vmrmethanol</span>
+<span class="n">vmrtolu</span>
+<span class="n">vmraro</span>
+<span class="n">vmrisop</span>
+<span class="n">vmrc10h16</span>
+<span class="n">vmrtp</span>
+<span class="n">vmrnh3</span>
+<span class="n">vmrso2</span>
+<span class="n">vmrdms</span>
+<span class="n">mmrpm10</span>
+<span class="n">mmrpm2p5</span>
+<span class="n">mmrpm1</span>
+<span class="n">mmrno3</span>
+<span class="n">mmrso4</span>
+<span class="n">mmrbc</span>
+<span class="n">mmroc</span>
+<span class="n">mmroa</span>
+<span class="n">mmrss</span>
+<span class="n">mmrdust</span>
+<span class="n">mmrmsa</span>
+<span class="n">mmrnh4</span>
+<span class="n">ncpm2p5</span>
+<span class="n">mmrpm1no3</span>
+<span class="n">mmrpm1ss</span>
+<span class="n">mmrpm1dust</span>
+<span class="n">mmrpm2p5no3</span>
+<span class="n">mmrpm2p5so4</span>
+<span class="n">mmrpm2p5bc</span>
+<span class="n">mmrpm2p5oc</span>
+<span class="n">mmrpm2p5oa</span>
+<span class="n">mmrpm2p5ss</span>
+<span class="n">mmrpm2p5dust</span>
+<span class="n">mmrpm2p5nh4</span>
+<span class="n">ncpm10</span>
+<span class="n">mmrpm10no3</span>
+<span class="n">mmrpm10so4</span>
+<span class="n">mmrpm10bc</span>
+<span class="n">mmrpm10oc</span>
+<span class="n">mmrpm10oa</span>
+<span class="n">mmrpm10ss</span>
+<span class="n">mmrpm10dust</span>
+<span class="n">mmrpm10nh4</span>
+<span class="n">vmrhg0</span>
+<span class="n">vmrhg2</span>
+<span class="n">vmrpcb153</span>
+<span class="n">vmrahch</span>
+<span class="n">mmrhgp</span>
+<span class="n">jno2</span>
+<span class="n">jo3o1d</span>
+<span class="n">rsdt</span>
+<span class="n">rsut</span>
+<span class="n">rsutcs</span>
+<span class="n">rsds</span>
+<span class="n">rsus</span>
+<span class="n">rsdsdir</span>
+<span class="n">rsdsdif</span>
+<span class="n">rsdscs</span>
+<span class="n">rsdscsdir</span>
+<span class="n">rsdscsdif</span>
+<span class="n">rlut</span>
+<span class="n">rlutcs</span>
+<span class="n">rlds</span>
+<span class="n">rlus</span>
+<span class="n">rsut0</span>
+<span class="n">rsuscs0</span>
+<span class="n">rsds0</span>
+<span class="n">rsus0</span>
+<span class="n">rsdsdir0</span>
+<span class="n">rsdsdif0</span>
+<span class="n">rsdscs0</span>
+<span class="n">rsdscsdir0</span>
+<span class="n">rsdscsdif0</span>
+<span class="n">rlut0</span>
+<span class="n">rlutcs0</span>
+<span class="n">rlds0</span>
+<span class="n">rlus0</span>
+<span class="n">rsutpm1no3</span>
+<span class="n">rsutpm10no3</span>
+<span class="n">rsutcspm1no3</span>
+<span class="n">rsutcsnpm10no3</span>
+<span class="n">longitude</span>
+<span class="n">latitude</span>
+<span class="n">abs388aer</span>
+<span class="n">abs388bc</span>
+<span class="n">abs388dust</span>
+<span class="n">abs388oa</span>
+<span class="n">abs550bc</span>
+<span class="n">abs550dust</span>
+<span class="n">abs550pm1</span>
+<span class="n">abs550pm10</span>
+<span class="n">abs550pm2p5</span>
+<span class="n">abs870aer</span>
+<span class="n">od388aer</span>
+<span class="n">od388bc</span>
+<span class="n">od388dust</span>
+<span class="n">od388oa</span>
+<span class="n">od500aer</span>
+<span class="n">od500pm10</span>
+<span class="n">od500pm2p5</span>
+<span class="n">od550aerh2o</span>
+<span class="n">od550bc</span>
+<span class="n">od550dust</span>
+<span class="n">od550nh4</span>
+<span class="n">od550no3</span>
+<span class="n">od550oa</span>
+<span class="n">od550pm1</span>
+<span class="n">od550pm1no3</span>
+<span class="n">od550pm10</span>
+<span class="n">od550pm10no3</span>
+<span class="n">od550pm2p5</span>
+<span class="n">od550pm2p5no3</span>
+<span class="n">od550so4</span>
+<span class="n">od550ss</span>
+<span class="n">od865aer</span>
+<span class="n">od870aer</span>
+<span class="n">cldf</span>
+<span class="n">abs550aerh2o</span>
+<span class="n">abs550nh4</span>
+<span class="n">abs550no3</span>
+<span class="n">abs550oa</span>
+<span class="n">abs550so4</span>
+<span class="n">abs550ss</span>
+<span class="n">loadno3</span>
+<span class="n">loadso4</span>
+<span class="n">loadbc</span>
+<span class="n">loadoc</span>
+<span class="n">loadoa</span>
+<span class="n">loadsoa</span>
+<span class="n">loadss</span>
+<span class="n">loaddust</span>
+<span class="n">loadmsa</span>
+<span class="n">loadnh4</span>
+<span class="n">loadno</span>
+<span class="n">loadno2</span>
+<span class="n">loadn2o5</span>
+<span class="n">loadpan</span>
+<span class="n">loadhono</span>
+<span class="n">loadhno3</span>
+<span class="n">loadhno4</span>
+<span class="n">loadorgnit</span>
+<span class="n">loadnoy</span>
+<span class="n">loadnh3</span>
+<span class="n">loaddms</span>
+<span class="n">loadso2</span>
+<span class="n">loadpm1no3</span>
+<span class="n">loadpm2p5no3</span>
+<span class="n">loadpm10no3</span>
+<span class="n">loadpm1ss</span>
+<span class="n">loadpm2p5ss</span>
+<span class="n">loadpm10ss</span>
+<span class="n">loadpm1dust</span>
+<span class="n">loadpm2p5dust</span>
+<span class="n">loadpm10dust</span>
+<span class="n">loadpm1</span>
+<span class="n">loadpm2p5</span>
+<span class="n">loadpm10</span>
+<span class="n">lev</span>
+<span class="n">lev_bnds</span>
+<span class="n">ptop</span>
+<span class="n">a</span>
+<span class="n">b</span>
+<span class="n">a_bnds</span>
+<span class="n">b_bnds</span>
+<span class="n">p0</span>
+<span class="n">ap</span>
+<span class="n">ap_bnds</span>
+<span class="n">ta</span>
+<span class="n">rho</span>
+<span class="n">dh</span>
+<span class="n">hus</span>
+<span class="n">mcu</span>
+<span class="n">hur</span>
+<span class="n">emilnox</span>
+<span class="n">eminoaircraft</span>
+<span class="n">vmroh</span>
+<span class="n">vmrh2o2</span>
+<span class="n">vmrho2</span>
+<span class="n">vmrcl</span>
+<span class="n">vmrbr</span>
+<span class="n">vmrbro</span>
+<span class="n">prodo3</span>
+<span class="n">losso3</span>
+<span class="n">lossch4</span>
+<span class="n">lossco</span>
+<span class="n">reacvoc</span>
+<span class="n">chepsoa</span>
+<span class="n">chepmsa</span>
+<span class="n">chegpso4</span>
+<span class="n">cheaqpso4</span>
+<span class="n">chegphno3</span>
+<span class="n">cheglhno3</span>
+<span class="n">cheaphno3</span>
+<span class="n">chealhno3</span>
+<span class="n">chepno3</span>
+<span class="n">chedustpno3</span>
+<span class="n">chesspno3</span>
+<span class="n">cheppm10no3</span>
+<span class="n">cheppm2p5no3</span>
+<span class="n">cheppm1no3</span>
+<span class="n">chegpnh3</span>
+<span class="n">chealnh3</span>
+<span class="n">chepnh4</span>
+<span class="n">mmrsoa</span>
+<span class="n">mmraerh2o</span>
+<span class="n">mmrpm10h2o</span>
+<span class="n">mmrpm2p5h2o</span>
+<span class="n">rh</span>
+<span class="n">vmrcodirect50d</span>
+<span class="n">vmrcodirect25d</span>
+<span class="n">station</span>
+<span class="n">network_stationid</span>
+<span class="n">networkid</span>
+<span class="n">stationid</span>
+<span class="n">station_elevation</span>
+<span class="n">td</span>
+<span class="n">hurs</span>
+<span class="n">huss</span>
+<span class="n">mmrpm10poa</span>
+<span class="n">mmrpm2p5poa</span>
+<span class="n">vmr5mo3</span>
+<span class="n">vmr10mo3</span>
+<span class="n">tcwv</span>
+<span class="n">tcno2</span>
+<span class="n">pres</span>
+<span class="n">ua</span>
+<span class="n">va</span>
+<span class="n">wa</span>
 
 <span class="n">Aliases</span>
 <span class="o">.......</span>
@@ -831,43 +3007,43 @@ find a unique ID and thus raise an Exception):</p>
     <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">215</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">837</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Searching</span> <span class="n">database</span> <span class="k">for</span> <span class="n">CAM</span><span class="o">*</span><span class="n">CTRL</span><span class="o">*</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">310</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">38</span><span class="p">,</span><span class="mi">912</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">471</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">026</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">476</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">028</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">480</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">031</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">485</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">033</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">489</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">036</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">494</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">039</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">498</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">042</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">502</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">045</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">507</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">047</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">511</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">050</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">531</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">064</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">536</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">066</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">540</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">068</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">544</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">071</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">548</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">073</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">552</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">076</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">556</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">078</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
 </pre></div>
 </div>
@@ -885,113 +3061,113 @@ data import since we know the model and run ID from the previous cell
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">650</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">130</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Searching</span> <span class="n">database</span> <span class="k">for</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">865</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">296</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Checking</span> <span class="k">if</span> <span class="n">renamed</span> <span class="n">directory</span> <span class="n">exists</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">867</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">297</span><span class="p">:</span><span class="n">INFO</span><span class="p">:</span>
 <span class="n">Found</span> <span class="n">match</span> <span class="k">for</span> <span class="n">ID</span> <span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">880</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">306</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dust_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">882</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">306</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od440aer_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">883</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">307</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dryaer_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">885</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">307</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od870aer_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">887</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">308</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aerh2o_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">889</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">308</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dust_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">891</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">308</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aerh2o_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">893</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">309</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aerh2o_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">894</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">309</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od870aer_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">895</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">310</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_abs550aer_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">897</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">310</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dryaer_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">898</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">310</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550lt1aer_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">900</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">311</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od440aer_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">902</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">311</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550lt1aer_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">903</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">312</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550lt1aer_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">904</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">312</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">906</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">312</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550lt1aer_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">908</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">313</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dryaer_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">909</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">313</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od440aer_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">911</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">313</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dryaer_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">912</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">314</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_abs550aer_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">914</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">314</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od870aer_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">915</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">315</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od870aer_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">917</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">315</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od440aer_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">918</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">315</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od870aer_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">919</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">316</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">920</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">316</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dust_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">921</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">317</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_abs550aer_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">922</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">317</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_abs550aer_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">923</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">318</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_abs550aer_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">924</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">318</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550lt1aer_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">924</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">318</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dryaer_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">925</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">319</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dust_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">926</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">319</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aerh2o_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">927</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">319</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">927</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">320</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer3d_ModelLevel_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">928</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">320</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od870aer_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">928</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">321</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aerh2o_Column_2006_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">929</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">321</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer_Column_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">930</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">321</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">930</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">322</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aerh2o_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">931</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">322</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dryaer_Column_2008_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">931</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">329</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od440aer_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">932</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">330</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550lt1aer_Column_2006_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">932</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">330</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dust_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">933</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">331</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_abs550aer_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">933</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">331</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550aer_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">933</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">332</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_deltaz3d_ModelLevel_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">934</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">333</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od440aer_Column_2008_3hourly</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">934</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">334</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_od550dust_Column_2010_daily</span><span class="o">.</span><span class="n">nc</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">04</span> <span class="mi">14</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">935</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">07</span> <span class="mi">17</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">39</span><span class="p">,</span><span class="mi">334</span><span class="p">:</span><span class="n">DEBUG</span><span class="p">:</span>
 <span class="n">Read</span> <span class="n">file</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">AEROCOM</span><span class="o">-</span><span class="n">PHASE</span><span class="o">-</span><span class="n">III</span><span class="o">/</span><span class="n">CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom3_CAM5</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">Oslo_CTRL2016_humidity3d_ModelLevel_2010_3hourly</span><span class="o">.</span><span class="n">nc</span>
 </pre></div>
 </div>
@@ -1018,23 +3194,23 @@ data object has to be accessed using the first index of the tuple.</p>
 </pre></div>
 </div>
 <pre class="literal-block">
-2018-09-04 14:15:27,981:DEBUG:
+2018-09-07 17:42:39,374:DEBUG:
 FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
-2018-09-04 14:15:34,844:WARNING:
-File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
-1: gauss weights / (1)                 (latitude: 192)
-2018-09-04 14:15:34,850:WARNING:
+2018-09-07 17:42:41,053:WARNING:
+File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: gauss weights / (1)                 (latitude: 192)
+1: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
+2018-09-07 17:42:41,056:WARNING:
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']&quot;,)
-2018-09-04 14:15:34,850:WARNING:
+2018-09-07 17:42:41,057:WARNING:
 Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc.
-2018-09-04 14:15:34,851:WARNING:
+2018-09-07 17:42:41,057:WARNING:
 Attempting to correct time coordinate using information in file name
-2018-09-04 14:15:35,425:INFO:
+2018-09-07 17:42:41,646:INFO:
 Rolling longitudes to -180 -&gt; 180 definition
-2018-09-04 14:15:35,431:INFO:
+2018-09-07 17:42:41,651:INFO:
 Applying temporal cropping of result cube
-2018-09-04 14:15:35,432:INFO:
+2018-09-07 17:42:41,651:INFO:
 Cropping along time axis based on Timestamps
 </pre>
 </div>
@@ -1249,7 +3425,7 @@ that we extracted.</p>
 <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weighted_mean</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f3fb913b320</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f24f0b4ed68</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_31_1.png" src="_images/tut00_get_started_31_1.png" />
