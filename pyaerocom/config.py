@@ -292,8 +292,10 @@ class Config(object):
         self.PLOT_DIR = os.path.join(self.OUT_BASEDIR, "plots")
         if not self.check_dir(self.PLOT_DIR):
             os.mkdir(self.PLOT_DIR)
-        
+        from time import time
+        t0=time()
         self.VAR_PARAM = AllVariables()
+        print('Elapsed time init all variables: {} s'.format(time()-t0))
         self.READY
     
         

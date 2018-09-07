@@ -8,7 +8,8 @@ import numpy as np
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   CollocationError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
-                               TS_TYPE_TO_PANDAS_FREQ)
+                               TS_TYPE_TO_PANDAS_FREQ,
+                               to_datestring_YYYYMMDD)
 from pyaerocom.filter import Filter
 from pyaerocom.collocateddata import CollocatedData
 
@@ -25,6 +26,8 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
     grid_start = to_pandas_timestamp(gridded_data.start_time)
     grid_stop = to_pandas_timestamp(gridded_data.stop_time)
     
+    grid_ts_type = gridded_data.ts_type
+    
     if start is None:
         start = grid_start
     else:
@@ -39,6 +42,9 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
         raise TimeMatchError('Input time range {}-{} does not '
                              'overlap with data range: {}-{}'
                              .format(start, stop, grid_start, grid_stop))
+    gridded_data = gridded_data.crop(time_range=(start, stop))
+    gridded_data_ref = gridded_data_ref.crop(time_range=(start, stop))
+    
     # get both objects in same time resolution
     gridded_data = gridded_data.downscale_time(ts_type)
     gridded_data_ref = gridded_data_ref.downscale_time(ts_type)
@@ -59,13 +65,15 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
         raise CollocationError('Shape mismatch between two collocated data '
                                'arrays, please debug')
     
-    meta = {'data_source_idx'   :   [gridded_data_ref.name,
+    meta = {'data_source'       :   [gridded_data_ref.name,
                                     gridded_data.name],
             'var_name'          :   gridded_data.var_name,
             'ts_type'           :   ts_type,
-            'start'             :   start,
-            'stop'              :   stop,
-            'filter_name'       :   filter_name}
+            'filter_name'       :   filter_name,
+            'ts_type_src'       :   grid_ts_type,
+            'start_str'         :   to_datestring_YYYYMMDD(start),
+            'stop_str'          :   to_datestring_YYYYMMDD(stop),
+            'data_level'        :   'collocated'}
 
     
     meta.update(regfilter.to_dict())
@@ -75,9 +83,10 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
 
     arr = np.asarray((data_ref,
                       gridded_data.grid.data))
+    time = gridded_data.time_stamps().astype('datetime64[ns]')
     # create coordinates of DataArray
-    coords = {'data_source' : meta['data_source_idx'],
-              'time'        : gridded_data.time_stamps(),
+    coords = {'data_source' : meta['data_source'],
+              'time'        : time,
               'longitude'   : gridded_data.longitude.points,
               'latitude'    : gridded_data.latitude.points
               }
@@ -157,6 +166,8 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start_time)
     grid_stop = to_pandas_timestamp(gridded_data.stop_time)
+    
+    grid_ts_type = gridded_data.ts_type
     
     if start is None:
         start = grid_start
@@ -254,13 +265,15 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         raise CollocationError('No observations could be found that match '
                                'the collocation constraints')
         
-    meta = {'data_source_idx'  :   [ungridded_data.contains_datasets[0],
+    meta = {'data_source'  :   [ungridded_data.contains_datasets[0],
                                     gridded_data.name],
             'var_name'      :   var,
             'ts_type'       :   ts_type,
-            'start'         :   start,
-            'stop'          :   stop,
-            'filter_name'   :   filter_name}
+            'filter_name'   :   filter_name,
+            'ts_type_src'   :   grid_ts_type,
+            'start_str'     :   to_datestring_YYYYMMDD(start),
+            'stop_str'      :   to_datestring_YYYYMMDD(stop),
+            'data_level'    :   'collocated'}
 
     
     meta.update(regfilter.to_dict())
@@ -274,7 +287,7 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     #.reshape((2, time_dim, stat_dim))
     
     # create coordinates of DataArray
-    coords = {'data_source' : meta['data_source_idx'],
+    coords = {'data_source' : meta['data_source'],
               'time'        : TIME_IDX,
               'station_name': station_names,
               'latitude'    : ('station_name', lats),

@@ -81,7 +81,10 @@ def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
     ax.set_ylim(ylim)
     ax.set_xlabel('{}'.format(x_name), fontsize=14)
     ax.set_ylabel('{}'.format(y_name), fontsize=14)
-    ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type))
+    if ts_type == 'yearly':
+        ax.set_title(start.year)
+    else:
+        ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
     

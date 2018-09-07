@@ -46,9 +46,8 @@ import iris
 from pyaerocom import const as CONST
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (IllegalArgumentError, 
-                                  YearNotAvailableError,
-                                  VarNotAvailableError,
-                                  NetcdfError)
+                                  DataCoverageError,
+                                  VarNotAvailableError)
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cube_custom, concatenate_iris_cubes
@@ -127,7 +126,8 @@ class ReadGridded(object):
     """
     #: Directory containing model data for this species
     _data_dir = ""
-    
+    _start_time = None
+    _stop_time = None
     #VALID_DIM_STANDARD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
     def __init__(self, name="", start_time=None, stop_time=None,
                  file_convention="aerocom3", init=True):
@@ -149,10 +149,10 @@ class ReadGridded(object):
         # start_time and stop_time are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
         # pandas.Timestamp
-        if start_time:
-            self.start_time = start_time
-        if stop_time:
-            self.stop_time = stop_time
+        if start_time is not None:
+            self._start_time = to_pandas_timestamp(start_time)
+        if stop_time is not None:
+            self._stop_time = to_pandas_timestamp(stop_time)
         
         #: Dictionary containing loaded results for different variables
         self.data = od()
@@ -268,11 +268,13 @@ class ReadGridded(object):
             
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
     
-    @stop_time.setter
-    def stop_time(self, value):
-        value = to_pandas_timestamp(value)
-        self._stop_time = value
-    
+# =============================================================================
+#     @stop_time.setter
+#     def stop_time(self, value):
+#         value = to_pandas_timestamp(value)
+#         self._stop_time = value
+#     
+# =============================================================================
     def get_years_to_load(self, start_time=None, stop_time=None):
         """Array containing year numbers that are supposed to be loaded
         
@@ -460,7 +462,7 @@ class ReadGridded(object):
             files = self.find_var_files_in_timeperiod(var_name, ts_type_init,
                                                       start_time, stop_time)
             return (files, ts_type_init)
-        except IOError as e:
+        except DataCoverageError as e:
             self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
                                 'Trying other available ts_types {}'
                                 .format(ts_type_init, repr(e), self.ts_types))
@@ -473,10 +475,12 @@ class ReadGridded(object):
                                                                   stop_time)
                         return (files, ts_type)
                     
-                    except IOError as e:
+                    except DataCoverageError as e:
                         self.logger.warning(repr(e))
-        raise IOError("No files could be found for dataset {}, variable {}, "
-                      "ts_types {}".format(self.name, var_name, self.ts_types))
+        raise DataCoverageError("No files could be found for dataset {}, "
+                                "variable {}, ts_types {}".format(self.name, 
+                                                                  var_name, 
+                                                                  self.ts_types))
                         
     def find_var_files_in_timeperiod(self, var_name, ts_type,
                                      start_time=None, stop_time=None):
@@ -528,9 +532,10 @@ class ReadGridded(object):
                                     .format(year, CONST.MIN_YEAR, CONST.MAX_YEAR))
            
         if len(match_files) == 0:
-            raise IOError("No files could be found for dataset {}, variable {}, "
-                          "ts_type {} and years {}".format(self.name, 
-                           var_name, ts_type, years_to_load))
+            raise DataCoverageError("No files could be found for dataset {}, "
+                                    "variable {}, ts_type {} and years {}"
+                                    .format(self.name, 
+                                            var_name, ts_type, years_to_load))
                 
         self.match_files = match_files
         return match_files
@@ -661,29 +666,38 @@ class ReadGridded(object):
         ------
         AttributeError
             if none of the ts_types identified from file names is valid
-        ValueError
+        VarNotAvailableError
             if specified ts_type is not supported
         """
         ts_type = self._check_ts_type(ts_type)
         
         if var_name not in self.vars:
-            raise ValueError("Error: variable {} not found in files contained "
-                             "in model directory: {}".format(var_name, 
-                                                  self.data_dir))
+            raise VarNotAvailableError("Error: variable {} not found in files "
+                                       "contained in model directory: {}"
+                                       .format(var_name, self.data_dir))
         
         data = self._load_var(var_name, ts_type, start_time, stop_time,
                               flex_ts_type)
         
         # crop cube in time (if applicable)
-        if self.start_time and self.stop_time:
+        crop_time = False
+        crop_time_range = [self.start_time, self.stop_time]
+        if start_time is not None:
+            crop_time = True
+            crop_time_range[0] = to_pandas_timestamp(start_time)
+        elif self._start_time is not None:
+            crop_time = True
+            crop_time_range[0] = self._start_time
+        if stop_time is not None:
+            crop_time = True
+            crop_time_range[1] = to_pandas_timestamp(stop_time)
+        elif self._stop_time is not None:
+            crop_time = True
+            crop_time_range[1] = self._stop_time
+            
+        if crop_time:
             self.logger.info("Applying temporal cropping of result cube")
-            try:
-                _data = data.crop(time_range=(self.start_time,
-                                              self.stop_time))
-                data = _data
-            except Exception as e:
-                self.logger.warning("Failed to crop data for {} in time.\n"
-                               "Error: {}".format(var_name, repr(e)))
+            data = data.crop(time_range=crop_time_range)
         
         if var_name in self.data:
             self.logger.warning("Warning: Data for variable {} already exists "
@@ -753,13 +767,17 @@ class ReadGridded(object):
                                         'Available vars: {}'.format(
                                         var_names, self.name, 
                                         self.vars))
-        var_names = np.intersect1d(self.vars, var_names)
+        var_names = list(np.intersect1d(self.vars, var_names))
         if len(var_names) == 0:
             raise VarNotAvailableError('None of the desired variables is '
                                         'available in {}'.format(self.name))
         data = []
         for var in var_names:
-            data.append(self.read_var(var, start_time, stop_time, ts_type))
+            try:
+                data.append(self.read_var(var, start_time, stop_time, ts_type,
+                                          flex_ts_type))
+            except (VarNotAvailableError, DataCoverageError) as e:
+                self.logger.warning(repr(e))
         return tuple(data)
 # =============================================================================
 #             except Exception as e:
@@ -971,7 +989,7 @@ class ReadGridded(object):
                                      'entry in their filename could be found')
                 
             ts_type = self.ts_types[0]
-        if not ts_type in self.ts_types:
+        if not ts_type in self.TS_TYPES:
             raise ValueError("Invalid input for ts_type, got: {}, "
                              "allowed values: {}".format(ts_type, 
                                                          self.TS_TYPES))
@@ -1017,12 +1035,14 @@ class ReadGridded(object):
             s += "\nLoaded GriddedData objects:\n"
             for var_name, data in self.data.items():
                 s += "{}\n".format(data.short_str())
-        if self.data_yearly:
-            s += "\nLoaded GriddedData objects (individual years):\n"
-            for var_name, yearly_data in self.data_yearly.items():
-                if yearly_data:
-                    for year, data in yearly_data.items():
-                        s += "{}\n".format(data.short_str())
+# =============================================================================
+#         if self.data_yearly:
+#             s += "\nLoaded GriddedData objects (individual years):\n"
+#             for var_name, yearly_data in self.data_yearly.items():
+#                 if yearly_data:
+#                     for year, data in yearly_data.items():
+#                         s += "{}\n".format(data.short_str())
+# =============================================================================
         return s.rstrip()
         
 class ReadGriddedMulti(object):

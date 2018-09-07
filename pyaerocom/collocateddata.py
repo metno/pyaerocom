@@ -3,7 +3,7 @@
 from pyaerocom import logger
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_datestring_YYYYMMDD, to_pandas_timestamp
-from pyaerocom.exceptions import DataDimensionError
+from pyaerocom.exceptions import DataDimensionError, NetcdfError
 from pyaerocom.plot.plotscatter_new import plot_scatter
 import numpy as np
 import pandas as pd
@@ -213,17 +213,17 @@ class CollocatedData(object):
         return plot_scatter(x_vals=self.data.values[0].flatten(), 
                             y_vals=self.data.values[1].flatten(),
                             var_name=meta['var_name'],
-                            x_name=meta['data_source_idx'][0],
-                            y_name=meta['data_source_idx'][1], 
-                            start=meta['start'], 
-                            stop=meta['stop'], 
+                            x_name=meta['data_source'][0],
+                            y_name=meta['data_source'][1], 
+                            start=self.start, 
+                            stop=self.stop, 
                             ts_type=meta['ts_type'], 
                             stations_ok=num_points,
                             filter_name=meta['filter_name'], 
                             **kwargs)
     
     
-    def load_fake_data(self, num_stations=1000, num_tstamps=365):
+    def _load_fake_data(self, num_stations=1000, num_tstamps=365):
     
         data = np.empty((2, num_tstamps, num_stations))
         
@@ -243,12 +243,14 @@ class CollocatedData(object):
         data[1] = obs
         
         meta = {'ts_type'         : 'daily',
+                'ts_type_src'     : '3hourly',
                 'year'            : 1970, 
-                'data_source_idx' : ['AeronetSunV2L2.daily', 'ECMWF_OSUITE'],
+                'data_source'     : ['AeronetSunV2L2.daily', 'ECMWF_OSUITE'],
                 'var_name'        : 'od550aer',
-                'filter_name'     :  'WORLD-noMOUNTAINS'}
+                'filter_name'     :  'WORLD-noMOUNTAINS',
+                'data_level'      : 'collocated'}
         
-        arr = xarray.DataArray(data, coords={'data_source'   : meta['data_source_idx'], 
+        arr = xarray.DataArray(data, coords={'data_source'   : meta['data_source'], 
                                              'time'     : times, 
                                              'longitude': lons,
                                              'latitude' : ('longitude', lats)},
@@ -257,28 +259,41 @@ class CollocatedData(object):
                                 attrs=meta)
         self._data = arr
     
+    @staticmethod
+    def _aerocom_savename(var_name, obs_id, model_id, ts_type_src, start_str, 
+                          stop_str, ts_type, filter_name):
+        return ('{}_REF-{}_MOD-{}-{}_{}_{}_{}_{}_COLL'.format(var_name,
+                                                              obs_id, 
+                                                              model_id, 
+                                                              ts_type_src, 
+                                                              start_str, 
+                                                              stop_str,
+                                                              ts_type,
+                                                              filter_name))
     @property
     def save_name_aerocom(self):
         """Default save name for data object following AeroCom convention"""
-        start_str = to_datestring_YYYYMMDD(self.start)
-        stop_str = to_datestring_YYYYMMDD(self.stop)
+        start_str = self.meta['start_str']
+        stop_str = self.meta['stop_str']
         
-        source_info = self.meta['data_source_idx']
-        
+        source_info = self.meta['data_source']
+        ts_type_src = self.meta['ts_type_src']
         data_ref_id = source_info[0]
         if len(source_info) > 2:
             model_id = 'MultiModels'
         else:
             model_id = source_info[1]
-        return ('{}_REF-{}_MOD-{}_{}_{}_{}_{}_COLL'.format(self.name,
-                                                           data_ref_id,
-                                                           model_id,
-                                                           start_str,
-                                                           stop_str,
-                                                           self.ts_type,
-                                                           self.meta['filter_name']))
-    
-    def get_meta_from_filename(self, file_path):
+        return self._aerocom_savename(self.name,
+                                      data_ref_id,
+                                      model_id,
+                                      ts_type_src,
+                                      start_str,
+                                      stop_str,
+                                      self.ts_type,
+                                      self.meta['filter_name'])
+        
+    @staticmethod
+    def get_meta_from_filename(file_path):
         """Get meta information from file name
         
         Note
@@ -316,11 +331,11 @@ class CollocatedData(object):
                 mod_base = item.split('MOD-')[1]
             if not in_mod:
                 ref_base += item
-            
-        meta['data_source_idx'] = [ref_base, mod_base]
+        model, ts_type_src = mod_base.rsplit('-',1)
+        meta['data_source'] = [ref_base, model]
+        meta['ts_type_src'] = ts_type_src
         return meta
             
-        
     def to_netcdf(self, out_dir, save_name=None, **kwargs):
         """Save data object as .nc file
         
@@ -344,8 +359,23 @@ class CollocatedData(object):
             save_name = self.save_name_aerocom
         if not save_name.endswith('.nc'):
             save_name = '{}.nc'.format(save_name)
+            
         self.data.to_netcdf(path=os.path.join(out_dir, save_name), **kwargs)
+      
+    def read_netcdf(self, file_path):
+        """Read data from NetCDF file
         
+        Parameters
+        ----------
+        file_path : str
+            file path
+            
+        """
+        data = xarray.open_dataarray(file_path)
+        if not 'data_level' in data.attrs or not data.attrs['data_level'] == 'collocated':
+            raise NetcdfError('file misses collocated data flag in meta')
+        self.data = data
+    
     def to_dataframe(self):
         """Convert this object into pandas.DataFrame
         
@@ -424,17 +454,6 @@ class CollocatedData(object):
         
         raise IOError('Failed to import file {}. File type is not supported '
                       .format(os.path.basename(file_path)))
-        
-    def read_netcdf(self, file_path):
-        """Read data from NetCDF file
-        
-        Parameters
-        ----------
-        file_path : str
-            file path
-            
-        """
-        self._data = xarray.open_dataarray(file_path)
     
     def __contains__(self, val):
         return self.data.__contains__(val)
@@ -457,7 +476,7 @@ class CollocatedData(object):
 if __name__=="__main__":
     OUT_DIR = '../dev_scripts/out'
     d = CollocatedData()
-    d.load_fake_data()
+    d._load_fake_data()
     
     d.to_netcdf(OUT_DIR)
     
