@@ -1113,6 +1113,8 @@ class ReadGriddedMulti(object):
         #: datset
         self.results = od()
         
+        self.init_failed = od()
+        
         # only overwrite if there is input, note that the attributes
         # start_time and stop_time are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
@@ -1193,9 +1195,12 @@ class ReadGriddedMulti(object):
         """
         self.results = od()
         for name in self.names:
-            self.results[name] = ReadGridded(name, 
-                                             self.start_time, 
-                                             self.stop_time)
+            try:
+                self.results[name] = ReadGridded(name, 
+                                                 self.start_time, 
+                                                 self.stop_time)
+            except Exception as e:
+                self.init_failed[name] = repr(e)
     
         
     def read(self, var_names, start_time=None, stop_time=None,
