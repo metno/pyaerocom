@@ -81,17 +81,17 @@ class Variable(BrowseDict):
     literal_eval_list = lambda val: list(literal_eval(val))
         
     _TYPE_CONV={'wavelength_nm': float,
-               'minimum': float,
-               'maximum': float,
-               'obs_wavelength_tol_nm': float,
-               'scat_xlim': literal_eval_list,
-               'scat_ylim': literal_eval_list,
-               'scat_loglog': bool,
-               'scat_scale_factor': float,
-               'map_vmin': float,
-               'map_vmax': float,
-               'map_cbar_levels': literal_eval_list,
-               'map_cbar_ticks': literal_eval_list}
+                'minimum': float,
+                'maximum': float,
+                'obs_wavelength_tol_nm': float,
+                'scat_xlim': literal_eval_list,
+                'scat_ylim': literal_eval_list,
+                'scat_loglog': bool,
+                'scat_scale_factor': float,
+                'map_vmin': float,
+                'map_vmax': float,
+                'map_cbar_levels': literal_eval_list,
+                'map_cbar_ticks': literal_eval_list}
     
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         self.var_name = var_name
@@ -215,6 +215,12 @@ class Variable(BrowseDict):
                 if key in self._TYPE_CONV:
                     try:
                         val = self._TYPE_CONV[key](val)
+                    except:
+                        pass
+                elif key == 'unit':
+                    try:
+                        if int(val) == 1:
+                            val = None
                     except:
                         pass
                 
@@ -376,5 +382,5 @@ if __name__=="__main__":
     all_vars = AllVariables()
     print(all_vars)
     
-    print(Variable('scatc550aer'))
+    print(Variable('od550aer'))
     

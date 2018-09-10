@@ -56,7 +56,6 @@ def add_file_to_log(filepath, err_msg):
             ferr.write('{}\n{}\n\n'.format(filepath,
                                            err_msg))
         
-
 def get_standard_name(var_name):
     """Get standard name of aerocom variable
     

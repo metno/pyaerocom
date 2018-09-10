@@ -11,7 +11,8 @@ from pyaerocom import const
 from pyaerocom.helpers import to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.mathutils import calc_statistics
 
-def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
+def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None, 
+                 x_name=None, y_name=None,
                  start=None, stop=None, ts_type=None, stations_ok=None, 
                  filter_name=None, lowlim_stats=None, highlim_stats=None, 
                  loglog=True, savefig=False, save_dir=None, save_name=None, 
@@ -24,12 +25,14 @@ def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
         1D array (or list) of model data points (y-axis)
     x_vals : ndarray
         1D array (or list) of observation data points (x-axis)
-    y_name : :obj:`str`, optional
-        Name / ID of model
     var_name : :obj:`str`, optional
         name of variable that is plotted
+    var_name_ref : :obj:`str`, optional
+        name of variable of reference data
     x_name : :obj:`str`, optional
         Name of observation network
+    y_name : :obj:`str`, optional
+        Name / ID of model
     start : :obj:`str` or :obj`datetime` or similar
         start time of data
     stop : :obj:`str` or :obj`datetime` or similar
@@ -79,7 +82,10 @@ def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
         ylim[0] = 0
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    ax.set_xlabel('{}'.format(x_name), fontsize=14)
+    xlbl = '{}'.format(x_name)
+    if var_name_ref is not None:
+        xlbl += ' ({})'.format(var_name_ref)
+    ax.set_xlabel(xlbl, fontsize=14)
     ax.set_ylabel('{}'.format(y_name), fontsize=14)
     if ts_type == 'yearly':
         ax.set_title(start.year)
@@ -106,7 +112,7 @@ def plot_scatter(x_vals, y_vals, var_name=None, x_name=None, y_name=None,
     xypos.append((0.8, 0.06))
     xypos_index = 0
     
-    var_str = var_name + VAR_PARAM.unit_str
+    var_str = var_name# + VAR_PARAM.unit_str
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
                         statistics['success'], stations_ok),

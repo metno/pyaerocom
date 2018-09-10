@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from pyaerocom import logger
 from pyaerocom.mathutils import calc_statistics
-from pyaerocom.helpers import to_datestring_YYYYMMDD, to_pandas_timestamp
+from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import DataDimensionError, NetcdfError
 from pyaerocom.plot.plotscatter_new import plot_scatter
 import numpy as np
@@ -46,6 +46,7 @@ class CollocatedData(object):
     IOError
         if init fails
     """
+    __version__ = '0.04'
     def __init__(self, data=None, **kwargs):
         self._data = None
         if data is not None:
@@ -100,6 +101,16 @@ class CollocatedData(object):
     def shape(self):
         """Shape of data array"""
         return self.data.shape
+    
+    @property
+    def data_source(self):
+        """Coordinate array containing data sources (z-axis)"""
+        return self.data.data_source
+    
+    @property
+    def var_name(self):
+        """Coordinate array containing data sources (z-axis)"""
+        return self.data.var_name
     
     @property
     def longitude(self):
@@ -209,10 +220,15 @@ class CollocatedData(object):
         """
         meta = self.meta
         num_points = self.num_grid_points
-    
+        vars_ = meta['var_name']
+        if vars_[0] != vars_[1]:
+            var_ref = vars_[0]
+        else:
+            var_ref = None
         return plot_scatter(x_vals=self.data.values[0].flatten(), 
                             y_vals=self.data.values[1].flatten(),
-                            var_name=meta['var_name'],
+                            var_name=vars_[1],
+                            var_name_ref = var_ref,
                             x_name=meta['data_source'][0],
                             y_name=meta['data_source'][1], 
                             start=self.start, 

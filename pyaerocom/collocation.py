@@ -67,7 +67,8 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
     
     meta = {'data_source'       :   [gridded_data_ref.name,
                                     gridded_data.name],
-            'var_name'          :   gridded_data.var_name,
+            'var_name'          :   [gridded_data.var_name,
+                                     gridded_data_ref.var_name],
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   grid_ts_type,
@@ -86,20 +87,21 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
     time = gridded_data.time_stamps().astype('datetime64[ns]')
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
+              'var_name'    : ('data_source', meta['var_name']),
               'time'        : time,
               'longitude'   : gridded_data.longitude.points,
               'latitude'    : gridded_data.latitude.points
               }
     dims = ['data_source', 'time', 'latitude', 'longitude']
-    try:
-        return CollocatedData(data=arr, coords=coords, dims=dims, 
+
+    return CollocatedData(data=arr, coords=coords, dims=dims, 
                           name=gridded_data.var_name, attrs=meta)
-    except:
-        return arr, coords, dims
+
 
 def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily', 
                                    start=None, stop=None, 
-                                   filter_name='WORLD-wMOUNTAINS'):
+                                   filter_name='WORLD-wMOUNTAINS',
+                                   var_ref=None):
     """Collocate gridded with ungridded data of 2D data 
     
     2D means, that the vertical direction is only sampled at one altitude or
@@ -133,6 +135,10 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         details). Default is 'WORLD-wMOUNTAINS', which corresponds to no 
         filtering (world with mountains). Use WORLD-noMOUNTAINS to exclude
         stations at altitudes exceeding 1000 m.
+    var_ref : :obj:`str`, optional
+        variable against which data in :attr:`gridded_data` is supposed to be
+        compared. If None, then the same variable is used 
+        (i.e. `gridded_data.var_name`).
         
     Returns
     -------
@@ -153,10 +159,13 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         the input collocation constraints
     """
     var = gridded_data.var_name
-    if not var in ungridded_data.contains_vars:
-        raise VarNotAvailableError('Variable {} is not '
-            'available in ungridded data (which contains {})'.format(var,
-                                         ungridded_data.contains_vars))
+    if var_ref is None:
+        var_ref = var
+    if not var_ref in ungridded_data.contains_vars:
+        raise VarNotAvailableError('Variable {} is not available in ungridded '
+                                   'data (which contains {})'
+                                   .format(var_ref,
+                                           ungridded_data.contains_vars))
     elif len(ungridded_data.contains_datasets) > 1:
         raise AttributeError('Collocation can only be performed with '
                              'ungridded data objects that only contain a '
@@ -210,7 +219,7 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
     
-    obs_stat_data = ungridded_data.to_station_data_all(vars_to_convert=var, 
+    obs_stat_data = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                        start=start, 
                                                        stop=stop, 
                                                        freq=freq_pd, 
@@ -232,7 +241,7 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
             # is already in the specified frequency format, and thus, does not
             # need to be updated, for details (or if errors occur), cf. 
             # UngriddedData.to_station_data, where the conversion happens)
-            obs_tseries = obs_data[var]
+            obs_tseries = obs_data[var_ref]
             # get model data corresponding to station
             grid_tseries = grid_stat_data[i][var]
             if sum(grid_tseries.isnull()) > 0:
@@ -267,7 +276,7 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         
     meta = {'data_source'  :   [ungridded_data.contains_datasets[0],
                                     gridded_data.name],
-            'var_name'      :   var,
+            'var_name'      :   [var, var_ref],
             'ts_type'       :   ts_type,
             'filter_name'   :   filter_name,
             'ts_type_src'   :   grid_ts_type,
@@ -288,6 +297,7 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
+              'var_name'    : ('data_source', meta['var_name']),
               'time'        : TIME_IDX,
               'station_name': station_names,
               'latitude'    : ('station_name', lats),
@@ -299,3 +309,29 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
                           attrs=meta)
     
     return data
+
+
+if __name__=='__main__':
+    import pyaerocom as pya
+    
+    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
+    model = r.read_var('od550aer', start_time=2010)
+    
+    obs_r1 = pya.io.ReadGridded('MODIS6.terra')
+    obs1 = obs_r1.read_var('od550aer', start_time=2010)
+    
+    obs_r2 = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
+    obs2 = obs_r2.read(vars_to_retrieve='od550aer')
+    
+    coll_data1 = collocate_gridded_gridded(model, obs1, ts_type='monthly')
+    
+    coll_data1.plot_scatter()
+    
+    coll_data2 = collocate_gridded_ungridded_2D(model, obs2, ts_type='monthly')
+    coll_data2.plot_scatter()
+    
+    print(model)
+    print(obs1)
+    print(obs2)
+    print(coll_data1)
+    print(coll_data2)
