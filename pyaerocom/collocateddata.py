@@ -391,6 +391,7 @@ class CollocatedData(object):
         if not 'data_level' in data.attrs or not data.attrs['data_level'] == 'collocated':
             raise NetcdfError('file misses collocated data flag in meta')
         self.data = data
+        return self
     
     def to_dataframe(self):
         """Convert this object into pandas.DataFrame

@@ -9,6 +9,7 @@ from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   CollocationError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
+                               TS_TYPE_TO_NUMPY_FREQ,
                                to_datestring_YYYYMMDD)
 from pyaerocom.filter import Filter
 from pyaerocom.collocateddata import CollocatedData
@@ -218,6 +219,10 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
 
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
+    freq_np = TS_TYPE_TO_NUMPY_FREQ[ts_type]
+    
+    start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
+    #stop = pd.Timestamp(stop.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
     
     obs_stat_data = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                        start=start, 
@@ -233,6 +238,8 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     station_names = []
     
     # TIME INDEX ARRAY FOR COLLOCATED DATA OBJECT
+    
+    
     TIME_IDX = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
 
     for i, obs_data in enumerate(obs_stat_data):
