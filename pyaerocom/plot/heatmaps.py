@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap
 
-def df_to_heatmap(df, cmap="bwr", center=0, low=0.3, high=0.3, 
-                  color_rowwise=True,
+def df_to_heatmap(df, cmap="bwr", center=0, low=0.3, high=0.3, vmin=None,
+                  vmax=None, color_rowwise=True,
                   normalise_rows=False, normalise_rows_col=None,
                   annot=True, table_name="", num_digits=2, ax=None, 
                   figsize=(12,12), cbar=False, **kwargs):
@@ -100,9 +100,13 @@ def df_to_heatmap(df, cmap="bwr", center=0, low=0.3, high=0.3,
     cbar_kws['label'] = table_name
     if annot is True:
         annot = df.values
-    vmin, vmax = df_hm.min().min() * (1-low), df_hm.max().max()*(1+high)
+    if vmin is None:
+        vmin = df_hm.min().min() * (1-low)
+    elif vmax is None:
+        vmax = df_hm.max().max() * (1+high)
     #print(vmin, vmax)
-    ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, fmt=num_fmt,
+    ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, 
+                 fmt=num_fmt,
                  cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
     ax.set_title(table_name, fontsize=16)
     xticklabels = ax.get_xticklabels()

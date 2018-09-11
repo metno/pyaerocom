@@ -16,7 +16,7 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
                  start=None, stop=None, ts_type=None, stations_ok=None, 
                  filter_name=None, lowlim_stats=None, highlim_stats=None, 
                  loglog=True, savefig=False, save_dir=None, save_name=None, 
-                 ax=None):
+                 ax=None, figsize=None):
     """Method that performs a scatter plot of data in AEROCOM format
     
     Parameters
@@ -52,7 +52,9 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
     xlim = VAR_PARAM['scat_xlim']
     ylim = VAR_PARAM['scat_ylim'] 
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10,8))
+        if figsize is None:
+            figsize = (10,8)
+        fig, ax = plt.subplots(figsize=figsize)
     if var_name is None:
         var_name = 'n/d'
 
@@ -97,67 +99,64 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
     plt.plot(VAR_PARAM['scat_xlim'], VAR_PARAM['scat_ylim'], '-', 
              color='grey')
     
-    # text positions for the scatter plot annotations
-    xypos=[]
-    xypos.append((.01, 0.95))
-    xypos.append((0.01, 0.90))
-    xypos.append((0.3, 0.90))
-    xypos.append((0.01, 0.86))
-    xypos.append((0.3, 0.86))
-    xypos.append((0.01, 0.82))
-    xypos.append((0.3, 0.82))
-    xypos.append((0.01, 0.78))
-    xypos.append((0.3, 0.78))
-    xypos.append((0.8, 0.1))
-    xypos.append((0.8, 0.06))
-    xypos_index = 0
+    xypos =   {'var_info'       :   (0.01, .95),
+               'refdata_mean'   :   (0.01, 0.90),
+               'data_mean'      :   (0.01, 0.86),
+               'nmb'            :   (0.01, 0.82),
+               'mnmb'           :   (0.35, 0.82),
+               'R'              :   (0.01, 0.78),
+               'rms'            :   (0.35, 0.78),
+               'R_kendall'      :   (0.01, 0.74),
+               'fge'            :   (0.35, 0.74),
+               'ts_type'        :   (0.8, 0.1),
+               'filter_name'    :   (0.8, 0.06)}
     
     var_str = var_name# + VAR_PARAM.unit_str
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
                         statistics['success'], stations_ok),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos['var_info'], xycoords='axes fraction', 
                         fontsize=14, color='red')
-    xypos_index += 1
+
     ax.annotate('Mean (x-data): {:.3f}'.format(statistics['refdata_mean']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
-                        fontsize=10, color='red')
-    xypos_index += 1
-    ax.annotate('Mean (y-data): {:.3f}'.format(statistics['data_mean']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
-                        fontsize=10, color='red')
-    xypos_index += 1
-    ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
-                        fontsize=10, color='red')
-    xypos_index += 1
-    ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
-                        fontsize=10, color='red')
-    xypos_index += 1
-    ax.annotate('R (Pearson): {:.3f}'.format(statistics['R']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
-                        fontsize=10, color='red')
-    xypos_index += 1
-    ax.annotate('RMS: {:.3f}'.format(statistics['rms']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
-                        fontsize=10, color='red')
-    xypos_index += 1
-    ax.annotate('R (Kendall): {:.3f}%'.format(statistics['R_kendall']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos['refdata_mean'], xycoords='axes fraction', 
                         fontsize=10, color='red')
     
-    xypos_index += 1
+    ax.annotate('Mean (y-data): {:.3f}'.format(statistics['data_mean']),
+                        xy=xypos['data_mean'], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+    
+    ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']),
+                        xy=xypos['nmb'], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+    
+    ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']),
+                        xy=xypos['mnmb'], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+    
+    ax.annotate('R (Pearson): {:.3f}'.format(statistics['R']),
+                        xy=xypos['R'], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+
+    ax.annotate('RMS: {:.3f}'.format(statistics['rms']),
+                        xy=xypos['rms'], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+    
+    ax.annotate('R (Kendall): {:.3f}%'.format(statistics['R_kendall']),
+                        xy=xypos['R_kendall'], xycoords='axes fraction', 
+                        fontsize=10, color='red')
+    
+    
     ax.annotate('FGE: {:.1f}%'.format(statistics['fge']),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos['fge'], xycoords='axes fraction', 
                         fontsize=10, color='red')
     # right lower part
     ax.annotate('{}'.format(ts_type),
-                        xy=xypos[-2], xycoords='axes fraction', 
+                        xy=xypos['ts_type'], xycoords='axes fraction', 
                         ha='center', 
                         fontsize=10, color='black')
     ax.annotate('{}'.format(filter_name),
-                        xy=xypos[-1], xycoords='axes fraction', ha='center', 
+                        xy=xypos['filter_name'], xycoords='axes fraction', ha='center', 
                         fontsize=10, color='black')
     
     ax.set_aspect('equal')
