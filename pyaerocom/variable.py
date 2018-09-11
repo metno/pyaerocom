@@ -5,6 +5,7 @@ This module contains functionality related to regions in pyaerocom
 """
 from os.path import join, exists
 from ast import literal_eval
+import re
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -14,6 +15,71 @@ from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.utils import BrowseDict, list_to_shortstr, dict_to_str
 
+class VarNameInfo(object):
+    _VALID_WVL_RANGE = [100, 2000]
+    _VALID_WVL_IDS = ['od', 'abs', 'ec', 'scatc', 'absc', 'bscatc', 'ssa']
+    PATTERNS = {'od' : r'od\d+aer'}
+    def __init__(self, var_name):
+        self.var_name = var_name.lower()
+        self._nums = []
+        try:
+            self._nums = self._numbers_in_string(var_name)
+        except:
+            pass
+        
+    @staticmethod
+    def _numbers_in_string(s):
+        return [int(x) for x in re.findall(r'\d+', s)]
+    
+    @property
+    def contains_numbers(self):
+        if len(self._nums) > 0:
+            return True
+        return False
+    
+    @property
+    def is_wavelength_dependent(self):
+        for item in self._VALID_WVL_IDS:
+            if self.var_name.startswith(item):
+                return True
+        return False
+    
+    @property
+    def contains_wavelength_nm(self):
+        if not self.contains_numbers:
+            return False
+        low, high = self._VALID_WVL_RANGE
+        if self._nums and low <= self._nums[0] <= high:
+            return True
+        return False
+    
+    @property
+    def wavelength_nm(self):
+        if not self.is_wavelength_dependent:
+            raise VariableDefinitionError('Variable {} is not wavelength '
+                                          'dependent (does not start with '
+                                          'either of {})'.format(self.var_name,
+                                                     self._VALID_WVL_IDS))
+            
+        elif not self.contains_wavelength_nm:
+            raise VariableDefinitionError('Wavelength could not be extracted '
+                                          'from variable name')
+        return self._nums[0]
+
+        
+    @property
+    def is_optical_density(self):
+        if re.match(self.PATTERNS['od'], self.var_name) and self.contains_wavelength_nm:
+            return True
+        return False
+        
+    def in_wavelength_range(self, low, high):
+        return low <= self.wavelength <= high
+    
+    def translate_to_wavelength(self, to_wavelength):
+        if self.contains_wavelength_nm:
+            return self.var_name.replace(str(self.wavelength_nm))
+    
 class Variable(BrowseDict):
     """Interface that specifies default settings for a variable
     
@@ -384,3 +450,8 @@ if __name__=="__main__":
     
     print(Variable('od550aer'))
     
+    
+    vi = VarNameInfo('od567aer')
+    print(vi.is_optical_density) 
+    
+    print(VarNameInfo('od440lt1aer').is_optical_density)
