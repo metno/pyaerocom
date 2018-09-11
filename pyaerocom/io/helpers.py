@@ -89,6 +89,9 @@ def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
     browser = AerocomBrowser()
     return browser.find_data_dir(name_or_pattern, ignorecase)
 
+def find_vars_around_wavelength(var_list, wvl=440, pattern='od*aer'):
+    raise NotImplementedError
+    
 def get_obsnetwork_dir(obs_id):
     """Returns data path for obsnetwork ID
     

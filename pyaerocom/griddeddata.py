@@ -101,6 +101,7 @@ class GriddedData(object):
                              name           = "Unknown",
                              ts_type        = "Unknown",
                              regridded      = False,
+                             computed       = True,
                              region         = None)
         
         

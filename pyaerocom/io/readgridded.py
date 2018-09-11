@@ -44,6 +44,7 @@ from datetime import datetime
 import iris
 
 from pyaerocom import const as CONST
+from pyaerocom.mathutils import compute_angstrom_coeff_cubes
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (IllegalArgumentError, 
                                   DataCoverageError,
@@ -124,6 +125,13 @@ class ReadGridded(object):
         >>> print(data.short_str()) for data in read.data
         
     """
+    AUX_REQUIRES = {'ang4487aer': ['od440aer', 'od870aer']}
+    
+    AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
+                    'od870aer'  :   ['od865aer']}
+    
+    AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes}
+    
     #: Directory containing model data for this species
     _data_dir = ""
     _start_time = None
@@ -198,7 +206,15 @@ class ReadGridded(object):
         if init and name:
             self.search_data_dir()
             self.search_all_files()
-                
+     
+    @property
+    def vars_provided(self):
+        """Variables provided by this interface"""
+        v = []
+        v.extend(self.vars)
+        v.extend(self.AUX_REQUIRES.keys())
+        return v
+    
     @property
     def data_dir(self):
         """Model directory"""
@@ -218,6 +234,7 @@ class ReadGridded(object):
     @property
     def vars_read(self):
         return [k for k in self.data.keys()]
+    
     
     @property
     def file_type(self):
@@ -477,6 +494,7 @@ class ReadGridded(object):
                     
                     except DataCoverageError as e:
                         self.logger.warning(repr(e))
+    
         raise DataCoverageError("No files could be found for dataset {}, "
                                 "variable {}, ts_types {}".format(self.name, 
                                                                   var_name, 
@@ -616,6 +634,43 @@ class ReadGridded(object):
     
     
     
+    def compute_var(self, var_name, start_time=None, stop_time=None, 
+                 ts_type=None, flex_ts_type=True):
+        vars_req = self.AUX_REQUIRES[var_name]
+        
+        vars_read = []
+        for var in vars_req:
+            found = 0
+            if var in self.vars:
+                found = 1
+                vars_read.append(var)
+            elif var in self.AUX_ALT_VARS:
+                for alt_var in list(self.AUX_ALT_VARS[var]):
+                    if alt_var in self.vars:
+                        found = 1
+                        vars_read.append(alt_var)
+                        break
+            if not found:
+                raise VarNotAvailableError('Cannot compute {}, since {} '
+                                           '(req. for computation) is not '
+                                           'available in data'
+                                           .format(var_name, 
+                                                   var))
+                
+        data = []
+        for var in vars_read:
+            data.append(self._load_var(var, ts_type, start_time, 
+                                       stop_time, flex_ts_type))
+        cube = self.AUX_FUNS[var_name](*data)
+        cube.var_name = var_name
+        
+        data = GriddedData(cube, name=self.name, 
+                           ts_type=data[0].ts_type,
+                           computed=True)
+        return data
+            
+        #raise NotImplementedError
+            
     def read_var(self, var_name, start_time=None, stop_time=None, 
                  ts_type=None, flex_ts_type=True):
         """Read model data for a specific variable
@@ -654,7 +709,8 @@ class ReadGridded(object):
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
         flex_ts_type : bool
-            if True and if applicable, then another ts_type is used in case 
+            if True and if applicable,start_time=None, stop_time=None, 
+                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
             
         Returns
@@ -671,33 +727,16 @@ class ReadGridded(object):
         """
         ts_type = self._check_ts_type(ts_type)
         
-        if var_name not in self.vars:
-            raise VarNotAvailableError("Error: variable {} not found in files "
-                                       "contained in model directory: {}"
-                                       .format(var_name, self.data_dir))
-        
-        data = self._load_var(var_name, ts_type, start_time, stop_time,
+        if var_name in self.vars:
+            data = self._load_var(var_name, ts_type, start_time, stop_time,
                               flex_ts_type)
-        
-        # crop cube in time (if applicable)
-        crop_time = False
-        crop_time_range = [self.start_time, self.stop_time]
-        if start_time is not None:
-            crop_time = True
-            crop_time_range[0] = to_pandas_timestamp(start_time)
-        elif self._start_time is not None:
-            crop_time = True
-            crop_time_range[0] = self._start_time
-        if stop_time is not None:
-            crop_time = True
-            crop_time_range[1] = to_pandas_timestamp(stop_time)
-        elif self._stop_time is not None:
-            crop_time = True
-            crop_time_range[1] = self._stop_time
-            
-        if crop_time:
-            self.logger.info("Applying temporal cropping of result cube")
-            data = data.crop(time_range=crop_time_range)
+        elif var_name in self.AUX_REQUIRES:
+            data = self.compute_var(var_name, start_time, stop_time, 
+                                    ts_type, flex_ts_type)
+        else:
+            raise VarNotAvailableError("Error: variable {} not available in "
+                                       "files and can also not be computed."
+                                       .format(var_name))
         
         if var_name in self.data:
             self.logger.warning("Warning: Data for variable {} already exists "
@@ -761,13 +800,13 @@ class ReadGridded(object):
                           "also leave it empty (None) in which case all "
                           "available variables are loaded".format(var_names))
         if require_all_vars_avail:
-            if not all([var in self.vars for var in var_names]):
+            if not all([var in self.vars_provided for var in var_names]):
                 raise VarNotAvailableError('One or more of the specified vars '
                                         '({}) is not available in {} database. '
                                         'Available vars: {}'.format(
                                         var_names, self.name, 
-                                        self.vars))
-        var_names = list(np.intersect1d(self.vars, var_names))
+                                        self.vars_provided))
+        var_names = list(np.intersect1d(self.vars_provided, var_names))
         if len(var_names) == 0:
             raise VarNotAvailableError('None of the desired variables is '
                                         'available in {}'.format(self.name))
@@ -965,10 +1004,35 @@ class ReadGridded(object):
             cube = cube_list[0]
         
         from_files = [f for f in self.loaded_files[var_name]]    
-        return GriddedData(input=cube, 
+        data = GriddedData(input=cube, 
                            from_files=from_files,
                            name=self.name, 
                            ts_type=ts_type)
+        
+        # crop cube in time (if applicable)
+        data = self._check_crop_time(data, start_time, stop_time)
+        return data
+    
+    def _check_crop_time(self, data, start_time, stop_time):
+        crop_time = False
+        crop_time_range = [self.start_time, self.stop_time]
+        if start_time is not None:
+            crop_time = True
+            crop_time_range[0] = to_pandas_timestamp(start_time)
+        elif self._start_time is not None:
+            crop_time = True
+            crop_time_range[0] = self._start_time
+        if stop_time is not None:
+            crop_time = True
+            crop_time_range[1] = to_pandas_timestamp(stop_time)
+        elif self._stop_time is not None:
+            crop_time = True
+            crop_time_range[1] = self._stop_time
+            
+        if crop_time:
+            self.logger.info("Applying temporal cropping of result cube")
+            data = data.crop(time_range=crop_time_range)
+        return data
     
     def _check_ts_type(self, ts_type):
         """Check and, if applicable, update ts_type
