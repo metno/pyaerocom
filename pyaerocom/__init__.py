@@ -53,7 +53,7 @@ LOGLEVELS = {'debug': 10,
              'critical': 50}
 
 # Imports
-from . import utils
+from . import _lowlevel_helpers
 from . import obs_io
 # custom toplevel classes
 from .variable import Variable

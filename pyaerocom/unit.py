@@ -8,7 +8,7 @@ Note
 - Not sure if we need that
 - Not yet defined how to do this best (e.g. hashtable..)
 """
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 
 class Unit(BrowseDict):
     pass

@@ -13,7 +13,7 @@ except:
 from pyaerocom import __dir__, logger
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
-from pyaerocom.utils import BrowseDict, list_to_shortstr, dict_to_str
+from pyaerocom._lowlevel_helpers import BrowseDict, list_to_shortstr, dict_to_str
 
 class VarNameInfo(object):
     _VALID_WVL_RANGE = [100, 2000]

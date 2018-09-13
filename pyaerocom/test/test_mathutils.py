@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Tests for utils.py module of pyaerocom
+Tests for _lowlevel_helpers.py module of pyaerocom
 """
 
 import numpy.testing as npt

@@ -4,7 +4,7 @@ from pyaerocom import const
 import sqlite3
 import sys
 import os
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 
 class EbasSQLRequest(BrowseDict):
     """Low level dictionary like object for EBAS sqlite queries

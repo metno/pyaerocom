@@ -5,7 +5,7 @@
 Global configurations for plotting 
 """
 from matplotlib.pyplot import get_cmap
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 from warnings import warn
 # =============================================================================
 # try:

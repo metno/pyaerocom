@@ -3,7 +3,7 @@
 """Collection of station data classes
 """
 import numpy as np
-from pyaerocom.utils import dict_to_str, list_to_shortstr, BrowseDict
+from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 
 class VerticalProfile(BrowseDict):
     """Dict-like object for single variable profile data

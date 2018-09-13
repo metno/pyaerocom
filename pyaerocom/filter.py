@@ -6,7 +6,7 @@ Created on Thu Aug 16 09:03:31 2018
 @author: jonasg
 """
 from pyaerocom import logger
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.region import Region

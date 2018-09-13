@@ -10,7 +10,7 @@ from os import listdir
 from os.path import isdir,join
 import fnmatch
 from pyaerocom import const, logger
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 
 class AerocomBrowser(BrowseDict):
     """Interface for browsing all Aerocom data direcories

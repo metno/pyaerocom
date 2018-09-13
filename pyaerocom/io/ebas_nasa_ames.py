@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict as od
 from datetime import datetime
-from pyaerocom.utils import str_underline, dict_to_str
+from pyaerocom._lowlevel_helpers import str_underline, dict_to_str
 from pyaerocom.exceptions import TimeZoneError
 from pyaerocom import logger
 

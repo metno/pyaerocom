@@ -40,7 +40,7 @@ import os
 from warnings import warn
 from collections import OrderedDict as od
 import pyaerocom.obs_io as obs_io
-from pyaerocom.utils import list_to_shortstr, dict_to_str
+from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
 from pyaerocom.variable import AllVariables
 try:
     from ConfigParser import ConfigParser

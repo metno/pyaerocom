@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from pyaerocom.station import Station
 from pyaerocom import VerticalProfile
-from pyaerocom.utils import list_to_shortstr
+from pyaerocom._lowlevel_helpers import list_to_shortstr
 
 class StationData(Station):
     """Dict-like base class for single station data

@@ -7,7 +7,7 @@ import numpy as np
 from fnmatch import fnmatch
 
 from pyaerocom import const
-from pyaerocom.utils import list_to_shortstr
+from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
 # TODO: Proposal: include attribute ts_type that is by default undefined but 

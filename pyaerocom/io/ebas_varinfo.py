@@ -12,7 +12,7 @@ except:
     from configparser import ConfigParser
 
 from pyaerocom import __dir__, logger
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io import EbasSQLRequest
 
 

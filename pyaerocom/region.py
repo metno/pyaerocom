@@ -8,7 +8,7 @@ from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
 from pyaerocom import __dir__
-from pyaerocom.utils import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict
 
 class Region(BrowseDict):
     """Interface that specifies an AEROCOM region

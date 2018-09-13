@@ -10,7 +10,7 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError)
 from pyaerocom import StationData
-from pyaerocom.utils import dict_to_str, list_to_shortstr
+from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (to_pandas_timestamp, same_meta_dict, 
                                TS_TYPE_TO_PANDAS_FREQ)
