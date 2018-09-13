@@ -82,6 +82,7 @@ from . import plot
 #from .ungriddeddata import UngriddedData
 from .io.helpers import search_data_dir_aerocom
 from .io.utils import browse_database
+from .utils import create_varinfo_table
 #from .obsdata import ObsData, ProfileData, StationData
 print('Elapsed time init pyaerocom: {} s'.format(time()-t0))
 
