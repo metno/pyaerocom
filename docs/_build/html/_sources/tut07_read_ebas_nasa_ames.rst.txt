@@ -33,43 +33,43 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
-    2018-09-07 17:45:07,092:INFO:
+    2018-09-13 12:07:03,951:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.046215057373046875 s
+    Elapsed time init all variables: 0.02491593360900879 s
 
 
 .. parsed-literal::
 
-    2018-09-07 17:45:07,989:WARNING:
+    2018-09-13 12:07:04,709:WARNING:
     geopy library is not available. Aeolus data read not enabled
-    2018-09-07 17:45:08,033:INFO:
+    2018-09-13 12:07:04,760:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,069:WARNING:
+    2018-09-13 12:07:04,831:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,070:DEBUG:
+    2018-09-13 12:07:04,833:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,071:DEBUG:
+    2018-09-13 12:07:04,835:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,072:DEBUG:
+    2018-09-13 12:07:04,837:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:08,073:DEBUG:
+    2018-09-13 12:07:04,839:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.9816727638244629 s
+    Elapsed time init pyaerocom: 0.8183541297912598 s
     Pyaerocom EbasNasaAmesFile
     --------------------------
     
@@ -323,7 +323,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7fc97cfc5be0>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f48ad8ed710>)])
 
 
 
@@ -1181,11365 +1181,11365 @@ Read only header
 
 .. parsed-literal::
 
-    2018-09-07 17:45:08,322:INFO:
+    2018-09-13 12:07:05,079:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,326:WARNING:
+    2018-09-13 12:07:05,084:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,326:DEBUG:
+    2018-09-13 12:07:05,085:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,327:DEBUG:
+    2018-09-13 12:07:05,085:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,329:INFO:
+    2018-09-13 12:07:05,087:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,332:WARNING:
+    2018-09-13 12:07:05,091:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,333:DEBUG:
+    2018-09-13 12:07:05,091:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,333:DEBUG:
+    2018-09-13 12:07:05,091:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,335:INFO:
+    2018-09-13 12:07:05,093:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,338:WARNING:
+    2018-09-13 12:07:05,097:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,338:DEBUG:
+    2018-09-13 12:07:05,098:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,339:DEBUG:
+    2018-09-13 12:07:05,098:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,340:INFO:
+    2018-09-13 12:07:05,101:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,343:WARNING:
+    2018-09-13 12:07:05,106:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,343:DEBUG:
+    2018-09-13 12:07:05,106:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,344:DEBUG:
+    2018-09-13 12:07:05,107:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,345:INFO:
+    2018-09-13 12:07:05,109:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,348:WARNING:
+    2018-09-13 12:07:05,114:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,349:DEBUG:
+    2018-09-13 12:07:05,115:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,350:DEBUG:
+    2018-09-13 12:07:05,115:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,352:INFO:
+    2018-09-13 12:07:05,117:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,354:WARNING:
+    2018-09-13 12:07:05,121:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,355:DEBUG:
+    2018-09-13 12:07:05,122:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,356:DEBUG:
+    2018-09-13 12:07:05,122:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,357:INFO:
+    2018-09-13 12:07:05,124:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,360:WARNING:
+    2018-09-13 12:07:05,129:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,361:DEBUG:
+    2018-09-13 12:07:05,130:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,361:DEBUG:
+    2018-09-13 12:07:05,130:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,363:INFO:
+    2018-09-13 12:07:05,132:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,366:WARNING:
+    2018-09-13 12:07:05,135:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,367:DEBUG:
+    2018-09-13 12:07:05,136:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,367:DEBUG:
+    2018-09-13 12:07:05,136:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,369:INFO:
+    2018-09-13 12:07:05,138:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,372:WARNING:
+    2018-09-13 12:07:05,144:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,372:DEBUG:
+    2018-09-13 12:07:05,144:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,372:DEBUG:
+    2018-09-13 12:07:05,145:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,374:INFO:
+    2018-09-13 12:07:05,147:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,377:WARNING:
+    2018-09-13 12:07:05,152:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,377:DEBUG:
+    2018-09-13 12:07:05,153:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,378:DEBUG:
+    2018-09-13 12:07:05,153:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,380:INFO:
+    2018-09-13 12:07:05,155:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,384:WARNING:
+    2018-09-13 12:07:05,160:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,385:DEBUG:
+    2018-09-13 12:07:05,161:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,386:DEBUG:
+    2018-09-13 12:07:05,161:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,388:INFO:
+    2018-09-13 12:07:05,164:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,390:WARNING:
+    2018-09-13 12:07:05,169:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,392:DEBUG:
+    2018-09-13 12:07:05,170:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,392:DEBUG:
+    2018-09-13 12:07:05,170:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,394:INFO:
+    2018-09-13 12:07:05,173:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,397:WARNING:
+    2018-09-13 12:07:05,177:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,398:DEBUG:
+    2018-09-13 12:07:05,179:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,399:DEBUG:
+    2018-09-13 12:07:05,181:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,400:INFO:
+    2018-09-13 12:07:05,184:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,403:WARNING:
+    2018-09-13 12:07:05,189:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,404:DEBUG:
+    2018-09-13 12:07:05,191:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,404:DEBUG:
+    2018-09-13 12:07:05,193:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,406:INFO:
+    2018-09-13 12:07:05,196:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,409:WARNING:
+    2018-09-13 12:07:05,202:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,409:DEBUG:
+    2018-09-13 12:07:05,204:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,409:DEBUG:
+    2018-09-13 12:07:05,206:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,411:INFO:
+    2018-09-13 12:07:05,209:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,413:WARNING:
+    2018-09-13 12:07:05,214:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,414:DEBUG:
+    2018-09-13 12:07:05,216:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,414:DEBUG:
+    2018-09-13 12:07:05,217:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,416:INFO:
+    2018-09-13 12:07:05,222:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,418:WARNING:
+    2018-09-13 12:07:05,227:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,419:DEBUG:
+    2018-09-13 12:07:05,229:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,420:DEBUG:
+    2018-09-13 12:07:05,230:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,421:INFO:
+    2018-09-13 12:07:05,234:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,424:WARNING:
+    2018-09-13 12:07:05,239:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,425:DEBUG:
+    2018-09-13 12:07:05,241:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,426:DEBUG:
+    2018-09-13 12:07:05,242:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,427:INFO:
+    2018-09-13 12:07:05,245:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,430:WARNING:
+    2018-09-13 12:07:05,251:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,431:DEBUG:
+    2018-09-13 12:07:05,252:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,431:DEBUG:
+    2018-09-13 12:07:05,254:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,432:INFO:
+    2018-09-13 12:07:05,257:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,435:WARNING:
+    2018-09-13 12:07:05,264:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,436:DEBUG:
+    2018-09-13 12:07:05,265:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,436:DEBUG:
+    2018-09-13 12:07:05,267:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,438:INFO:
+    2018-09-13 12:07:05,272:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,441:WARNING:
+    2018-09-13 12:07:05,277:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,442:DEBUG:
+    2018-09-13 12:07:05,279:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,442:DEBUG:
+    2018-09-13 12:07:05,280:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,444:INFO:
+    2018-09-13 12:07:05,283:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,447:WARNING:
+    2018-09-13 12:07:05,288:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,447:DEBUG:
+    2018-09-13 12:07:05,289:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,447:DEBUG:
+    2018-09-13 12:07:05,290:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,449:INFO:
+    2018-09-13 12:07:05,293:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,452:WARNING:
+    2018-09-13 12:07:05,297:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,452:DEBUG:
+    2018-09-13 12:07:05,298:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,453:DEBUG:
+    2018-09-13 12:07:05,299:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,454:INFO:
+    2018-09-13 12:07:05,301:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,457:WARNING:
+    2018-09-13 12:07:05,306:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,457:DEBUG:
+    2018-09-13 12:07:05,306:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,457:DEBUG:
+    2018-09-13 12:07:05,307:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,459:INFO:
+    2018-09-13 12:07:05,308:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,461:WARNING:
+    2018-09-13 12:07:05,313:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,462:DEBUG:
+    2018-09-13 12:07:05,314:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,463:DEBUG:
+    2018-09-13 12:07:05,315:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,464:INFO:
+    2018-09-13 12:07:05,318:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,467:WARNING:
+    2018-09-13 12:07:05,323:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,468:DEBUG:
+    2018-09-13 12:07:05,324:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,468:DEBUG:
+    2018-09-13 12:07:05,324:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,470:INFO:
+    2018-09-13 12:07:05,326:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,474:WARNING:
+    2018-09-13 12:07:05,330:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,475:DEBUG:
+    2018-09-13 12:07:05,331:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,475:DEBUG:
+    2018-09-13 12:07:05,331:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,477:INFO:
+    2018-09-13 12:07:05,333:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,480:WARNING:
+    2018-09-13 12:07:05,337:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,481:DEBUG:
+    2018-09-13 12:07:05,338:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,481:DEBUG:
+    2018-09-13 12:07:05,338:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,483:INFO:
+    2018-09-13 12:07:05,341:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,486:WARNING:
+    2018-09-13 12:07:05,345:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,487:DEBUG:
+    2018-09-13 12:07:05,346:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,487:DEBUG:
+    2018-09-13 12:07:05,346:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,489:INFO:
+    2018-09-13 12:07:05,348:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,493:WARNING:
+    2018-09-13 12:07:05,353:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,493:DEBUG:
+    2018-09-13 12:07:05,355:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,494:DEBUG:
+    2018-09-13 12:07:05,357:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,496:INFO:
+    2018-09-13 12:07:05,361:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,500:WARNING:
+    2018-09-13 12:07:05,367:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,500:DEBUG:
+    2018-09-13 12:07:05,369:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,501:DEBUG:
+    2018-09-13 12:07:05,371:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,503:INFO:
+    2018-09-13 12:07:05,374:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,506:WARNING:
+    2018-09-13 12:07:05,380:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,507:DEBUG:
+    2018-09-13 12:07:05,381:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,508:DEBUG:
+    2018-09-13 12:07:05,383:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,509:INFO:
+    2018-09-13 12:07:05,386:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,513:WARNING:
+    2018-09-13 12:07:05,392:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,513:DEBUG:
+    2018-09-13 12:07:05,394:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,513:DEBUG:
+    2018-09-13 12:07:05,396:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,515:INFO:
+    2018-09-13 12:07:05,401:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,518:WARNING:
+    2018-09-13 12:07:05,407:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,518:DEBUG:
+    2018-09-13 12:07:05,408:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,519:DEBUG:
+    2018-09-13 12:07:05,409:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,521:INFO:
+    2018-09-13 12:07:05,412:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,524:WARNING:
+    2018-09-13 12:07:05,417:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,524:DEBUG:
+    2018-09-13 12:07:05,419:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,525:DEBUG:
+    2018-09-13 12:07:05,420:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,527:INFO:
+    2018-09-13 12:07:05,422:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,530:WARNING:
+    2018-09-13 12:07:05,427:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,530:DEBUG:
+    2018-09-13 12:07:05,428:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,531:DEBUG:
+    2018-09-13 12:07:05,429:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,532:INFO:
+    2018-09-13 12:07:05,431:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,535:WARNING:
+    2018-09-13 12:07:05,435:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,535:DEBUG:
+    2018-09-13 12:07:05,436:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,536:DEBUG:
+    2018-09-13 12:07:05,437:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,537:INFO:
+    2018-09-13 12:07:05,438:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,541:WARNING:
+    2018-09-13 12:07:05,442:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,541:DEBUG:
+    2018-09-13 12:07:05,443:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,542:DEBUG:
+    2018-09-13 12:07:05,443:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,544:INFO:
+    2018-09-13 12:07:05,445:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,547:WARNING:
+    2018-09-13 12:07:05,449:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,548:DEBUG:
+    2018-09-13 12:07:05,449:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,548:DEBUG:
+    2018-09-13 12:07:05,450:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,550:INFO:
+    2018-09-13 12:07:05,452:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,553:WARNING:
+    2018-09-13 12:07:05,457:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,553:DEBUG:
+    2018-09-13 12:07:05,459:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,554:DEBUG:
+    2018-09-13 12:07:05,460:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,555:INFO:
+    2018-09-13 12:07:05,463:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,558:WARNING:
+    2018-09-13 12:07:05,468:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,558:DEBUG:
+    2018-09-13 12:07:05,468:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,559:DEBUG:
+    2018-09-13 12:07:05,469:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,560:INFO:
+    2018-09-13 12:07:05,471:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,563:WARNING:
+    2018-09-13 12:07:05,475:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,564:DEBUG:
+    2018-09-13 12:07:05,476:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,565:DEBUG:
+    2018-09-13 12:07:05,476:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,567:INFO:
+    2018-09-13 12:07:05,478:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,570:WARNING:
+    2018-09-13 12:07:05,483:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,570:DEBUG:
+    2018-09-13 12:07:05,483:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,571:DEBUG:
+    2018-09-13 12:07:05,484:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,572:INFO:
+    2018-09-13 12:07:05,486:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,576:WARNING:
+    2018-09-13 12:07:05,490:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,577:DEBUG:
+    2018-09-13 12:07:05,490:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,577:DEBUG:
+    2018-09-13 12:07:05,491:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,579:INFO:
+    2018-09-13 12:07:05,492:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,582:WARNING:
+    2018-09-13 12:07:05,497:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,583:DEBUG:
+    2018-09-13 12:07:05,497:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,584:DEBUG:
+    2018-09-13 12:07:05,498:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,585:INFO:
+    2018-09-13 12:07:05,500:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,589:WARNING:
+    2018-09-13 12:07:05,504:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,589:DEBUG:
+    2018-09-13 12:07:05,504:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,590:DEBUG:
+    2018-09-13 12:07:05,505:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,591:INFO:
+    2018-09-13 12:07:05,506:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,594:WARNING:
+    2018-09-13 12:07:05,511:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,595:DEBUG:
+    2018-09-13 12:07:05,511:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,595:DEBUG:
+    2018-09-13 12:07:05,512:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,597:INFO:
+    2018-09-13 12:07:05,514:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,600:WARNING:
+    2018-09-13 12:07:05,519:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,601:DEBUG:
+    2018-09-13 12:07:05,519:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,601:DEBUG:
+    2018-09-13 12:07:05,520:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,603:INFO:
+    2018-09-13 12:07:05,522:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,606:WARNING:
+    2018-09-13 12:07:05,526:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,607:DEBUG:
+    2018-09-13 12:07:05,527:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,608:DEBUG:
+    2018-09-13 12:07:05,527:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,609:INFO:
+    2018-09-13 12:07:05,529:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,613:WARNING:
+    2018-09-13 12:07:05,535:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,613:DEBUG:
+    2018-09-13 12:07:05,535:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,614:DEBUG:
+    2018-09-13 12:07:05,536:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,615:INFO:
+    2018-09-13 12:07:05,538:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,618:WARNING:
+    2018-09-13 12:07:05,542:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,618:DEBUG:
+    2018-09-13 12:07:05,544:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,619:DEBUG:
+    2018-09-13 12:07:05,545:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,620:INFO:
+    2018-09-13 12:07:05,550:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,623:WARNING:
+    2018-09-13 12:07:05,555:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,624:DEBUG:
+    2018-09-13 12:07:05,557:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,625:DEBUG:
+    2018-09-13 12:07:05,558:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,626:INFO:
+    2018-09-13 12:07:05,562:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,630:WARNING:
+    2018-09-13 12:07:05,567:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,630:DEBUG:
+    2018-09-13 12:07:05,568:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,631:DEBUG:
+    2018-09-13 12:07:05,569:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,632:INFO:
+    2018-09-13 12:07:05,572:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,635:WARNING:
+    2018-09-13 12:07:05,577:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,636:DEBUG:
+    2018-09-13 12:07:05,577:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,637:DEBUG:
+    2018-09-13 12:07:05,578:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,638:INFO:
+    2018-09-13 12:07:05,581:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,641:WARNING:
+    2018-09-13 12:07:05,585:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,642:DEBUG:
+    2018-09-13 12:07:05,586:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,643:DEBUG:
+    2018-09-13 12:07:05,587:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,644:INFO:
+    2018-09-13 12:07:05,588:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,647:WARNING:
+    2018-09-13 12:07:05,594:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,648:DEBUG:
+    2018-09-13 12:07:05,595:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,648:DEBUG:
+    2018-09-13 12:07:05,596:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,650:INFO:
+    2018-09-13 12:07:05,598:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,653:WARNING:
+    2018-09-13 12:07:05,602:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,654:DEBUG:
+    2018-09-13 12:07:05,602:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,654:DEBUG:
+    2018-09-13 12:07:05,603:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,656:INFO:
+    2018-09-13 12:07:05,605:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,659:WARNING:
+    2018-09-13 12:07:05,609:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,659:DEBUG:
+    2018-09-13 12:07:05,610:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,660:DEBUG:
+    2018-09-13 12:07:05,611:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,661:INFO:
+    2018-09-13 12:07:05,614:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,665:WARNING:
+    2018-09-13 12:07:05,618:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,665:DEBUG:
+    2018-09-13 12:07:05,619:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,666:DEBUG:
+    2018-09-13 12:07:05,620:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,668:INFO:
+    2018-09-13 12:07:05,622:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,671:WARNING:
+    2018-09-13 12:07:05,626:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,671:DEBUG:
+    2018-09-13 12:07:05,627:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,672:DEBUG:
+    2018-09-13 12:07:05,627:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,673:INFO:
+    2018-09-13 12:07:05,629:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,676:WARNING:
+    2018-09-13 12:07:05,634:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,676:DEBUG:
+    2018-09-13 12:07:05,635:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,677:DEBUG:
+    2018-09-13 12:07:05,635:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,678:INFO:
+    2018-09-13 12:07:05,638:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,681:WARNING:
+    2018-09-13 12:07:05,642:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,682:DEBUG:
+    2018-09-13 12:07:05,642:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,683:DEBUG:
+    2018-09-13 12:07:05,643:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,684:INFO:
+    2018-09-13 12:07:05,645:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,689:WARNING:
+    2018-09-13 12:07:05,649:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,697:DEBUG:
+    2018-09-13 12:07:05,650:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,697:DEBUG:
+    2018-09-13 12:07:05,650:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,699:INFO:
+    2018-09-13 12:07:05,652:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,702:WARNING:
+    2018-09-13 12:07:05,656:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,702:DEBUG:
+    2018-09-13 12:07:05,657:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,703:DEBUG:
+    2018-09-13 12:07:05,658:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,704:INFO:
+    2018-09-13 12:07:05,660:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,707:WARNING:
+    2018-09-13 12:07:05,665:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,708:DEBUG:
+    2018-09-13 12:07:05,665:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,708:DEBUG:
+    2018-09-13 12:07:05,666:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,710:INFO:
+    2018-09-13 12:07:05,668:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,713:WARNING:
+    2018-09-13 12:07:05,672:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,713:DEBUG:
+    2018-09-13 12:07:05,674:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,714:DEBUG:
+    2018-09-13 12:07:05,675:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,715:INFO:
+    2018-09-13 12:07:05,679:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,718:WARNING:
+    2018-09-13 12:07:05,684:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,719:DEBUG:
+    2018-09-13 12:07:05,685:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,719:DEBUG:
+    2018-09-13 12:07:05,686:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,720:INFO:
+    2018-09-13 12:07:05,689:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,724:WARNING:
+    2018-09-13 12:07:05,693:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,724:DEBUG:
+    2018-09-13 12:07:05,693:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,724:DEBUG:
+    2018-09-13 12:07:05,694:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,726:INFO:
+    2018-09-13 12:07:05,697:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,729:WARNING:
+    2018-09-13 12:07:05,701:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,729:DEBUG:
+    2018-09-13 12:07:05,702:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,729:DEBUG:
+    2018-09-13 12:07:05,702:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,731:INFO:
+    2018-09-13 12:07:05,705:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,734:WARNING:
+    2018-09-13 12:07:05,710:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,734:DEBUG:
+    2018-09-13 12:07:05,710:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,735:DEBUG:
+    2018-09-13 12:07:05,711:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,736:INFO:
+    2018-09-13 12:07:05,714:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,739:WARNING:
+    2018-09-13 12:07:05,718:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,739:DEBUG:
+    2018-09-13 12:07:05,718:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,739:DEBUG:
+    2018-09-13 12:07:05,719:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,741:INFO:
+    2018-09-13 12:07:05,722:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,743:WARNING:
+    2018-09-13 12:07:05,726:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,744:DEBUG:
+    2018-09-13 12:07:05,727:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,744:DEBUG:
+    2018-09-13 12:07:05,727:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,745:INFO:
+    2018-09-13 12:07:05,729:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,748:WARNING:
+    2018-09-13 12:07:05,733:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,749:DEBUG:
+    2018-09-13 12:07:05,734:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,749:DEBUG:
+    2018-09-13 12:07:05,735:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,750:INFO:
+    2018-09-13 12:07:05,737:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,753:WARNING:
+    2018-09-13 12:07:05,740:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,754:DEBUG:
+    2018-09-13 12:07:05,741:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,754:DEBUG:
+    2018-09-13 12:07:05,741:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,755:INFO:
+    2018-09-13 12:07:05,744:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,758:WARNING:
+    2018-09-13 12:07:05,750:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,758:DEBUG:
+    2018-09-13 12:07:05,751:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,759:DEBUG:
+    2018-09-13 12:07:05,751:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,760:INFO:
+    2018-09-13 12:07:05,768:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,763:WARNING:
+    2018-09-13 12:07:05,776:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,764:DEBUG:
+    2018-09-13 12:07:05,778:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,764:DEBUG:
+    2018-09-13 12:07:05,780:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,765:INFO:
+    2018-09-13 12:07:05,784:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,768:WARNING:
+    2018-09-13 12:07:05,791:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,769:DEBUG:
+    2018-09-13 12:07:05,793:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,769:DEBUG:
+    2018-09-13 12:07:05,794:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,770:INFO:
+    2018-09-13 12:07:05,799:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,774:WARNING:
+    2018-09-13 12:07:05,806:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,775:DEBUG:
+    2018-09-13 12:07:05,808:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,775:DEBUG:
+    2018-09-13 12:07:05,810:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,776:INFO:
+    2018-09-13 12:07:05,815:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,779:WARNING:
+    2018-09-13 12:07:05,822:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,780:DEBUG:
+    2018-09-13 12:07:05,823:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,780:DEBUG:
+    2018-09-13 12:07:05,824:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,781:INFO:
+    2018-09-13 12:07:05,826:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,784:WARNING:
+    2018-09-13 12:07:05,830:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,784:DEBUG:
+    2018-09-13 12:07:05,830:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,785:DEBUG:
+    2018-09-13 12:07:05,831:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,787:INFO:
+    2018-09-13 12:07:05,834:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,790:WARNING:
+    2018-09-13 12:07:05,838:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,790:DEBUG:
+    2018-09-13 12:07:05,839:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,790:DEBUG:
+    2018-09-13 12:07:05,839:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,792:INFO:
+    2018-09-13 12:07:05,842:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,795:WARNING:
+    2018-09-13 12:07:05,847:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,795:DEBUG:
+    2018-09-13 12:07:05,849:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,796:DEBUG:
+    2018-09-13 12:07:05,851:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,797:INFO:
+    2018-09-13 12:07:05,855:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,800:WARNING:
+    2018-09-13 12:07:05,862:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,800:DEBUG:
+    2018-09-13 12:07:05,864:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,801:DEBUG:
+    2018-09-13 12:07:05,865:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,803:INFO:
+    2018-09-13 12:07:05,869:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,806:WARNING:
+    2018-09-13 12:07:05,874:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,807:DEBUG:
+    2018-09-13 12:07:05,875:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,807:DEBUG:
+    2018-09-13 12:07:05,877:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,808:INFO:
+    2018-09-13 12:07:05,882:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,811:WARNING:
+    2018-09-13 12:07:05,887:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,812:DEBUG:
+    2018-09-13 12:07:05,889:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,812:DEBUG:
+    2018-09-13 12:07:05,891:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,813:INFO:
+    2018-09-13 12:07:05,894:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,816:WARNING:
+    2018-09-13 12:07:05,899:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,817:DEBUG:
+    2018-09-13 12:07:05,900:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,817:DEBUG:
+    2018-09-13 12:07:05,901:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,818:INFO:
+    2018-09-13 12:07:05,903:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,821:WARNING:
+    2018-09-13 12:07:05,907:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,821:DEBUG:
+    2018-09-13 12:07:05,908:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,822:DEBUG:
+    2018-09-13 12:07:05,908:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,823:INFO:
+    2018-09-13 12:07:05,911:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,825:WARNING:
+    2018-09-13 12:07:05,915:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,826:DEBUG:
+    2018-09-13 12:07:05,916:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,826:DEBUG:
+    2018-09-13 12:07:05,916:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,827:INFO:
+    2018-09-13 12:07:05,920:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,831:WARNING:
+    2018-09-13 12:07:05,927:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,831:DEBUG:
+    2018-09-13 12:07:05,929:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,831:DEBUG:
+    2018-09-13 12:07:05,930:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,833:INFO:
+    2018-09-13 12:07:05,934:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,835:WARNING:
+    2018-09-13 12:07:05,940:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,836:DEBUG:
+    2018-09-13 12:07:05,942:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,836:DEBUG:
+    2018-09-13 12:07:05,944:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,837:INFO:
+    2018-09-13 12:07:05,947:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,840:WARNING:
+    2018-09-13 12:07:05,953:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,841:DEBUG:
+    2018-09-13 12:07:05,955:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,841:DEBUG:
+    2018-09-13 12:07:05,956:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,842:INFO:
+    2018-09-13 12:07:05,960:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,847:WARNING:
+    2018-09-13 12:07:05,966:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,847:DEBUG:
+    2018-09-13 12:07:05,968:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,848:DEBUG:
+    2018-09-13 12:07:05,969:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,849:INFO:
+    2018-09-13 12:07:05,973:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,852:WARNING:
+    2018-09-13 12:07:05,978:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,852:DEBUG:
+    2018-09-13 12:07:05,979:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,852:DEBUG:
+    2018-09-13 12:07:05,980:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,854:INFO:
+    2018-09-13 12:07:05,983:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,856:WARNING:
+    2018-09-13 12:07:05,989:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,856:DEBUG:
+    2018-09-13 12:07:05,989:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,857:DEBUG:
+    2018-09-13 12:07:05,990:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,858:INFO:
+    2018-09-13 12:07:05,992:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,861:WARNING:
+    2018-09-13 12:07:05,997:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,861:DEBUG:
+    2018-09-13 12:07:05,998:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,862:DEBUG:
+    2018-09-13 12:07:05,998:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,863:INFO:
+    2018-09-13 12:07:06,001:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,866:WARNING:
+    2018-09-13 12:07:06,006:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,867:DEBUG:
+    2018-09-13 12:07:06,007:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,867:DEBUG:
+    2018-09-13 12:07:06,007:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,868:INFO:
+    2018-09-13 12:07:06,012:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,871:WARNING:
+    2018-09-13 12:07:06,017:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,872:DEBUG:
+    2018-09-13 12:07:06,017:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,872:DEBUG:
+    2018-09-13 12:07:06,018:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,873:INFO:
+    2018-09-13 12:07:06,021:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,876:WARNING:
+    2018-09-13 12:07:06,025:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,876:DEBUG:
+    2018-09-13 12:07:06,026:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,876:DEBUG:
+    2018-09-13 12:07:06,026:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,878:INFO:
+    2018-09-13 12:07:06,029:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,881:WARNING:
+    2018-09-13 12:07:06,033:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,881:DEBUG:
+    2018-09-13 12:07:06,034:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,882:DEBUG:
+    2018-09-13 12:07:06,034:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,883:INFO:
+    2018-09-13 12:07:06,037:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,885:WARNING:
+    2018-09-13 12:07:06,043:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,886:DEBUG:
+    2018-09-13 12:07:06,044:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,887:DEBUG:
+    2018-09-13 12:07:06,045:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,888:INFO:
+    2018-09-13 12:07:06,047:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,890:WARNING:
+    2018-09-13 12:07:06,053:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,891:DEBUG:
+    2018-09-13 12:07:06,054:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,891:DEBUG:
+    2018-09-13 12:07:06,055:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,892:INFO:
+    2018-09-13 12:07:06,058:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,895:WARNING:
+    2018-09-13 12:07:06,062:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,896:DEBUG:
+    2018-09-13 12:07:06,064:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,896:DEBUG:
+    2018-09-13 12:07:06,065:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,897:INFO:
+    2018-09-13 12:07:06,067:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,900:WARNING:
+    2018-09-13 12:07:06,071:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,900:DEBUG:
+    2018-09-13 12:07:06,072:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,901:DEBUG:
+    2018-09-13 12:07:06,072:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,902:INFO:
+    2018-09-13 12:07:06,075:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,905:WARNING:
+    2018-09-13 12:07:06,079:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,905:DEBUG:
+    2018-09-13 12:07:06,080:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,905:DEBUG:
+    2018-09-13 12:07:06,080:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,906:INFO:
+    2018-09-13 12:07:06,087:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,909:WARNING:
+    2018-09-13 12:07:06,091:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,910:DEBUG:
+    2018-09-13 12:07:06,092:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,910:DEBUG:
+    2018-09-13 12:07:06,093:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,911:INFO:
+    2018-09-13 12:07:06,095:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,914:WARNING:
+    2018-09-13 12:07:06,099:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,915:DEBUG:
+    2018-09-13 12:07:06,099:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,915:DEBUG:
+    2018-09-13 12:07:06,100:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,917:INFO:
+    2018-09-13 12:07:06,102:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,919:WARNING:
+    2018-09-13 12:07:06,107:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,920:DEBUG:
+    2018-09-13 12:07:06,107:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,920:DEBUG:
+    2018-09-13 12:07:06,108:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,922:INFO:
+    2018-09-13 12:07:06,110:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,924:WARNING:
+    2018-09-13 12:07:06,114:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,925:DEBUG:
+    2018-09-13 12:07:06,115:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,925:DEBUG:
+    2018-09-13 12:07:06,116:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,926:INFO:
+    2018-09-13 12:07:06,118:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,929:WARNING:
+    2018-09-13 12:07:06,123:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,930:DEBUG:
+    2018-09-13 12:07:06,124:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,930:DEBUG:
+    2018-09-13 12:07:06,124:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,932:INFO:
+    2018-09-13 12:07:06,126:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,934:WARNING:
+    2018-09-13 12:07:06,131:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,935:DEBUG:
+    2018-09-13 12:07:06,132:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,935:DEBUG:
+    2018-09-13 12:07:06,133:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,937:INFO:
+    2018-09-13 12:07:06,135:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,940:WARNING:
+    2018-09-13 12:07:06,139:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,940:DEBUG:
+    2018-09-13 12:07:06,140:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,941:DEBUG:
+    2018-09-13 12:07:06,141:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,942:INFO:
+    2018-09-13 12:07:06,143:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,945:WARNING:
+    2018-09-13 12:07:06,147:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,946:DEBUG:
+    2018-09-13 12:07:06,148:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,946:DEBUG:
+    2018-09-13 12:07:06,148:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,948:INFO:
+    2018-09-13 12:07:06,151:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,951:WARNING:
+    2018-09-13 12:07:06,155:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,952:DEBUG:
+    2018-09-13 12:07:06,155:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,953:DEBUG:
+    2018-09-13 12:07:06,156:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,954:INFO:
+    2018-09-13 12:07:06,158:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,957:WARNING:
+    2018-09-13 12:07:06,162:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,958:DEBUG:
+    2018-09-13 12:07:06,162:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,958:DEBUG:
+    2018-09-13 12:07:06,163:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,960:INFO:
+    2018-09-13 12:07:06,165:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,963:WARNING:
+    2018-09-13 12:07:06,169:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,963:DEBUG:
+    2018-09-13 12:07:06,170:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,964:DEBUG:
+    2018-09-13 12:07:06,170:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,965:INFO:
+    2018-09-13 12:07:06,173:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,968:WARNING:
+    2018-09-13 12:07:06,178:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,969:DEBUG:
+    2018-09-13 12:07:06,178:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,969:DEBUG:
+    2018-09-13 12:07:06,179:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,971:INFO:
+    2018-09-13 12:07:06,181:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,974:WARNING:
+    2018-09-13 12:07:06,186:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,975:DEBUG:
+    2018-09-13 12:07:06,187:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,975:DEBUG:
+    2018-09-13 12:07:06,187:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,977:INFO:
+    2018-09-13 12:07:06,189:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,980:WARNING:
+    2018-09-13 12:07:06,194:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,981:DEBUG:
+    2018-09-13 12:07:06,196:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,981:DEBUG:
+    2018-09-13 12:07:06,197:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,983:INFO:
+    2018-09-13 12:07:06,201:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,986:WARNING:
+    2018-09-13 12:07:06,207:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,986:DEBUG:
+    2018-09-13 12:07:06,209:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,987:DEBUG:
+    2018-09-13 12:07:06,211:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,988:INFO:
+    2018-09-13 12:07:06,214:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,991:WARNING:
+    2018-09-13 12:07:06,220:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,992:DEBUG:
+    2018-09-13 12:07:06,222:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,992:DEBUG:
+    2018-09-13 12:07:06,223:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:08,994:INFO:
+    2018-09-13 12:07:06,228:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:08,997:WARNING:
+    2018-09-13 12:07:06,235:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:08,998:DEBUG:
+    2018-09-13 12:07:06,237:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:08,998:DEBUG:
+    2018-09-13 12:07:06,238:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,000:INFO:
+    2018-09-13 12:07:06,242:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,003:WARNING:
+    2018-09-13 12:07:06,248:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,003:DEBUG:
+    2018-09-13 12:07:06,250:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,004:DEBUG:
+    2018-09-13 12:07:06,251:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,005:INFO:
+    2018-09-13 12:07:06,256:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,009:WARNING:
+    2018-09-13 12:07:06,261:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,009:DEBUG:
+    2018-09-13 12:07:06,263:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,010:DEBUG:
+    2018-09-13 12:07:06,264:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,011:INFO:
+    2018-09-13 12:07:06,269:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,015:WARNING:
+    2018-09-13 12:07:06,274:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,015:DEBUG:
+    2018-09-13 12:07:06,275:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,016:DEBUG:
+    2018-09-13 12:07:06,276:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,017:INFO:
+    2018-09-13 12:07:06,278:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,020:WARNING:
+    2018-09-13 12:07:06,282:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,021:DEBUG:
+    2018-09-13 12:07:06,283:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,021:DEBUG:
+    2018-09-13 12:07:06,284:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,023:INFO:
+    2018-09-13 12:07:06,286:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,026:WARNING:
+    2018-09-13 12:07:06,292:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,026:DEBUG:
+    2018-09-13 12:07:06,292:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,027:DEBUG:
+    2018-09-13 12:07:06,293:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,036:INFO:
+    2018-09-13 12:07:06,296:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,039:WARNING:
+    2018-09-13 12:07:06,301:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,039:DEBUG:
+    2018-09-13 12:07:06,301:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,040:DEBUG:
+    2018-09-13 12:07:06,302:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,041:INFO:
+    2018-09-13 12:07:06,305:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,044:WARNING:
+    2018-09-13 12:07:06,310:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,044:DEBUG:
+    2018-09-13 12:07:06,310:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,045:DEBUG:
+    2018-09-13 12:07:06,311:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,046:INFO:
+    2018-09-13 12:07:06,313:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,049:WARNING:
+    2018-09-13 12:07:06,317:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,049:DEBUG:
+    2018-09-13 12:07:06,319:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,050:DEBUG:
+    2018-09-13 12:07:06,321:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,051:INFO:
+    2018-09-13 12:07:06,325:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,054:WARNING:
+    2018-09-13 12:07:06,332:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,054:DEBUG:
+    2018-09-13 12:07:06,334:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,055:DEBUG:
+    2018-09-13 12:07:06,336:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,056:INFO:
+    2018-09-13 12:07:06,340:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,059:WARNING:
+    2018-09-13 12:07:06,346:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,059:DEBUG:
+    2018-09-13 12:07:06,348:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,060:DEBUG:
+    2018-09-13 12:07:06,350:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,061:INFO:
+    2018-09-13 12:07:06,354:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,064:WARNING:
+    2018-09-13 12:07:06,361:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,064:DEBUG:
+    2018-09-13 12:07:06,362:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,065:DEBUG:
+    2018-09-13 12:07:06,364:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,066:INFO:
+    2018-09-13 12:07:06,368:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,069:WARNING:
+    2018-09-13 12:07:06,375:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,070:DEBUG:
+    2018-09-13 12:07:06,376:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,071:DEBUG:
+    2018-09-13 12:07:06,378:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,072:INFO:
+    2018-09-13 12:07:06,382:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,075:WARNING:
+    2018-09-13 12:07:06,388:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,076:DEBUG:
+    2018-09-13 12:07:06,390:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,076:DEBUG:
+    2018-09-13 12:07:06,391:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,078:INFO:
+    2018-09-13 12:07:06,395:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,081:WARNING:
+    2018-09-13 12:07:06,401:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,082:DEBUG:
+    2018-09-13 12:07:06,403:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,082:DEBUG:
+    2018-09-13 12:07:06,404:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,084:INFO:
+    2018-09-13 12:07:06,407:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,087:WARNING:
+    2018-09-13 12:07:06,413:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,087:DEBUG:
+    2018-09-13 12:07:06,414:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,088:DEBUG:
+    2018-09-13 12:07:06,415:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,089:INFO:
+    2018-09-13 12:07:06,419:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,092:WARNING:
+    2018-09-13 12:07:06,426:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,092:DEBUG:
+    2018-09-13 12:07:06,426:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,093:DEBUG:
+    2018-09-13 12:07:06,427:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,094:INFO:
+    2018-09-13 12:07:06,430:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,097:WARNING:
+    2018-09-13 12:07:06,437:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,097:DEBUG:
+    2018-09-13 12:07:06,437:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,098:DEBUG:
+    2018-09-13 12:07:06,438:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,099:INFO:
+    2018-09-13 12:07:06,442:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,103:WARNING:
+    2018-09-13 12:07:06,449:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,103:DEBUG:
+    2018-09-13 12:07:06,450:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,104:DEBUG:
+    2018-09-13 12:07:06,450:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,105:INFO:
+    2018-09-13 12:07:06,453:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,108:WARNING:
+    2018-09-13 12:07:06,457:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,109:DEBUG:
+    2018-09-13 12:07:06,458:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,109:DEBUG:
+    2018-09-13 12:07:06,458:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,111:INFO:
+    2018-09-13 12:07:06,460:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,114:WARNING:
+    2018-09-13 12:07:06,468:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,114:DEBUG:
+    2018-09-13 12:07:06,470:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,115:DEBUG:
+    2018-09-13 12:07:06,471:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,116:INFO:
+    2018-09-13 12:07:06,473:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,119:WARNING:
+    2018-09-13 12:07:06,477:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,120:DEBUG:
+    2018-09-13 12:07:06,478:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,120:DEBUG:
+    2018-09-13 12:07:06,478:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,122:INFO:
+    2018-09-13 12:07:06,480:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,125:WARNING:
+    2018-09-13 12:07:06,485:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,125:DEBUG:
+    2018-09-13 12:07:06,486:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,125:DEBUG:
+    2018-09-13 12:07:06,487:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,127:INFO:
+    2018-09-13 12:07:06,489:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,130:WARNING:
+    2018-09-13 12:07:06,493:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,130:DEBUG:
+    2018-09-13 12:07:06,494:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,130:DEBUG:
+    2018-09-13 12:07:06,494:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,132:INFO:
+    2018-09-13 12:07:06,497:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,134:WARNING:
+    2018-09-13 12:07:06,501:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,135:DEBUG:
+    2018-09-13 12:07:06,502:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,135:DEBUG:
+    2018-09-13 12:07:06,503:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,136:INFO:
+    2018-09-13 12:07:06,505:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,139:WARNING:
+    2018-09-13 12:07:06,509:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,140:DEBUG:
+    2018-09-13 12:07:06,510:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,140:DEBUG:
+    2018-09-13 12:07:06,511:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,141:INFO:
+    2018-09-13 12:07:06,513:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,144:WARNING:
+    2018-09-13 12:07:06,517:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,144:DEBUG:
+    2018-09-13 12:07:06,517:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,145:DEBUG:
+    2018-09-13 12:07:06,518:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,146:INFO:
+    2018-09-13 12:07:06,520:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,149:WARNING:
+    2018-09-13 12:07:06,524:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,149:DEBUG:
+    2018-09-13 12:07:06,525:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,150:DEBUG:
+    2018-09-13 12:07:06,526:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,151:INFO:
+    2018-09-13 12:07:06,528:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,153:WARNING:
+    2018-09-13 12:07:06,532:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,154:DEBUG:
+    2018-09-13 12:07:06,533:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,154:DEBUG:
+    2018-09-13 12:07:06,533:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,155:INFO:
+    2018-09-13 12:07:06,536:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,158:WARNING:
+    2018-09-13 12:07:06,541:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,158:DEBUG:
+    2018-09-13 12:07:06,542:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,159:DEBUG:
+    2018-09-13 12:07:06,542:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,160:INFO:
+    2018-09-13 12:07:06,545:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,163:WARNING:
+    2018-09-13 12:07:06,550:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,163:DEBUG:
+    2018-09-13 12:07:06,550:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,164:DEBUG:
+    2018-09-13 12:07:06,551:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,165:INFO:
+    2018-09-13 12:07:06,554:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,168:WARNING:
+    2018-09-13 12:07:06,558:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,168:DEBUG:
+    2018-09-13 12:07:06,559:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,168:DEBUG:
+    2018-09-13 12:07:06,560:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,170:INFO:
+    2018-09-13 12:07:06,562:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,172:WARNING:
+    2018-09-13 12:07:06,567:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,173:DEBUG:
+    2018-09-13 12:07:06,569:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,173:DEBUG:
+    2018-09-13 12:07:06,570:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,174:INFO:
+    2018-09-13 12:07:06,574:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,177:WARNING:
+    2018-09-13 12:07:06,581:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,178:DEBUG:
+    2018-09-13 12:07:06,582:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,178:DEBUG:
+    2018-09-13 12:07:06,584:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,179:INFO:
+    2018-09-13 12:07:06,589:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,182:WARNING:
+    2018-09-13 12:07:06,599:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,182:DEBUG:
+    2018-09-13 12:07:06,601:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,183:DEBUG:
+    2018-09-13 12:07:06,603:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,184:INFO:
+    2018-09-13 12:07:06,608:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,187:WARNING:
+    2018-09-13 12:07:06,615:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,187:DEBUG:
+    2018-09-13 12:07:06,617:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,187:DEBUG:
+    2018-09-13 12:07:06,619:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,189:INFO:
+    2018-09-13 12:07:06,623:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,192:WARNING:
+    2018-09-13 12:07:06,629:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,192:DEBUG:
+    2018-09-13 12:07:06,631:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,193:DEBUG:
+    2018-09-13 12:07:06,632:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,194:INFO:
+    2018-09-13 12:07:06,636:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,197:WARNING:
+    2018-09-13 12:07:06,643:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,198:DEBUG:
+    2018-09-13 12:07:06,644:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,198:DEBUG:
+    2018-09-13 12:07:06,645:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,200:INFO:
+    2018-09-13 12:07:06,648:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,203:WARNING:
+    2018-09-13 12:07:06,653:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,203:DEBUG:
+    2018-09-13 12:07:06,654:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,204:DEBUG:
+    2018-09-13 12:07:06,655:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,205:INFO:
+    2018-09-13 12:07:06,658:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,208:WARNING:
+    2018-09-13 12:07:06,665:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,209:DEBUG:
+    2018-09-13 12:07:06,666:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,209:DEBUG:
+    2018-09-13 12:07:06,667:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,210:INFO:
+    2018-09-13 12:07:06,670:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,213:WARNING:
+    2018-09-13 12:07:06,675:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,213:DEBUG:
+    2018-09-13 12:07:06,676:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,214:DEBUG:
+    2018-09-13 12:07:06,677:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,215:INFO:
+    2018-09-13 12:07:06,679:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,218:WARNING:
+    2018-09-13 12:07:06,685:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,218:DEBUG:
+    2018-09-13 12:07:06,686:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,219:DEBUG:
+    2018-09-13 12:07:06,687:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,220:INFO:
+    2018-09-13 12:07:06,690:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,223:WARNING:
+    2018-09-13 12:07:06,698:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,224:DEBUG:
+    2018-09-13 12:07:06,699:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,224:DEBUG:
+    2018-09-13 12:07:06,700:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,226:INFO:
+    2018-09-13 12:07:06,702:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,229:WARNING:
+    2018-09-13 12:07:06,708:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,229:DEBUG:
+    2018-09-13 12:07:06,709:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,230:DEBUG:
+    2018-09-13 12:07:06,710:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,231:INFO:
+    2018-09-13 12:07:06,712:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,234:WARNING:
+    2018-09-13 12:07:06,717:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,234:DEBUG:
+    2018-09-13 12:07:06,719:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,234:DEBUG:
+    2018-09-13 12:07:06,721:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,236:INFO:
+    2018-09-13 12:07:06,725:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,238:WARNING:
+    2018-09-13 12:07:06,731:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,239:DEBUG:
+    2018-09-13 12:07:06,733:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,239:DEBUG:
+    2018-09-13 12:07:06,735:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,240:INFO:
+    2018-09-13 12:07:06,739:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,243:WARNING:
+    2018-09-13 12:07:06,745:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,243:DEBUG:
+    2018-09-13 12:07:06,748:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,244:DEBUG:
+    2018-09-13 12:07:06,750:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,245:INFO:
+    2018-09-13 12:07:06,753:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,248:WARNING:
+    2018-09-13 12:07:06,759:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,248:DEBUG:
+    2018-09-13 12:07:06,761:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,248:DEBUG:
+    2018-09-13 12:07:06,763:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,250:INFO:
+    2018-09-13 12:07:06,786:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,252:WARNING:
+    2018-09-13 12:07:06,792:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,253:DEBUG:
+    2018-09-13 12:07:06,793:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,253:DEBUG:
+    2018-09-13 12:07:06,795:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,254:INFO:
+    2018-09-13 12:07:06,799:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,257:WARNING:
+    2018-09-13 12:07:06,807:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,257:DEBUG:
+    2018-09-13 12:07:06,809:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,258:DEBUG:
+    2018-09-13 12:07:06,811:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,259:INFO:
+    2018-09-13 12:07:06,814:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,262:WARNING:
+    2018-09-13 12:07:06,820:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,262:DEBUG:
+    2018-09-13 12:07:06,822:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,263:DEBUG:
+    2018-09-13 12:07:06,824:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,264:INFO:
+    2018-09-13 12:07:06,827:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,266:WARNING:
+    2018-09-13 12:07:06,837:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,267:DEBUG:
+    2018-09-13 12:07:06,839:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,267:DEBUG:
+    2018-09-13 12:07:06,841:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,269:INFO:
+    2018-09-13 12:07:06,845:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,272:WARNING:
+    2018-09-13 12:07:06,851:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,273:DEBUG:
+    2018-09-13 12:07:06,853:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,273:DEBUG:
+    2018-09-13 12:07:06,854:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,275:INFO:
+    2018-09-13 12:07:06,859:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,278:WARNING:
+    2018-09-13 12:07:06,864:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,278:DEBUG:
+    2018-09-13 12:07:06,866:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,279:DEBUG:
+    2018-09-13 12:07:06,867:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,280:INFO:
+    2018-09-13 12:07:06,870:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,283:WARNING:
+    2018-09-13 12:07:06,875:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,284:DEBUG:
+    2018-09-13 12:07:06,876:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,284:DEBUG:
+    2018-09-13 12:07:06,877:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,286:INFO:
+    2018-09-13 12:07:06,880:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,289:WARNING:
+    2018-09-13 12:07:06,887:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,289:DEBUG:
+    2018-09-13 12:07:06,888:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,290:DEBUG:
+    2018-09-13 12:07:06,889:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,291:INFO:
+    2018-09-13 12:07:06,894:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,294:WARNING:
+    2018-09-13 12:07:06,899:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,295:DEBUG:
+    2018-09-13 12:07:06,900:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,295:DEBUG:
+    2018-09-13 12:07:06,901:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,297:INFO:
+    2018-09-13 12:07:06,905:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,300:WARNING:
+    2018-09-13 12:07:06,910:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,301:DEBUG:
+    2018-09-13 12:07:06,911:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,302:DEBUG:
+    2018-09-13 12:07:06,911:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,303:INFO:
+    2018-09-13 12:07:06,915:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,306:WARNING:
+    2018-09-13 12:07:06,921:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,307:DEBUG:
+    2018-09-13 12:07:06,922:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,307:DEBUG:
+    2018-09-13 12:07:06,923:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,308:INFO:
+    2018-09-13 12:07:06,926:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,311:WARNING:
+    2018-09-13 12:07:06,932:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,311:DEBUG:
+    2018-09-13 12:07:06,934:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,312:DEBUG:
+    2018-09-13 12:07:06,935:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,313:INFO:
+    2018-09-13 12:07:06,939:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,316:WARNING:
+    2018-09-13 12:07:06,946:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,316:DEBUG:
+    2018-09-13 12:07:06,948:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,317:DEBUG:
+    2018-09-13 12:07:06,950:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,318:INFO:
+    2018-09-13 12:07:06,954:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,321:WARNING:
+    2018-09-13 12:07:06,959:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,322:DEBUG:
+    2018-09-13 12:07:06,961:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,322:DEBUG:
+    2018-09-13 12:07:06,963:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,325:INFO:
+    2018-09-13 12:07:06,967:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,328:WARNING:
+    2018-09-13 12:07:06,972:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,328:DEBUG:
+    2018-09-13 12:07:06,974:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,328:DEBUG:
+    2018-09-13 12:07:06,976:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,331:INFO:
+    2018-09-13 12:07:06,980:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,334:WARNING:
+    2018-09-13 12:07:06,985:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,335:DEBUG:
+    2018-09-13 12:07:06,987:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,335:DEBUG:
+    2018-09-13 12:07:06,988:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,337:INFO:
+    2018-09-13 12:07:06,991:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,340:WARNING:
+    2018-09-13 12:07:06,997:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,340:DEBUG:
+    2018-09-13 12:07:07,000:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,341:DEBUG:
+    2018-09-13 12:07:07,002:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,342:INFO:
+    2018-09-13 12:07:07,006:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,345:WARNING:
+    2018-09-13 12:07:07,014:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,346:DEBUG:
+    2018-09-13 12:07:07,016:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,346:DEBUG:
+    2018-09-13 12:07:07,017:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,347:INFO:
+    2018-09-13 12:07:07,021:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,351:WARNING:
+    2018-09-13 12:07:07,026:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,351:DEBUG:
+    2018-09-13 12:07:07,027:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,352:DEBUG:
+    2018-09-13 12:07:07,029:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,353:INFO:
+    2018-09-13 12:07:07,032:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,356:WARNING:
+    2018-09-13 12:07:07,037:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,357:DEBUG:
+    2018-09-13 12:07:07,039:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,357:DEBUG:
+    2018-09-13 12:07:07,041:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,359:INFO:
+    2018-09-13 12:07:07,046:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,362:WARNING:
+    2018-09-13 12:07:07,051:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,362:DEBUG:
+    2018-09-13 12:07:07,053:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,363:DEBUG:
+    2018-09-13 12:07:07,055:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,364:INFO:
+    2018-09-13 12:07:07,058:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,368:WARNING:
+    2018-09-13 12:07:07,064:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,368:DEBUG:
+    2018-09-13 12:07:07,065:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,368:DEBUG:
+    2018-09-13 12:07:07,067:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,370:INFO:
+    2018-09-13 12:07:07,071:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,373:WARNING:
+    2018-09-13 12:07:07,078:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,374:DEBUG:
+    2018-09-13 12:07:07,080:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,374:DEBUG:
+    2018-09-13 12:07:07,081:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,376:INFO:
+    2018-09-13 12:07:07,085:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,378:WARNING:
+    2018-09-13 12:07:07,093:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,379:DEBUG:
+    2018-09-13 12:07:07,095:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,379:DEBUG:
+    2018-09-13 12:07:07,096:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,381:INFO:
+    2018-09-13 12:07:07,101:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,384:WARNING:
+    2018-09-13 12:07:07,106:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,384:DEBUG:
+    2018-09-13 12:07:07,107:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,385:DEBUG:
+    2018-09-13 12:07:07,108:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,386:INFO:
+    2018-09-13 12:07:07,112:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,389:WARNING:
+    2018-09-13 12:07:07,118:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,389:DEBUG:
+    2018-09-13 12:07:07,119:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,390:DEBUG:
+    2018-09-13 12:07:07,119:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,391:INFO:
+    2018-09-13 12:07:07,122:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,394:WARNING:
+    2018-09-13 12:07:07,128:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,394:DEBUG:
+    2018-09-13 12:07:07,129:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,395:DEBUG:
+    2018-09-13 12:07:07,129:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,397:INFO:
+    2018-09-13 12:07:07,131:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,400:WARNING:
+    2018-09-13 12:07:07,136:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,400:DEBUG:
+    2018-09-13 12:07:07,136:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,401:DEBUG:
+    2018-09-13 12:07:07,137:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,402:INFO:
+    2018-09-13 12:07:07,139:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,406:WARNING:
+    2018-09-13 12:07:07,143:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,406:DEBUG:
+    2018-09-13 12:07:07,144:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,407:DEBUG:
+    2018-09-13 12:07:07,144:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,409:INFO:
+    2018-09-13 12:07:07,146:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,412:WARNING:
+    2018-09-13 12:07:07,151:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,412:DEBUG:
+    2018-09-13 12:07:07,152:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,413:DEBUG:
+    2018-09-13 12:07:07,152:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,414:INFO:
+    2018-09-13 12:07:07,154:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,417:WARNING:
+    2018-09-13 12:07:07,159:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,418:DEBUG:
+    2018-09-13 12:07:07,159:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,418:DEBUG:
+    2018-09-13 12:07:07,160:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,420:INFO:
+    2018-09-13 12:07:07,162:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,423:WARNING:
+    2018-09-13 12:07:07,165:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,423:DEBUG:
+    2018-09-13 12:07:07,166:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,424:DEBUG:
+    2018-09-13 12:07:07,166:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,425:INFO:
+    2018-09-13 12:07:07,168:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,428:WARNING:
+    2018-09-13 12:07:07,171:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,429:DEBUG:
+    2018-09-13 12:07:07,172:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,429:DEBUG:
+    2018-09-13 12:07:07,173:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,431:INFO:
+    2018-09-13 12:07:07,174:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,434:WARNING:
+    2018-09-13 12:07:07,178:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,435:DEBUG:
+    2018-09-13 12:07:07,179:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,435:DEBUG:
+    2018-09-13 12:07:07,180:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,437:INFO:
+    2018-09-13 12:07:07,181:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,440:WARNING:
+    2018-09-13 12:07:07,186:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,440:DEBUG:
+    2018-09-13 12:07:07,186:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,441:DEBUG:
+    2018-09-13 12:07:07,187:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,442:INFO:
+    2018-09-13 12:07:07,189:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,445:WARNING:
+    2018-09-13 12:07:07,193:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,446:DEBUG:
+    2018-09-13 12:07:07,193:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,447:DEBUG:
+    2018-09-13 12:07:07,194:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,448:INFO:
+    2018-09-13 12:07:07,198:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,451:WARNING:
+    2018-09-13 12:07:07,204:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,452:DEBUG:
+    2018-09-13 12:07:07,205:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,452:DEBUG:
+    2018-09-13 12:07:07,205:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,454:INFO:
+    2018-09-13 12:07:07,208:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,457:WARNING:
+    2018-09-13 12:07:07,214:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,457:DEBUG:
+    2018-09-13 12:07:07,214:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,458:DEBUG:
+    2018-09-13 12:07:07,215:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,459:INFO:
+    2018-09-13 12:07:07,217:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,462:WARNING:
+    2018-09-13 12:07:07,221:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,463:DEBUG:
+    2018-09-13 12:07:07,222:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,464:DEBUG:
+    2018-09-13 12:07:07,223:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,465:INFO:
+    2018-09-13 12:07:07,225:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,468:WARNING:
+    2018-09-13 12:07:07,230:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,468:DEBUG:
+    2018-09-13 12:07:07,231:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,469:DEBUG:
+    2018-09-13 12:07:07,231:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,470:INFO:
+    2018-09-13 12:07:07,233:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,473:WARNING:
+    2018-09-13 12:07:07,238:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,474:DEBUG:
+    2018-09-13 12:07:07,239:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,475:DEBUG:
+    2018-09-13 12:07:07,239:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,476:INFO:
+    2018-09-13 12:07:07,241:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,479:WARNING:
+    2018-09-13 12:07:07,245:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,480:DEBUG:
+    2018-09-13 12:07:07,245:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,480:DEBUG:
+    2018-09-13 12:07:07,246:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,482:INFO:
+    2018-09-13 12:07:07,248:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,484:WARNING:
+    2018-09-13 12:07:07,253:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,485:DEBUG:
+    2018-09-13 12:07:07,254:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,485:DEBUG:
+    2018-09-13 12:07:07,254:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,487:INFO:
+    2018-09-13 12:07:07,257:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,490:WARNING:
+    2018-09-13 12:07:07,263:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,490:DEBUG:
+    2018-09-13 12:07:07,263:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,491:DEBUG:
+    2018-09-13 12:07:07,264:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,492:INFO:
+    2018-09-13 12:07:07,266:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,495:WARNING:
+    2018-09-13 12:07:07,270:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,495:DEBUG:
+    2018-09-13 12:07:07,271:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,496:DEBUG:
+    2018-09-13 12:07:07,271:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,497:INFO:
+    2018-09-13 12:07:07,273:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,500:WARNING:
+    2018-09-13 12:07:07,277:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,501:DEBUG:
+    2018-09-13 12:07:07,279:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,501:DEBUG:
+    2018-09-13 12:07:07,281:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,503:INFO:
+    2018-09-13 12:07:07,286:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,506:WARNING:
+    2018-09-13 12:07:07,292:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,507:DEBUG:
+    2018-09-13 12:07:07,294:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,507:DEBUG:
+    2018-09-13 12:07:07,296:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,509:INFO:
+    2018-09-13 12:07:07,301:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,512:WARNING:
+    2018-09-13 12:07:07,307:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,512:DEBUG:
+    2018-09-13 12:07:07,309:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,513:DEBUG:
+    2018-09-13 12:07:07,311:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,514:INFO:
+    2018-09-13 12:07:07,314:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,518:WARNING:
+    2018-09-13 12:07:07,320:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,518:DEBUG:
+    2018-09-13 12:07:07,322:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,519:DEBUG:
+    2018-09-13 12:07:07,324:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,520:INFO:
+    2018-09-13 12:07:07,327:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,523:WARNING:
+    2018-09-13 12:07:07,332:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,524:DEBUG:
+    2018-09-13 12:07:07,334:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,524:DEBUG:
+    2018-09-13 12:07:07,335:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,526:INFO:
+    2018-09-13 12:07:07,338:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,528:WARNING:
+    2018-09-13 12:07:07,344:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,529:DEBUG:
+    2018-09-13 12:07:07,345:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,530:DEBUG:
+    2018-09-13 12:07:07,346:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,531:INFO:
+    2018-09-13 12:07:07,349:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,534:WARNING:
+    2018-09-13 12:07:07,354:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,535:DEBUG:
+    2018-09-13 12:07:07,356:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,535:DEBUG:
+    2018-09-13 12:07:07,357:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,537:INFO:
+    2018-09-13 12:07:07,361:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,540:WARNING:
+    2018-09-13 12:07:07,366:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,540:DEBUG:
+    2018-09-13 12:07:07,369:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,541:DEBUG:
+    2018-09-13 12:07:07,370:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,542:INFO:
+    2018-09-13 12:07:07,373:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,545:WARNING:
+    2018-09-13 12:07:07,378:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,546:DEBUG:
+    2018-09-13 12:07:07,379:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,546:DEBUG:
+    2018-09-13 12:07:07,380:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,548:INFO:
+    2018-09-13 12:07:07,382:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,550:WARNING:
+    2018-09-13 12:07:07,388:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,551:DEBUG:
+    2018-09-13 12:07:07,388:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,551:DEBUG:
+    2018-09-13 12:07:07,389:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,552:INFO:
+    2018-09-13 12:07:07,392:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,555:WARNING:
+    2018-09-13 12:07:07,398:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,556:DEBUG:
+    2018-09-13 12:07:07,399:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,556:DEBUG:
+    2018-09-13 12:07:07,399:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,557:INFO:
+    2018-09-13 12:07:07,401:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,560:WARNING:
+    2018-09-13 12:07:07,405:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,561:DEBUG:
+    2018-09-13 12:07:07,406:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,561:DEBUG:
+    2018-09-13 12:07:07,407:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,562:INFO:
+    2018-09-13 12:07:07,408:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,565:WARNING:
+    2018-09-13 12:07:07,413:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,566:DEBUG:
+    2018-09-13 12:07:07,413:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,568:DEBUG:
+    2018-09-13 12:07:07,414:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,570:INFO:
+    2018-09-13 12:07:07,417:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,573:WARNING:
+    2018-09-13 12:07:07,422:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,573:DEBUG:
+    2018-09-13 12:07:07,423:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,574:DEBUG:
+    2018-09-13 12:07:07,424:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,576:INFO:
+    2018-09-13 12:07:07,425:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,579:WARNING:
+    2018-09-13 12:07:07,430:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,582:DEBUG:
+    2018-09-13 12:07:07,430:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,582:DEBUG:
+    2018-09-13 12:07:07,431:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,585:INFO:
+    2018-09-13 12:07:07,433:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,589:WARNING:
+    2018-09-13 12:07:07,437:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,589:DEBUG:
+    2018-09-13 12:07:07,439:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,590:DEBUG:
+    2018-09-13 12:07:07,441:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,591:INFO:
+    2018-09-13 12:07:07,444:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,594:WARNING:
+    2018-09-13 12:07:07,450:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,595:DEBUG:
+    2018-09-13 12:07:07,452:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,596:DEBUG:
+    2018-09-13 12:07:07,453:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,598:INFO:
+    2018-09-13 12:07:07,457:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,601:WARNING:
+    2018-09-13 12:07:07,463:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,602:DEBUG:
+    2018-09-13 12:07:07,464:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,603:DEBUG:
+    2018-09-13 12:07:07,466:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,604:INFO:
+    2018-09-13 12:07:07,470:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,607:WARNING:
+    2018-09-13 12:07:07,476:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,608:DEBUG:
+    2018-09-13 12:07:07,477:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,609:DEBUG:
+    2018-09-13 12:07:07,479:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,610:INFO:
+    2018-09-13 12:07:07,483:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,613:WARNING:
+    2018-09-13 12:07:07,489:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,614:DEBUG:
+    2018-09-13 12:07:07,490:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,614:DEBUG:
+    2018-09-13 12:07:07,492:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,616:INFO:
+    2018-09-13 12:07:07,496:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,619:WARNING:
+    2018-09-13 12:07:07,502:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,619:DEBUG:
+    2018-09-13 12:07:07,504:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,620:DEBUG:
+    2018-09-13 12:07:07,505:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,621:INFO:
+    2018-09-13 12:07:07,507:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,624:WARNING:
+    2018-09-13 12:07:07,512:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,625:DEBUG:
+    2018-09-13 12:07:07,513:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,626:DEBUG:
+    2018-09-13 12:07:07,514:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,627:INFO:
+    2018-09-13 12:07:07,517:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,630:WARNING:
+    2018-09-13 12:07:07,521:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,631:DEBUG:
+    2018-09-13 12:07:07,522:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,631:DEBUG:
+    2018-09-13 12:07:07,523:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,633:INFO:
+    2018-09-13 12:07:07,526:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,635:WARNING:
+    2018-09-13 12:07:07,531:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,636:DEBUG:
+    2018-09-13 12:07:07,532:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,636:DEBUG:
+    2018-09-13 12:07:07,533:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,638:INFO:
+    2018-09-13 12:07:07,535:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,640:WARNING:
+    2018-09-13 12:07:07,541:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,641:DEBUG:
+    2018-09-13 12:07:07,542:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,642:DEBUG:
+    2018-09-13 12:07:07,542:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,643:INFO:
+    2018-09-13 12:07:07,545:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,646:WARNING:
+    2018-09-13 12:07:07,551:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,646:DEBUG:
+    2018-09-13 12:07:07,552:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,646:DEBUG:
+    2018-09-13 12:07:07,553:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,648:INFO:
+    2018-09-13 12:07:07,557:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,650:WARNING:
+    2018-09-13 12:07:07,564:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,651:DEBUG:
+    2018-09-13 12:07:07,565:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,651:DEBUG:
+    2018-09-13 12:07:07,566:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,652:INFO:
+    2018-09-13 12:07:07,569:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,655:WARNING:
+    2018-09-13 12:07:07,577:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,656:DEBUG:
+    2018-09-13 12:07:07,578:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,656:DEBUG:
+    2018-09-13 12:07:07,579:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,657:INFO:
+    2018-09-13 12:07:07,583:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,661:WARNING:
+    2018-09-13 12:07:07,589:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,661:DEBUG:
+    2018-09-13 12:07:07,590:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,661:DEBUG:
+    2018-09-13 12:07:07,591:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,663:INFO:
+    2018-09-13 12:07:07,595:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,665:WARNING:
+    2018-09-13 12:07:07,600:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,666:DEBUG:
+    2018-09-13 12:07:07,601:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,666:DEBUG:
+    2018-09-13 12:07:07,602:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,667:INFO:
+    2018-09-13 12:07:07,605:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,670:WARNING:
+    2018-09-13 12:07:07,610:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,670:DEBUG:
+    2018-09-13 12:07:07,611:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,671:DEBUG:
+    2018-09-13 12:07:07,612:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,672:INFO:
+    2018-09-13 12:07:07,615:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,675:WARNING:
+    2018-09-13 12:07:07,621:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,675:DEBUG:
+    2018-09-13 12:07:07,622:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,676:DEBUG:
+    2018-09-13 12:07:07,623:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,677:INFO:
+    2018-09-13 12:07:07,625:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,680:WARNING:
+    2018-09-13 12:07:07,630:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,681:DEBUG:
+    2018-09-13 12:07:07,631:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,681:DEBUG:
+    2018-09-13 12:07:07,632:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,683:INFO:
+    2018-09-13 12:07:07,635:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,686:WARNING:
+    2018-09-13 12:07:07,644:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,687:DEBUG:
+    2018-09-13 12:07:07,646:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,687:DEBUG:
+    2018-09-13 12:07:07,648:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,689:INFO:
+    2018-09-13 12:07:07,651:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,693:WARNING:
+    2018-09-13 12:07:07,656:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,693:DEBUG:
+    2018-09-13 12:07:07,658:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,694:DEBUG:
+    2018-09-13 12:07:07,660:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,695:INFO:
+    2018-09-13 12:07:07,664:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,698:WARNING:
+    2018-09-13 12:07:07,670:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,698:DEBUG:
+    2018-09-13 12:07:07,672:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,699:DEBUG:
+    2018-09-13 12:07:07,673:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,700:INFO:
+    2018-09-13 12:07:07,677:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,703:WARNING:
+    2018-09-13 12:07:07,683:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,703:DEBUG:
+    2018-09-13 12:07:07,684:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,703:DEBUG:
+    2018-09-13 12:07:07,686:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,705:INFO:
+    2018-09-13 12:07:07,688:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,708:WARNING:
+    2018-09-13 12:07:07,692:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,709:DEBUG:
+    2018-09-13 12:07:07,693:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,709:DEBUG:
+    2018-09-13 12:07:07,694:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,711:INFO:
+    2018-09-13 12:07:07,696:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,714:WARNING:
+    2018-09-13 12:07:07,702:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,714:DEBUG:
+    2018-09-13 12:07:07,702:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,715:DEBUG:
+    2018-09-13 12:07:07,703:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,716:INFO:
+    2018-09-13 12:07:07,705:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,719:WARNING:
+    2018-09-13 12:07:07,712:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,719:DEBUG:
+    2018-09-13 12:07:07,714:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,719:DEBUG:
+    2018-09-13 12:07:07,715:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,721:INFO:
+    2018-09-13 12:07:07,719:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,724:WARNING:
+    2018-09-13 12:07:07,725:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,724:DEBUG:
+    2018-09-13 12:07:07,727:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,724:DEBUG:
+    2018-09-13 12:07:07,728:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,726:INFO:
+    2018-09-13 12:07:07,733:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,728:WARNING:
+    2018-09-13 12:07:07,739:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,729:DEBUG:
+    2018-09-13 12:07:07,741:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,729:DEBUG:
+    2018-09-13 12:07:07,742:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,730:INFO:
+    2018-09-13 12:07:07,746:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,733:WARNING:
+    2018-09-13 12:07:07,753:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,734:DEBUG:
+    2018-09-13 12:07:07,754:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,734:DEBUG:
+    2018-09-13 12:07:07,756:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,735:INFO:
+    2018-09-13 12:07:07,759:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,738:WARNING:
+    2018-09-13 12:07:07,765:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,738:DEBUG:
+    2018-09-13 12:07:07,766:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,739:DEBUG:
+    2018-09-13 12:07:07,767:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,740:INFO:
+    2018-09-13 12:07:07,769:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,743:WARNING:
+    2018-09-13 12:07:07,774:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,744:DEBUG:
+    2018-09-13 12:07:07,775:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,744:DEBUG:
+    2018-09-13 12:07:07,776:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,745:INFO:
+    2018-09-13 12:07:07,797:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,748:WARNING:
+    2018-09-13 12:07:07,803:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,748:DEBUG:
+    2018-09-13 12:07:07,804:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,749:DEBUG:
+    2018-09-13 12:07:07,804:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,750:INFO:
+    2018-09-13 12:07:07,807:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,753:WARNING:
+    2018-09-13 12:07:07,814:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,754:DEBUG:
+    2018-09-13 12:07:07,815:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,754:DEBUG:
+    2018-09-13 12:07:07,816:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,756:INFO:
+    2018-09-13 12:07:07,821:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,759:WARNING:
+    2018-09-13 12:07:07,829:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,759:DEBUG:
+    2018-09-13 12:07:07,830:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,760:DEBUG:
+    2018-09-13 12:07:07,831:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,761:INFO:
+    2018-09-13 12:07:07,833:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,764:WARNING:
+    2018-09-13 12:07:07,841:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,765:DEBUG:
+    2018-09-13 12:07:07,842:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,765:DEBUG:
+    2018-09-13 12:07:07,843:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,767:INFO:
+    2018-09-13 12:07:07,848:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,769:WARNING:
+    2018-09-13 12:07:07,853:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,770:DEBUG:
+    2018-09-13 12:07:07,854:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,770:DEBUG:
+    2018-09-13 12:07:07,855:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,772:INFO:
+    2018-09-13 12:07:07,858:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,774:WARNING:
+    2018-09-13 12:07:07,866:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,775:DEBUG:
+    2018-09-13 12:07:07,867:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,775:DEBUG:
+    2018-09-13 12:07:07,868:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,777:INFO:
+    2018-09-13 12:07:07,872:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,780:WARNING:
+    2018-09-13 12:07:07,877:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,780:DEBUG:
+    2018-09-13 12:07:07,878:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,781:DEBUG:
+    2018-09-13 12:07:07,879:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,782:INFO:
+    2018-09-13 12:07:07,882:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,785:WARNING:
+    2018-09-13 12:07:07,888:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,786:DEBUG:
+    2018-09-13 12:07:07,889:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,787:DEBUG:
+    2018-09-13 12:07:07,890:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,788:INFO:
+    2018-09-13 12:07:07,892:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,791:WARNING:
+    2018-09-13 12:07:07,897:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,791:DEBUG:
+    2018-09-13 12:07:07,899:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,792:DEBUG:
+    2018-09-13 12:07:07,900:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,793:INFO:
+    2018-09-13 12:07:07,904:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,796:WARNING:
+    2018-09-13 12:07:07,913:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,797:DEBUG:
+    2018-09-13 12:07:07,915:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,797:DEBUG:
+    2018-09-13 12:07:07,915:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,798:INFO:
+    2018-09-13 12:07:07,920:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,801:WARNING:
+    2018-09-13 12:07:07,924:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,802:DEBUG:
+    2018-09-13 12:07:07,926:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,802:DEBUG:
+    2018-09-13 12:07:07,927:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,803:INFO:
+    2018-09-13 12:07:07,931:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,807:WARNING:
+    2018-09-13 12:07:07,939:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,807:DEBUG:
+    2018-09-13 12:07:07,940:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,808:DEBUG:
+    2018-09-13 12:07:07,941:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,809:INFO:
+    2018-09-13 12:07:07,945:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,812:WARNING:
+    2018-09-13 12:07:07,950:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,813:DEBUG:
+    2018-09-13 12:07:07,952:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,813:DEBUG:
+    2018-09-13 12:07:07,952:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,814:INFO:
+    2018-09-13 12:07:07,956:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,817:WARNING:
+    2018-09-13 12:07:07,964:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,818:DEBUG:
+    2018-09-13 12:07:07,965:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,818:DEBUG:
+    2018-09-13 12:07:07,966:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,819:INFO:
+    2018-09-13 12:07:07,969:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,822:WARNING:
+    2018-09-13 12:07:07,973:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,822:DEBUG:
+    2018-09-13 12:07:07,974:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,823:DEBUG:
+    2018-09-13 12:07:07,976:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,824:INFO:
+    2018-09-13 12:07:07,978:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,827:WARNING:
+    2018-09-13 12:07:07,985:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,827:DEBUG:
+    2018-09-13 12:07:07,987:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,827:DEBUG:
+    2018-09-13 12:07:07,988:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,828:INFO:
+    2018-09-13 12:07:07,991:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,831:WARNING:
+    2018-09-13 12:07:07,997:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,832:DEBUG:
+    2018-09-13 12:07:07,998:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,832:DEBUG:
+    2018-09-13 12:07:08,000:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,833:INFO:
+    2018-09-13 12:07:08,003:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,836:WARNING:
+    2018-09-13 12:07:08,009:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,837:DEBUG:
+    2018-09-13 12:07:08,010:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,837:DEBUG:
+    2018-09-13 12:07:08,011:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,838:INFO:
+    2018-09-13 12:07:08,013:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,841:WARNING:
+    2018-09-13 12:07:08,018:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,841:DEBUG:
+    2018-09-13 12:07:08,019:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,842:DEBUG:
+    2018-09-13 12:07:08,020:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,843:INFO:
+    2018-09-13 12:07:08,023:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,846:WARNING:
+    2018-09-13 12:07:08,028:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,846:DEBUG:
+    2018-09-13 12:07:08,029:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,846:DEBUG:
+    2018-09-13 12:07:08,031:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,848:INFO:
+    2018-09-13 12:07:08,034:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,851:WARNING:
+    2018-09-13 12:07:08,038:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,851:DEBUG:
+    2018-09-13 12:07:08,040:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,851:DEBUG:
+    2018-09-13 12:07:08,040:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,852:INFO:
+    2018-09-13 12:07:08,044:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,855:WARNING:
+    2018-09-13 12:07:08,050:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,856:DEBUG:
+    2018-09-13 12:07:08,052:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,856:DEBUG:
+    2018-09-13 12:07:08,053:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,858:INFO:
+    2018-09-13 12:07:08,057:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,861:WARNING:
+    2018-09-13 12:07:08,064:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,861:DEBUG:
+    2018-09-13 12:07:08,066:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,862:DEBUG:
+    2018-09-13 12:07:08,067:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,863:INFO:
+    2018-09-13 12:07:08,071:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,866:WARNING:
+    2018-09-13 12:07:08,078:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,867:DEBUG:
+    2018-09-13 12:07:08,080:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,867:DEBUG:
+    2018-09-13 12:07:08,081:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,868:INFO:
+    2018-09-13 12:07:08,085:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,871:WARNING:
+    2018-09-13 12:07:08,090:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,871:DEBUG:
+    2018-09-13 12:07:08,092:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,872:DEBUG:
+    2018-09-13 12:07:08,094:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,873:INFO:
+    2018-09-13 12:07:08,101:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,876:WARNING:
+    2018-09-13 12:07:08,108:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,876:DEBUG:
+    2018-09-13 12:07:08,110:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,876:DEBUG:
+    2018-09-13 12:07:08,111:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,878:INFO:
+    2018-09-13 12:07:08,115:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,880:WARNING:
+    2018-09-13 12:07:08,121:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,880:DEBUG:
+    2018-09-13 12:07:08,123:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,881:DEBUG:
+    2018-09-13 12:07:08,125:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,883:INFO:
+    2018-09-13 12:07:08,128:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,886:WARNING:
+    2018-09-13 12:07:08,134:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,887:DEBUG:
+    2018-09-13 12:07:08,136:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,887:DEBUG:
+    2018-09-13 12:07:08,137:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,889:INFO:
+    2018-09-13 12:07:08,139:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,892:WARNING:
+    2018-09-13 12:07:08,144:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,893:DEBUG:
+    2018-09-13 12:07:08,145:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,894:DEBUG:
+    2018-09-13 12:07:08,146:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,896:INFO:
+    2018-09-13 12:07:08,149:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,899:WARNING:
+    2018-09-13 12:07:08,154:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,899:DEBUG:
+    2018-09-13 12:07:08,155:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,900:DEBUG:
+    2018-09-13 12:07:08,156:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,901:INFO:
+    2018-09-13 12:07:08,159:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,904:WARNING:
+    2018-09-13 12:07:08,163:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,905:DEBUG:
+    2018-09-13 12:07:08,165:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,905:DEBUG:
+    2018-09-13 12:07:08,166:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,907:INFO:
+    2018-09-13 12:07:08,169:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,910:WARNING:
+    2018-09-13 12:07:08,173:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,911:DEBUG:
+    2018-09-13 12:07:08,174:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,911:DEBUG:
+    2018-09-13 12:07:08,176:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,913:INFO:
+    2018-09-13 12:07:08,179:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,916:WARNING:
+    2018-09-13 12:07:08,186:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,916:DEBUG:
+    2018-09-13 12:07:08,188:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,917:DEBUG:
+    2018-09-13 12:07:08,189:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,919:INFO:
+    2018-09-13 12:07:08,191:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,922:WARNING:
+    2018-09-13 12:07:08,195:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,922:DEBUG:
+    2018-09-13 12:07:08,196:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,923:DEBUG:
+    2018-09-13 12:07:08,197:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,924:INFO:
+    2018-09-13 12:07:08,202:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,927:WARNING:
+    2018-09-13 12:07:08,208:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,927:DEBUG:
+    2018-09-13 12:07:08,209:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,928:DEBUG:
+    2018-09-13 12:07:08,211:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,929:INFO:
+    2018-09-13 12:07:08,214:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,931:WARNING:
+    2018-09-13 12:07:08,221:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,932:DEBUG:
+    2018-09-13 12:07:08,222:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,932:DEBUG:
+    2018-09-13 12:07:08,223:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,934:INFO:
+    2018-09-13 12:07:08,226:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,937:WARNING:
+    2018-09-13 12:07:08,231:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,937:DEBUG:
+    2018-09-13 12:07:08,232:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,938:DEBUG:
+    2018-09-13 12:07:08,233:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,940:INFO:
+    2018-09-13 12:07:08,238:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,942:WARNING:
+    2018-09-13 12:07:08,243:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,943:DEBUG:
+    2018-09-13 12:07:08,244:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,943:DEBUG:
+    2018-09-13 12:07:08,245:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,945:INFO:
+    2018-09-13 12:07:08,248:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,948:WARNING:
+    2018-09-13 12:07:08,254:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,948:DEBUG:
+    2018-09-13 12:07:08,255:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,949:DEBUG:
+    2018-09-13 12:07:08,256:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,950:INFO:
+    2018-09-13 12:07:08,259:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,953:WARNING:
+    2018-09-13 12:07:08,263:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,954:DEBUG:
+    2018-09-13 12:07:08,265:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,954:DEBUG:
+    2018-09-13 12:07:08,266:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,956:INFO:
+    2018-09-13 12:07:08,269:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,959:WARNING:
+    2018-09-13 12:07:08,274:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,959:DEBUG:
+    2018-09-13 12:07:08,276:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,960:DEBUG:
+    2018-09-13 12:07:08,277:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,961:INFO:
+    2018-09-13 12:07:08,279:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,964:WARNING:
+    2018-09-13 12:07:08,285:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,965:DEBUG:
+    2018-09-13 12:07:08,287:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,965:DEBUG:
+    2018-09-13 12:07:08,288:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,967:INFO:
+    2018-09-13 12:07:08,292:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,970:WARNING:
+    2018-09-13 12:07:08,298:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,970:DEBUG:
+    2018-09-13 12:07:08,299:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,971:DEBUG:
+    2018-09-13 12:07:08,300:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,972:INFO:
+    2018-09-13 12:07:08,304:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,975:WARNING:
+    2018-09-13 12:07:08,309:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,975:DEBUG:
+    2018-09-13 12:07:08,311:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,976:DEBUG:
+    2018-09-13 12:07:08,312:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,977:INFO:
+    2018-09-13 12:07:08,315:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,980:WARNING:
+    2018-09-13 12:07:08,319:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,981:DEBUG:
+    2018-09-13 12:07:08,321:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,981:DEBUG:
+    2018-09-13 12:07:08,322:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,982:INFO:
+    2018-09-13 12:07:08,324:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,986:WARNING:
+    2018-09-13 12:07:08,327:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,986:DEBUG:
+    2018-09-13 12:07:08,329:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,987:DEBUG:
+    2018-09-13 12:07:08,329:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,988:INFO:
+    2018-09-13 12:07:08,332:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,991:WARNING:
+    2018-09-13 12:07:08,336:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,991:DEBUG:
+    2018-09-13 12:07:08,337:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,992:DEBUG:
+    2018-09-13 12:07:08,338:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,993:INFO:
+    2018-09-13 12:07:08,341:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:09,996:WARNING:
+    2018-09-13 12:07:08,345:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:09,996:DEBUG:
+    2018-09-13 12:07:08,347:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:09,997:DEBUG:
+    2018-09-13 12:07:08,348:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:09,998:INFO:
+    2018-09-13 12:07:08,350:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,001:WARNING:
+    2018-09-13 12:07:08,356:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,002:DEBUG:
+    2018-09-13 12:07:08,357:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,002:DEBUG:
+    2018-09-13 12:07:08,358:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,004:INFO:
+    2018-09-13 12:07:08,361:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,007:WARNING:
+    2018-09-13 12:07:08,367:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,007:DEBUG:
+    2018-09-13 12:07:08,368:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,008:DEBUG:
+    2018-09-13 12:07:08,369:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,009:INFO:
+    2018-09-13 12:07:08,372:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,012:WARNING:
+    2018-09-13 12:07:08,376:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,013:DEBUG:
+    2018-09-13 12:07:08,377:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,013:DEBUG:
+    2018-09-13 12:07:08,379:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,015:INFO:
+    2018-09-13 12:07:08,381:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,018:WARNING:
+    2018-09-13 12:07:08,386:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,018:DEBUG:
+    2018-09-13 12:07:08,388:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,019:DEBUG:
+    2018-09-13 12:07:08,389:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,020:INFO:
+    2018-09-13 12:07:08,391:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,023:WARNING:
+    2018-09-13 12:07:08,399:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,024:DEBUG:
+    2018-09-13 12:07:08,400:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,024:DEBUG:
+    2018-09-13 12:07:08,402:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,025:INFO:
+    2018-09-13 12:07:08,405:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,028:WARNING:
+    2018-09-13 12:07:08,410:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,029:DEBUG:
+    2018-09-13 12:07:08,411:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,030:DEBUG:
+    2018-09-13 12:07:08,412:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,034:INFO:
+    2018-09-13 12:07:08,416:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,040:WARNING:
+    2018-09-13 12:07:08,420:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,040:DEBUG:
+    2018-09-13 12:07:08,422:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,041:DEBUG:
+    2018-09-13 12:07:08,423:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,046:INFO:
+    2018-09-13 12:07:08,426:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,050:WARNING:
+    2018-09-13 12:07:08,432:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,051:DEBUG:
+    2018-09-13 12:07:08,434:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,051:DEBUG:
+    2018-09-13 12:07:08,435:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,053:INFO:
+    2018-09-13 12:07:08,439:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,056:WARNING:
+    2018-09-13 12:07:08,446:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,057:DEBUG:
+    2018-09-13 12:07:08,447:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,058:DEBUG:
+    2018-09-13 12:07:08,448:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,060:INFO:
+    2018-09-13 12:07:08,451:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,063:WARNING:
+    2018-09-13 12:07:08,456:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,064:DEBUG:
+    2018-09-13 12:07:08,457:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,065:DEBUG:
+    2018-09-13 12:07:08,458:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,066:INFO:
+    2018-09-13 12:07:08,461:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,070:WARNING:
+    2018-09-13 12:07:08,466:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,070:DEBUG:
+    2018-09-13 12:07:08,467:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,071:DEBUG:
+    2018-09-13 12:07:08,468:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,073:INFO:
+    2018-09-13 12:07:08,471:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,076:WARNING:
+    2018-09-13 12:07:08,475:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,076:DEBUG:
+    2018-09-13 12:07:08,477:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,077:DEBUG:
+    2018-09-13 12:07:08,478:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,078:INFO:
+    2018-09-13 12:07:08,481:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,082:WARNING:
+    2018-09-13 12:07:08,487:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,083:DEBUG:
+    2018-09-13 12:07:08,488:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,084:DEBUG:
+    2018-09-13 12:07:08,489:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,085:INFO:
+    2018-09-13 12:07:08,492:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,088:WARNING:
+    2018-09-13 12:07:08,498:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,088:DEBUG:
+    2018-09-13 12:07:08,499:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,089:DEBUG:
+    2018-09-13 12:07:08,499:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,090:INFO:
+    2018-09-13 12:07:08,502:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,093:WARNING:
+    2018-09-13 12:07:08,508:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,094:DEBUG:
+    2018-09-13 12:07:08,509:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,094:DEBUG:
+    2018-09-13 12:07:08,510:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,096:INFO:
+    2018-09-13 12:07:08,513:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,101:WARNING:
+    2018-09-13 12:07:08,517:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,101:DEBUG:
+    2018-09-13 12:07:08,519:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,102:DEBUG:
+    2018-09-13 12:07:08,520:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,103:INFO:
+    2018-09-13 12:07:08,523:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,107:WARNING:
+    2018-09-13 12:07:08,529:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,107:DEBUG:
+    2018-09-13 12:07:08,531:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,107:DEBUG:
+    2018-09-13 12:07:08,532:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,109:INFO:
+    2018-09-13 12:07:08,535:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,112:WARNING:
+    2018-09-13 12:07:08,540:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,112:DEBUG:
+    2018-09-13 12:07:08,542:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,112:DEBUG:
+    2018-09-13 12:07:08,542:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,114:INFO:
+    2018-09-13 12:07:08,545:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,117:WARNING:
+    2018-09-13 12:07:08,549:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,117:DEBUG:
+    2018-09-13 12:07:08,550:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,117:DEBUG:
+    2018-09-13 12:07:08,551:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,119:INFO:
+    2018-09-13 12:07:08,554:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,122:WARNING:
+    2018-09-13 12:07:08,559:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,123:DEBUG:
+    2018-09-13 12:07:08,560:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,123:DEBUG:
+    2018-09-13 12:07:08,561:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,124:INFO:
+    2018-09-13 12:07:08,564:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,128:WARNING:
+    2018-09-13 12:07:08,570:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,128:DEBUG:
+    2018-09-13 12:07:08,572:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,128:DEBUG:
+    2018-09-13 12:07:08,574:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,130:INFO:
+    2018-09-13 12:07:08,577:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,133:WARNING:
+    2018-09-13 12:07:08,583:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,133:DEBUG:
+    2018-09-13 12:07:08,585:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,134:DEBUG:
+    2018-09-13 12:07:08,586:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,135:INFO:
+    2018-09-13 12:07:08,591:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,138:WARNING:
+    2018-09-13 12:07:08,597:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,138:DEBUG:
+    2018-09-13 12:07:08,599:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,139:DEBUG:
+    2018-09-13 12:07:08,601:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,140:INFO:
+    2018-09-13 12:07:08,606:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,143:WARNING:
+    2018-09-13 12:07:08,614:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,144:DEBUG:
+    2018-09-13 12:07:08,615:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,145:DEBUG:
+    2018-09-13 12:07:08,617:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,146:INFO:
+    2018-09-13 12:07:08,620:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,149:WARNING:
+    2018-09-13 12:07:08,627:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,150:DEBUG:
+    2018-09-13 12:07:08,629:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,151:DEBUG:
+    2018-09-13 12:07:08,631:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,152:INFO:
+    2018-09-13 12:07:08,639:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,155:WARNING:
+    2018-09-13 12:07:08,645:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,155:DEBUG:
+    2018-09-13 12:07:08,647:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,156:DEBUG:
+    2018-09-13 12:07:08,648:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,157:INFO:
+    2018-09-13 12:07:08,652:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,159:WARNING:
+    2018-09-13 12:07:08,658:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,160:DEBUG:
+    2018-09-13 12:07:08,660:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,160:DEBUG:
+    2018-09-13 12:07:08,662:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,161:INFO:
+    2018-09-13 12:07:08,665:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,164:WARNING:
+    2018-09-13 12:07:08,671:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,165:DEBUG:
+    2018-09-13 12:07:08,673:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,165:DEBUG:
+    2018-09-13 12:07:08,675:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,166:INFO:
+    2018-09-13 12:07:08,678:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,169:WARNING:
+    2018-09-13 12:07:08,684:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,170:DEBUG:
+    2018-09-13 12:07:08,685:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,170:DEBUG:
+    2018-09-13 12:07:08,686:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,172:INFO:
+    2018-09-13 12:07:08,689:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,175:WARNING:
+    2018-09-13 12:07:08,694:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,176:DEBUG:
+    2018-09-13 12:07:08,695:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,176:DEBUG:
+    2018-09-13 12:07:08,696:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,178:INFO:
+    2018-09-13 12:07:08,698:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,181:WARNING:
+    2018-09-13 12:07:08,703:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,181:DEBUG:
+    2018-09-13 12:07:08,704:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,182:DEBUG:
+    2018-09-13 12:07:08,704:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,183:INFO:
+    2018-09-13 12:07:08,707:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,186:WARNING:
+    2018-09-13 12:07:08,712:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,187:DEBUG:
+    2018-09-13 12:07:08,713:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,187:DEBUG:
+    2018-09-13 12:07:08,714:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,189:INFO:
+    2018-09-13 12:07:08,717:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,192:WARNING:
+    2018-09-13 12:07:08,723:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,192:DEBUG:
+    2018-09-13 12:07:08,723:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,193:DEBUG:
+    2018-09-13 12:07:08,724:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,194:INFO:
+    2018-09-13 12:07:08,727:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,198:WARNING:
+    2018-09-13 12:07:08,732:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,199:DEBUG:
+    2018-09-13 12:07:08,734:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,199:DEBUG:
+    2018-09-13 12:07:08,737:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,201:INFO:
+    2018-09-13 12:07:08,740:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,204:WARNING:
+    2018-09-13 12:07:08,747:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,204:DEBUG:
+    2018-09-13 12:07:08,749:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,204:DEBUG:
+    2018-09-13 12:07:08,751:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,206:INFO:
+    2018-09-13 12:07:08,756:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,209:WARNING:
+    2018-09-13 12:07:08,761:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,210:DEBUG:
+    2018-09-13 12:07:08,763:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,210:DEBUG:
+    2018-09-13 12:07:08,765:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,212:INFO:
+    2018-09-13 12:07:08,769:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,215:WARNING:
+    2018-09-13 12:07:08,775:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,215:DEBUG:
+    2018-09-13 12:07:08,777:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,216:DEBUG:
+    2018-09-13 12:07:08,778:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,217:INFO:
+    2018-09-13 12:07:08,782:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,220:WARNING:
+    2018-09-13 12:07:08,786:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,221:DEBUG:
+    2018-09-13 12:07:08,787:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,222:DEBUG:
+    2018-09-13 12:07:08,788:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,224:INFO:
+    2018-09-13 12:07:08,808:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,228:WARNING:
+    2018-09-13 12:07:08,815:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,228:DEBUG:
+    2018-09-13 12:07:08,816:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,229:DEBUG:
+    2018-09-13 12:07:08,817:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,230:INFO:
+    2018-09-13 12:07:08,820:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,233:WARNING:
+    2018-09-13 12:07:08,824:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,234:DEBUG:
+    2018-09-13 12:07:08,825:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,235:DEBUG:
+    2018-09-13 12:07:08,826:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,237:INFO:
+    2018-09-13 12:07:08,830:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,241:WARNING:
+    2018-09-13 12:07:08,835:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,242:DEBUG:
+    2018-09-13 12:07:08,836:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,242:DEBUG:
+    2018-09-13 12:07:08,837:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,244:INFO:
+    2018-09-13 12:07:08,840:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,247:WARNING:
+    2018-09-13 12:07:08,843:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,248:DEBUG:
+    2018-09-13 12:07:08,845:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,248:DEBUG:
+    2018-09-13 12:07:08,846:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,250:INFO:
+    2018-09-13 12:07:08,848:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,252:WARNING:
+    2018-09-13 12:07:08,854:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,253:DEBUG:
+    2018-09-13 12:07:08,856:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,253:DEBUG:
+    2018-09-13 12:07:08,857:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,254:INFO:
+    2018-09-13 12:07:08,859:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,258:WARNING:
+    2018-09-13 12:07:08,866:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,258:DEBUG:
+    2018-09-13 12:07:08,868:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,258:DEBUG:
+    2018-09-13 12:07:08,869:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,260:INFO:
+    2018-09-13 12:07:08,873:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,262:WARNING:
+    2018-09-13 12:07:08,879:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,263:DEBUG:
+    2018-09-13 12:07:08,881:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,263:DEBUG:
+    2018-09-13 12:07:08,883:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,265:INFO:
+    2018-09-13 12:07:08,887:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,268:WARNING:
+    2018-09-13 12:07:08,893:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,268:DEBUG:
+    2018-09-13 12:07:08,894:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,269:DEBUG:
+    2018-09-13 12:07:08,896:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,270:INFO:
+    2018-09-13 12:07:08,899:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,273:WARNING:
+    2018-09-13 12:07:08,904:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,274:DEBUG:
+    2018-09-13 12:07:08,906:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,274:DEBUG:
+    2018-09-13 12:07:08,907:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,276:INFO:
+    2018-09-13 12:07:08,910:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,279:WARNING:
+    2018-09-13 12:07:08,916:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,280:DEBUG:
+    2018-09-13 12:07:08,917:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,280:DEBUG:
+    2018-09-13 12:07:08,918:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,281:INFO:
+    2018-09-13 12:07:08,921:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,284:WARNING:
+    2018-09-13 12:07:08,926:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,285:DEBUG:
+    2018-09-13 12:07:08,926:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,285:DEBUG:
+    2018-09-13 12:07:08,927:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,287:INFO:
+    2018-09-13 12:07:08,930:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,290:WARNING:
+    2018-09-13 12:07:08,934:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,290:DEBUG:
+    2018-09-13 12:07:08,935:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,291:DEBUG:
+    2018-09-13 12:07:08,936:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,293:INFO:
+    2018-09-13 12:07:08,940:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,296:WARNING:
+    2018-09-13 12:07:08,945:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,297:DEBUG:
+    2018-09-13 12:07:08,946:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,297:DEBUG:
+    2018-09-13 12:07:08,947:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,299:INFO:
+    2018-09-13 12:07:08,950:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,302:WARNING:
+    2018-09-13 12:07:08,955:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,302:DEBUG:
+    2018-09-13 12:07:08,957:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,303:DEBUG:
+    2018-09-13 12:07:08,958:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,304:INFO:
+    2018-09-13 12:07:08,960:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,307:WARNING:
+    2018-09-13 12:07:08,965:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,307:DEBUG:
+    2018-09-13 12:07:08,966:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,308:DEBUG:
+    2018-09-13 12:07:08,967:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,309:INFO:
+    2018-09-13 12:07:08,972:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,312:WARNING:
+    2018-09-13 12:07:08,979:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,312:DEBUG:
+    2018-09-13 12:07:08,979:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,313:DEBUG:
+    2018-09-13 12:07:08,980:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,314:INFO:
+    2018-09-13 12:07:08,983:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,317:WARNING:
+    2018-09-13 12:07:08,988:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,317:DEBUG:
+    2018-09-13 12:07:08,989:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,317:DEBUG:
+    2018-09-13 12:07:08,990:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,319:INFO:
+    2018-09-13 12:07:08,992:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,321:WARNING:
+    2018-09-13 12:07:08,997:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,322:DEBUG:
+    2018-09-13 12:07:08,999:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,322:DEBUG:
+    2018-09-13 12:07:09,001:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,323:INFO:
+    2018-09-13 12:07:09,005:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,326:WARNING:
+    2018-09-13 12:07:09,012:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,327:DEBUG:
+    2018-09-13 12:07:09,015:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,327:DEBUG:
+    2018-09-13 12:07:09,017:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,330:INFO:
+    2018-09-13 12:07:09,023:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,332:WARNING:
+    2018-09-13 12:07:09,030:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,333:DEBUG:
+    2018-09-13 12:07:09,032:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,333:DEBUG:
+    2018-09-13 12:07:09,033:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,336:INFO:
+    2018-09-13 12:07:09,037:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,339:WARNING:
+    2018-09-13 12:07:09,043:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,340:DEBUG:
+    2018-09-13 12:07:09,045:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,340:DEBUG:
+    2018-09-13 12:07:09,046:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,341:INFO:
+    2018-09-13 12:07:09,052:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,344:WARNING:
+    2018-09-13 12:07:09,058:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,345:DEBUG:
+    2018-09-13 12:07:09,060:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,345:DEBUG:
+    2018-09-13 12:07:09,061:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,346:INFO:
+    2018-09-13 12:07:09,065:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,349:WARNING:
+    2018-09-13 12:07:09,072:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,350:DEBUG:
+    2018-09-13 12:07:09,074:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,350:DEBUG:
+    2018-09-13 12:07:09,076:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,352:INFO:
+    2018-09-13 12:07:09,080:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,354:WARNING:
+    2018-09-13 12:07:09,089:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,355:DEBUG:
+    2018-09-13 12:07:09,091:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,355:DEBUG:
+    2018-09-13 12:07:09,092:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,356:INFO:
+    2018-09-13 12:07:09,097:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,359:WARNING:
+    2018-09-13 12:07:09,102:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,360:DEBUG:
+    2018-09-13 12:07:09,104:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,360:DEBUG:
+    2018-09-13 12:07:09,106:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,361:INFO:
+    2018-09-13 12:07:09,116:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,365:WARNING:
+    2018-09-13 12:07:09,123:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,365:DEBUG:
+    2018-09-13 12:07:09,124:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,365:DEBUG:
+    2018-09-13 12:07:09,126:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,367:INFO:
+    2018-09-13 12:07:09,130:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,370:WARNING:
+    2018-09-13 12:07:09,138:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,370:DEBUG:
+    2018-09-13 12:07:09,139:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,371:DEBUG:
+    2018-09-13 12:07:09,140:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,372:INFO:
+    2018-09-13 12:07:09,143:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,374:WARNING:
+    2018-09-13 12:07:09,149:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,375:DEBUG:
+    2018-09-13 12:07:09,151:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,375:DEBUG:
+    2018-09-13 12:07:09,152:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,376:INFO:
+    2018-09-13 12:07:09,155:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,379:WARNING:
+    2018-09-13 12:07:09,164:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,380:DEBUG:
+    2018-09-13 12:07:09,165:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,380:DEBUG:
+    2018-09-13 12:07:09,166:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,381:INFO:
+    2018-09-13 12:07:09,170:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,384:WARNING:
+    2018-09-13 12:07:09,180:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,385:DEBUG:
+    2018-09-13 12:07:09,182:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,385:DEBUG:
+    2018-09-13 12:07:09,183:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,386:INFO:
+    2018-09-13 12:07:09,186:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,390:WARNING:
+    2018-09-13 12:07:09,193:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,390:DEBUG:
+    2018-09-13 12:07:09,194:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,391:DEBUG:
+    2018-09-13 12:07:09,196:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,392:INFO:
+    2018-09-13 12:07:09,200:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,395:WARNING:
+    2018-09-13 12:07:09,209:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,396:DEBUG:
+    2018-09-13 12:07:09,212:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,396:DEBUG:
+    2018-09-13 12:07:09,213:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,398:INFO:
+    2018-09-13 12:07:09,218:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,401:WARNING:
+    2018-09-13 12:07:09,226:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,401:DEBUG:
+    2018-09-13 12:07:09,228:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,402:DEBUG:
+    2018-09-13 12:07:09,230:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,403:INFO:
+    2018-09-13 12:07:09,234:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,406:WARNING:
+    2018-09-13 12:07:09,240:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,407:DEBUG:
+    2018-09-13 12:07:09,242:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,407:DEBUG:
+    2018-09-13 12:07:09,244:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,409:INFO:
+    2018-09-13 12:07:09,248:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,412:WARNING:
+    2018-09-13 12:07:09,253:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,413:DEBUG:
+    2018-09-13 12:07:09,255:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,414:DEBUG:
+    2018-09-13 12:07:09,257:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,415:INFO:
+    2018-09-13 12:07:09,260:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,419:WARNING:
+    2018-09-13 12:07:09,267:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,419:DEBUG:
+    2018-09-13 12:07:09,269:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,420:DEBUG:
+    2018-09-13 12:07:09,271:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,421:INFO:
+    2018-09-13 12:07:09,276:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,424:WARNING:
+    2018-09-13 12:07:09,281:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,424:DEBUG:
+    2018-09-13 12:07:09,283:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,424:DEBUG:
+    2018-09-13 12:07:09,285:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,426:INFO:
+    2018-09-13 12:07:09,289:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,428:WARNING:
+    2018-09-13 12:07:09,294:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,429:DEBUG:
+    2018-09-13 12:07:09,296:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,429:DEBUG:
+    2018-09-13 12:07:09,300:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,431:INFO:
+    2018-09-13 12:07:09,304:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,434:WARNING:
+    2018-09-13 12:07:09,310:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,434:DEBUG:
+    2018-09-13 12:07:09,312:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,434:DEBUG:
+    2018-09-13 12:07:09,313:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,436:INFO:
+    2018-09-13 12:07:09,317:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,439:WARNING:
+    2018-09-13 12:07:09,323:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,439:DEBUG:
+    2018-09-13 12:07:09,325:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,440:DEBUG:
+    2018-09-13 12:07:09,327:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,441:INFO:
+    2018-09-13 12:07:09,331:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,444:WARNING:
+    2018-09-13 12:07:09,336:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,445:DEBUG:
+    2018-09-13 12:07:09,338:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,445:DEBUG:
+    2018-09-13 12:07:09,339:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,447:INFO:
+    2018-09-13 12:07:09,343:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,450:WARNING:
+    2018-09-13 12:07:09,348:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,451:DEBUG:
+    2018-09-13 12:07:09,349:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,451:DEBUG:
+    2018-09-13 12:07:09,349:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,452:INFO:
+    2018-09-13 12:07:09,352:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,456:WARNING:
+    2018-09-13 12:07:09,358:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,456:DEBUG:
+    2018-09-13 12:07:09,358:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,456:DEBUG:
+    2018-09-13 12:07:09,359:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,458:INFO:
+    2018-09-13 12:07:09,361:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,461:WARNING:
+    2018-09-13 12:07:09,366:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,461:DEBUG:
+    2018-09-13 12:07:09,367:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,461:DEBUG:
+    2018-09-13 12:07:09,367:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,463:INFO:
+    2018-09-13 12:07:09,369:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,465:WARNING:
+    2018-09-13 12:07:09,374:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,466:DEBUG:
+    2018-09-13 12:07:09,374:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,466:DEBUG:
+    2018-09-13 12:07:09,375:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,468:INFO:
+    2018-09-13 12:07:09,378:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,471:WARNING:
+    2018-09-13 12:07:09,382:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,471:DEBUG:
+    2018-09-13 12:07:09,382:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,472:DEBUG:
+    2018-09-13 12:07:09,383:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,473:INFO:
+    2018-09-13 12:07:09,385:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,476:WARNING:
+    2018-09-13 12:07:09,391:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,476:DEBUG:
+    2018-09-13 12:07:09,391:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,476:DEBUG:
+    2018-09-13 12:07:09,392:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,478:INFO:
+    2018-09-13 12:07:09,394:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,481:WARNING:
+    2018-09-13 12:07:09,398:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,481:DEBUG:
+    2018-09-13 12:07:09,399:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,482:DEBUG:
+    2018-09-13 12:07:09,399:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,483:INFO:
+    2018-09-13 12:07:09,401:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,487:WARNING:
+    2018-09-13 12:07:09,406:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,487:DEBUG:
+    2018-09-13 12:07:09,407:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,488:DEBUG:
+    2018-09-13 12:07:09,408:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,489:INFO:
+    2018-09-13 12:07:09,411:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,492:WARNING:
+    2018-09-13 12:07:09,416:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,493:DEBUG:
+    2018-09-13 12:07:09,417:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,493:DEBUG:
+    2018-09-13 12:07:09,418:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,495:INFO:
+    2018-09-13 12:07:09,421:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,498:WARNING:
+    2018-09-13 12:07:09,426:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,499:DEBUG:
+    2018-09-13 12:07:09,427:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,499:DEBUG:
+    2018-09-13 12:07:09,427:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,501:INFO:
+    2018-09-13 12:07:09,429:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,504:WARNING:
+    2018-09-13 12:07:09,434:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,504:DEBUG:
+    2018-09-13 12:07:09,435:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,505:DEBUG:
+    2018-09-13 12:07:09,435:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,506:INFO:
+    2018-09-13 12:07:09,437:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,509:WARNING:
+    2018-09-13 12:07:09,441:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,510:DEBUG:
+    2018-09-13 12:07:09,442:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,511:DEBUG:
+    2018-09-13 12:07:09,442:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,512:INFO:
+    2018-09-13 12:07:09,444:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,515:WARNING:
+    2018-09-13 12:07:09,449:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,516:DEBUG:
+    2018-09-13 12:07:09,450:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,516:DEBUG:
+    2018-09-13 12:07:09,450:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,518:INFO:
+    2018-09-13 12:07:09,452:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,521:WARNING:
+    2018-09-13 12:07:09,457:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,521:DEBUG:
+    2018-09-13 12:07:09,458:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,522:DEBUG:
+    2018-09-13 12:07:09,458:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,523:INFO:
+    2018-09-13 12:07:09,461:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,526:WARNING:
+    2018-09-13 12:07:09,465:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,527:DEBUG:
+    2018-09-13 12:07:09,466:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,527:DEBUG:
+    2018-09-13 12:07:09,467:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,529:INFO:
+    2018-09-13 12:07:09,469:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,532:WARNING:
+    2018-09-13 12:07:09,472:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,532:DEBUG:
+    2018-09-13 12:07:09,473:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,533:DEBUG:
+    2018-09-13 12:07:09,474:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,535:INFO:
+    2018-09-13 12:07:09,476:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,538:WARNING:
+    2018-09-13 12:07:09,481:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,538:DEBUG:
+    2018-09-13 12:07:09,482:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,539:DEBUG:
+    2018-09-13 12:07:09,482:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,540:INFO:
+    2018-09-13 12:07:09,484:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,543:WARNING:
+    2018-09-13 12:07:09,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,544:DEBUG:
+    2018-09-13 12:07:09,489:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,544:DEBUG:
+    2018-09-13 12:07:09,489:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,546:INFO:
+    2018-09-13 12:07:09,492:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,549:WARNING:
+    2018-09-13 12:07:09,496:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,549:DEBUG:
+    2018-09-13 12:07:09,497:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,549:DEBUG:
+    2018-09-13 12:07:09,497:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,551:INFO:
+    2018-09-13 12:07:09,499:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,554:WARNING:
+    2018-09-13 12:07:09,503:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,555:DEBUG:
+    2018-09-13 12:07:09,504:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,555:DEBUG:
+    2018-09-13 12:07:09,504:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,556:INFO:
+    2018-09-13 12:07:09,507:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,560:WARNING:
+    2018-09-13 12:07:09,511:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,560:DEBUG:
+    2018-09-13 12:07:09,511:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,561:DEBUG:
+    2018-09-13 12:07:09,512:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,562:INFO:
+    2018-09-13 12:07:09,514:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,565:WARNING:
+    2018-09-13 12:07:09,518:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,566:DEBUG:
+    2018-09-13 12:07:09,518:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,566:DEBUG:
+    2018-09-13 12:07:09,519:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,568:INFO:
+    2018-09-13 12:07:09,521:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,571:WARNING:
+    2018-09-13 12:07:09,526:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,571:DEBUG:
+    2018-09-13 12:07:09,526:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,572:DEBUG:
+    2018-09-13 12:07:09,527:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,573:INFO:
+    2018-09-13 12:07:09,529:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,576:WARNING:
+    2018-09-13 12:07:09,533:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,577:DEBUG:
+    2018-09-13 12:07:09,534:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,577:DEBUG:
+    2018-09-13 12:07:09,535:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,579:INFO:
+    2018-09-13 12:07:09,538:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,582:WARNING:
+    2018-09-13 12:07:09,544:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,582:DEBUG:
+    2018-09-13 12:07:09,545:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,583:DEBUG:
+    2018-09-13 12:07:09,547:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,584:INFO:
+    2018-09-13 12:07:09,551:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,587:WARNING:
+    2018-09-13 12:07:09,557:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,588:DEBUG:
+    2018-09-13 12:07:09,559:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,588:DEBUG:
+    2018-09-13 12:07:09,561:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,589:INFO:
+    2018-09-13 12:07:09,565:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,593:WARNING:
+    2018-09-13 12:07:09,571:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,593:DEBUG:
+    2018-09-13 12:07:09,572:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,594:DEBUG:
+    2018-09-13 12:07:09,573:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,595:INFO:
+    2018-09-13 12:07:09,576:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,598:WARNING:
+    2018-09-13 12:07:09,581:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,599:DEBUG:
+    2018-09-13 12:07:09,582:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,599:DEBUG:
+    2018-09-13 12:07:09,583:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,600:INFO:
+    2018-09-13 12:07:09,585:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,603:WARNING:
+    2018-09-13 12:07:09,589:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,604:DEBUG:
+    2018-09-13 12:07:09,590:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,604:DEBUG:
+    2018-09-13 12:07:09,590:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,606:INFO:
+    2018-09-13 12:07:09,592:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,608:WARNING:
+    2018-09-13 12:07:09,598:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,609:DEBUG:
+    2018-09-13 12:07:09,600:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,609:DEBUG:
+    2018-09-13 12:07:09,601:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,610:INFO:
+    2018-09-13 12:07:09,605:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,613:WARNING:
+    2018-09-13 12:07:09,610:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,614:DEBUG:
+    2018-09-13 12:07:09,613:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,614:DEBUG:
+    2018-09-13 12:07:09,614:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,615:INFO:
+    2018-09-13 12:07:09,617:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,618:WARNING:
+    2018-09-13 12:07:09,623:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,618:DEBUG:
+    2018-09-13 12:07:09,625:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,619:DEBUG:
+    2018-09-13 12:07:09,626:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,620:INFO:
+    2018-09-13 12:07:09,629:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,623:WARNING:
+    2018-09-13 12:07:09,635:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,623:DEBUG:
+    2018-09-13 12:07:09,636:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,624:DEBUG:
+    2018-09-13 12:07:09,637:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,626:INFO:
+    2018-09-13 12:07:09,641:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,629:WARNING:
+    2018-09-13 12:07:09,647:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,629:DEBUG:
+    2018-09-13 12:07:09,648:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,630:DEBUG:
+    2018-09-13 12:07:09,649:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,631:INFO:
+    2018-09-13 12:07:09,652:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,634:WARNING:
+    2018-09-13 12:07:09,657:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,635:DEBUG:
+    2018-09-13 12:07:09,658:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,635:DEBUG:
+    2018-09-13 12:07:09,659:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,637:INFO:
+    2018-09-13 12:07:09,662:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,640:WARNING:
+    2018-09-13 12:07:09,666:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,640:DEBUG:
+    2018-09-13 12:07:09,668:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,641:DEBUG:
+    2018-09-13 12:07:09,668:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,642:INFO:
+    2018-09-13 12:07:09,672:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,645:WARNING:
+    2018-09-13 12:07:09,677:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,646:DEBUG:
+    2018-09-13 12:07:09,678:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,647:DEBUG:
+    2018-09-13 12:07:09,678:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,648:INFO:
+    2018-09-13 12:07:09,681:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,651:WARNING:
+    2018-09-13 12:07:09,686:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,651:DEBUG:
+    2018-09-13 12:07:09,686:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,652:DEBUG:
+    2018-09-13 12:07:09,687:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,653:INFO:
+    2018-09-13 12:07:09,689:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,656:WARNING:
+    2018-09-13 12:07:09,694:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,656:DEBUG:
+    2018-09-13 12:07:09,694:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,657:DEBUG:
+    2018-09-13 12:07:09,695:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,658:INFO:
+    2018-09-13 12:07:09,697:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,661:WARNING:
+    2018-09-13 12:07:09,700:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,661:DEBUG:
+    2018-09-13 12:07:09,701:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,661:DEBUG:
+    2018-09-13 12:07:09,702:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,662:INFO:
+    2018-09-13 12:07:09,703:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,665:WARNING:
+    2018-09-13 12:07:09,708:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,666:DEBUG:
+    2018-09-13 12:07:09,709:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,666:DEBUG:
+    2018-09-13 12:07:09,709:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,667:INFO:
+    2018-09-13 12:07:09,711:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,670:WARNING:
+    2018-09-13 12:07:09,716:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,671:DEBUG:
+    2018-09-13 12:07:09,716:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,671:DEBUG:
+    2018-09-13 12:07:09,717:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,672:INFO:
+    2018-09-13 12:07:09,719:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,675:WARNING:
+    2018-09-13 12:07:09,723:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,676:DEBUG:
+    2018-09-13 12:07:09,724:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,677:DEBUG:
+    2018-09-13 12:07:09,724:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,679:INFO:
+    2018-09-13 12:07:09,726:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,683:WARNING:
+    2018-09-13 12:07:09,730:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,683:DEBUG:
+    2018-09-13 12:07:09,731:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,684:DEBUG:
+    2018-09-13 12:07:09,732:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,686:INFO:
+    2018-09-13 12:07:09,734:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,689:WARNING:
+    2018-09-13 12:07:09,738:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,689:DEBUG:
+    2018-09-13 12:07:09,739:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,690:DEBUG:
+    2018-09-13 12:07:09,740:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,691:INFO:
+    2018-09-13 12:07:09,741:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,694:WARNING:
+    2018-09-13 12:07:09,747:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,695:DEBUG:
+    2018-09-13 12:07:09,747:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,696:DEBUG:
+    2018-09-13 12:07:09,748:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,697:INFO:
+    2018-09-13 12:07:09,749:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,700:WARNING:
+    2018-09-13 12:07:09,753:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,701:DEBUG:
+    2018-09-13 12:07:09,754:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,701:DEBUG:
+    2018-09-13 12:07:09,754:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,703:INFO:
+    2018-09-13 12:07:09,756:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,706:WARNING:
+    2018-09-13 12:07:09,760:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,707:DEBUG:
+    2018-09-13 12:07:09,761:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,708:DEBUG:
+    2018-09-13 12:07:09,761:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,709:INFO:
+    2018-09-13 12:07:09,763:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,712:WARNING:
+    2018-09-13 12:07:09,768:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,713:DEBUG:
+    2018-09-13 12:07:09,768:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,713:DEBUG:
+    2018-09-13 12:07:09,769:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,715:INFO:
+    2018-09-13 12:07:09,771:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,718:WARNING:
+    2018-09-13 12:07:09,775:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,719:DEBUG:
+    2018-09-13 12:07:09,776:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,719:DEBUG:
+    2018-09-13 12:07:09,776:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,721:INFO:
+    2018-09-13 12:07:09,778:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,724:WARNING:
+    2018-09-13 12:07:09,783:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,724:DEBUG:
+    2018-09-13 12:07:09,783:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,725:DEBUG:
+    2018-09-13 12:07:09,784:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,727:INFO:
+    2018-09-13 12:07:09,786:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,730:WARNING:
+    2018-09-13 12:07:09,790:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,730:DEBUG:
+    2018-09-13 12:07:09,790:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,731:DEBUG:
+    2018-09-13 12:07:09,791:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,733:INFO:
+    2018-09-13 12:07:09,793:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,736:WARNING:
+    2018-09-13 12:07:09,797:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,737:DEBUG:
+    2018-09-13 12:07:09,799:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,737:DEBUG:
+    2018-09-13 12:07:09,800:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,739:INFO:
+    2018-09-13 12:07:09,816:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,742:WARNING:
+    2018-09-13 12:07:09,822:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,742:DEBUG:
+    2018-09-13 12:07:09,824:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,743:DEBUG:
+    2018-09-13 12:07:09,825:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,745:INFO:
+    2018-09-13 12:07:09,829:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,748:WARNING:
+    2018-09-13 12:07:09,835:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,749:DEBUG:
+    2018-09-13 12:07:09,836:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,749:DEBUG:
+    2018-09-13 12:07:09,838:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,751:INFO:
+    2018-09-13 12:07:09,842:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,755:WARNING:
+    2018-09-13 12:07:09,848:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,755:DEBUG:
+    2018-09-13 12:07:09,850:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,756:DEBUG:
+    2018-09-13 12:07:09,851:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,758:INFO:
+    2018-09-13 12:07:09,855:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,762:WARNING:
+    2018-09-13 12:07:09,861:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,763:DEBUG:
+    2018-09-13 12:07:09,862:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,763:DEBUG:
+    2018-09-13 12:07:09,864:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,765:INFO:
+    2018-09-13 12:07:09,867:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,769:WARNING:
+    2018-09-13 12:07:09,872:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,769:DEBUG:
+    2018-09-13 12:07:09,874:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,770:DEBUG:
+    2018-09-13 12:07:09,876:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,771:INFO:
+    2018-09-13 12:07:09,879:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,775:WARNING:
+    2018-09-13 12:07:09,886:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,776:DEBUG:
+    2018-09-13 12:07:09,887:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,776:DEBUG:
+    2018-09-13 12:07:09,888:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,778:INFO:
+    2018-09-13 12:07:09,889:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,781:WARNING:
+    2018-09-13 12:07:09,895:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,782:DEBUG:
+    2018-09-13 12:07:09,896:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,783:DEBUG:
+    2018-09-13 12:07:09,897:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,785:INFO:
+    2018-09-13 12:07:09,899:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,788:WARNING:
+    2018-09-13 12:07:09,904:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,788:DEBUG:
+    2018-09-13 12:07:09,905:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,789:DEBUG:
+    2018-09-13 12:07:09,905:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,791:INFO:
+    2018-09-13 12:07:09,908:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,794:WARNING:
+    2018-09-13 12:07:09,912:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,795:DEBUG:
+    2018-09-13 12:07:09,913:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,795:DEBUG:
+    2018-09-13 12:07:09,914:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,797:INFO:
+    2018-09-13 12:07:09,916:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,801:WARNING:
+    2018-09-13 12:07:09,922:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,801:DEBUG:
+    2018-09-13 12:07:09,923:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,802:DEBUG:
+    2018-09-13 12:07:09,923:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,804:INFO:
+    2018-09-13 12:07:09,926:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,807:WARNING:
+    2018-09-13 12:07:09,930:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,808:DEBUG:
+    2018-09-13 12:07:09,931:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,809:DEBUG:
+    2018-09-13 12:07:09,931:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,812:INFO:
+    2018-09-13 12:07:09,933:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,815:WARNING:
+    2018-09-13 12:07:09,938:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,816:DEBUG:
+    2018-09-13 12:07:09,938:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,817:DEBUG:
+    2018-09-13 12:07:09,939:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,818:INFO:
+    2018-09-13 12:07:09,941:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,822:WARNING:
+    2018-09-13 12:07:09,947:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,822:DEBUG:
+    2018-09-13 12:07:09,948:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,823:DEBUG:
+    2018-09-13 12:07:09,948:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,824:INFO:
+    2018-09-13 12:07:09,951:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,827:WARNING:
+    2018-09-13 12:07:09,955:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,828:DEBUG:
+    2018-09-13 12:07:09,955:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,829:DEBUG:
+    2018-09-13 12:07:09,956:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,830:INFO:
+    2018-09-13 12:07:09,958:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,833:WARNING:
+    2018-09-13 12:07:09,962:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,834:DEBUG:
+    2018-09-13 12:07:09,963:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,835:DEBUG:
+    2018-09-13 12:07:09,964:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,837:INFO:
+    2018-09-13 12:07:09,966:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,840:WARNING:
+    2018-09-13 12:07:09,970:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,841:DEBUG:
+    2018-09-13 12:07:09,971:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,842:DEBUG:
+    2018-09-13 12:07:09,972:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,843:INFO:
+    2018-09-13 12:07:09,974:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,846:WARNING:
+    2018-09-13 12:07:09,978:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,847:DEBUG:
+    2018-09-13 12:07:09,979:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,848:DEBUG:
+    2018-09-13 12:07:09,980:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,849:INFO:
+    2018-09-13 12:07:09,982:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,853:WARNING:
+    2018-09-13 12:07:09,987:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,854:DEBUG:
+    2018-09-13 12:07:09,988:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,855:DEBUG:
+    2018-09-13 12:07:09,988:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,856:INFO:
+    2018-09-13 12:07:09,991:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,859:WARNING:
+    2018-09-13 12:07:09,995:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,860:DEBUG:
+    2018-09-13 12:07:09,996:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,860:DEBUG:
+    2018-09-13 12:07:09,996:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,862:INFO:
+    2018-09-13 12:07:09,998:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,865:WARNING:
+    2018-09-13 12:07:10,003:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,866:DEBUG:
+    2018-09-13 12:07:10,004:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,867:DEBUG:
+    2018-09-13 12:07:10,004:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,868:INFO:
+    2018-09-13 12:07:10,006:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,871:WARNING:
+    2018-09-13 12:07:10,011:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,872:DEBUG:
+    2018-09-13 12:07:10,012:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,873:DEBUG:
+    2018-09-13 12:07:10,012:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,874:INFO:
+    2018-09-13 12:07:10,014:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,877:WARNING:
+    2018-09-13 12:07:10,019:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,879:DEBUG:
+    2018-09-13 12:07:10,020:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,879:DEBUG:
+    2018-09-13 12:07:10,020:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,881:INFO:
+    2018-09-13 12:07:10,023:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,884:WARNING:
+    2018-09-13 12:07:10,028:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,885:DEBUG:
+    2018-09-13 12:07:10,029:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,885:DEBUG:
+    2018-09-13 12:07:10,029:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,887:INFO:
+    2018-09-13 12:07:10,032:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,890:WARNING:
+    2018-09-13 12:07:10,038:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,891:DEBUG:
+    2018-09-13 12:07:10,039:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,891:DEBUG:
+    2018-09-13 12:07:10,039:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,893:INFO:
+    2018-09-13 12:07:10,041:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,896:WARNING:
+    2018-09-13 12:07:10,045:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,897:DEBUG:
+    2018-09-13 12:07:10,046:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,897:DEBUG:
+    2018-09-13 12:07:10,046:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,899:INFO:
+    2018-09-13 12:07:10,048:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,902:WARNING:
+    2018-09-13 12:07:10,053:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,903:DEBUG:
+    2018-09-13 12:07:10,054:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,903:DEBUG:
+    2018-09-13 12:07:10,054:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,905:INFO:
+    2018-09-13 12:07:10,056:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,908:WARNING:
+    2018-09-13 12:07:10,061:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,909:DEBUG:
+    2018-09-13 12:07:10,062:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,909:DEBUG:
+    2018-09-13 12:07:10,062:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,911:INFO:
+    2018-09-13 12:07:10,064:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,914:WARNING:
+    2018-09-13 12:07:10,069:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,915:DEBUG:
+    2018-09-13 12:07:10,070:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,916:DEBUG:
+    2018-09-13 12:07:10,070:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,917:INFO:
+    2018-09-13 12:07:10,072:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,920:WARNING:
+    2018-09-13 12:07:10,077:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,921:DEBUG:
+    2018-09-13 12:07:10,077:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,921:DEBUG:
+    2018-09-13 12:07:10,078:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,923:INFO:
+    2018-09-13 12:07:10,080:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,926:WARNING:
+    2018-09-13 12:07:10,085:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,927:DEBUG:
+    2018-09-13 12:07:10,086:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,928:DEBUG:
+    2018-09-13 12:07:10,087:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,929:INFO:
+    2018-09-13 12:07:10,089:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,932:WARNING:
+    2018-09-13 12:07:10,093:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,933:DEBUG:
+    2018-09-13 12:07:10,094:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,933:DEBUG:
+    2018-09-13 12:07:10,095:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,935:INFO:
+    2018-09-13 12:07:10,098:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,938:WARNING:
+    2018-09-13 12:07:10,103:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,939:DEBUG:
+    2018-09-13 12:07:10,103:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,939:DEBUG:
+    2018-09-13 12:07:10,104:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,941:INFO:
+    2018-09-13 12:07:10,106:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,944:WARNING:
+    2018-09-13 12:07:10,112:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,944:DEBUG:
+    2018-09-13 12:07:10,112:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,945:DEBUG:
+    2018-09-13 12:07:10,113:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,946:INFO:
+    2018-09-13 12:07:10,122:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,949:WARNING:
+    2018-09-13 12:07:10,127:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,950:DEBUG:
+    2018-09-13 12:07:10,128:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,950:DEBUG:
+    2018-09-13 12:07:10,128:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,952:INFO:
+    2018-09-13 12:07:10,131:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,955:WARNING:
+    2018-09-13 12:07:10,137:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,955:DEBUG:
+    2018-09-13 12:07:10,138:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,956:DEBUG:
+    2018-09-13 12:07:10,138:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,957:INFO:
+    2018-09-13 12:07:10,142:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,960:WARNING:
+    2018-09-13 12:07:10,147:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,961:DEBUG:
+    2018-09-13 12:07:10,147:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,962:DEBUG:
+    2018-09-13 12:07:10,148:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,964:INFO:
+    2018-09-13 12:07:10,150:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,967:WARNING:
+    2018-09-13 12:07:10,154:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,967:DEBUG:
+    2018-09-13 12:07:10,155:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,968:DEBUG:
+    2018-09-13 12:07:10,156:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,969:INFO:
+    2018-09-13 12:07:10,158:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,972:WARNING:
+    2018-09-13 12:07:10,164:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,973:DEBUG:
+    2018-09-13 12:07:10,165:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,973:DEBUG:
+    2018-09-13 12:07:10,165:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,975:INFO:
+    2018-09-13 12:07:10,168:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,978:WARNING:
+    2018-09-13 12:07:10,172:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,979:DEBUG:
+    2018-09-13 12:07:10,174:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,979:DEBUG:
+    2018-09-13 12:07:10,176:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,981:INFO:
+    2018-09-13 12:07:10,180:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,984:WARNING:
+    2018-09-13 12:07:10,187:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,985:DEBUG:
+    2018-09-13 12:07:10,190:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,985:DEBUG:
+    2018-09-13 12:07:10,191:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,987:INFO:
+    2018-09-13 12:07:10,195:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,990:WARNING:
+    2018-09-13 12:07:10,200:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,990:DEBUG:
+    2018-09-13 12:07:10,202:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,991:DEBUG:
+    2018-09-13 12:07:10,204:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,992:INFO:
+    2018-09-13 12:07:10,209:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:10,995:WARNING:
+    2018-09-13 12:07:10,217:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:10,996:DEBUG:
+    2018-09-13 12:07:10,218:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:10,996:DEBUG:
+    2018-09-13 12:07:10,220:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:10,998:INFO:
+    2018-09-13 12:07:10,224:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,002:WARNING:
+    2018-09-13 12:07:10,229:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,002:DEBUG:
+    2018-09-13 12:07:10,230:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,003:DEBUG:
+    2018-09-13 12:07:10,231:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,005:INFO:
+    2018-09-13 12:07:10,234:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,008:WARNING:
+    2018-09-13 12:07:10,239:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,009:DEBUG:
+    2018-09-13 12:07:10,240:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,010:DEBUG:
+    2018-09-13 12:07:10,241:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,012:INFO:
+    2018-09-13 12:07:10,243:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,016:WARNING:
+    2018-09-13 12:07:10,250:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,017:DEBUG:
+    2018-09-13 12:07:10,251:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,017:DEBUG:
+    2018-09-13 12:07:10,252:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,019:INFO:
+    2018-09-13 12:07:10,254:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,022:WARNING:
+    2018-09-13 12:07:10,260:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,023:DEBUG:
+    2018-09-13 12:07:10,261:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,023:DEBUG:
+    2018-09-13 12:07:10,262:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,025:INFO:
+    2018-09-13 12:07:10,265:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,028:WARNING:
+    2018-09-13 12:07:10,271:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,029:DEBUG:
+    2018-09-13 12:07:10,273:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,029:DEBUG:
+    2018-09-13 12:07:10,275:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,031:INFO:
+    2018-09-13 12:07:10,280:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,034:WARNING:
+    2018-09-13 12:07:10,287:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,035:DEBUG:
+    2018-09-13 12:07:10,289:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,035:DEBUG:
+    2018-09-13 12:07:10,292:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,041:INFO:
+    2018-09-13 12:07:10,295:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,044:WARNING:
+    2018-09-13 12:07:10,301:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,045:DEBUG:
+    2018-09-13 12:07:10,303:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,045:DEBUG:
+    2018-09-13 12:07:10,304:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,048:INFO:
+    2018-09-13 12:07:10,306:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,052:WARNING:
+    2018-09-13 12:07:10,311:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,052:DEBUG:
+    2018-09-13 12:07:10,312:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,053:DEBUG:
+    2018-09-13 12:07:10,313:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,056:INFO:
+    2018-09-13 12:07:10,315:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,060:WARNING:
+    2018-09-13 12:07:10,320:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,061:DEBUG:
+    2018-09-13 12:07:10,321:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,061:DEBUG:
+    2018-09-13 12:07:10,321:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,063:INFO:
+    2018-09-13 12:07:10,323:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,066:WARNING:
+    2018-09-13 12:07:10,327:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,066:DEBUG:
+    2018-09-13 12:07:10,330:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,067:DEBUG:
+    2018-09-13 12:07:10,332:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,068:INFO:
+    2018-09-13 12:07:10,336:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,071:WARNING:
+    2018-09-13 12:07:10,343:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,072:DEBUG:
+    2018-09-13 12:07:10,346:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,073:DEBUG:
+    2018-09-13 12:07:10,347:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,074:INFO:
+    2018-09-13 12:07:10,352:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,077:WARNING:
+    2018-09-13 12:07:10,358:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,078:DEBUG:
+    2018-09-13 12:07:10,359:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,079:DEBUG:
+    2018-09-13 12:07:10,360:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,080:INFO:
+    2018-09-13 12:07:10,363:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,083:WARNING:
+    2018-09-13 12:07:10,370:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,084:DEBUG:
+    2018-09-13 12:07:10,371:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,084:DEBUG:
+    2018-09-13 12:07:10,371:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,086:INFO:
+    2018-09-13 12:07:10,373:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,089:WARNING:
+    2018-09-13 12:07:10,379:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,089:DEBUG:
+    2018-09-13 12:07:10,379:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,090:DEBUG:
+    2018-09-13 12:07:10,380:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,091:INFO:
+    2018-09-13 12:07:10,385:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,094:WARNING:
+    2018-09-13 12:07:10,390:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,095:DEBUG:
+    2018-09-13 12:07:10,390:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,096:DEBUG:
+    2018-09-13 12:07:10,391:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,097:INFO:
+    2018-09-13 12:07:10,394:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,101:WARNING:
+    2018-09-13 12:07:10,399:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,101:DEBUG:
+    2018-09-13 12:07:10,400:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,102:DEBUG:
+    2018-09-13 12:07:10,400:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,103:INFO:
+    2018-09-13 12:07:10,403:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,106:WARNING:
+    2018-09-13 12:07:10,407:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,107:DEBUG:
+    2018-09-13 12:07:10,409:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,107:DEBUG:
+    2018-09-13 12:07:10,411:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,109:INFO:
+    2018-09-13 12:07:10,414:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,112:WARNING:
+    2018-09-13 12:07:10,420:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,113:DEBUG:
+    2018-09-13 12:07:10,422:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,113:DEBUG:
+    2018-09-13 12:07:10,425:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,115:INFO:
+    2018-09-13 12:07:10,428:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,118:WARNING:
+    2018-09-13 12:07:10,433:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,119:DEBUG:
+    2018-09-13 12:07:10,435:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,119:DEBUG:
+    2018-09-13 12:07:10,437:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,121:INFO:
+    2018-09-13 12:07:10,441:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,124:WARNING:
+    2018-09-13 12:07:10,446:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,124:DEBUG:
+    2018-09-13 12:07:10,448:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,125:DEBUG:
+    2018-09-13 12:07:10,449:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,127:INFO:
+    2018-09-13 12:07:10,452:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,130:WARNING:
+    2018-09-13 12:07:10,458:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,130:DEBUG:
+    2018-09-13 12:07:10,459:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,131:DEBUG:
+    2018-09-13 12:07:10,461:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,133:INFO:
+    2018-09-13 12:07:10,463:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,137:WARNING:
+    2018-09-13 12:07:10,468:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,137:DEBUG:
+    2018-09-13 12:07:10,469:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,138:DEBUG:
+    2018-09-13 12:07:10,471:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,139:INFO:
+    2018-09-13 12:07:10,474:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,142:WARNING:
+    2018-09-13 12:07:10,478:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,143:DEBUG:
+    2018-09-13 12:07:10,479:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,143:DEBUG:
+    2018-09-13 12:07:10,480:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,145:INFO:
+    2018-09-13 12:07:10,482:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,148:WARNING:
+    2018-09-13 12:07:10,486:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,149:DEBUG:
+    2018-09-13 12:07:10,487:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,149:DEBUG:
+    2018-09-13 12:07:10,487:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,151:INFO:
+    2018-09-13 12:07:10,490:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,154:WARNING:
+    2018-09-13 12:07:10,493:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,155:DEBUG:
+    2018-09-13 12:07:10,494:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,155:DEBUG:
+    2018-09-13 12:07:10,494:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,157:INFO:
+    2018-09-13 12:07:10,496:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,160:WARNING:
+    2018-09-13 12:07:10,499:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,161:DEBUG:
+    2018-09-13 12:07:10,500:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,162:DEBUG:
+    2018-09-13 12:07:10,500:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,163:INFO:
+    2018-09-13 12:07:10,502:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,166:WARNING:
+    2018-09-13 12:07:10,505:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,167:DEBUG:
+    2018-09-13 12:07:10,506:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,167:DEBUG:
+    2018-09-13 12:07:10,506:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,169:INFO:
+    2018-09-13 12:07:10,508:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,172:WARNING:
+    2018-09-13 12:07:10,513:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,173:DEBUG:
+    2018-09-13 12:07:10,514:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,174:DEBUG:
+    2018-09-13 12:07:10,516:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,175:INFO:
+    2018-09-13 12:07:10,519:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,178:WARNING:
+    2018-09-13 12:07:10,524:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,179:DEBUG:
+    2018-09-13 12:07:10,526:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,179:DEBUG:
+    2018-09-13 12:07:10,526:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,181:INFO:
+    2018-09-13 12:07:10,529:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,184:WARNING:
+    2018-09-13 12:07:10,533:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,185:DEBUG:
+    2018-09-13 12:07:10,534:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,185:DEBUG:
+    2018-09-13 12:07:10,535:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,187:INFO:
+    2018-09-13 12:07:10,536:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,190:WARNING:
+    2018-09-13 12:07:10,540:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,190:DEBUG:
+    2018-09-13 12:07:10,540:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,191:DEBUG:
+    2018-09-13 12:07:10,541:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,192:INFO:
+    2018-09-13 12:07:10,542:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,195:WARNING:
+    2018-09-13 12:07:10,546:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,196:DEBUG:
+    2018-09-13 12:07:10,547:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,196:DEBUG:
+    2018-09-13 12:07:10,547:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,198:INFO:
+    2018-09-13 12:07:10,549:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,201:WARNING:
+    2018-09-13 12:07:10,553:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,202:DEBUG:
+    2018-09-13 12:07:10,554:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,202:DEBUG:
+    2018-09-13 12:07:10,554:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,204:INFO:
+    2018-09-13 12:07:10,556:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,207:WARNING:
+    2018-09-13 12:07:10,560:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,207:DEBUG:
+    2018-09-13 12:07:10,561:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,208:DEBUG:
+    2018-09-13 12:07:10,562:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,210:INFO:
+    2018-09-13 12:07:10,564:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,214:WARNING:
+    2018-09-13 12:07:10,567:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,215:DEBUG:
+    2018-09-13 12:07:10,568:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,215:DEBUG:
+    2018-09-13 12:07:10,569:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,217:INFO:
+    2018-09-13 12:07:10,570:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,220:WARNING:
+    2018-09-13 12:07:10,574:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,221:DEBUG:
+    2018-09-13 12:07:10,575:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,222:DEBUG:
+    2018-09-13 12:07:10,576:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,223:INFO:
+    2018-09-13 12:07:10,577:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,227:WARNING:
+    2018-09-13 12:07:10,583:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,228:DEBUG:
+    2018-09-13 12:07:10,584:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,228:DEBUG:
+    2018-09-13 12:07:10,584:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,230:INFO:
+    2018-09-13 12:07:10,587:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,233:WARNING:
+    2018-09-13 12:07:10,592:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,233:DEBUG:
+    2018-09-13 12:07:10,592:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,234:DEBUG:
+    2018-09-13 12:07:10,593:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,235:INFO:
+    2018-09-13 12:07:10,595:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,238:WARNING:
+    2018-09-13 12:07:10,599:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,239:DEBUG:
+    2018-09-13 12:07:10,599:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,239:DEBUG:
+    2018-09-13 12:07:10,600:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,241:INFO:
+    2018-09-13 12:07:10,602:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,244:WARNING:
+    2018-09-13 12:07:10,605:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,245:DEBUG:
+    2018-09-13 12:07:10,606:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,245:DEBUG:
+    2018-09-13 12:07:10,607:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,246:INFO:
+    2018-09-13 12:07:10,610:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,250:WARNING:
+    2018-09-13 12:07:10,615:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,250:DEBUG:
+    2018-09-13 12:07:10,619:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,251:DEBUG:
+    2018-09-13 12:07:10,623:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,252:INFO:
+    2018-09-13 12:07:10,628:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,255:WARNING:
+    2018-09-13 12:07:10,635:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,255:DEBUG:
+    2018-09-13 12:07:10,638:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,256:DEBUG:
+    2018-09-13 12:07:10,640:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,257:INFO:
+    2018-09-13 12:07:10,646:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,260:WARNING:
+    2018-09-13 12:07:10,652:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,261:DEBUG:
+    2018-09-13 12:07:10,655:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,261:DEBUG:
+    2018-09-13 12:07:10,657:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,263:INFO:
+    2018-09-13 12:07:10,662:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,265:WARNING:
+    2018-09-13 12:07:10,668:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,266:DEBUG:
+    2018-09-13 12:07:10,671:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,266:DEBUG:
+    2018-09-13 12:07:10,673:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,268:INFO:
+    2018-09-13 12:07:10,677:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,272:WARNING:
+    2018-09-13 12:07:10,683:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,273:DEBUG:
+    2018-09-13 12:07:10,686:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,273:DEBUG:
+    2018-09-13 12:07:10,688:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,274:INFO:
+    2018-09-13 12:07:10,692:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,277:WARNING:
+    2018-09-13 12:07:10,697:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,278:DEBUG:
+    2018-09-13 12:07:10,699:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,278:DEBUG:
+    2018-09-13 12:07:10,701:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,280:INFO:
+    2018-09-13 12:07:10,706:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,283:WARNING:
+    2018-09-13 12:07:10,711:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,283:DEBUG:
+    2018-09-13 12:07:10,712:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,284:DEBUG:
+    2018-09-13 12:07:10,713:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,285:INFO:
+    2018-09-13 12:07:10,715:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,288:WARNING:
+    2018-09-13 12:07:10,720:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,288:DEBUG:
+    2018-09-13 12:07:10,721:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,289:DEBUG:
+    2018-09-13 12:07:10,722:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,290:INFO:
+    2018-09-13 12:07:10,724:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,293:WARNING:
+    2018-09-13 12:07:10,729:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,294:DEBUG:
+    2018-09-13 12:07:10,730:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,294:DEBUG:
+    2018-09-13 12:07:10,730:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,296:INFO:
+    2018-09-13 12:07:10,733:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,298:WARNING:
+    2018-09-13 12:07:10,737:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,299:DEBUG:
+    2018-09-13 12:07:10,738:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,299:DEBUG:
+    2018-09-13 12:07:10,739:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,301:INFO:
+    2018-09-13 12:07:10,741:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,304:WARNING:
+    2018-09-13 12:07:10,746:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,304:DEBUG:
+    2018-09-13 12:07:10,746:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,305:DEBUG:
+    2018-09-13 12:07:10,747:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,306:INFO:
+    2018-09-13 12:07:10,749:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,309:WARNING:
+    2018-09-13 12:07:10,754:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,309:DEBUG:
+    2018-09-13 12:07:10,755:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,310:DEBUG:
+    2018-09-13 12:07:10,755:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,311:INFO:
+    2018-09-13 12:07:10,757:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,314:WARNING:
+    2018-09-13 12:07:10,761:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,315:DEBUG:
+    2018-09-13 12:07:10,762:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,315:DEBUG:
+    2018-09-13 12:07:10,763:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,317:INFO:
+    2018-09-13 12:07:10,765:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,320:WARNING:
+    2018-09-13 12:07:10,770:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,320:DEBUG:
+    2018-09-13 12:07:10,771:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,321:DEBUG:
+    2018-09-13 12:07:10,772:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,322:INFO:
+    2018-09-13 12:07:10,774:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,325:WARNING:
+    2018-09-13 12:07:10,779:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,325:DEBUG:
+    2018-09-13 12:07:10,780:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,326:DEBUG:
+    2018-09-13 12:07:10,781:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,327:INFO:
+    2018-09-13 12:07:10,784:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,330:WARNING:
+    2018-09-13 12:07:10,789:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,331:DEBUG:
+    2018-09-13 12:07:10,790:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,331:DEBUG:
+    2018-09-13 12:07:10,790:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,334:INFO:
+    2018-09-13 12:07:10,793:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,338:WARNING:
+    2018-09-13 12:07:10,797:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,338:DEBUG:
+    2018-09-13 12:07:10,798:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,339:DEBUG:
+    2018-09-13 12:07:10,798:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,341:INFO:
+    2018-09-13 12:07:10,801:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,344:WARNING:
+    2018-09-13 12:07:10,804:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,345:DEBUG:
+    2018-09-13 12:07:10,805:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,345:DEBUG:
+    2018-09-13 12:07:10,806:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,347:INFO:
+    2018-09-13 12:07:10,817:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,350:WARNING:
+    2018-09-13 12:07:10,826:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,350:DEBUG:
+    2018-09-13 12:07:10,827:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,351:DEBUG:
+    2018-09-13 12:07:10,828:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,352:INFO:
+    2018-09-13 12:07:10,830:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,355:WARNING:
+    2018-09-13 12:07:10,834:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,356:DEBUG:
+    2018-09-13 12:07:10,835:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,356:DEBUG:
+    2018-09-13 12:07:10,835:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,357:INFO:
+    2018-09-13 12:07:10,837:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,361:WARNING:
+    2018-09-13 12:07:10,842:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,361:DEBUG:
+    2018-09-13 12:07:10,843:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,361:DEBUG:
+    2018-09-13 12:07:10,844:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,363:INFO:
+    2018-09-13 12:07:10,846:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,366:WARNING:
+    2018-09-13 12:07:10,850:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,366:DEBUG:
+    2018-09-13 12:07:10,851:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,367:DEBUG:
+    2018-09-13 12:07:10,852:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,368:INFO:
+    2018-09-13 12:07:10,854:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,371:WARNING:
+    2018-09-13 12:07:10,858:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,372:DEBUG:
+    2018-09-13 12:07:10,859:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,373:DEBUG:
+    2018-09-13 12:07:10,860:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,374:INFO:
+    2018-09-13 12:07:10,864:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,377:WARNING:
+    2018-09-13 12:07:10,868:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,378:DEBUG:
+    2018-09-13 12:07:10,869:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,378:DEBUG:
+    2018-09-13 12:07:10,870:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,380:INFO:
+    2018-09-13 12:07:10,872:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,382:WARNING:
+    2018-09-13 12:07:10,877:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,383:DEBUG:
+    2018-09-13 12:07:10,878:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,383:DEBUG:
+    2018-09-13 12:07:10,879:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,385:INFO:
+    2018-09-13 12:07:10,882:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,388:WARNING:
+    2018-09-13 12:07:10,886:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,389:DEBUG:
+    2018-09-13 12:07:10,887:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,389:DEBUG:
+    2018-09-13 12:07:10,887:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,390:INFO:
+    2018-09-13 12:07:10,890:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,393:WARNING:
+    2018-09-13 12:07:10,896:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,394:DEBUG:
+    2018-09-13 12:07:10,896:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,394:DEBUG:
+    2018-09-13 12:07:10,897:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,396:INFO:
+    2018-09-13 12:07:10,900:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,399:WARNING:
+    2018-09-13 12:07:10,907:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,400:DEBUG:
+    2018-09-13 12:07:10,908:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,400:DEBUG:
+    2018-09-13 12:07:10,908:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,402:INFO:
+    2018-09-13 12:07:10,911:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,405:WARNING:
+    2018-09-13 12:07:10,915:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,405:DEBUG:
+    2018-09-13 12:07:10,916:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,405:DEBUG:
+    2018-09-13 12:07:10,917:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,407:INFO:
+    2018-09-13 12:07:10,919:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,410:WARNING:
+    2018-09-13 12:07:10,929:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,412:DEBUG:
+    2018-09-13 12:07:10,930:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,412:DEBUG:
+    2018-09-13 12:07:10,930:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,414:INFO:
+    2018-09-13 12:07:10,933:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,418:WARNING:
+    2018-09-13 12:07:10,940:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,418:DEBUG:
+    2018-09-13 12:07:10,941:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,419:DEBUG:
+    2018-09-13 12:07:10,941:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,420:INFO:
+    2018-09-13 12:07:10,945:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,423:WARNING:
+    2018-09-13 12:07:10,952:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,424:DEBUG:
+    2018-09-13 12:07:10,953:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,424:DEBUG:
+    2018-09-13 12:07:10,955:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,426:INFO:
+    2018-09-13 12:07:10,959:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,429:WARNING:
+    2018-09-13 12:07:10,967:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,429:DEBUG:
+    2018-09-13 12:07:10,969:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,430:DEBUG:
+    2018-09-13 12:07:10,971:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,431:INFO:
+    2018-09-13 12:07:10,974:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,434:WARNING:
+    2018-09-13 12:07:10,983:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,435:DEBUG:
+    2018-09-13 12:07:10,985:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,435:DEBUG:
+    2018-09-13 12:07:10,987:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,437:INFO:
+    2018-09-13 12:07:10,991:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,440:WARNING:
+    2018-09-13 12:07:10,997:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,440:DEBUG:
+    2018-09-13 12:07:10,998:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,441:DEBUG:
+    2018-09-13 12:07:11,000:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,442:INFO:
+    2018-09-13 12:07:11,004:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,445:WARNING:
+    2018-09-13 12:07:11,012:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,445:DEBUG:
+    2018-09-13 12:07:11,014:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,446:DEBUG:
+    2018-09-13 12:07:11,016:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,447:INFO:
+    2018-09-13 12:07:11,019:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,450:WARNING:
+    2018-09-13 12:07:11,026:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,450:DEBUG:
+    2018-09-13 12:07:11,028:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,451:DEBUG:
+    2018-09-13 12:07:11,029:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,452:INFO:
+    2018-09-13 12:07:11,033:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,455:WARNING:
+    2018-09-13 12:07:11,040:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,456:DEBUG:
+    2018-09-13 12:07:11,042:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,456:DEBUG:
+    2018-09-13 12:07:11,044:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,457:INFO:
+    2018-09-13 12:07:11,047:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,460:WARNING:
+    2018-09-13 12:07:11,056:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,461:DEBUG:
+    2018-09-13 12:07:11,058:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,461:DEBUG:
+    2018-09-13 12:07:11,060:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,462:INFO:
+    2018-09-13 12:07:11,065:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,465:WARNING:
+    2018-09-13 12:07:11,070:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,466:DEBUG:
+    2018-09-13 12:07:11,072:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,466:DEBUG:
+    2018-09-13 12:07:11,073:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,467:INFO:
+    2018-09-13 12:07:11,077:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,471:WARNING:
+    2018-09-13 12:07:11,084:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,471:DEBUG:
+    2018-09-13 12:07:11,085:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,471:DEBUG:
+    2018-09-13 12:07:11,087:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,473:INFO:
+    2018-09-13 12:07:11,092:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,475:WARNING:
+    2018-09-13 12:07:11,097:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,476:DEBUG:
+    2018-09-13 12:07:11,099:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,476:DEBUG:
+    2018-09-13 12:07:11,101:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,478:INFO:
+    2018-09-13 12:07:11,105:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,481:WARNING:
+    2018-09-13 12:07:11,112:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,481:DEBUG:
+    2018-09-13 12:07:11,114:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,482:DEBUG:
+    2018-09-13 12:07:11,115:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,483:INFO:
+    2018-09-13 12:07:11,118:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,486:WARNING:
+    2018-09-13 12:07:11,127:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,487:DEBUG:
+    2018-09-13 12:07:11,128:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,487:DEBUG:
+    2018-09-13 12:07:11,129:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,489:INFO:
+    2018-09-13 12:07:11,138:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,492:WARNING:
+    2018-09-13 12:07:11,147:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,492:DEBUG:
+    2018-09-13 12:07:11,149:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,493:DEBUG:
+    2018-09-13 12:07:11,151:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,494:INFO:
+    2018-09-13 12:07:11,156:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,497:WARNING:
+    2018-09-13 12:07:11,163:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,498:DEBUG:
+    2018-09-13 12:07:11,165:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,498:DEBUG:
+    2018-09-13 12:07:11,167:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,500:INFO:
+    2018-09-13 12:07:11,172:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,503:WARNING:
+    2018-09-13 12:07:11,179:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,503:DEBUG:
+    2018-09-13 12:07:11,181:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,504:DEBUG:
+    2018-09-13 12:07:11,183:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,505:INFO:
+    2018-09-13 12:07:11,188:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,508:WARNING:
+    2018-09-13 12:07:11,195:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,509:DEBUG:
+    2018-09-13 12:07:11,197:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,509:DEBUG:
+    2018-09-13 12:07:11,199:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,511:INFO:
+    2018-09-13 12:07:11,203:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,514:WARNING:
+    2018-09-13 12:07:11,209:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,514:DEBUG:
+    2018-09-13 12:07:11,211:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,515:DEBUG:
+    2018-09-13 12:07:11,212:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,516:INFO:
+    2018-09-13 12:07:11,215:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,519:WARNING:
+    2018-09-13 12:07:11,220:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,520:DEBUG:
+    2018-09-13 12:07:11,222:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,520:DEBUG:
+    2018-09-13 12:07:11,224:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,521:INFO:
+    2018-09-13 12:07:11,227:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,524:WARNING:
+    2018-09-13 12:07:11,233:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,525:DEBUG:
+    2018-09-13 12:07:11,235:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,525:DEBUG:
+    2018-09-13 12:07:11,236:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,527:INFO:
+    2018-09-13 12:07:11,240:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,531:WARNING:
+    2018-09-13 12:07:11,245:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,532:DEBUG:
+    2018-09-13 12:07:11,247:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,532:DEBUG:
+    2018-09-13 12:07:11,248:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,533:INFO:
+    2018-09-13 12:07:11,252:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,537:WARNING:
+    2018-09-13 12:07:11,256:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,537:DEBUG:
+    2018-09-13 12:07:11,257:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,538:DEBUG:
+    2018-09-13 12:07:11,259:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,540:INFO:
+    2018-09-13 12:07:11,261:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,543:WARNING:
+    2018-09-13 12:07:11,265:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,544:DEBUG:
+    2018-09-13 12:07:11,266:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,544:DEBUG:
+    2018-09-13 12:07:11,267:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,546:INFO:
+    2018-09-13 12:07:11,270:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,549:WARNING:
+    2018-09-13 12:07:11,273:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,549:DEBUG:
+    2018-09-13 12:07:11,274:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,550:DEBUG:
+    2018-09-13 12:07:11,275:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,551:INFO:
+    2018-09-13 12:07:11,278:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,554:WARNING:
+    2018-09-13 12:07:11,282:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,554:DEBUG:
+    2018-09-13 12:07:11,283:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,555:DEBUG:
+    2018-09-13 12:07:11,284:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,556:INFO:
+    2018-09-13 12:07:11,286:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,559:WARNING:
+    2018-09-13 12:07:11,291:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,560:DEBUG:
+    2018-09-13 12:07:11,292:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,560:DEBUG:
+    2018-09-13 12:07:11,292:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,562:INFO:
+    2018-09-13 12:07:11,295:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,565:WARNING:
+    2018-09-13 12:07:11,300:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,566:DEBUG:
+    2018-09-13 12:07:11,301:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,566:DEBUG:
+    2018-09-13 12:07:11,302:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,568:INFO:
+    2018-09-13 12:07:11,304:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,571:WARNING:
+    2018-09-13 12:07:11,308:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,571:DEBUG:
+    2018-09-13 12:07:11,309:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,572:DEBUG:
+    2018-09-13 12:07:11,310:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,573:INFO:
+    2018-09-13 12:07:11,312:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,576:WARNING:
+    2018-09-13 12:07:11,317:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,577:DEBUG:
+    2018-09-13 12:07:11,317:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,577:DEBUG:
+    2018-09-13 12:07:11,318:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,578:INFO:
+    2018-09-13 12:07:11,321:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,581:WARNING:
+    2018-09-13 12:07:11,326:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,582:DEBUG:
+    2018-09-13 12:07:11,327:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,582:DEBUG:
+    2018-09-13 12:07:11,327:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,583:INFO:
+    2018-09-13 12:07:11,329:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,586:WARNING:
+    2018-09-13 12:07:11,333:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,587:DEBUG:
+    2018-09-13 12:07:11,334:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,587:DEBUG:
+    2018-09-13 12:07:11,335:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,588:INFO:
+    2018-09-13 12:07:11,338:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,591:WARNING:
+    2018-09-13 12:07:11,343:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,592:DEBUG:
+    2018-09-13 12:07:11,344:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,592:DEBUG:
+    2018-09-13 12:07:11,345:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,593:INFO:
+    2018-09-13 12:07:11,348:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,596:WARNING:
+    2018-09-13 12:07:11,353:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,596:DEBUG:
+    2018-09-13 12:07:11,354:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,597:DEBUG:
+    2018-09-13 12:07:11,355:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,598:INFO:
+    2018-09-13 12:07:11,357:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,601:WARNING:
+    2018-09-13 12:07:11,363:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,601:DEBUG:
+    2018-09-13 12:07:11,364:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,601:DEBUG:
+    2018-09-13 12:07:11,365:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,603:INFO:
+    2018-09-13 12:07:11,367:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,606:WARNING:
+    2018-09-13 12:07:11,371:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,606:DEBUG:
+    2018-09-13 12:07:11,372:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,606:DEBUG:
+    2018-09-13 12:07:11,373:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,608:INFO:
+    2018-09-13 12:07:11,375:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,611:WARNING:
+    2018-09-13 12:07:11,380:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,611:DEBUG:
+    2018-09-13 12:07:11,381:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,612:DEBUG:
+    2018-09-13 12:07:11,381:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,613:INFO:
+    2018-09-13 12:07:11,384:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,616:WARNING:
+    2018-09-13 12:07:11,388:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,617:DEBUG:
+    2018-09-13 12:07:11,389:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,617:DEBUG:
+    2018-09-13 12:07:11,390:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,618:INFO:
+    2018-09-13 12:07:11,393:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,621:WARNING:
+    2018-09-13 12:07:11,398:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,622:DEBUG:
+    2018-09-13 12:07:11,399:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,622:DEBUG:
+    2018-09-13 12:07:11,400:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,624:INFO:
+    2018-09-13 12:07:11,402:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,627:WARNING:
+    2018-09-13 12:07:11,407:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,627:DEBUG:
+    2018-09-13 12:07:11,408:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,628:DEBUG:
+    2018-09-13 12:07:11,409:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,629:INFO:
+    2018-09-13 12:07:11,412:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,632:WARNING:
+    2018-09-13 12:07:11,416:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,632:DEBUG:
+    2018-09-13 12:07:11,418:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,633:DEBUG:
+    2018-09-13 12:07:11,419:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,634:INFO:
+    2018-09-13 12:07:11,421:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,637:WARNING:
+    2018-09-13 12:07:11,427:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,637:DEBUG:
+    2018-09-13 12:07:11,428:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,638:DEBUG:
+    2018-09-13 12:07:11,428:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,639:INFO:
+    2018-09-13 12:07:11,431:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,642:WARNING:
+    2018-09-13 12:07:11,435:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,642:DEBUG:
+    2018-09-13 12:07:11,436:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,643:DEBUG:
+    2018-09-13 12:07:11,437:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,644:INFO:
+    2018-09-13 12:07:11,438:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,647:WARNING:
+    2018-09-13 12:07:11,443:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,648:DEBUG:
+    2018-09-13 12:07:11,443:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,648:DEBUG:
+    2018-09-13 12:07:11,444:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,650:INFO:
+    2018-09-13 12:07:11,446:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,653:WARNING:
+    2018-09-13 12:07:11,451:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,653:DEBUG:
+    2018-09-13 12:07:11,451:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,654:DEBUG:
+    2018-09-13 12:07:11,452:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,655:INFO:
+    2018-09-13 12:07:11,455:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,658:WARNING:
+    2018-09-13 12:07:11,459:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,658:DEBUG:
+    2018-09-13 12:07:11,460:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,659:DEBUG:
+    2018-09-13 12:07:11,461:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,660:INFO:
+    2018-09-13 12:07:11,462:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,664:WARNING:
+    2018-09-13 12:07:11,466:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,664:DEBUG:
+    2018-09-13 12:07:11,466:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,665:DEBUG:
+    2018-09-13 12:07:11,467:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,666:INFO:
+    2018-09-13 12:07:11,469:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,669:WARNING:
+    2018-09-13 12:07:11,473:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,670:DEBUG:
+    2018-09-13 12:07:11,474:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,670:DEBUG:
+    2018-09-13 12:07:11,475:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,671:INFO:
+    2018-09-13 12:07:11,476:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,674:WARNING:
+    2018-09-13 12:07:11,481:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,675:DEBUG:
+    2018-09-13 12:07:11,482:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,675:DEBUG:
+    2018-09-13 12:07:11,482:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,677:INFO:
+    2018-09-13 12:07:11,484:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,679:WARNING:
+    2018-09-13 12:07:11,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,680:DEBUG:
+    2018-09-13 12:07:11,489:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,680:DEBUG:
+    2018-09-13 12:07:11,490:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,682:INFO:
+    2018-09-13 12:07:11,492:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,685:WARNING:
+    2018-09-13 12:07:11,497:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,685:DEBUG:
+    2018-09-13 12:07:11,497:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,686:DEBUG:
+    2018-09-13 12:07:11,498:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,687:INFO:
+    2018-09-13 12:07:11,500:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,690:WARNING:
+    2018-09-13 12:07:11,504:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,690:DEBUG:
+    2018-09-13 12:07:11,504:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,691:DEBUG:
+    2018-09-13 12:07:11,505:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,693:INFO:
+    2018-09-13 12:07:11,507:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,696:WARNING:
+    2018-09-13 12:07:11,511:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,697:DEBUG:
+    2018-09-13 12:07:11,511:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,697:DEBUG:
+    2018-09-13 12:07:11,512:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,699:INFO:
+    2018-09-13 12:07:11,515:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,702:WARNING:
+    2018-09-13 12:07:11,519:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,703:DEBUG:
+    2018-09-13 12:07:11,523:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,703:DEBUG:
+    2018-09-13 12:07:11,525:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,705:INFO:
+    2018-09-13 12:07:11,529:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,708:WARNING:
+    2018-09-13 12:07:11,535:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,708:DEBUG:
+    2018-09-13 12:07:11,538:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,709:DEBUG:
+    2018-09-13 12:07:11,540:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,711:INFO:
+    2018-09-13 12:07:11,546:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,714:WARNING:
+    2018-09-13 12:07:11,551:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,715:DEBUG:
+    2018-09-13 12:07:11,553:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,715:DEBUG:
+    2018-09-13 12:07:11,555:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,717:INFO:
+    2018-09-13 12:07:11,559:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,719:WARNING:
+    2018-09-13 12:07:11,564:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,720:DEBUG:
+    2018-09-13 12:07:11,565:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,721:DEBUG:
+    2018-09-13 12:07:11,566:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,722:INFO:
+    2018-09-13 12:07:11,568:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,725:WARNING:
+    2018-09-13 12:07:11,572:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,726:DEBUG:
+    2018-09-13 12:07:11,573:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,727:DEBUG:
+    2018-09-13 12:07:11,574:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,728:INFO:
+    2018-09-13 12:07:11,576:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,731:WARNING:
+    2018-09-13 12:07:11,580:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,732:DEBUG:
+    2018-09-13 12:07:11,581:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,733:DEBUG:
+    2018-09-13 12:07:11,581:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,734:INFO:
+    2018-09-13 12:07:11,584:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,737:WARNING:
+    2018-09-13 12:07:11,589:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,738:DEBUG:
+    2018-09-13 12:07:11,590:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,739:DEBUG:
+    2018-09-13 12:07:11,590:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,740:INFO:
+    2018-09-13 12:07:11,592:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,743:WARNING:
+    2018-09-13 12:07:11,597:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,743:DEBUG:
+    2018-09-13 12:07:11,598:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,744:DEBUG:
+    2018-09-13 12:07:11,598:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,745:INFO:
+    2018-09-13 12:07:11,600:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,748:WARNING:
+    2018-09-13 12:07:11,605:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,749:DEBUG:
+    2018-09-13 12:07:11,605:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,749:DEBUG:
+    2018-09-13 12:07:11,606:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,751:INFO:
+    2018-09-13 12:07:11,608:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,754:WARNING:
+    2018-09-13 12:07:11,612:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,754:DEBUG:
+    2018-09-13 12:07:11,613:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,755:DEBUG:
+    2018-09-13 12:07:11,614:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,757:INFO:
+    2018-09-13 12:07:11,617:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,760:WARNING:
+    2018-09-13 12:07:11,621:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,760:DEBUG:
+    2018-09-13 12:07:11,622:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,761:DEBUG:
+    2018-09-13 12:07:11,623:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,762:INFO:
+    2018-09-13 12:07:11,625:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,765:WARNING:
+    2018-09-13 12:07:11,632:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,765:DEBUG:
+    2018-09-13 12:07:11,635:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,765:DEBUG:
+    2018-09-13 12:07:11,637:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,767:INFO:
+    2018-09-13 12:07:11,641:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,769:WARNING:
+    2018-09-13 12:07:11,647:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,770:DEBUG:
+    2018-09-13 12:07:11,649:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,770:DEBUG:
+    2018-09-13 12:07:11,651:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,771:INFO:
+    2018-09-13 12:07:11,655:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,775:WARNING:
+    2018-09-13 12:07:11,660:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,775:DEBUG:
+    2018-09-13 12:07:11,662:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,775:DEBUG:
+    2018-09-13 12:07:11,664:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,776:INFO:
+    2018-09-13 12:07:11,668:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,779:WARNING:
+    2018-09-13 12:07:11,673:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,780:DEBUG:
+    2018-09-13 12:07:11,675:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,780:DEBUG:
+    2018-09-13 12:07:11,676:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,781:INFO:
+    2018-09-13 12:07:11,680:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,784:WARNING:
+    2018-09-13 12:07:11,685:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,785:DEBUG:
+    2018-09-13 12:07:11,687:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,785:DEBUG:
+    2018-09-13 12:07:11,689:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,787:INFO:
+    2018-09-13 12:07:11,693:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,790:WARNING:
+    2018-09-13 12:07:11,698:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,790:DEBUG:
+    2018-09-13 12:07:11,700:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,790:DEBUG:
+    2018-09-13 12:07:11,702:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,792:INFO:
+    2018-09-13 12:07:11,705:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,794:WARNING:
+    2018-09-13 12:07:11,711:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,795:DEBUG:
+    2018-09-13 12:07:11,713:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,795:DEBUG:
+    2018-09-13 12:07:11,715:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,796:INFO:
+    2018-09-13 12:07:11,718:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,799:WARNING:
+    2018-09-13 12:07:11,724:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,800:DEBUG:
+    2018-09-13 12:07:11,726:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,800:DEBUG:
+    2018-09-13 12:07:11,728:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,802:INFO:
+    2018-09-13 12:07:11,731:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,805:WARNING:
+    2018-09-13 12:07:11,735:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,805:DEBUG:
+    2018-09-13 12:07:11,737:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,806:DEBUG:
+    2018-09-13 12:07:11,739:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,807:INFO:
+    2018-09-13 12:07:11,743:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,810:WARNING:
+    2018-09-13 12:07:11,748:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,811:DEBUG:
+    2018-09-13 12:07:11,750:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,811:DEBUG:
+    2018-09-13 12:07:11,751:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,812:INFO:
+    2018-09-13 12:07:11,755:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,815:WARNING:
+    2018-09-13 12:07:11,760:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,816:DEBUG:
+    2018-09-13 12:07:11,761:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,816:DEBUG:
+    2018-09-13 12:07:11,763:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,818:INFO:
+    2018-09-13 12:07:11,767:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,821:WARNING:
+    2018-09-13 12:07:11,772:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,821:DEBUG:
+    2018-09-13 12:07:11,774:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,822:DEBUG:
+    2018-09-13 12:07:11,775:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,823:INFO:
+    2018-09-13 12:07:11,780:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,826:WARNING:
+    2018-09-13 12:07:11,785:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,826:DEBUG:
+    2018-09-13 12:07:11,786:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,827:DEBUG:
+    2018-09-13 12:07:11,787:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,828:INFO:
+    2018-09-13 12:07:11,790:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,831:WARNING:
+    2018-09-13 12:07:11,797:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,832:DEBUG:
+    2018-09-13 12:07:11,798:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,832:DEBUG:
+    2018-09-13 12:07:11,799:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,834:INFO:
+    2018-09-13 12:07:11,802:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,837:WARNING:
+    2018-09-13 12:07:11,807:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,837:DEBUG:
+    2018-09-13 12:07:11,808:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,838:DEBUG:
+    2018-09-13 12:07:11,809:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,839:INFO:
+    2018-09-13 12:07:11,812:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,842:WARNING:
+    2018-09-13 12:07:11,821:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,842:DEBUG:
+    2018-09-13 12:07:11,823:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,843:DEBUG:
+    2018-09-13 12:07:11,825:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,844:INFO:
+    2018-09-13 12:07:11,837:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,847:WARNING:
+    2018-09-13 12:07:11,842:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,848:DEBUG:
+    2018-09-13 12:07:11,843:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,848:DEBUG:
+    2018-09-13 12:07:11,844:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,850:INFO:
+    2018-09-13 12:07:11,846:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,853:WARNING:
+    2018-09-13 12:07:11,851:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,854:DEBUG:
+    2018-09-13 12:07:11,852:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,854:DEBUG:
+    2018-09-13 12:07:11,853:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,856:INFO:
+    2018-09-13 12:07:11,856:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,859:WARNING:
+    2018-09-13 12:07:11,861:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,859:DEBUG:
+    2018-09-13 12:07:11,862:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,860:DEBUG:
+    2018-09-13 12:07:11,863:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,861:INFO:
+    2018-09-13 12:07:11,866:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,864:WARNING:
+    2018-09-13 12:07:11,871:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,864:DEBUG:
+    2018-09-13 12:07:11,873:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,865:DEBUG:
+    2018-09-13 12:07:11,874:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,866:INFO:
+    2018-09-13 12:07:11,877:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,869:WARNING:
+    2018-09-13 12:07:11,882:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,869:DEBUG:
+    2018-09-13 12:07:11,883:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,870:DEBUG:
+    2018-09-13 12:07:11,884:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,871:INFO:
+    2018-09-13 12:07:11,887:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,874:WARNING:
+    2018-09-13 12:07:11,891:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,874:DEBUG:
+    2018-09-13 12:07:11,892:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,875:DEBUG:
+    2018-09-13 12:07:11,893:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,876:INFO:
+    2018-09-13 12:07:11,896:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,879:WARNING:
+    2018-09-13 12:07:11,900:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,879:DEBUG:
+    2018-09-13 12:07:11,902:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,879:DEBUG:
+    2018-09-13 12:07:11,903:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,881:INFO:
+    2018-09-13 12:07:11,905:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,883:WARNING:
+    2018-09-13 12:07:11,910:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,884:DEBUG:
+    2018-09-13 12:07:11,912:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,884:DEBUG:
+    2018-09-13 12:07:11,913:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,885:INFO:
+    2018-09-13 12:07:11,915:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,888:WARNING:
+    2018-09-13 12:07:11,920:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,889:DEBUG:
+    2018-09-13 12:07:11,921:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,889:DEBUG:
+    2018-09-13 12:07:11,922:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,890:INFO:
+    2018-09-13 12:07:11,924:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,893:WARNING:
+    2018-09-13 12:07:11,929:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,894:DEBUG:
+    2018-09-13 12:07:11,931:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,894:DEBUG:
+    2018-09-13 12:07:11,932:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,895:INFO:
+    2018-09-13 12:07:11,936:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,898:WARNING:
+    2018-09-13 12:07:11,943:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,898:DEBUG:
+    2018-09-13 12:07:11,945:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,899:DEBUG:
+    2018-09-13 12:07:11,947:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,900:INFO:
+    2018-09-13 12:07:11,951:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,903:WARNING:
+    2018-09-13 12:07:11,956:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,903:DEBUG:
+    2018-09-13 12:07:11,958:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,903:DEBUG:
+    2018-09-13 12:07:11,960:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,905:INFO:
+    2018-09-13 12:07:11,963:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,907:WARNING:
+    2018-09-13 12:07:11,968:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,908:DEBUG:
+    2018-09-13 12:07:11,969:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,908:DEBUG:
+    2018-09-13 12:07:11,970:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,910:INFO:
+    2018-09-13 12:07:11,972:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,912:WARNING:
+    2018-09-13 12:07:11,977:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,913:DEBUG:
+    2018-09-13 12:07:11,978:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,913:DEBUG:
+    2018-09-13 12:07:11,978:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,915:INFO:
+    2018-09-13 12:07:11,980:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,918:WARNING:
+    2018-09-13 12:07:11,985:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,918:DEBUG:
+    2018-09-13 12:07:11,986:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,919:DEBUG:
+    2018-09-13 12:07:11,986:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,920:INFO:
+    2018-09-13 12:07:11,989:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,923:WARNING:
+    2018-09-13 12:07:11,994:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,923:DEBUG:
+    2018-09-13 12:07:11,994:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,924:DEBUG:
+    2018-09-13 12:07:11,995:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,925:INFO:
+    2018-09-13 12:07:11,997:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,927:WARNING:
+    2018-09-13 12:07:12,002:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,928:DEBUG:
+    2018-09-13 12:07:12,004:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,928:DEBUG:
+    2018-09-13 12:07:12,006:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,929:INFO:
+    2018-09-13 12:07:12,010:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,932:WARNING:
+    2018-09-13 12:07:12,016:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,933:DEBUG:
+    2018-09-13 12:07:12,018:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,933:DEBUG:
+    2018-09-13 12:07:12,020:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,934:INFO:
+    2018-09-13 12:07:12,024:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,937:WARNING:
+    2018-09-13 12:07:12,030:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,937:DEBUG:
+    2018-09-13 12:07:12,032:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,938:DEBUG:
+    2018-09-13 12:07:12,033:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,939:INFO:
+    2018-09-13 12:07:12,035:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,943:WARNING:
+    2018-09-13 12:07:12,040:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,943:DEBUG:
+    2018-09-13 12:07:12,042:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,943:DEBUG:
+    2018-09-13 12:07:12,042:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,945:INFO:
+    2018-09-13 12:07:12,045:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,948:WARNING:
+    2018-09-13 12:07:12,049:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,948:DEBUG:
+    2018-09-13 12:07:12,050:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,949:DEBUG:
+    2018-09-13 12:07:12,051:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,950:INFO:
+    2018-09-13 12:07:12,054:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,953:WARNING:
+    2018-09-13 12:07:12,059:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,953:DEBUG:
+    2018-09-13 12:07:12,060:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,954:DEBUG:
+    2018-09-13 12:07:12,061:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,955:INFO:
+    2018-09-13 12:07:12,063:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,958:WARNING:
+    2018-09-13 12:07:12,068:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,959:DEBUG:
+    2018-09-13 12:07:12,068:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,959:DEBUG:
+    2018-09-13 12:07:12,069:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,961:INFO:
+    2018-09-13 12:07:12,071:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,964:WARNING:
+    2018-09-13 12:07:12,076:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,964:DEBUG:
+    2018-09-13 12:07:12,077:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,965:DEBUG:
+    2018-09-13 12:07:12,077:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,966:INFO:
+    2018-09-13 12:07:12,080:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,969:WARNING:
+    2018-09-13 12:07:12,085:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,970:DEBUG:
+    2018-09-13 12:07:12,086:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,970:DEBUG:
+    2018-09-13 12:07:12,087:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,973:INFO:
+    2018-09-13 12:07:12,089:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,976:WARNING:
+    2018-09-13 12:07:12,093:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,977:DEBUG:
+    2018-09-13 12:07:12,094:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,977:DEBUG:
+    2018-09-13 12:07:12,095:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,978:INFO:
+    2018-09-13 12:07:12,099:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,982:WARNING:
+    2018-09-13 12:07:12,103:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,982:DEBUG:
+    2018-09-13 12:07:12,104:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,983:DEBUG:
+    2018-09-13 12:07:12,105:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,984:INFO:
+    2018-09-13 12:07:12,107:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,987:WARNING:
+    2018-09-13 12:07:12,111:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,987:DEBUG:
+    2018-09-13 12:07:12,112:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,988:DEBUG:
+    2018-09-13 12:07:12,113:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,989:INFO:
+    2018-09-13 12:07:12,115:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,992:WARNING:
+    2018-09-13 12:07:12,119:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,993:DEBUG:
+    2018-09-13 12:07:12,120:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,993:DEBUG:
+    2018-09-13 12:07:12,121:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:11,995:INFO:
+    2018-09-13 12:07:12,123:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:11,998:WARNING:
+    2018-09-13 12:07:12,128:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:11,998:DEBUG:
+    2018-09-13 12:07:12,128:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:11,999:DEBUG:
+    2018-09-13 12:07:12,129:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,000:INFO:
+    2018-09-13 12:07:12,131:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,003:WARNING:
+    2018-09-13 12:07:12,136:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,003:DEBUG:
+    2018-09-13 12:07:12,136:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,003:DEBUG:
+    2018-09-13 12:07:12,137:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,004:INFO:
+    2018-09-13 12:07:12,142:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,007:WARNING:
+    2018-09-13 12:07:12,148:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,008:DEBUG:
+    2018-09-13 12:07:12,149:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,009:DEBUG:
+    2018-09-13 12:07:12,149:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,010:INFO:
+    2018-09-13 12:07:12,152:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,013:WARNING:
+    2018-09-13 12:07:12,156:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,014:DEBUG:
+    2018-09-13 12:07:12,157:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,014:DEBUG:
+    2018-09-13 12:07:12,157:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,016:INFO:
+    2018-09-13 12:07:12,160:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,019:WARNING:
+    2018-09-13 12:07:12,164:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,019:DEBUG:
+    2018-09-13 12:07:12,164:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,020:DEBUG:
+    2018-09-13 12:07:12,165:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,021:INFO:
+    2018-09-13 12:07:12,168:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,024:WARNING:
+    2018-09-13 12:07:12,172:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,024:DEBUG:
+    2018-09-13 12:07:12,173:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,025:DEBUG:
+    2018-09-13 12:07:12,174:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,026:INFO:
+    2018-09-13 12:07:12,176:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,029:WARNING:
+    2018-09-13 12:07:12,181:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,030:DEBUG:
+    2018-09-13 12:07:12,182:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,031:DEBUG:
+    2018-09-13 12:07:12,182:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,032:INFO:
+    2018-09-13 12:07:12,184:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,035:WARNING:
+    2018-09-13 12:07:12,188:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,036:DEBUG:
+    2018-09-13 12:07:12,189:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,036:DEBUG:
+    2018-09-13 12:07:12,190:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,038:INFO:
+    2018-09-13 12:07:12,192:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,041:WARNING:
+    2018-09-13 12:07:12,196:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,041:DEBUG:
+    2018-09-13 12:07:12,196:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,042:DEBUG:
+    2018-09-13 12:07:12,197:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,047:INFO:
+    2018-09-13 12:07:12,200:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,050:WARNING:
+    2018-09-13 12:07:12,204:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,051:DEBUG:
+    2018-09-13 12:07:12,205:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,051:DEBUG:
+    2018-09-13 12:07:12,206:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,054:INFO:
+    2018-09-13 12:07:12,208:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,057:WARNING:
+    2018-09-13 12:07:12,212:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,057:DEBUG:
+    2018-09-13 12:07:12,213:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,058:DEBUG:
+    2018-09-13 12:07:12,213:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,061:INFO:
+    2018-09-13 12:07:12,215:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,064:WARNING:
+    2018-09-13 12:07:12,219:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,064:DEBUG:
+    2018-09-13 12:07:12,220:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,065:DEBUG:
+    2018-09-13 12:07:12,221:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,066:INFO:
+    2018-09-13 12:07:12,223:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,069:WARNING:
+    2018-09-13 12:07:12,228:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,070:DEBUG:
+    2018-09-13 12:07:12,229:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,070:DEBUG:
+    2018-09-13 12:07:12,230:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,072:INFO:
+    2018-09-13 12:07:12,233:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,075:WARNING:
+    2018-09-13 12:07:12,238:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,075:DEBUG:
+    2018-09-13 12:07:12,239:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,076:DEBUG:
+    2018-09-13 12:07:12,239:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,077:INFO:
+    2018-09-13 12:07:12,241:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,080:WARNING:
+    2018-09-13 12:07:12,246:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,081:DEBUG:
+    2018-09-13 12:07:12,247:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,081:DEBUG:
+    2018-09-13 12:07:12,248:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,083:INFO:
+    2018-09-13 12:07:12,249:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,086:WARNING:
+    2018-09-13 12:07:12,254:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,086:DEBUG:
+    2018-09-13 12:07:12,256:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,087:DEBUG:
+    2018-09-13 12:07:12,258:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,089:INFO:
+    2018-09-13 12:07:12,262:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,092:WARNING:
+    2018-09-13 12:07:12,267:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,093:DEBUG:
+    2018-09-13 12:07:12,269:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,093:DEBUG:
+    2018-09-13 12:07:12,271:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,095:INFO:
+    2018-09-13 12:07:12,275:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,099:WARNING:
+    2018-09-13 12:07:12,281:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,099:DEBUG:
+    2018-09-13 12:07:12,283:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,100:DEBUG:
+    2018-09-13 12:07:12,285:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,101:INFO:
+    2018-09-13 12:07:12,289:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,104:WARNING:
+    2018-09-13 12:07:12,294:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,105:DEBUG:
+    2018-09-13 12:07:12,297:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,105:DEBUG:
+    2018-09-13 12:07:12,299:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,107:INFO:
+    2018-09-13 12:07:12,303:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,110:WARNING:
+    2018-09-13 12:07:12,308:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,111:DEBUG:
+    2018-09-13 12:07:12,309:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,111:DEBUG:
+    2018-09-13 12:07:12,310:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,113:INFO:
+    2018-09-13 12:07:12,313:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,116:WARNING:
+    2018-09-13 12:07:12,318:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,117:DEBUG:
+    2018-09-13 12:07:12,319:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,117:DEBUG:
+    2018-09-13 12:07:12,320:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,118:INFO:
+    2018-09-13 12:07:12,323:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,121:WARNING:
+    2018-09-13 12:07:12,329:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,122:DEBUG:
+    2018-09-13 12:07:12,330:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,123:DEBUG:
+    2018-09-13 12:07:12,331:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,124:INFO:
+    2018-09-13 12:07:12,334:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,127:WARNING:
+    2018-09-13 12:07:12,339:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,128:DEBUG:
+    2018-09-13 12:07:12,340:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,129:DEBUG:
+    2018-09-13 12:07:12,341:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,130:INFO:
+    2018-09-13 12:07:12,344:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,133:WARNING:
+    2018-09-13 12:07:12,349:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,134:DEBUG:
+    2018-09-13 12:07:12,351:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,134:DEBUG:
+    2018-09-13 12:07:12,352:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,136:INFO:
+    2018-09-13 12:07:12,354:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,139:WARNING:
+    2018-09-13 12:07:12,359:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,139:DEBUG:
+    2018-09-13 12:07:12,360:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,140:DEBUG:
+    2018-09-13 12:07:12,361:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,142:INFO:
+    2018-09-13 12:07:12,364:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,145:WARNING:
+    2018-09-13 12:07:12,368:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,145:DEBUG:
+    2018-09-13 12:07:12,369:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,146:DEBUG:
+    2018-09-13 12:07:12,370:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,147:INFO:
+    2018-09-13 12:07:12,373:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,150:WARNING:
+    2018-09-13 12:07:12,379:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,150:DEBUG:
+    2018-09-13 12:07:12,380:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,151:DEBUG:
+    2018-09-13 12:07:12,381:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,152:INFO:
+    2018-09-13 12:07:12,384:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,155:WARNING:
+    2018-09-13 12:07:12,389:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,155:DEBUG:
+    2018-09-13 12:07:12,390:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,156:DEBUG:
+    2018-09-13 12:07:12,391:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,157:INFO:
+    2018-09-13 12:07:12,393:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,160:WARNING:
+    2018-09-13 12:07:12,397:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,161:DEBUG:
+    2018-09-13 12:07:12,398:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,161:DEBUG:
+    2018-09-13 12:07:12,399:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,162:INFO:
+    2018-09-13 12:07:12,402:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,165:WARNING:
+    2018-09-13 12:07:12,406:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,166:DEBUG:
+    2018-09-13 12:07:12,407:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,166:DEBUG:
+    2018-09-13 12:07:12,408:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,167:INFO:
+    2018-09-13 12:07:12,411:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,170:WARNING:
+    2018-09-13 12:07:12,415:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,171:DEBUG:
+    2018-09-13 12:07:12,416:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,171:DEBUG:
+    2018-09-13 12:07:12,417:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,172:INFO:
+    2018-09-13 12:07:12,419:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,175:WARNING:
+    2018-09-13 12:07:12,424:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,175:DEBUG:
+    2018-09-13 12:07:12,425:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,176:DEBUG:
+    2018-09-13 12:07:12,426:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,177:INFO:
+    2018-09-13 12:07:12,428:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,179:WARNING:
+    2018-09-13 12:07:12,433:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,180:DEBUG:
+    2018-09-13 12:07:12,434:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,180:DEBUG:
+    2018-09-13 12:07:12,435:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,182:INFO:
+    2018-09-13 12:07:12,438:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,185:WARNING:
+    2018-09-13 12:07:12,442:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,185:DEBUG:
+    2018-09-13 12:07:12,444:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,186:DEBUG:
+    2018-09-13 12:07:12,445:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,187:INFO:
+    2018-09-13 12:07:12,447:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,190:WARNING:
+    2018-09-13 12:07:12,452:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,191:DEBUG:
+    2018-09-13 12:07:12,453:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,191:DEBUG:
+    2018-09-13 12:07:12,454:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,192:INFO:
+    2018-09-13 12:07:12,457:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,195:WARNING:
+    2018-09-13 12:07:12,462:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,196:DEBUG:
+    2018-09-13 12:07:12,463:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,196:DEBUG:
+    2018-09-13 12:07:12,464:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,197:INFO:
+    2018-09-13 12:07:12,467:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,201:WARNING:
+    2018-09-13 12:07:12,471:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,201:DEBUG:
+    2018-09-13 12:07:12,472:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,202:DEBUG:
+    2018-09-13 12:07:12,473:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,203:INFO:
+    2018-09-13 12:07:12,477:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,206:WARNING:
+    2018-09-13 12:07:12,482:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,207:DEBUG:
+    2018-09-13 12:07:12,483:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,207:DEBUG:
+    2018-09-13 12:07:12,484:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,208:INFO:
+    2018-09-13 12:07:12,487:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,211:WARNING:
+    2018-09-13 12:07:12,491:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,212:DEBUG:
+    2018-09-13 12:07:12,492:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,212:DEBUG:
+    2018-09-13 12:07:12,493:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,213:INFO:
+    2018-09-13 12:07:12,496:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,217:WARNING:
+    2018-09-13 12:07:12,500:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,217:DEBUG:
+    2018-09-13 12:07:12,501:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,218:DEBUG:
+    2018-09-13 12:07:12,502:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,219:INFO:
+    2018-09-13 12:07:12,505:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,222:WARNING:
+    2018-09-13 12:07:12,509:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,223:DEBUG:
+    2018-09-13 12:07:12,510:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,223:DEBUG:
+    2018-09-13 12:07:12,511:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,224:INFO:
+    2018-09-13 12:07:12,514:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,229:WARNING:
+    2018-09-13 12:07:12,518:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,229:DEBUG:
+    2018-09-13 12:07:12,519:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,230:DEBUG:
+    2018-09-13 12:07:12,520:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,231:INFO:
+    2018-09-13 12:07:12,522:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,235:WARNING:
+    2018-09-13 12:07:12,527:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,235:DEBUG:
+    2018-09-13 12:07:12,528:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,236:DEBUG:
+    2018-09-13 12:07:12,529:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,237:INFO:
+    2018-09-13 12:07:12,531:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,240:WARNING:
+    2018-09-13 12:07:12,535:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,241:DEBUG:
+    2018-09-13 12:07:12,536:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,241:DEBUG:
+    2018-09-13 12:07:12,537:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,243:INFO:
+    2018-09-13 12:07:12,539:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,246:WARNING:
+    2018-09-13 12:07:12,542:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,246:DEBUG:
+    2018-09-13 12:07:12,543:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,247:DEBUG:
+    2018-09-13 12:07:12,543:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,248:INFO:
+    2018-09-13 12:07:12,546:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,251:WARNING:
+    2018-09-13 12:07:12,550:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,252:DEBUG:
+    2018-09-13 12:07:12,551:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,252:DEBUG:
+    2018-09-13 12:07:12,552:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,254:INFO:
+    2018-09-13 12:07:12,553:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,257:WARNING:
+    2018-09-13 12:07:12,557:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,257:DEBUG:
+    2018-09-13 12:07:12,558:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,258:DEBUG:
+    2018-09-13 12:07:12,558:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,259:INFO:
+    2018-09-13 12:07:12,560:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,263:WARNING:
+    2018-09-13 12:07:12,563:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,263:DEBUG:
+    2018-09-13 12:07:12,564:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,264:DEBUG:
+    2018-09-13 12:07:12,564:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,266:INFO:
+    2018-09-13 12:07:12,566:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,269:WARNING:
+    2018-09-13 12:07:12,570:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,269:DEBUG:
+    2018-09-13 12:07:12,571:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,270:DEBUG:
+    2018-09-13 12:07:12,571:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,271:INFO:
+    2018-09-13 12:07:12,573:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,275:WARNING:
+    2018-09-13 12:07:12,577:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,275:DEBUG:
+    2018-09-13 12:07:12,577:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,276:DEBUG:
+    2018-09-13 12:07:12,578:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,277:INFO:
+    2018-09-13 12:07:12,580:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,280:WARNING:
+    2018-09-13 12:07:12,584:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,281:DEBUG:
+    2018-09-13 12:07:12,584:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,281:DEBUG:
+    2018-09-13 12:07:12,585:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,283:INFO:
+    2018-09-13 12:07:12,587:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,286:WARNING:
+    2018-09-13 12:07:12,591:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,287:DEBUG:
+    2018-09-13 12:07:12,592:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,287:DEBUG:
+    2018-09-13 12:07:12,592:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,289:INFO:
+    2018-09-13 12:07:12,594:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,291:WARNING:
+    2018-09-13 12:07:12,598:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,292:DEBUG:
+    2018-09-13 12:07:12,598:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,292:DEBUG:
+    2018-09-13 12:07:12,599:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,294:INFO:
+    2018-09-13 12:07:12,602:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,297:WARNING:
+    2018-09-13 12:07:12,606:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,297:DEBUG:
+    2018-09-13 12:07:12,607:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,298:DEBUG:
+    2018-09-13 12:07:12,607:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,299:INFO:
+    2018-09-13 12:07:12,611:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,302:WARNING:
+    2018-09-13 12:07:12,616:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,303:DEBUG:
+    2018-09-13 12:07:12,617:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,304:DEBUG:
+    2018-09-13 12:07:12,618:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,305:INFO:
+    2018-09-13 12:07:12,620:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,308:WARNING:
+    2018-09-13 12:07:12,624:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,309:DEBUG:
+    2018-09-13 12:07:12,625:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,309:DEBUG:
+    2018-09-13 12:07:12,626:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,311:INFO:
+    2018-09-13 12:07:12,628:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,314:WARNING:
+    2018-09-13 12:07:12,633:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,315:DEBUG:
+    2018-09-13 12:07:12,634:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,315:DEBUG:
+    2018-09-13 12:07:12,634:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,317:INFO:
+    2018-09-13 12:07:12,636:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,320:WARNING:
+    2018-09-13 12:07:12,641:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,321:DEBUG:
+    2018-09-13 12:07:12,642:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,321:DEBUG:
+    2018-09-13 12:07:12,642:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,322:INFO:
+    2018-09-13 12:07:12,644:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,326:WARNING:
+    2018-09-13 12:07:12,649:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,326:DEBUG:
+    2018-09-13 12:07:12,650:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,326:DEBUG:
+    2018-09-13 12:07:12,650:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,328:INFO:
+    2018-09-13 12:07:12,652:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,331:WARNING:
+    2018-09-13 12:07:12,656:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,331:DEBUG:
+    2018-09-13 12:07:12,656:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,331:DEBUG:
+    2018-09-13 12:07:12,657:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,333:INFO:
+    2018-09-13 12:07:12,659:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,336:WARNING:
+    2018-09-13 12:07:12,664:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,336:DEBUG:
+    2018-09-13 12:07:12,664:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,337:DEBUG:
+    2018-09-13 12:07:12,665:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,340:INFO:
+    2018-09-13 12:07:12,667:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,343:WARNING:
+    2018-09-13 12:07:12,671:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,343:DEBUG:
+    2018-09-13 12:07:12,672:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,344:DEBUG:
+    2018-09-13 12:07:12,673:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,347:INFO:
+    2018-09-13 12:07:12,675:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,350:WARNING:
+    2018-09-13 12:07:12,679:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,351:DEBUG:
+    2018-09-13 12:07:12,680:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,351:DEBUG:
+    2018-09-13 12:07:12,681:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,353:INFO:
+    2018-09-13 12:07:12,684:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,356:WARNING:
+    2018-09-13 12:07:12,687:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,356:DEBUG:
+    2018-09-13 12:07:12,688:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,357:DEBUG:
+    2018-09-13 12:07:12,688:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,358:INFO:
+    2018-09-13 12:07:12,690:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,361:WARNING:
+    2018-09-13 12:07:12,694:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,362:DEBUG:
+    2018-09-13 12:07:12,694:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,362:DEBUG:
+    2018-09-13 12:07:12,695:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,363:INFO:
+    2018-09-13 12:07:12,697:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,367:WARNING:
+    2018-09-13 12:07:12,701:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,367:DEBUG:
+    2018-09-13 12:07:12,701:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,368:DEBUG:
+    2018-09-13 12:07:12,702:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,369:INFO:
+    2018-09-13 12:07:12,704:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,372:WARNING:
+    2018-09-13 12:07:12,708:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,372:DEBUG:
+    2018-09-13 12:07:12,709:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,373:DEBUG:
+    2018-09-13 12:07:12,709:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,374:INFO:
+    2018-09-13 12:07:12,711:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,377:WARNING:
+    2018-09-13 12:07:12,716:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,378:DEBUG:
+    2018-09-13 12:07:12,717:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,378:DEBUG:
+    2018-09-13 12:07:12,718:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,380:INFO:
+    2018-09-13 12:07:12,720:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,383:WARNING:
+    2018-09-13 12:07:12,724:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,383:DEBUG:
+    2018-09-13 12:07:12,725:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,384:DEBUG:
+    2018-09-13 12:07:12,725:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,386:INFO:
+    2018-09-13 12:07:12,728:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,389:WARNING:
+    2018-09-13 12:07:12,732:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,389:DEBUG:
+    2018-09-13 12:07:12,735:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,390:DEBUG:
+    2018-09-13 12:07:12,737:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,391:INFO:
+    2018-09-13 12:07:12,740:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,394:WARNING:
+    2018-09-13 12:07:12,746:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,395:DEBUG:
+    2018-09-13 12:07:12,748:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,395:DEBUG:
+    2018-09-13 12:07:12,749:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,397:INFO:
+    2018-09-13 12:07:12,753:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,400:WARNING:
+    2018-09-13 12:07:12,759:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,400:DEBUG:
+    2018-09-13 12:07:12,760:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,401:DEBUG:
+    2018-09-13 12:07:12,761:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,402:INFO:
+    2018-09-13 12:07:12,763:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,405:WARNING:
+    2018-09-13 12:07:12,767:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,406:DEBUG:
+    2018-09-13 12:07:12,767:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,406:DEBUG:
+    2018-09-13 12:07:12,768:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,407:INFO:
+    2018-09-13 12:07:12,770:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,411:WARNING:
+    2018-09-13 12:07:12,773:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,411:DEBUG:
+    2018-09-13 12:07:12,774:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,412:DEBUG:
+    2018-09-13 12:07:12,774:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,413:INFO:
+    2018-09-13 12:07:12,776:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,416:WARNING:
+    2018-09-13 12:07:12,780:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,417:DEBUG:
+    2018-09-13 12:07:12,781:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,417:DEBUG:
+    2018-09-13 12:07:12,781:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,419:INFO:
+    2018-09-13 12:07:12,783:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,421:WARNING:
+    2018-09-13 12:07:12,786:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,422:DEBUG:
+    2018-09-13 12:07:12,786:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,422:DEBUG:
+    2018-09-13 12:07:12,787:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,423:INFO:
+    2018-09-13 12:07:12,788:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,426:WARNING:
+    2018-09-13 12:07:12,791:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,426:DEBUG:
+    2018-09-13 12:07:12,792:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,427:DEBUG:
+    2018-09-13 12:07:12,792:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,428:INFO:
+    2018-09-13 12:07:12,794:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,431:WARNING:
+    2018-09-13 12:07:12,798:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,431:DEBUG:
+    2018-09-13 12:07:12,799:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,432:DEBUG:
+    2018-09-13 12:07:12,799:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,433:INFO:
+    2018-09-13 12:07:12,801:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,436:WARNING:
+    2018-09-13 12:07:12,805:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,436:DEBUG:
+    2018-09-13 12:07:12,806:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,437:DEBUG:
+    2018-09-13 12:07:12,806:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,438:INFO:
+    2018-09-13 12:07:12,808:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,441:WARNING:
+    2018-09-13 12:07:12,812:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,441:DEBUG:
+    2018-09-13 12:07:12,812:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,441:DEBUG:
+    2018-09-13 12:07:12,812:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,443:INFO:
+    2018-09-13 12:07:12,814:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,445:WARNING:
+    2018-09-13 12:07:12,818:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,446:DEBUG:
+    2018-09-13 12:07:12,818:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,446:DEBUG:
+    2018-09-13 12:07:12,819:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,447:INFO:
+    2018-09-13 12:07:12,823:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,450:WARNING:
+    2018-09-13 12:07:12,827:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,451:DEBUG:
+    2018-09-13 12:07:12,827:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,451:DEBUG:
+    2018-09-13 12:07:12,827:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,452:INFO:
+    2018-09-13 12:07:12,832:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,455:WARNING:
+    2018-09-13 12:07:12,836:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,456:DEBUG:
+    2018-09-13 12:07:12,836:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,456:DEBUG:
+    2018-09-13 12:07:12,836:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,457:INFO:
+    2018-09-13 12:07:12,846:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,460:WARNING:
+    2018-09-13 12:07:12,850:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,460:DEBUG:
+    2018-09-13 12:07:12,851:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,461:DEBUG:
+    2018-09-13 12:07:12,851:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,462:INFO:
+    2018-09-13 12:07:12,854:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,465:WARNING:
+    2018-09-13 12:07:12,858:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,466:DEBUG:
+    2018-09-13 12:07:12,859:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,466:DEBUG:
+    2018-09-13 12:07:12,859:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,467:INFO:
+    2018-09-13 12:07:12,861:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,470:WARNING:
+    2018-09-13 12:07:12,865:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,471:DEBUG:
+    2018-09-13 12:07:12,865:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,471:DEBUG:
+    2018-09-13 12:07:12,866:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,472:INFO:
+    2018-09-13 12:07:12,868:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,475:WARNING:
+    2018-09-13 12:07:12,872:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,475:DEBUG:
+    2018-09-13 12:07:12,873:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,476:DEBUG:
+    2018-09-13 12:07:12,873:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,477:INFO:
+    2018-09-13 12:07:12,876:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,480:WARNING:
+    2018-09-13 12:07:12,880:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,480:DEBUG:
+    2018-09-13 12:07:12,881:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,481:DEBUG:
+    2018-09-13 12:07:12,882:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,482:INFO:
+    2018-09-13 12:07:12,884:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,485:WARNING:
+    2018-09-13 12:07:12,889:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,485:DEBUG:
+    2018-09-13 12:07:12,891:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,486:DEBUG:
+    2018-09-13 12:07:12,892:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,487:INFO:
+    2018-09-13 12:07:12,894:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,491:WARNING:
+    2018-09-13 12:07:12,898:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,491:DEBUG:
+    2018-09-13 12:07:12,899:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,492:DEBUG:
+    2018-09-13 12:07:12,900:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,493:INFO:
+    2018-09-13 12:07:12,903:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,496:WARNING:
+    2018-09-13 12:07:12,907:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,497:DEBUG:
+    2018-09-13 12:07:12,908:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,498:DEBUG:
+    2018-09-13 12:07:12,909:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,499:INFO:
+    2018-09-13 12:07:12,911:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,502:WARNING:
+    2018-09-13 12:07:12,915:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,503:DEBUG:
+    2018-09-13 12:07:12,916:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,503:DEBUG:
+    2018-09-13 12:07:12,917:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,504:INFO:
+    2018-09-13 12:07:12,920:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,507:WARNING:
+    2018-09-13 12:07:12,925:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,508:DEBUG:
+    2018-09-13 12:07:12,926:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,509:DEBUG:
+    2018-09-13 12:07:12,927:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,510:INFO:
+    2018-09-13 12:07:12,929:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,513:WARNING:
+    2018-09-13 12:07:12,933:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,513:DEBUG:
+    2018-09-13 12:07:12,934:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,514:DEBUG:
+    2018-09-13 12:07:12,934:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,515:INFO:
+    2018-09-13 12:07:12,937:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,518:WARNING:
+    2018-09-13 12:07:12,941:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,518:DEBUG:
+    2018-09-13 12:07:12,942:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,518:DEBUG:
+    2018-09-13 12:07:12,943:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,520:INFO:
+    2018-09-13 12:07:12,945:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,523:WARNING:
+    2018-09-13 12:07:12,951:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,523:DEBUG:
+    2018-09-13 12:07:12,952:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,523:DEBUG:
+    2018-09-13 12:07:12,952:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,525:INFO:
+    2018-09-13 12:07:12,954:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,528:WARNING:
+    2018-09-13 12:07:12,960:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,528:DEBUG:
+    2018-09-13 12:07:12,961:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,528:DEBUG:
+    2018-09-13 12:07:12,962:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,530:INFO:
+    2018-09-13 12:07:12,964:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,533:WARNING:
+    2018-09-13 12:07:12,967:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,533:DEBUG:
+    2018-09-13 12:07:12,968:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,533:DEBUG:
+    2018-09-13 12:07:12,969:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,535:INFO:
+    2018-09-13 12:07:12,971:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,538:WARNING:
+    2018-09-13 12:07:12,975:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,538:DEBUG:
+    2018-09-13 12:07:12,976:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,538:DEBUG:
+    2018-09-13 12:07:12,976:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,540:INFO:
+    2018-09-13 12:07:12,979:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,542:WARNING:
+    2018-09-13 12:07:12,984:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,543:DEBUG:
+    2018-09-13 12:07:12,985:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,543:DEBUG:
+    2018-09-13 12:07:12,985:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,545:INFO:
+    2018-09-13 12:07:12,987:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,548:WARNING:
+    2018-09-13 12:07:12,992:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,548:DEBUG:
+    2018-09-13 12:07:12,993:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,548:DEBUG:
+    2018-09-13 12:07:12,993:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,549:INFO:
+    2018-09-13 12:07:12,995:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,552:WARNING:
+    2018-09-13 12:07:13,000:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,553:DEBUG:
+    2018-09-13 12:07:13,001:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,553:DEBUG:
+    2018-09-13 12:07:13,002:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,555:INFO:
+    2018-09-13 12:07:13,004:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,558:WARNING:
+    2018-09-13 12:07:13,009:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,558:DEBUG:
+    2018-09-13 12:07:13,010:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,559:DEBUG:
+    2018-09-13 12:07:13,011:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,560:INFO:
+    2018-09-13 12:07:13,013:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,563:WARNING:
+    2018-09-13 12:07:13,018:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,564:DEBUG:
+    2018-09-13 12:07:13,019:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,564:DEBUG:
+    2018-09-13 12:07:13,020:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,566:INFO:
+    2018-09-13 12:07:13,023:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,569:WARNING:
+    2018-09-13 12:07:13,027:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,569:DEBUG:
+    2018-09-13 12:07:13,027:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,570:DEBUG:
+    2018-09-13 12:07:13,028:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,571:INFO:
+    2018-09-13 12:07:13,030:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,575:WARNING:
+    2018-09-13 12:07:13,034:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,575:DEBUG:
+    2018-09-13 12:07:13,034:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,575:DEBUG:
+    2018-09-13 12:07:13,034:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,577:INFO:
+    2018-09-13 12:07:13,036:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,580:WARNING:
+    2018-09-13 12:07:13,040:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,581:DEBUG:
+    2018-09-13 12:07:13,041:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,581:DEBUG:
+    2018-09-13 12:07:13,041:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,582:INFO:
+    2018-09-13 12:07:13,043:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,586:WARNING:
+    2018-09-13 12:07:13,047:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,586:DEBUG:
+    2018-09-13 12:07:13,048:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,587:DEBUG:
+    2018-09-13 12:07:13,048:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,588:INFO:
+    2018-09-13 12:07:13,050:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,592:WARNING:
+    2018-09-13 12:07:13,053:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,592:DEBUG:
+    2018-09-13 12:07:13,054:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,593:DEBUG:
+    2018-09-13 12:07:13,054:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,594:INFO:
+    2018-09-13 12:07:13,056:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,597:WARNING:
+    2018-09-13 12:07:13,059:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,598:DEBUG:
+    2018-09-13 12:07:13,059:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,598:DEBUG:
+    2018-09-13 12:07:13,060:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,599:INFO:
+    2018-09-13 12:07:13,062:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,603:WARNING:
+    2018-09-13 12:07:13,065:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,603:DEBUG:
+    2018-09-13 12:07:13,065:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,604:DEBUG:
+    2018-09-13 12:07:13,066:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,605:INFO:
+    2018-09-13 12:07:13,067:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,609:WARNING:
+    2018-09-13 12:07:13,071:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,609:DEBUG:
+    2018-09-13 12:07:13,071:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,610:DEBUG:
+    2018-09-13 12:07:13,071:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,611:INFO:
+    2018-09-13 12:07:13,073:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,615:WARNING:
+    2018-09-13 12:07:13,077:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,615:DEBUG:
+    2018-09-13 12:07:13,077:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,615:DEBUG:
+    2018-09-13 12:07:13,078:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,617:INFO:
+    2018-09-13 12:07:13,081:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,620:WARNING:
+    2018-09-13 12:07:13,084:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,621:DEBUG:
+    2018-09-13 12:07:13,085:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,621:DEBUG:
+    2018-09-13 12:07:13,085:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,623:INFO:
+    2018-09-13 12:07:13,087:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,626:WARNING:
+    2018-09-13 12:07:13,091:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,627:DEBUG:
+    2018-09-13 12:07:13,091:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,627:DEBUG:
+    2018-09-13 12:07:13,092:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,629:INFO:
+    2018-09-13 12:07:13,093:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,632:WARNING:
+    2018-09-13 12:07:13,097:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,632:DEBUG:
+    2018-09-13 12:07:13,098:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,633:DEBUG:
+    2018-09-13 12:07:13,098:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,634:INFO:
+    2018-09-13 12:07:13,100:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,638:WARNING:
+    2018-09-13 12:07:13,104:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,638:DEBUG:
+    2018-09-13 12:07:13,105:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,639:DEBUG:
+    2018-09-13 12:07:13,105:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,640:INFO:
+    2018-09-13 12:07:13,107:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,643:WARNING:
+    2018-09-13 12:07:13,111:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,643:DEBUG:
+    2018-09-13 12:07:13,112:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,644:DEBUG:
+    2018-09-13 12:07:13,112:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,645:INFO:
+    2018-09-13 12:07:13,114:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,648:WARNING:
+    2018-09-13 12:07:13,119:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,649:DEBUG:
+    2018-09-13 12:07:13,119:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,649:DEBUG:
+    2018-09-13 12:07:13,120:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,651:INFO:
+    2018-09-13 12:07:13,121:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,654:WARNING:
+    2018-09-13 12:07:13,125:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,655:DEBUG:
+    2018-09-13 12:07:13,126:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,655:DEBUG:
+    2018-09-13 12:07:13,126:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,656:INFO:
+    2018-09-13 12:07:13,128:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,660:WARNING:
+    2018-09-13 12:07:13,132:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,660:DEBUG:
+    2018-09-13 12:07:13,134:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,661:DEBUG:
+    2018-09-13 12:07:13,136:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,662:INFO:
+    2018-09-13 12:07:13,140:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,665:WARNING:
+    2018-09-13 12:07:13,146:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,666:DEBUG:
+    2018-09-13 12:07:13,148:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,666:DEBUG:
+    2018-09-13 12:07:13,150:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,667:INFO:
+    2018-09-13 12:07:13,160:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,671:WARNING:
+    2018-09-13 12:07:13,165:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,671:DEBUG:
+    2018-09-13 12:07:13,166:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,672:DEBUG:
+    2018-09-13 12:07:13,167:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,673:INFO:
+    2018-09-13 12:07:13,171:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,676:WARNING:
+    2018-09-13 12:07:13,176:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,676:DEBUG:
+    2018-09-13 12:07:13,178:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,677:DEBUG:
+    2018-09-13 12:07:13,180:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,678:INFO:
+    2018-09-13 12:07:13,183:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,681:WARNING:
+    2018-09-13 12:07:13,187:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,681:DEBUG:
+    2018-09-13 12:07:13,189:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,682:DEBUG:
+    2018-09-13 12:07:13,190:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,683:INFO:
+    2018-09-13 12:07:13,194:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,686:WARNING:
+    2018-09-13 12:07:13,198:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,686:DEBUG:
+    2018-09-13 12:07:13,200:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,687:DEBUG:
+    2018-09-13 12:07:13,201:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,688:INFO:
+    2018-09-13 12:07:13,203:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,691:WARNING:
+    2018-09-13 12:07:13,207:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,691:DEBUG:
+    2018-09-13 12:07:13,208:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,692:DEBUG:
+    2018-09-13 12:07:13,208:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,693:INFO:
+    2018-09-13 12:07:13,210:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,696:WARNING:
+    2018-09-13 12:07:13,214:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,696:DEBUG:
+    2018-09-13 12:07:13,214:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,697:DEBUG:
+    2018-09-13 12:07:13,215:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,698:INFO:
+    2018-09-13 12:07:13,217:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,701:WARNING:
+    2018-09-13 12:07:13,220:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,701:DEBUG:
+    2018-09-13 12:07:13,221:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,701:DEBUG:
+    2018-09-13 12:07:13,221:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,703:INFO:
+    2018-09-13 12:07:13,223:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,705:WARNING:
+    2018-09-13 12:07:13,227:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,706:DEBUG:
+    2018-09-13 12:07:13,227:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,707:DEBUG:
+    2018-09-13 12:07:13,227:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,708:INFO:
+    2018-09-13 12:07:13,229:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,711:WARNING:
+    2018-09-13 12:07:13,234:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,712:DEBUG:
+    2018-09-13 12:07:13,234:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,712:DEBUG:
+    2018-09-13 12:07:13,234:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,714:INFO:
+    2018-09-13 12:07:13,238:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,717:WARNING:
+    2018-09-13 12:07:13,241:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,717:DEBUG:
+    2018-09-13 12:07:13,242:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,718:DEBUG:
+    2018-09-13 12:07:13,242:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,719:INFO:
+    2018-09-13 12:07:13,245:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,723:WARNING:
+    2018-09-13 12:07:13,249:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,723:DEBUG:
+    2018-09-13 12:07:13,250:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,724:DEBUG:
+    2018-09-13 12:07:13,250:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,726:INFO:
+    2018-09-13 12:07:13,251:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,729:WARNING:
+    2018-09-13 12:07:13,254:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,730:DEBUG:
+    2018-09-13 12:07:13,255:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,730:DEBUG:
+    2018-09-13 12:07:13,255:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,731:INFO:
+    2018-09-13 12:07:13,257:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,735:WARNING:
+    2018-09-13 12:07:13,261:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,735:DEBUG:
+    2018-09-13 12:07:13,262:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,735:DEBUG:
+    2018-09-13 12:07:13,262:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,737:INFO:
+    2018-09-13 12:07:13,263:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,740:WARNING:
+    2018-09-13 12:07:13,267:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,740:DEBUG:
+    2018-09-13 12:07:13,269:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,740:DEBUG:
+    2018-09-13 12:07:13,270:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,743:INFO:
+    2018-09-13 12:07:13,275:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,745:WARNING:
+    2018-09-13 12:07:13,279:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,746:DEBUG:
+    2018-09-13 12:07:13,281:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,746:DEBUG:
+    2018-09-13 12:07:13,282:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,747:INFO:
+    2018-09-13 12:07:13,285:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,750:WARNING:
+    2018-09-13 12:07:13,290:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,751:DEBUG:
+    2018-09-13 12:07:13,291:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,751:DEBUG:
+    2018-09-13 12:07:13,292:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,753:INFO:
+    2018-09-13 12:07:13,295:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,756:WARNING:
+    2018-09-13 12:07:13,299:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,756:DEBUG:
+    2018-09-13 12:07:13,299:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,757:DEBUG:
+    2018-09-13 12:07:13,300:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,758:INFO:
+    2018-09-13 12:07:13,303:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,761:WARNING:
+    2018-09-13 12:07:13,307:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,761:DEBUG:
+    2018-09-13 12:07:13,307:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,762:DEBUG:
+    2018-09-13 12:07:13,308:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,763:INFO:
+    2018-09-13 12:07:13,310:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,766:WARNING:
+    2018-09-13 12:07:13,313:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,766:DEBUG:
+    2018-09-13 12:07:13,314:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,767:DEBUG:
+    2018-09-13 12:07:13,314:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,769:INFO:
+    2018-09-13 12:07:13,316:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,772:WARNING:
+    2018-09-13 12:07:13,319:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,772:DEBUG:
+    2018-09-13 12:07:13,320:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,772:DEBUG:
+    2018-09-13 12:07:13,320:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,774:INFO:
+    2018-09-13 12:07:13,322:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,777:WARNING:
+    2018-09-13 12:07:13,326:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,777:DEBUG:
+    2018-09-13 12:07:13,327:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,778:DEBUG:
+    2018-09-13 12:07:13,327:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,779:INFO:
+    2018-09-13 12:07:13,329:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,782:WARNING:
+    2018-09-13 12:07:13,334:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,783:DEBUG:
+    2018-09-13 12:07:13,334:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,783:DEBUG:
+    2018-09-13 12:07:13,335:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,784:INFO:
+    2018-09-13 12:07:13,336:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,787:WARNING:
+    2018-09-13 12:07:13,340:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,788:DEBUG:
+    2018-09-13 12:07:13,341:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,788:DEBUG:
+    2018-09-13 12:07:13,341:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,789:INFO:
+    2018-09-13 12:07:13,343:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,793:WARNING:
+    2018-09-13 12:07:13,347:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,793:DEBUG:
+    2018-09-13 12:07:13,347:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,794:DEBUG:
+    2018-09-13 12:07:13,348:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,795:INFO:
+    2018-09-13 12:07:13,350:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,798:WARNING:
+    2018-09-13 12:07:13,354:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,798:DEBUG:
+    2018-09-13 12:07:13,355:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,799:DEBUG:
+    2018-09-13 12:07:13,355:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,800:INFO:
+    2018-09-13 12:07:13,357:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,802:WARNING:
+    2018-09-13 12:07:13,361:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,803:DEBUG:
+    2018-09-13 12:07:13,362:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,803:DEBUG:
+    2018-09-13 12:07:13,362:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,804:INFO:
+    2018-09-13 12:07:13,364:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,807:WARNING:
+    2018-09-13 12:07:13,368:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,808:DEBUG:
+    2018-09-13 12:07:13,368:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,808:DEBUG:
+    2018-09-13 12:07:13,369:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,809:INFO:
+    2018-09-13 12:07:13,372:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,812:WARNING:
+    2018-09-13 12:07:13,377:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,812:DEBUG:
+    2018-09-13 12:07:13,377:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,813:DEBUG:
+    2018-09-13 12:07:13,378:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,814:INFO:
+    2018-09-13 12:07:13,380:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,816:WARNING:
+    2018-09-13 12:07:13,385:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,817:DEBUG:
+    2018-09-13 12:07:13,385:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,817:DEBUG:
+    2018-09-13 12:07:13,385:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:12,818:INFO:
+    2018-09-13 12:07:13,387:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:12,821:WARNING:
+    2018-09-13 12:07:13,391:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:12,822:DEBUG:
+    2018-09-13 12:07:13,391:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:12,822:DEBUG:
+    2018-09-13 12:07:13,392:DEBUG:
     Ignoring line no. 24: 35
     
 
 
 .. parsed-literal::
 
-    5.54 ms ± 218 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    10.4 ms ± 1.17 ms per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Read raw:
@@ -12557,1550 +12557,1550 @@ Read raw:
 
 .. parsed-literal::
 
-    2018-09-07 17:45:14,412:INFO:
+    2018-09-13 12:07:14,744:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,415:WARNING:
+    2018-09-13 12:07:14,750:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,416:DEBUG:
+    2018-09-13 12:07:14,751:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,416:DEBUG:
+    2018-09-13 12:07:14,752:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,417:DEBUG:
+    2018-09-13 12:07:14,753:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,417:DEBUG:
+    2018-09-13 12:07:14,754:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,493:INFO:
+    2018-09-13 12:07:14,812:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,497:WARNING:
+    2018-09-13 12:07:14,817:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,497:DEBUG:
+    2018-09-13 12:07:14,818:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,498:DEBUG:
+    2018-09-13 12:07:14,819:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,498:DEBUG:
+    2018-09-13 12:07:14,820:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,499:DEBUG:
+    2018-09-13 12:07:14,820:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,559:INFO:
+    2018-09-13 12:07:14,862:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,563:WARNING:
+    2018-09-13 12:07:14,866:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,564:DEBUG:
+    2018-09-13 12:07:14,866:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,564:DEBUG:
+    2018-09-13 12:07:14,867:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,565:DEBUG:
+    2018-09-13 12:07:14,867:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,565:DEBUG:
+    2018-09-13 12:07:14,868:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,613:INFO:
+    2018-09-13 12:07:14,913:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,617:WARNING:
+    2018-09-13 12:07:14,918:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,618:DEBUG:
+    2018-09-13 12:07:14,918:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,618:DEBUG:
+    2018-09-13 12:07:14,919:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,619:DEBUG:
+    2018-09-13 12:07:14,919:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,619:DEBUG:
+    2018-09-13 12:07:14,920:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,705:INFO:
+    2018-09-13 12:07:14,963:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,710:WARNING:
+    2018-09-13 12:07:14,968:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,710:DEBUG:
+    2018-09-13 12:07:14,968:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,711:DEBUG:
+    2018-09-13 12:07:14,969:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,711:DEBUG:
+    2018-09-13 12:07:14,969:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,712:DEBUG:
+    2018-09-13 12:07:14,970:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,760:INFO:
+    2018-09-13 12:07:15,013:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,763:WARNING:
+    2018-09-13 12:07:15,018:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,763:DEBUG:
+    2018-09-13 12:07:15,019:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,764:DEBUG:
+    2018-09-13 12:07:15,019:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,764:DEBUG:
+    2018-09-13 12:07:15,020:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,765:DEBUG:
+    2018-09-13 12:07:15,020:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,814:INFO:
+    2018-09-13 12:07:15,066:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,818:WARNING:
+    2018-09-13 12:07:15,071:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,819:DEBUG:
+    2018-09-13 12:07:15,072:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,819:DEBUG:
+    2018-09-13 12:07:15,072:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,820:DEBUG:
+    2018-09-13 12:07:15,072:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,821:DEBUG:
+    2018-09-13 12:07:15,073:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,871:INFO:
+    2018-09-13 12:07:15,116:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,875:WARNING:
+    2018-09-13 12:07:15,121:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,875:DEBUG:
+    2018-09-13 12:07:15,122:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,876:DEBUG:
+    2018-09-13 12:07:15,122:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,876:DEBUG:
+    2018-09-13 12:07:15,123:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,877:DEBUG:
+    2018-09-13 12:07:15,123:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,929:INFO:
+    2018-09-13 12:07:15,166:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,933:WARNING:
+    2018-09-13 12:07:15,170:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,933:DEBUG:
+    2018-09-13 12:07:15,171:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,934:DEBUG:
+    2018-09-13 12:07:15,171:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,934:DEBUG:
+    2018-09-13 12:07:15,172:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,935:DEBUG:
+    2018-09-13 12:07:15,172:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:14,985:INFO:
+    2018-09-13 12:07:15,216:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:14,988:WARNING:
+    2018-09-13 12:07:15,221:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:14,989:DEBUG:
+    2018-09-13 12:07:15,222:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:14,989:DEBUG:
+    2018-09-13 12:07:15,222:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:14,990:DEBUG:
+    2018-09-13 12:07:15,222:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:14,990:DEBUG:
+    2018-09-13 12:07:15,223:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,041:INFO:
+    2018-09-13 12:07:15,265:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,044:WARNING:
+    2018-09-13 12:07:15,269:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,050:DEBUG:
+    2018-09-13 12:07:15,271:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,052:DEBUG:
+    2018-09-13 12:07:15,272:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,053:DEBUG:
+    2018-09-13 12:07:15,274:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,054:DEBUG:
+    2018-09-13 12:07:15,275:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,113:INFO:
+    2018-09-13 12:07:15,326:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,117:WARNING:
+    2018-09-13 12:07:15,330:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,117:DEBUG:
+    2018-09-13 12:07:15,331:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,118:DEBUG:
+    2018-09-13 12:07:15,331:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,118:DEBUG:
+    2018-09-13 12:07:15,332:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,119:DEBUG:
+    2018-09-13 12:07:15,332:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,164:INFO:
+    2018-09-13 12:07:15,378:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,169:WARNING:
+    2018-09-13 12:07:15,383:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,169:DEBUG:
+    2018-09-13 12:07:15,383:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,170:DEBUG:
+    2018-09-13 12:07:15,384:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,170:DEBUG:
+    2018-09-13 12:07:15,384:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,170:DEBUG:
+    2018-09-13 12:07:15,385:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,217:INFO:
+    2018-09-13 12:07:15,434:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,220:WARNING:
+    2018-09-13 12:07:15,439:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,221:DEBUG:
+    2018-09-13 12:07:15,439:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,221:DEBUG:
+    2018-09-13 12:07:15,440:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,222:DEBUG:
+    2018-09-13 12:07:15,440:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,222:DEBUG:
+    2018-09-13 12:07:15,441:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,268:INFO:
+    2018-09-13 12:07:15,483:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,272:WARNING:
+    2018-09-13 12:07:15,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,273:DEBUG:
+    2018-09-13 12:07:15,488:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,273:DEBUG:
+    2018-09-13 12:07:15,489:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,274:DEBUG:
+    2018-09-13 12:07:15,489:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,274:DEBUG:
+    2018-09-13 12:07:15,490:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,334:INFO:
+    2018-09-13 12:07:15,535:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,337:WARNING:
+    2018-09-13 12:07:15,541:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,338:DEBUG:
+    2018-09-13 12:07:15,543:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,340:DEBUG:
+    2018-09-13 12:07:15,544:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,340:DEBUG:
+    2018-09-13 12:07:15,545:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,340:DEBUG:
+    2018-09-13 12:07:15,546:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,428:INFO:
+    2018-09-13 12:07:15,595:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,432:WARNING:
+    2018-09-13 12:07:15,602:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,432:DEBUG:
+    2018-09-13 12:07:15,604:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,433:DEBUG:
+    2018-09-13 12:07:15,606:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,433:DEBUG:
+    2018-09-13 12:07:15,607:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,434:DEBUG:
+    2018-09-13 12:07:15,608:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,481:INFO:
+    2018-09-13 12:07:15,669:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,492:WARNING:
+    2018-09-13 12:07:15,673:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,493:DEBUG:
+    2018-09-13 12:07:15,674:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,494:DEBUG:
+    2018-09-13 12:07:15,674:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,494:DEBUG:
+    2018-09-13 12:07:15,675:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,495:DEBUG:
+    2018-09-13 12:07:15,675:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,571:INFO:
+    2018-09-13 12:07:15,718:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,579:WARNING:
+    2018-09-13 12:07:15,725:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,581:DEBUG:
+    2018-09-13 12:07:15,727:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,581:DEBUG:
+    2018-09-13 12:07:15,728:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,582:DEBUG:
+    2018-09-13 12:07:15,729:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,583:DEBUG:
+    2018-09-13 12:07:15,730:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,659:INFO:
+    2018-09-13 12:07:15,802:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,663:WARNING:
+    2018-09-13 12:07:15,807:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,663:DEBUG:
+    2018-09-13 12:07:15,809:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,664:DEBUG:
+    2018-09-13 12:07:15,812:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,664:DEBUG:
+    2018-09-13 12:07:15,814:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,665:DEBUG:
+    2018-09-13 12:07:15,815:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,720:INFO:
+    2018-09-13 12:07:15,888:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,723:WARNING:
+    2018-09-13 12:07:15,893:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,724:DEBUG:
+    2018-09-13 12:07:15,893:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,724:DEBUG:
+    2018-09-13 12:07:15,894:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,725:DEBUG:
+    2018-09-13 12:07:15,894:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,725:DEBUG:
+    2018-09-13 12:07:15,895:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,788:INFO:
+    2018-09-13 12:07:15,939:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,792:WARNING:
+    2018-09-13 12:07:15,943:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,792:DEBUG:
+    2018-09-13 12:07:15,944:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,793:DEBUG:
+    2018-09-13 12:07:15,944:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,793:DEBUG:
+    2018-09-13 12:07:15,945:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,793:DEBUG:
+    2018-09-13 12:07:15,946:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,840:INFO:
+    2018-09-13 12:07:15,989:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,844:WARNING:
+    2018-09-13 12:07:15,994:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,845:DEBUG:
+    2018-09-13 12:07:15,995:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,845:DEBUG:
+    2018-09-13 12:07:15,995:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,846:DEBUG:
+    2018-09-13 12:07:15,996:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,847:DEBUG:
+    2018-09-13 12:07:15,996:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:15,933:INFO:
+    2018-09-13 12:07:16,042:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:15,937:WARNING:
+    2018-09-13 12:07:16,048:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:15,938:DEBUG:
+    2018-09-13 12:07:16,050:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:15,939:DEBUG:
+    2018-09-13 12:07:16,051:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:15,940:DEBUG:
+    2018-09-13 12:07:16,053:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:15,940:DEBUG:
+    2018-09-13 12:07:16,055:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,023:INFO:
+    2018-09-13 12:07:16,124:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,026:WARNING:
+    2018-09-13 12:07:16,130:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,027:DEBUG:
+    2018-09-13 12:07:16,130:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,027:DEBUG:
+    2018-09-13 12:07:16,131:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,028:DEBUG:
+    2018-09-13 12:07:16,131:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,028:DEBUG:
+    2018-09-13 12:07:16,132:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,089:INFO:
+    2018-09-13 12:07:16,184:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,093:WARNING:
+    2018-09-13 12:07:16,191:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,093:DEBUG:
+    2018-09-13 12:07:16,191:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,094:DEBUG:
+    2018-09-13 12:07:16,191:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,094:DEBUG:
+    2018-09-13 12:07:16,192:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,095:DEBUG:
+    2018-09-13 12:07:16,192:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,155:INFO:
+    2018-09-13 12:07:16,254:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,158:WARNING:
+    2018-09-13 12:07:16,259:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,159:DEBUG:
+    2018-09-13 12:07:16,260:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,159:DEBUG:
+    2018-09-13 12:07:16,260:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,160:DEBUG:
+    2018-09-13 12:07:16,261:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,161:DEBUG:
+    2018-09-13 12:07:16,261:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,215:INFO:
+    2018-09-13 12:07:16,305:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,219:WARNING:
+    2018-09-13 12:07:16,309:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,219:DEBUG:
+    2018-09-13 12:07:16,310:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,219:DEBUG:
+    2018-09-13 12:07:16,310:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,220:DEBUG:
+    2018-09-13 12:07:16,311:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,220:DEBUG:
+    2018-09-13 12:07:16,311:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,265:INFO:
+    2018-09-13 12:07:16,356:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,269:WARNING:
+    2018-09-13 12:07:16,360:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,269:DEBUG:
+    2018-09-13 12:07:16,361:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,270:DEBUG:
+    2018-09-13 12:07:16,361:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,270:DEBUG:
+    2018-09-13 12:07:16,362:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,271:DEBUG:
+    2018-09-13 12:07:16,362:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,315:INFO:
+    2018-09-13 12:07:16,405:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,319:WARNING:
+    2018-09-13 12:07:16,409:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,319:DEBUG:
+    2018-09-13 12:07:16,410:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,319:DEBUG:
+    2018-09-13 12:07:16,411:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,320:DEBUG:
+    2018-09-13 12:07:16,411:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,320:DEBUG:
+    2018-09-13 12:07:16,412:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,365:INFO:
+    2018-09-13 12:07:16,455:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,368:WARNING:
+    2018-09-13 12:07:16,461:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,369:DEBUG:
+    2018-09-13 12:07:16,462:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,369:DEBUG:
+    2018-09-13 12:07:16,462:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,369:DEBUG:
+    2018-09-13 12:07:16,462:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,370:DEBUG:
+    2018-09-13 12:07:16,463:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,414:INFO:
+    2018-09-13 12:07:16,509:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,427:WARNING:
+    2018-09-13 12:07:16,513:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,428:DEBUG:
+    2018-09-13 12:07:16,514:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,428:DEBUG:
+    2018-09-13 12:07:16,514:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,429:DEBUG:
+    2018-09-13 12:07:16,515:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,429:DEBUG:
+    2018-09-13 12:07:16,515:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,478:INFO:
+    2018-09-13 12:07:16,558:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,481:WARNING:
+    2018-09-13 12:07:16,562:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,482:DEBUG:
+    2018-09-13 12:07:16,562:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,482:DEBUG:
+    2018-09-13 12:07:16,563:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,483:DEBUG:
+    2018-09-13 12:07:16,563:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,483:DEBUG:
+    2018-09-13 12:07:16,564:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,529:INFO:
+    2018-09-13 12:07:16,607:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,533:WARNING:
+    2018-09-13 12:07:16,611:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,533:DEBUG:
+    2018-09-13 12:07:16,612:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,533:DEBUG:
+    2018-09-13 12:07:16,612:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,534:DEBUG:
+    2018-09-13 12:07:16,613:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,534:DEBUG:
+    2018-09-13 12:07:16,613:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,579:INFO:
+    2018-09-13 12:07:16,659:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,582:WARNING:
+    2018-09-13 12:07:16,663:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,582:DEBUG:
+    2018-09-13 12:07:16,664:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,583:DEBUG:
+    2018-09-13 12:07:16,664:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,583:DEBUG:
+    2018-09-13 12:07:16,665:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,584:DEBUG:
+    2018-09-13 12:07:16,665:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,628:INFO:
+    2018-09-13 12:07:16,708:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,631:WARNING:
+    2018-09-13 12:07:16,713:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,631:DEBUG:
+    2018-09-13 12:07:16,714:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,632:DEBUG:
+    2018-09-13 12:07:16,714:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,632:DEBUG:
+    2018-09-13 12:07:16,715:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,633:DEBUG:
+    2018-09-13 12:07:16,716:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,677:INFO:
+    2018-09-13 12:07:16,762:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,680:WARNING:
+    2018-09-13 12:07:16,767:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,681:DEBUG:
+    2018-09-13 12:07:16,768:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,681:DEBUG:
+    2018-09-13 12:07:16,768:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,682:DEBUG:
+    2018-09-13 12:07:16,769:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,683:DEBUG:
+    2018-09-13 12:07:16,769:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,727:INFO:
+    2018-09-13 12:07:16,837:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,730:WARNING:
+    2018-09-13 12:07:16,842:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,731:DEBUG:
+    2018-09-13 12:07:16,843:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,731:DEBUG:
+    2018-09-13 12:07:16,843:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,732:DEBUG:
+    2018-09-13 12:07:16,844:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,732:DEBUG:
+    2018-09-13 12:07:16,844:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,777:INFO:
+    2018-09-13 12:07:16,892:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,781:WARNING:
+    2018-09-13 12:07:16,899:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,781:DEBUG:
+    2018-09-13 12:07:16,899:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,781:DEBUG:
+    2018-09-13 12:07:16,900:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,782:DEBUG:
+    2018-09-13 12:07:16,900:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,782:DEBUG:
+    2018-09-13 12:07:16,901:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,827:INFO:
+    2018-09-13 12:07:16,946:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,831:WARNING:
+    2018-09-13 12:07:16,950:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,831:DEBUG:
+    2018-09-13 12:07:16,950:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,832:DEBUG:
+    2018-09-13 12:07:16,951:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,832:DEBUG:
+    2018-09-13 12:07:16,951:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,833:DEBUG:
+    2018-09-13 12:07:16,952:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,878:INFO:
+    2018-09-13 12:07:16,997:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,882:WARNING:
+    2018-09-13 12:07:17,002:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,882:DEBUG:
+    2018-09-13 12:07:17,002:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,883:DEBUG:
+    2018-09-13 12:07:17,003:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,883:DEBUG:
+    2018-09-13 12:07:17,003:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,884:DEBUG:
+    2018-09-13 12:07:17,004:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,929:INFO:
+    2018-09-13 12:07:17,047:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,932:WARNING:
+    2018-09-13 12:07:17,052:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,932:DEBUG:
+    2018-09-13 12:07:17,053:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,933:DEBUG:
+    2018-09-13 12:07:17,054:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,933:DEBUG:
+    2018-09-13 12:07:17,054:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,934:DEBUG:
+    2018-09-13 12:07:17,055:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:16,982:INFO:
+    2018-09-13 12:07:17,105:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:16,985:WARNING:
+    2018-09-13 12:07:17,110:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:16,986:DEBUG:
+    2018-09-13 12:07:17,111:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:16,986:DEBUG:
+    2018-09-13 12:07:17,111:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:16,987:DEBUG:
+    2018-09-13 12:07:17,112:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:16,987:DEBUG:
+    2018-09-13 12:07:17,113:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,033:INFO:
+    2018-09-13 12:07:17,159:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,036:WARNING:
+    2018-09-13 12:07:17,164:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,036:DEBUG:
+    2018-09-13 12:07:17,165:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,037:DEBUG:
+    2018-09-13 12:07:17,165:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,038:DEBUG:
+    2018-09-13 12:07:17,166:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,038:DEBUG:
+    2018-09-13 12:07:17,166:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,092:INFO:
+    2018-09-13 12:07:17,209:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,096:WARNING:
+    2018-09-13 12:07:17,213:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,096:DEBUG:
+    2018-09-13 12:07:17,214:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,097:DEBUG:
+    2018-09-13 12:07:17,214:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,097:DEBUG:
+    2018-09-13 12:07:17,214:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,097:DEBUG:
+    2018-09-13 12:07:17,215:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,143:INFO:
+    2018-09-13 12:07:17,260:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,148:WARNING:
+    2018-09-13 12:07:17,266:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,148:DEBUG:
+    2018-09-13 12:07:17,266:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,149:DEBUG:
+    2018-09-13 12:07:17,267:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,149:DEBUG:
+    2018-09-13 12:07:17,267:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,150:DEBUG:
+    2018-09-13 12:07:17,267:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,214:INFO:
+    2018-09-13 12:07:17,312:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,218:WARNING:
+    2018-09-13 12:07:17,316:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,218:DEBUG:
+    2018-09-13 12:07:17,317:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,219:DEBUG:
+    2018-09-13 12:07:17,317:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,219:DEBUG:
+    2018-09-13 12:07:17,318:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,219:DEBUG:
+    2018-09-13 12:07:17,318:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,265:INFO:
+    2018-09-13 12:07:17,361:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,268:WARNING:
+    2018-09-13 12:07:17,365:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,269:DEBUG:
+    2018-09-13 12:07:17,366:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,269:DEBUG:
+    2018-09-13 12:07:17,367:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,270:DEBUG:
+    2018-09-13 12:07:17,367:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,270:DEBUG:
+    2018-09-13 12:07:17,368:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,316:INFO:
+    2018-09-13 12:07:17,412:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,319:WARNING:
+    2018-09-13 12:07:17,417:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,320:DEBUG:
+    2018-09-13 12:07:17,420:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,321:DEBUG:
+    2018-09-13 12:07:17,422:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,321:DEBUG:
+    2018-09-13 12:07:17,424:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,322:DEBUG:
+    2018-09-13 12:07:17,427:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,367:INFO:
+    2018-09-13 12:07:17,485:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,371:WARNING:
+    2018-09-13 12:07:17,489:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,371:DEBUG:
+    2018-09-13 12:07:17,490:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,371:DEBUG:
+    2018-09-13 12:07:17,490:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,372:DEBUG:
+    2018-09-13 12:07:17,491:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,372:DEBUG:
+    2018-09-13 12:07:17,491:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,418:INFO:
+    2018-09-13 12:07:17,533:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,423:WARNING:
+    2018-09-13 12:07:17,539:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,424:DEBUG:
+    2018-09-13 12:07:17,540:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,424:DEBUG:
+    2018-09-13 12:07:17,540:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,425:DEBUG:
+    2018-09-13 12:07:17,541:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,425:DEBUG:
+    2018-09-13 12:07:17,541:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,496:INFO:
+    2018-09-13 12:07:17,584:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,500:WARNING:
+    2018-09-13 12:07:17,589:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,500:DEBUG:
+    2018-09-13 12:07:17,590:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,501:DEBUG:
+    2018-09-13 12:07:17,590:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,501:DEBUG:
+    2018-09-13 12:07:17,591:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,502:DEBUG:
+    2018-09-13 12:07:17,591:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,547:INFO:
+    2018-09-13 12:07:17,635:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,551:WARNING:
+    2018-09-13 12:07:17,640:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,551:DEBUG:
+    2018-09-13 12:07:17,641:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,552:DEBUG:
+    2018-09-13 12:07:17,643:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,552:DEBUG:
+    2018-09-13 12:07:17,644:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,553:DEBUG:
+    2018-09-13 12:07:17,645:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,598:INFO:
+    2018-09-13 12:07:17,711:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,602:WARNING:
+    2018-09-13 12:07:17,715:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,602:DEBUG:
+    2018-09-13 12:07:17,715:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,602:DEBUG:
+    2018-09-13 12:07:17,716:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,603:DEBUG:
+    2018-09-13 12:07:17,716:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,603:DEBUG:
+    2018-09-13 12:07:17,717:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,648:INFO:
+    2018-09-13 12:07:17,759:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,652:WARNING:
+    2018-09-13 12:07:17,764:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,652:DEBUG:
+    2018-09-13 12:07:17,766:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,653:DEBUG:
+    2018-09-13 12:07:17,767:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,653:DEBUG:
+    2018-09-13 12:07:17,769:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,654:DEBUG:
+    2018-09-13 12:07:17,770:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,699:INFO:
+    2018-09-13 12:07:17,852:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,703:WARNING:
+    2018-09-13 12:07:17,857:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,703:DEBUG:
+    2018-09-13 12:07:17,858:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,704:DEBUG:
+    2018-09-13 12:07:17,859:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,704:DEBUG:
+    2018-09-13 12:07:17,859:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,705:DEBUG:
+    2018-09-13 12:07:17,860:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,751:INFO:
+    2018-09-13 12:07:17,907:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,754:WARNING:
+    2018-09-13 12:07:17,911:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,755:DEBUG:
+    2018-09-13 12:07:17,912:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,755:DEBUG:
+    2018-09-13 12:07:17,913:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,756:DEBUG:
+    2018-09-13 12:07:17,913:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,756:DEBUG:
+    2018-09-13 12:07:17,914:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,802:INFO:
+    2018-09-13 12:07:17,958:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,805:WARNING:
+    2018-09-13 12:07:17,963:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,805:DEBUG:
+    2018-09-13 12:07:17,965:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,805:DEBUG:
+    2018-09-13 12:07:17,967:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,806:DEBUG:
+    2018-09-13 12:07:17,969:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,806:DEBUG:
+    2018-09-13 12:07:17,971:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,851:INFO:
+    2018-09-13 12:07:18,043:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,854:WARNING:
+    2018-09-13 12:07:18,047:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,855:DEBUG:
+    2018-09-13 12:07:18,048:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,855:DEBUG:
+    2018-09-13 12:07:18,048:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,856:DEBUG:
+    2018-09-13 12:07:18,049:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,856:DEBUG:
+    2018-09-13 12:07:18,049:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,902:INFO:
+    2018-09-13 12:07:18,092:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,905:WARNING:
+    2018-09-13 12:07:18,099:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,905:DEBUG:
+    2018-09-13 12:07:18,100:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,906:DEBUG:
+    2018-09-13 12:07:18,100:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,907:DEBUG:
+    2018-09-13 12:07:18,101:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,907:DEBUG:
+    2018-09-13 12:07:18,101:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:17,972:INFO:
+    2018-09-13 12:07:18,146:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:17,976:WARNING:
+    2018-09-13 12:07:18,153:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:17,976:DEBUG:
+    2018-09-13 12:07:18,154:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:17,977:DEBUG:
+    2018-09-13 12:07:18,154:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:17,978:DEBUG:
+    2018-09-13 12:07:18,154:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:17,978:DEBUG:
+    2018-09-13 12:07:18,155:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,047:INFO:
+    2018-09-13 12:07:18,201:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,050:WARNING:
+    2018-09-13 12:07:18,206:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,051:DEBUG:
+    2018-09-13 12:07:18,207:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,051:DEBUG:
+    2018-09-13 12:07:18,208:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,052:DEBUG:
+    2018-09-13 12:07:18,208:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,052:DEBUG:
+    2018-09-13 12:07:18,208:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,122:INFO:
+    2018-09-13 12:07:18,253:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,125:WARNING:
+    2018-09-13 12:07:18,258:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,126:DEBUG:
+    2018-09-13 12:07:18,258:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,127:DEBUG:
+    2018-09-13 12:07:18,259:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,127:DEBUG:
+    2018-09-13 12:07:18,259:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,128:DEBUG:
+    2018-09-13 12:07:18,260:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,191:INFO:
+    2018-09-13 12:07:18,302:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,194:WARNING:
+    2018-09-13 12:07:18,307:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,195:DEBUG:
+    2018-09-13 12:07:18,308:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,195:DEBUG:
+    2018-09-13 12:07:18,309:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,196:DEBUG:
+    2018-09-13 12:07:18,309:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,196:DEBUG:
+    2018-09-13 12:07:18,310:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,262:INFO:
+    2018-09-13 12:07:18,353:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,266:WARNING:
+    2018-09-13 12:07:18,358:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,266:DEBUG:
+    2018-09-13 12:07:18,359:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,267:DEBUG:
+    2018-09-13 12:07:18,360:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,267:DEBUG:
+    2018-09-13 12:07:18,360:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,268:DEBUG:
+    2018-09-13 12:07:18,361:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,313:INFO:
+    2018-09-13 12:07:18,403:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,317:WARNING:
+    2018-09-13 12:07:18,410:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,317:DEBUG:
+    2018-09-13 12:07:18,410:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,318:DEBUG:
+    2018-09-13 12:07:18,411:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,318:DEBUG:
+    2018-09-13 12:07:18,411:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,318:DEBUG:
+    2018-09-13 12:07:18,411:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,364:INFO:
+    2018-09-13 12:07:18,467:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,367:WARNING:
+    2018-09-13 12:07:18,472:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,368:DEBUG:
+    2018-09-13 12:07:18,473:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,368:DEBUG:
+    2018-09-13 12:07:18,474:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,369:DEBUG:
+    2018-09-13 12:07:18,475:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,369:DEBUG:
+    2018-09-13 12:07:18,476:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,416:INFO:
+    2018-09-13 12:07:18,534:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,419:WARNING:
+    2018-09-13 12:07:18,539:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,420:DEBUG:
+    2018-09-13 12:07:18,540:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,420:DEBUG:
+    2018-09-13 12:07:18,540:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,421:DEBUG:
+    2018-09-13 12:07:18,541:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,421:DEBUG:
+    2018-09-13 12:07:18,541:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,482:INFO:
+    2018-09-13 12:07:18,584:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,486:WARNING:
+    2018-09-13 12:07:18,590:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,487:DEBUG:
+    2018-09-13 12:07:18,590:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,487:DEBUG:
+    2018-09-13 12:07:18,591:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,488:DEBUG:
+    2018-09-13 12:07:18,591:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,489:DEBUG:
+    2018-09-13 12:07:18,592:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,545:INFO:
+    2018-09-13 12:07:18,640:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,548:WARNING:
+    2018-09-13 12:07:18,646:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,549:DEBUG:
+    2018-09-13 12:07:18,648:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,550:DEBUG:
+    2018-09-13 12:07:18,649:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,550:DEBUG:
+    2018-09-13 12:07:18,651:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,551:DEBUG:
+    2018-09-13 12:07:18,652:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,598:INFO:
+    2018-09-13 12:07:18,716:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,601:WARNING:
+    2018-09-13 12:07:18,723:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,601:DEBUG:
+    2018-09-13 12:07:18,723:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,602:DEBUG:
+    2018-09-13 12:07:18,724:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,602:DEBUG:
+    2018-09-13 12:07:18,724:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,602:DEBUG:
+    2018-09-13 12:07:18,725:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,647:INFO:
+    2018-09-13 12:07:18,773:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,651:WARNING:
+    2018-09-13 12:07:18,778:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,651:DEBUG:
+    2018-09-13 12:07:18,778:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,652:DEBUG:
+    2018-09-13 12:07:18,779:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,652:DEBUG:
+    2018-09-13 12:07:18,779:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,653:DEBUG:
+    2018-09-13 12:07:18,780:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,698:INFO:
+    2018-09-13 12:07:18,824:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,701:WARNING:
+    2018-09-13 12:07:18,829:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,701:DEBUG:
+    2018-09-13 12:07:18,830:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,702:DEBUG:
+    2018-09-13 12:07:18,831:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,703:DEBUG:
+    2018-09-13 12:07:18,831:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,703:DEBUG:
+    2018-09-13 12:07:18,831:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,749:INFO:
+    2018-09-13 12:07:18,897:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,753:WARNING:
+    2018-09-13 12:07:18,902:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,754:DEBUG:
+    2018-09-13 12:07:18,902:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,754:DEBUG:
+    2018-09-13 12:07:18,903:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,755:DEBUG:
+    2018-09-13 12:07:18,903:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,756:DEBUG:
+    2018-09-13 12:07:18,904:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,801:INFO:
+    2018-09-13 12:07:18,949:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,804:WARNING:
+    2018-09-13 12:07:18,953:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,805:DEBUG:
+    2018-09-13 12:07:18,954:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,805:DEBUG:
+    2018-09-13 12:07:18,954:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,805:DEBUG:
+    2018-09-13 12:07:18,955:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,806:DEBUG:
+    2018-09-13 12:07:18,956:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,850:INFO:
+    2018-09-13 12:07:19,001:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,854:WARNING:
+    2018-09-13 12:07:19,007:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,854:DEBUG:
+    2018-09-13 12:07:19,008:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,854:DEBUG:
+    2018-09-13 12:07:19,009:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,855:DEBUG:
+    2018-09-13 12:07:19,009:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,855:DEBUG:
+    2018-09-13 12:07:19,009:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,901:INFO:
+    2018-09-13 12:07:19,055:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,904:WARNING:
+    2018-09-13 12:07:19,062:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,905:DEBUG:
+    2018-09-13 12:07:19,064:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,905:DEBUG:
+    2018-09-13 12:07:19,066:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,905:DEBUG:
+    2018-09-13 12:07:19,067:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,906:DEBUG:
+    2018-09-13 12:07:19,069:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:18,977:INFO:
+    2018-09-13 12:07:19,138:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:18,981:WARNING:
+    2018-09-13 12:07:19,143:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:18,981:DEBUG:
+    2018-09-13 12:07:19,144:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:18,982:DEBUG:
+    2018-09-13 12:07:19,146:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:18,983:DEBUG:
+    2018-09-13 12:07:19,148:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:18,983:DEBUG:
+    2018-09-13 12:07:19,149:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,056:INFO:
+    2018-09-13 12:07:19,201:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,060:WARNING:
+    2018-09-13 12:07:19,207:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,060:DEBUG:
+    2018-09-13 12:07:19,208:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,061:DEBUG:
+    2018-09-13 12:07:19,208:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,062:DEBUG:
+    2018-09-13 12:07:19,208:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,062:DEBUG:
+    2018-09-13 12:07:19,209:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,136:INFO:
+    2018-09-13 12:07:19,253:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,140:WARNING:
+    2018-09-13 12:07:19,258:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,140:DEBUG:
+    2018-09-13 12:07:19,259:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,140:DEBUG:
+    2018-09-13 12:07:19,259:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,141:DEBUG:
+    2018-09-13 12:07:19,260:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,141:DEBUG:
+    2018-09-13 12:07:19,260:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,186:INFO:
+    2018-09-13 12:07:19,304:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,190:WARNING:
+    2018-09-13 12:07:19,309:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,190:DEBUG:
+    2018-09-13 12:07:19,311:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,191:DEBUG:
+    2018-09-13 12:07:19,313:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,191:DEBUG:
+    2018-09-13 12:07:19,314:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,192:DEBUG:
+    2018-09-13 12:07:19,315:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
 
 
 .. parsed-literal::
 
-    58.9 ms ± 4.81 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    57.9 ms ± 3.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 Perform all operations:
@@ -14118,1548 +14118,1548 @@ Perform all operations:
 
 .. parsed-literal::
 
-    2018-09-07 17:45:19,472:INFO:
+    2018-09-13 12:07:19,577:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,476:WARNING:
+    2018-09-13 12:07:19,581:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,476:DEBUG:
+    2018-09-13 12:07:19,581:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,477:DEBUG:
+    2018-09-13 12:07:19,582:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,477:DEBUG:
+    2018-09-13 12:07:19,582:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,478:DEBUG:
+    2018-09-13 12:07:19,583:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,536:INFO:
+    2018-09-13 12:07:19,637:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,540:WARNING:
+    2018-09-13 12:07:19,643:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,540:DEBUG:
+    2018-09-13 12:07:19,644:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,541:DEBUG:
+    2018-09-13 12:07:19,644:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,541:DEBUG:
+    2018-09-13 12:07:19,645:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,541:DEBUG:
+    2018-09-13 12:07:19,646:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,607:INFO:
+    2018-09-13 12:07:19,697:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,610:WARNING:
+    2018-09-13 12:07:19,701:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,611:DEBUG:
+    2018-09-13 12:07:19,702:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,612:DEBUG:
+    2018-09-13 12:07:19,702:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,613:DEBUG:
+    2018-09-13 12:07:19,703:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,613:DEBUG:
+    2018-09-13 12:07:19,703:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,668:INFO:
+    2018-09-13 12:07:19,758:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,672:WARNING:
+    2018-09-13 12:07:19,763:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,672:DEBUG:
+    2018-09-13 12:07:19,763:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,672:DEBUG:
+    2018-09-13 12:07:19,764:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,673:DEBUG:
+    2018-09-13 12:07:19,764:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,673:DEBUG:
+    2018-09-13 12:07:19,765:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,731:INFO:
+    2018-09-13 12:07:19,816:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,734:WARNING:
+    2018-09-13 12:07:19,820:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,735:DEBUG:
+    2018-09-13 12:07:19,821:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,736:DEBUG:
+    2018-09-13 12:07:19,821:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,736:DEBUG:
+    2018-09-13 12:07:19,821:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,738:DEBUG:
+    2018-09-13 12:07:19,822:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,791:INFO:
+    2018-09-13 12:07:19,878:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,795:WARNING:
+    2018-09-13 12:07:19,884:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,795:DEBUG:
+    2018-09-13 12:07:19,886:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,796:DEBUG:
+    2018-09-13 12:07:19,887:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,796:DEBUG:
+    2018-09-13 12:07:19,889:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,797:DEBUG:
+    2018-09-13 12:07:19,890:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,850:INFO:
+    2018-09-13 12:07:19,983:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,854:WARNING:
+    2018-09-13 12:07:19,988:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,855:DEBUG:
+    2018-09-13 12:07:19,989:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,855:DEBUG:
+    2018-09-13 12:07:19,989:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,857:DEBUG:
+    2018-09-13 12:07:19,990:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,857:DEBUG:
+    2018-09-13 12:07:19,990:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:19,950:INFO:
+    2018-09-13 12:07:20,046:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:19,953:WARNING:
+    2018-09-13 12:07:20,050:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:19,954:DEBUG:
+    2018-09-13 12:07:20,050:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:19,955:DEBUG:
+    2018-09-13 12:07:20,051:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:19,955:DEBUG:
+    2018-09-13 12:07:20,051:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:19,956:DEBUG:
+    2018-09-13 12:07:20,051:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,012:INFO:
+    2018-09-13 12:07:20,106:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,016:WARNING:
+    2018-09-13 12:07:20,112:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,016:DEBUG:
+    2018-09-13 12:07:20,112:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,017:DEBUG:
+    2018-09-13 12:07:20,113:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,017:DEBUG:
+    2018-09-13 12:07:20,113:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,018:DEBUG:
+    2018-09-13 12:07:20,113:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,073:INFO:
+    2018-09-13 12:07:20,169:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,076:WARNING:
+    2018-09-13 12:07:20,174:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,076:DEBUG:
+    2018-09-13 12:07:20,177:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,077:DEBUG:
+    2018-09-13 12:07:20,178:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,078:DEBUG:
+    2018-09-13 12:07:20,179:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,079:DEBUG:
+    2018-09-13 12:07:20,180:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,153:INFO:
+    2018-09-13 12:07:20,254:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,157:WARNING:
+    2018-09-13 12:07:20,259:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,158:DEBUG:
+    2018-09-13 12:07:20,261:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,158:DEBUG:
+    2018-09-13 12:07:20,263:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,159:DEBUG:
+    2018-09-13 12:07:20,265:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,159:DEBUG:
+    2018-09-13 12:07:20,266:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,250:INFO:
+    2018-09-13 12:07:20,333:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,254:WARNING:
+    2018-09-13 12:07:20,338:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,255:DEBUG:
+    2018-09-13 12:07:20,340:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,255:DEBUG:
+    2018-09-13 12:07:20,342:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,256:DEBUG:
+    2018-09-13 12:07:20,344:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,256:DEBUG:
+    2018-09-13 12:07:20,346:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,317:INFO:
+    2018-09-13 12:07:20,424:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,321:WARNING:
+    2018-09-13 12:07:20,428:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,321:DEBUG:
+    2018-09-13 12:07:20,429:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,322:DEBUG:
+    2018-09-13 12:07:20,429:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,322:DEBUG:
+    2018-09-13 12:07:20,430:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,323:DEBUG:
+    2018-09-13 12:07:20,430:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,383:INFO:
+    2018-09-13 12:07:20,483:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,386:WARNING:
+    2018-09-13 12:07:20,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,387:DEBUG:
+    2018-09-13 12:07:20,488:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,388:DEBUG:
+    2018-09-13 12:07:20,489:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,389:DEBUG:
+    2018-09-13 12:07:20,489:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,390:DEBUG:
+    2018-09-13 12:07:20,489:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,446:INFO:
+    2018-09-13 12:07:20,540:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,450:WARNING:
+    2018-09-13 12:07:20,544:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,451:DEBUG:
+    2018-09-13 12:07:20,544:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,452:DEBUG:
+    2018-09-13 12:07:20,545:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,452:DEBUG:
+    2018-09-13 12:07:20,545:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,453:DEBUG:
+    2018-09-13 12:07:20,546:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,508:INFO:
+    2018-09-13 12:07:20,601:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,512:WARNING:
+    2018-09-13 12:07:20,607:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,512:DEBUG:
+    2018-09-13 12:07:20,607:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,513:DEBUG:
+    2018-09-13 12:07:20,607:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,514:DEBUG:
+    2018-09-13 12:07:20,608:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,514:DEBUG:
+    2018-09-13 12:07:20,609:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,570:INFO:
+    2018-09-13 12:07:20,662:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,574:WARNING:
+    2018-09-13 12:07:20,666:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,575:DEBUG:
+    2018-09-13 12:07:20,666:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,575:DEBUG:
+    2018-09-13 12:07:20,667:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,575:DEBUG:
+    2018-09-13 12:07:20,667:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,576:DEBUG:
+    2018-09-13 12:07:20,668:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,645:INFO:
+    2018-09-13 12:07:20,734:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,648:WARNING:
+    2018-09-13 12:07:20,738:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,649:DEBUG:
+    2018-09-13 12:07:20,739:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,649:DEBUG:
+    2018-09-13 12:07:20,739:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,650:DEBUG:
+    2018-09-13 12:07:20,740:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,650:DEBUG:
+    2018-09-13 12:07:20,740:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,707:INFO:
+    2018-09-13 12:07:20,794:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,712:WARNING:
+    2018-09-13 12:07:20,799:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,712:DEBUG:
+    2018-09-13 12:07:20,800:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,713:DEBUG:
+    2018-09-13 12:07:20,801:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,713:DEBUG:
+    2018-09-13 12:07:20,801:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,714:DEBUG:
+    2018-09-13 12:07:20,801:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,791:INFO:
+    2018-09-13 12:07:20,853:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,796:WARNING:
+    2018-09-13 12:07:20,858:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,796:DEBUG:
+    2018-09-13 12:07:20,860:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,797:DEBUG:
+    2018-09-13 12:07:20,861:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,797:DEBUG:
+    2018-09-13 12:07:20,863:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,798:DEBUG:
+    2018-09-13 12:07:20,864:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,853:INFO:
+    2018-09-13 12:07:20,927:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,856:WARNING:
+    2018-09-13 12:07:20,932:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,857:DEBUG:
+    2018-09-13 12:07:20,933:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,858:DEBUG:
+    2018-09-13 12:07:20,933:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,858:DEBUG:
+    2018-09-13 12:07:20,934:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,858:DEBUG:
+    2018-09-13 12:07:20,935:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:20,940:INFO:
+    2018-09-13 12:07:21,010:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:20,949:WARNING:
+    2018-09-13 12:07:21,015:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:20,949:DEBUG:
+    2018-09-13 12:07:21,015:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:20,950:DEBUG:
+    2018-09-13 12:07:21,016:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:20,950:DEBUG:
+    2018-09-13 12:07:21,016:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:20,951:DEBUG:
+    2018-09-13 12:07:21,017:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,004:INFO:
+    2018-09-13 12:07:21,082:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,011:WARNING:
+    2018-09-13 12:07:21,087:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,013:DEBUG:
+    2018-09-13 12:07:21,088:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,014:DEBUG:
+    2018-09-13 12:07:21,088:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,015:DEBUG:
+    2018-09-13 12:07:21,088:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,016:DEBUG:
+    2018-09-13 12:07:21,089:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,079:INFO:
+    2018-09-13 12:07:21,142:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,085:WARNING:
+    2018-09-13 12:07:21,146:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,086:DEBUG:
+    2018-09-13 12:07:21,147:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,087:DEBUG:
+    2018-09-13 12:07:21,147:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,087:DEBUG:
+    2018-09-13 12:07:21,148:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,088:DEBUG:
+    2018-09-13 12:07:21,148:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,142:INFO:
+    2018-09-13 12:07:21,199:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,150:WARNING:
+    2018-09-13 12:07:21,203:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,151:DEBUG:
+    2018-09-13 12:07:21,204:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,151:DEBUG:
+    2018-09-13 12:07:21,204:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,152:DEBUG:
+    2018-09-13 12:07:21,205:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,152:DEBUG:
+    2018-09-13 12:07:21,206:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,204:INFO:
+    2018-09-13 12:07:21,257:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,211:WARNING:
+    2018-09-13 12:07:21,262:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,211:DEBUG:
+    2018-09-13 12:07:21,262:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,212:DEBUG:
+    2018-09-13 12:07:21,263:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,212:DEBUG:
+    2018-09-13 12:07:21,264:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,213:DEBUG:
+    2018-09-13 12:07:21,264:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,276:INFO:
+    2018-09-13 12:07:21,318:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,284:WARNING:
+    2018-09-13 12:07:21,323:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,285:DEBUG:
+    2018-09-13 12:07:21,324:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,286:DEBUG:
+    2018-09-13 12:07:21,324:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,288:DEBUG:
+    2018-09-13 12:07:21,325:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,289:DEBUG:
+    2018-09-13 12:07:21,325:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,356:INFO:
+    2018-09-13 12:07:21,378:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,364:WARNING:
+    2018-09-13 12:07:21,383:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,365:DEBUG:
+    2018-09-13 12:07:21,384:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,365:DEBUG:
+    2018-09-13 12:07:21,384:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,365:DEBUG:
+    2018-09-13 12:07:21,385:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,366:DEBUG:
+    2018-09-13 12:07:21,385:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,420:INFO:
+    2018-09-13 12:07:21,439:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,427:WARNING:
+    2018-09-13 12:07:21,445:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,428:DEBUG:
+    2018-09-13 12:07:21,447:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,430:DEBUG:
+    2018-09-13 12:07:21,448:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,431:DEBUG:
+    2018-09-13 12:07:21,450:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,432:DEBUG:
+    2018-09-13 12:07:21,451:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,494:INFO:
+    2018-09-13 12:07:21,516:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,501:WARNING:
+    2018-09-13 12:07:21,520:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,502:DEBUG:
+    2018-09-13 12:07:21,521:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,504:DEBUG:
+    2018-09-13 12:07:21,521:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,505:DEBUG:
+    2018-09-13 12:07:21,522:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,507:DEBUG:
+    2018-09-13 12:07:21,522:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,572:INFO:
+    2018-09-13 12:07:21,574:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,578:WARNING:
+    2018-09-13 12:07:21,578:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,578:DEBUG:
+    2018-09-13 12:07:21,579:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,579:DEBUG:
+    2018-09-13 12:07:21,579:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,579:DEBUG:
+    2018-09-13 12:07:21,580:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,580:DEBUG:
+    2018-09-13 12:07:21,580:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,637:INFO:
+    2018-09-13 12:07:21,644:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,644:WARNING:
+    2018-09-13 12:07:21,650:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,644:DEBUG:
+    2018-09-13 12:07:21,650:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,645:DEBUG:
+    2018-09-13 12:07:21,651:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,645:DEBUG:
+    2018-09-13 12:07:21,651:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,645:DEBUG:
+    2018-09-13 12:07:21,652:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,732:INFO:
+    2018-09-13 12:07:21,704:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,739:WARNING:
+    2018-09-13 12:07:21,709:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,741:DEBUG:
+    2018-09-13 12:07:21,711:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,742:DEBUG:
+    2018-09-13 12:07:21,712:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,743:DEBUG:
+    2018-09-13 12:07:21,714:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,745:DEBUG:
+    2018-09-13 12:07:21,715:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,832:INFO:
+    2018-09-13 12:07:21,786:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,838:WARNING:
+    2018-09-13 12:07:21,791:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,838:DEBUG:
+    2018-09-13 12:07:21,792:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,839:DEBUG:
+    2018-09-13 12:07:21,792:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,839:DEBUG:
+    2018-09-13 12:07:21,792:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,839:DEBUG:
+    2018-09-13 12:07:21,793:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,894:INFO:
+    2018-09-13 12:07:21,844:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,901:WARNING:
+    2018-09-13 12:07:21,851:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,903:DEBUG:
+    2018-09-13 12:07:21,851:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,905:DEBUG:
+    2018-09-13 12:07:21,852:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,906:DEBUG:
+    2018-09-13 12:07:21,852:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,907:DEBUG:
+    2018-09-13 12:07:21,853:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:21,971:INFO:
+    2018-09-13 12:07:21,906:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:21,978:WARNING:
+    2018-09-13 12:07:21,911:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:21,978:DEBUG:
+    2018-09-13 12:07:21,912:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:21,979:DEBUG:
+    2018-09-13 12:07:21,912:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:21,979:DEBUG:
+    2018-09-13 12:07:21,912:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:21,980:DEBUG:
+    2018-09-13 12:07:21,913:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,033:INFO:
+    2018-09-13 12:07:21,967:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,040:WARNING:
+    2018-09-13 12:07:21,972:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,040:DEBUG:
+    2018-09-13 12:07:21,973:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,041:DEBUG:
+    2018-09-13 12:07:21,973:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,041:DEBUG:
+    2018-09-13 12:07:21,974:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,041:DEBUG:
+    2018-09-13 12:07:21,974:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,107:INFO:
+    2018-09-13 12:07:22,048:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,113:WARNING:
+    2018-09-13 12:07:22,053:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,113:DEBUG:
+    2018-09-13 12:07:22,056:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,113:DEBUG:
+    2018-09-13 12:07:22,057:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,114:DEBUG:
+    2018-09-13 12:07:22,060:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,114:DEBUG:
+    2018-09-13 12:07:22,062:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,166:INFO:
+    2018-09-13 12:07:22,133:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,172:WARNING:
+    2018-09-13 12:07:22,137:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,173:DEBUG:
+    2018-09-13 12:07:22,138:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,173:DEBUG:
+    2018-09-13 12:07:22,138:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,174:DEBUG:
+    2018-09-13 12:07:22,139:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,174:DEBUG:
+    2018-09-13 12:07:22,139:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,228:INFO:
+    2018-09-13 12:07:22,192:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,235:WARNING:
+    2018-09-13 12:07:22,199:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,235:DEBUG:
+    2018-09-13 12:07:22,199:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,236:DEBUG:
+    2018-09-13 12:07:22,199:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,236:DEBUG:
+    2018-09-13 12:07:22,200:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,237:DEBUG:
+    2018-09-13 12:07:22,200:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,291:INFO:
+    2018-09-13 12:07:22,255:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,298:WARNING:
+    2018-09-13 12:07:22,259:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,300:DEBUG:
+    2018-09-13 12:07:22,260:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,301:DEBUG:
+    2018-09-13 12:07:22,260:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,302:DEBUG:
+    2018-09-13 12:07:22,260:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,303:DEBUG:
+    2018-09-13 12:07:22,261:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,373:INFO:
+    2018-09-13 12:07:22,314:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,379:WARNING:
+    2018-09-13 12:07:22,319:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,380:DEBUG:
+    2018-09-13 12:07:22,320:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,380:DEBUG:
+    2018-09-13 12:07:22,320:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,381:DEBUG:
+    2018-09-13 12:07:22,321:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,381:DEBUG:
+    2018-09-13 12:07:22,321:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,434:INFO:
+    2018-09-13 12:07:22,374:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,442:WARNING:
+    2018-09-13 12:07:22,379:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,442:DEBUG:
+    2018-09-13 12:07:22,380:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,443:DEBUG:
+    2018-09-13 12:07:22,380:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,443:DEBUG:
+    2018-09-13 12:07:22,381:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,443:DEBUG:
+    2018-09-13 12:07:22,381:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,507:INFO:
+    2018-09-13 12:07:22,434:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,515:WARNING:
+    2018-09-13 12:07:22,438:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,515:DEBUG:
+    2018-09-13 12:07:22,439:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,516:DEBUG:
+    2018-09-13 12:07:22,441:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,516:DEBUG:
+    2018-09-13 12:07:22,443:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,517:DEBUG:
+    2018-09-13 12:07:22,444:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,571:INFO:
+    2018-09-13 12:07:22,504:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,578:WARNING:
+    2018-09-13 12:07:22,510:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,579:DEBUG:
+    2018-09-13 12:07:22,511:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,579:DEBUG:
+    2018-09-13 12:07:22,511:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,579:DEBUG:
+    2018-09-13 12:07:22,512:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,580:DEBUG:
+    2018-09-13 12:07:22,512:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,634:INFO:
+    2018-09-13 12:07:22,563:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,641:WARNING:
+    2018-09-13 12:07:22,568:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,642:DEBUG:
+    2018-09-13 12:07:22,569:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,644:DEBUG:
+    2018-09-13 12:07:22,569:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,645:DEBUG:
+    2018-09-13 12:07:22,570:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,645:DEBUG:
+    2018-09-13 12:07:22,570:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,764:INFO:
+    2018-09-13 12:07:22,622:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,771:WARNING:
+    2018-09-13 12:07:22,626:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,773:DEBUG:
+    2018-09-13 12:07:22,627:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,775:DEBUG:
+    2018-09-13 12:07:22,628:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,776:DEBUG:
+    2018-09-13 12:07:22,628:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,778:DEBUG:
+    2018-09-13 12:07:22,630:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,857:INFO:
+    2018-09-13 12:07:22,686:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,864:WARNING:
+    2018-09-13 12:07:22,691:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,866:DEBUG:
+    2018-09-13 12:07:22,692:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,867:DEBUG:
+    2018-09-13 12:07:22,692:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,868:DEBUG:
+    2018-09-13 12:07:22,693:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,869:DEBUG:
+    2018-09-13 12:07:22,693:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,929:INFO:
+    2018-09-13 12:07:22,744:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:22,938:WARNING:
+    2018-09-13 12:07:22,748:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:22,939:DEBUG:
+    2018-09-13 12:07:22,749:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:22,939:DEBUG:
+    2018-09-13 12:07:22,749:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:22,940:DEBUG:
+    2018-09-13 12:07:22,749:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:22,940:DEBUG:
+    2018-09-13 12:07:22,750:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:22,994:INFO:
+    2018-09-13 12:07:22,801:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,001:WARNING:
+    2018-09-13 12:07:22,805:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,001:DEBUG:
+    2018-09-13 12:07:22,806:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,001:DEBUG:
+    2018-09-13 12:07:22,806:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,002:DEBUG:
+    2018-09-13 12:07:22,807:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,002:DEBUG:
+    2018-09-13 12:07:22,807:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,056:INFO:
+    2018-09-13 12:07:22,859:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,063:WARNING:
+    2018-09-13 12:07:22,865:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,063:DEBUG:
+    2018-09-13 12:07:22,865:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,063:DEBUG:
+    2018-09-13 12:07:22,866:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,064:DEBUG:
+    2018-09-13 12:07:22,866:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,064:DEBUG:
+    2018-09-13 12:07:22,867:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,121:INFO:
+    2018-09-13 12:07:22,919:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,128:WARNING:
+    2018-09-13 12:07:22,923:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,129:DEBUG:
+    2018-09-13 12:07:22,923:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,131:DEBUG:
+    2018-09-13 12:07:22,924:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,132:DEBUG:
+    2018-09-13 12:07:22,924:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,133:DEBUG:
+    2018-09-13 12:07:22,924:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,193:INFO:
+    2018-09-13 12:07:22,989:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,199:WARNING:
+    2018-09-13 12:07:22,993:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,200:DEBUG:
+    2018-09-13 12:07:22,994:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,200:DEBUG:
+    2018-09-13 12:07:22,994:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,200:DEBUG:
+    2018-09-13 12:07:22,995:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,201:DEBUG:
+    2018-09-13 12:07:22,995:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,253:INFO:
+    2018-09-13 12:07:23,069:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,259:WARNING:
+    2018-09-13 12:07:23,073:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,259:DEBUG:
+    2018-09-13 12:07:23,074:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,260:DEBUG:
+    2018-09-13 12:07:23,075:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,260:DEBUG:
+    2018-09-13 12:07:23,075:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,261:DEBUG:
+    2018-09-13 12:07:23,076:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,313:INFO:
+    2018-09-13 12:07:23,130:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,319:WARNING:
+    2018-09-13 12:07:23,134:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,321:DEBUG:
+    2018-09-13 12:07:23,134:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,322:DEBUG:
+    2018-09-13 12:07:23,135:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,323:DEBUG:
+    2018-09-13 12:07:23,135:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,324:DEBUG:
+    2018-09-13 12:07:23,136:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,392:INFO:
+    2018-09-13 12:07:23,187:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,400:WARNING:
+    2018-09-13 12:07:23,191:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,402:DEBUG:
+    2018-09-13 12:07:23,192:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,403:DEBUG:
+    2018-09-13 12:07:23,192:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,404:DEBUG:
+    2018-09-13 12:07:23,193:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,405:DEBUG:
+    2018-09-13 12:07:23,193:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,464:INFO:
+    2018-09-13 12:07:23,248:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,471:WARNING:
+    2018-09-13 12:07:23,252:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,473:DEBUG:
+    2018-09-13 12:07:23,252:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,474:DEBUG:
+    2018-09-13 12:07:23,253:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,476:DEBUG:
+    2018-09-13 12:07:23,253:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,477:DEBUG:
+    2018-09-13 12:07:23,254:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,540:INFO:
+    2018-09-13 12:07:23,309:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,548:WARNING:
+    2018-09-13 12:07:23,314:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,549:DEBUG:
+    2018-09-13 12:07:23,314:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,550:DEBUG:
+    2018-09-13 12:07:23,315:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,550:DEBUG:
+    2018-09-13 12:07:23,315:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,550:DEBUG:
+    2018-09-13 12:07:23,316:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,628:INFO:
+    2018-09-13 12:07:23,367:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,636:WARNING:
+    2018-09-13 12:07:23,372:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,638:DEBUG:
+    2018-09-13 12:07:23,373:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,640:DEBUG:
+    2018-09-13 12:07:23,373:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,641:DEBUG:
+    2018-09-13 12:07:23,374:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,643:DEBUG:
+    2018-09-13 12:07:23,374:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,776:INFO:
+    2018-09-13 12:07:23,427:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,784:WARNING:
+    2018-09-13 12:07:23,432:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,786:DEBUG:
+    2018-09-13 12:07:23,433:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,788:DEBUG:
+    2018-09-13 12:07:23,433:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,789:DEBUG:
+    2018-09-13 12:07:23,434:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,791:DEBUG:
+    2018-09-13 12:07:23,434:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,865:INFO:
+    2018-09-13 12:07:23,491:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,871:WARNING:
+    2018-09-13 12:07:23,496:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,872:DEBUG:
+    2018-09-13 12:07:23,496:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,873:DEBUG:
+    2018-09-13 12:07:23,497:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,873:DEBUG:
+    2018-09-13 12:07:23,497:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,874:DEBUG:
+    2018-09-13 12:07:23,498:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:23,937:INFO:
+    2018-09-13 12:07:23,551:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:23,944:WARNING:
+    2018-09-13 12:07:23,556:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:23,945:DEBUG:
+    2018-09-13 12:07:23,556:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:23,947:DEBUG:
+    2018-09-13 12:07:23,557:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:23,948:DEBUG:
+    2018-09-13 12:07:23,557:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:23,949:DEBUG:
+    2018-09-13 12:07:23,558:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,014:INFO:
+    2018-09-13 12:07:23,612:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,021:WARNING:
+    2018-09-13 12:07:23,617:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,022:DEBUG:
+    2018-09-13 12:07:23,618:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,023:DEBUG:
+    2018-09-13 12:07:23,618:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,024:DEBUG:
+    2018-09-13 12:07:23,619:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,025:DEBUG:
+    2018-09-13 12:07:23,619:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,084:INFO:
+    2018-09-13 12:07:23,671:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,091:WARNING:
+    2018-09-13 12:07:23,678:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,093:DEBUG:
+    2018-09-13 12:07:23,679:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,095:DEBUG:
+    2018-09-13 12:07:23,679:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,096:DEBUG:
+    2018-09-13 12:07:23,680:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,097:DEBUG:
+    2018-09-13 12:07:23,680:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,158:INFO:
+    2018-09-13 12:07:23,733:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,165:WARNING:
+    2018-09-13 12:07:23,738:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,165:DEBUG:
+    2018-09-13 12:07:23,739:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,166:DEBUG:
+    2018-09-13 12:07:23,739:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,166:DEBUG:
+    2018-09-13 12:07:23,740:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,167:DEBUG:
+    2018-09-13 12:07:23,740:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,221:INFO:
+    2018-09-13 12:07:23,794:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,227:WARNING:
+    2018-09-13 12:07:23,799:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,228:DEBUG:
+    2018-09-13 12:07:23,799:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,228:DEBUG:
+    2018-09-13 12:07:23,800:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,228:DEBUG:
+    2018-09-13 12:07:23,800:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,229:DEBUG:
+    2018-09-13 12:07:23,801:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,282:INFO:
+    2018-09-13 12:07:23,858:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,289:WARNING:
+    2018-09-13 12:07:23,863:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,290:DEBUG:
+    2018-09-13 12:07:23,864:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,290:DEBUG:
+    2018-09-13 12:07:23,864:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,291:DEBUG:
+    2018-09-13 12:07:23,864:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,291:DEBUG:
+    2018-09-13 12:07:23,865:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,346:INFO:
+    2018-09-13 12:07:23,916:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,353:WARNING:
+    2018-09-13 12:07:23,920:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,354:DEBUG:
+    2018-09-13 12:07:23,921:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,354:DEBUG:
+    2018-09-13 12:07:23,921:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,355:DEBUG:
+    2018-09-13 12:07:23,921:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,355:DEBUG:
+    2018-09-13 12:07:23,922:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,408:INFO:
+    2018-09-13 12:07:23,975:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,415:WARNING:
+    2018-09-13 12:07:23,982:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,415:DEBUG:
+    2018-09-13 12:07:23,982:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,416:DEBUG:
+    2018-09-13 12:07:23,983:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,416:DEBUG:
+    2018-09-13 12:07:23,983:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,416:DEBUG:
+    2018-09-13 12:07:23,984:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,471:INFO:
+    2018-09-13 12:07:24,039:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,479:WARNING:
+    2018-09-13 12:07:24,042:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,480:DEBUG:
+    2018-09-13 12:07:24,043:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,480:DEBUG:
+    2018-09-13 12:07:24,044:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,480:DEBUG:
+    2018-09-13 12:07:24,044:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,481:DEBUG:
+    2018-09-13 12:07:24,045:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,547:INFO:
+    2018-09-13 12:07:24,123:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,555:WARNING:
+    2018-09-13 12:07:24,128:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,556:DEBUG:
+    2018-09-13 12:07:24,129:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,556:DEBUG:
+    2018-09-13 12:07:24,130:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,557:DEBUG:
+    2018-09-13 12:07:24,131:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,557:DEBUG:
+    2018-09-13 12:07:24,131:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,612:INFO:
+    2018-09-13 12:07:24,200:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,619:WARNING:
+    2018-09-13 12:07:24,205:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,620:DEBUG:
+    2018-09-13 12:07:24,206:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,621:DEBUG:
+    2018-09-13 12:07:24,206:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,621:DEBUG:
+    2018-09-13 12:07:24,207:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,622:DEBUG:
+    2018-09-13 12:07:24,207:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,677:INFO:
+    2018-09-13 12:07:24,260:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,684:WARNING:
+    2018-09-13 12:07:24,265:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,686:DEBUG:
+    2018-09-13 12:07:24,265:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,687:DEBUG:
+    2018-09-13 12:07:24,266:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,688:DEBUG:
+    2018-09-13 12:07:24,266:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,689:DEBUG:
+    2018-09-13 12:07:24,267:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,801:INFO:
+    2018-09-13 12:07:24,319:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,810:WARNING:
+    2018-09-13 12:07:24,323:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,812:DEBUG:
+    2018-09-13 12:07:24,324:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,814:DEBUG:
+    2018-09-13 12:07:24,325:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,815:DEBUG:
+    2018-09-13 12:07:24,325:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,817:DEBUG:
+    2018-09-13 12:07:24,326:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,904:INFO:
+    2018-09-13 12:07:24,381:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,910:WARNING:
+    2018-09-13 12:07:24,388:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,911:DEBUG:
+    2018-09-13 12:07:24,388:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,912:DEBUG:
+    2018-09-13 12:07:24,389:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,912:DEBUG:
+    2018-09-13 12:07:24,389:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,913:DEBUG:
+    2018-09-13 12:07:24,389:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:24,970:INFO:
+    2018-09-13 12:07:24,441:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:24,976:WARNING:
+    2018-09-13 12:07:24,445:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:24,978:DEBUG:
+    2018-09-13 12:07:24,445:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:24,980:DEBUG:
+    2018-09-13 12:07:24,446:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:24,981:DEBUG:
+    2018-09-13 12:07:24,446:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:24,982:DEBUG:
+    2018-09-13 12:07:24,447:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:25,044:INFO:
+    2018-09-13 12:07:24,498:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:25,050:WARNING:
+    2018-09-13 12:07:24,505:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:25,051:DEBUG:
+    2018-09-13 12:07:24,505:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:25,051:DEBUG:
+    2018-09-13 12:07:24,506:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:25,052:DEBUG:
+    2018-09-13 12:07:24,506:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:25,052:DEBUG:
+    2018-09-13 12:07:24,507:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:25,109:INFO:
+    2018-09-13 12:07:24,561:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:25,115:WARNING:
+    2018-09-13 12:07:24,565:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:25,116:DEBUG:
+    2018-09-13 12:07:24,565:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:25,116:DEBUG:
+    2018-09-13 12:07:24,566:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:25,117:DEBUG:
+    2018-09-13 12:07:24,566:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:25,117:DEBUG:
+    2018-09-13 12:07:24,567:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:25,183:INFO:
+    2018-09-13 12:07:24,620:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:25,190:WARNING:
+    2018-09-13 12:07:24,624:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:25,190:DEBUG:
+    2018-09-13 12:07:24,624:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:25,191:DEBUG:
+    2018-09-13 12:07:24,625:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:25,191:DEBUG:
+    2018-09-13 12:07:24,626:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:25,191:DEBUG:
+    2018-09-13 12:07:24,626:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:25,244:INFO:
+    2018-09-13 12:07:24,682:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:25,251:WARNING:
+    2018-09-13 12:07:24,687:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:25,255:DEBUG:
+    2018-09-13 12:07:24,688:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:25,256:DEBUG:
+    2018-09-13 12:07:24,689:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:25,257:DEBUG:
+    2018-09-13 12:07:24,689:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:25,259:DEBUG:
+    2018-09-13 12:07:24,689:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
-    2018-09-07 17:45:25,325:INFO:
+    2018-09-13 12:07:24,743:INFO:
     Reading NASA Ames file:
     /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-    2018-09-07 17:45:25,331:WARNING:
+    2018-09-13 12:07:24,747:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-07 17:45:25,333:DEBUG:
+    2018-09-13 12:07:24,747:DEBUG:
     Ignoring line no. 23: 0
     
-    2018-09-07 17:45:25,334:DEBUG:
+    2018-09-13 12:07:24,748:DEBUG:
     Ignoring line no. 24: 35
     
-    2018-09-07 17:45:25,336:DEBUG:
+    2018-09-13 12:07:24,749:DEBUG:
     REACHED DATA BLOCK
-    2018-09-07 17:45:25,337:DEBUG:
+    2018-09-13 12:07:24,749:DEBUG:
       0.000000   0.041667 999.999 999.999 999.999 9999.999 9999.999 9999.999 9999 999.9 9999.9 0.394999000
     
 
 
 .. parsed-literal::
 
-    73.8 ms ± 5.17 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    63.9 ms ± 2.42 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 

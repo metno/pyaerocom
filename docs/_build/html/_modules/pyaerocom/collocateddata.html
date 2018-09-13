@@ -163,7 +163,7 @@
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">calc_statistics</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">to_datestring_YYYYMMDD</span><span class="p">,</span> <span class="n">to_pandas_timestamp</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">to_pandas_timestamp</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">DataDimensionError</span><span class="p">,</span> <span class="n">NetcdfError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.plot.plotscatter_new</span> <span class="k">import</span> <span class="n">plot_scatter</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -207,6 +207,7 @@
 <span class="sd">    IOError</span>
 <span class="sd">        if init fails</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.04&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -261,6 +262,16 @@
     <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Shape of data array&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">data_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Coordinate array containing data sources (z-axis)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_source</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">var_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Coordinate array containing data sources (z-axis)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -370,10 +381,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span>
         <span class="n">num_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_grid_points</span>
-    
+        <span class="n">vars_</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">vars_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">vars_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">var_ref</span> <span class="o">=</span> <span class="n">vars_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">var_ref</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">plot_scatter</span><span class="p">(</span><span class="n">x_vals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> 
                             <span class="n">y_vals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
-                            <span class="n">var_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">],</span>
+                            <span class="n">var_name</span><span class="o">=</span><span class="n">vars_</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="n">var_name_ref</span> <span class="o">=</span> <span class="n">var_ref</span><span class="p">,</span>
                             <span class="n">x_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
                             <span class="n">y_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> 
                             <span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> 
@@ -535,7 +551,8 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">xarray</span><span class="o">.</span><span class="n">open_dataarray</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;data_level&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;data_level&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;collocated&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">NetcdfError</span><span class="p">(</span><span class="s1">&#39;file misses collocated data flag in meta&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
     
 <div class="viewcode-block" id="CollocatedData.to_dataframe"><a class="viewcode-back" href="../../api.html#pyaerocom.collocateddata.CollocatedData.to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert this object into pandas.DataFrame</span>

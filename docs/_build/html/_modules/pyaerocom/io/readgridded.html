@@ -205,6 +205,7 @@
 <span class="kn">import</span> <span class="nn">iris</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">CONST</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">compute_angstrom_coeff_cubes</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">to_pandas_timestamp</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">IllegalArgumentError</span><span class="p">,</span> 
                                   <span class="n">DataCoverageError</span><span class="p">,</span>
@@ -285,6 +286,13 @@
 <span class="sd">        &gt;&gt;&gt; print(data.short_str()) for data in read.data</span>
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">AUX_REQUIRES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od870aer&#39;</span><span class="p">]}</span>
+    
+    <span class="n">AUX_ALT_VARS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;od440aer&#39;</span>  <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od443aer&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;od870aer&#39;</span>  <span class="p">:</span>   <span class="p">[</span><span class="s1">&#39;od865aer&#39;</span><span class="p">]}</span>
+    
+    <span class="n">AUX_FUNS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ang4487aer&#39;</span>   <span class="p">:</span>    <span class="n">compute_angstrom_coeff_cubes</span><span class="p">}</span>
+    
     <span class="c1">#: Directory containing model data for this species</span>
     <span class="n">_data_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
@@ -359,7 +367,15 @@
         <span class="k">if</span> <span class="n">init</span> <span class="ow">and</span> <span class="n">name</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">search_data_dir</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span>
-                
+     
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vars_provided</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Variables provided by this interface&quot;&quot;&quot;</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">v</span>
+    
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Model directory&quot;&quot;&quot;</span>
@@ -377,8 +393,9 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not set directory: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
             
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">vars_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">vars_to_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">file_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -446,7 +463,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">load_only_year</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">start_time</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
             <span class="c1">#take only this year</span>
@@ -454,7 +474,10 @@
                 <span class="n">load_only_year</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">stop_time</span> <span class="o">=</span> <span class="n">start_time</span> <span class="c1">#same year</span>
         <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">stop_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">stop_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stop_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">load_only_year</span><span class="p">:</span> <span class="c1">#stop time was input</span>
             <span class="n">stop_time</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
             
@@ -566,6 +589,59 @@
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TS_TYPES</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">_ts_types</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ts_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+                
+<div class="viewcode-block" id="ReadGridded.get_var_info_from_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.get_var_info_from_files">[docs]</a>    <span class="k">def</span> <span class="nf">get_var_info_from_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates dicitonary that contains variable specific meta information</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        OrderedDict</span>
+<span class="sd">            dictionary where keys are available variables and values (for each</span>
+<span class="sd">            variable) contain information about available ts_types, years, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="n">finfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">var_name</span> <span class="o">=</span> <span class="n">finfo</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">finfo</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;var_name&#39;</span><span class="p">:</span>
+                        <span class="n">var_info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var_info</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">finfo</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;var_name&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">var_info</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="n">var_info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="c1"># now check auxiliary variables</span>
+        <span class="k">for</span> <span class="n">var_to_compute</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">var_to_compute</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">vars_to_read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_aux_vars</span><span class="p">(</span><span class="n">var_to_compute</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">VarNotAvailableError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># init result info dict for aux variable</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">var_to_compute</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">vars_to_read</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="c1"># init with results from first required variable</span>
+                <span class="n">var_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">first</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_to_read</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">info_other</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                        <span class="n">other</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">info_other</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">var_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="c1"># compute match with other variable</span>
+                            <span class="n">var_info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">info</span><span class="p">,</span>
+                                                               <span class="n">other</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+                <span class="n">var_info</span><span class="p">[</span><span class="s1">&#39;aux_vars&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vars_to_read</span>
+                            
+        <span class="k">return</span> <span class="n">result</span></div>
+           
+        
+                
         
 <div class="viewcode-block" id="ReadGridded.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Update one or more valid parameters</span>
@@ -638,6 +714,7 @@
                     
                     <span class="k">except</span> <span class="n">DataCoverageError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    
         <span class="k">raise</span> <span class="n">DataCoverageError</span><span class="p">(</span><span class="s2">&quot;No files could be found for dataset </span><span class="si">{}</span><span class="s2">, &quot;</span>
                                 <span class="s2">&quot;variable </span><span class="si">{}</span><span class="s2">, ts_types </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
                                                                   <span class="n">var_name</span><span class="p">,</span> 
@@ -776,7 +853,103 @@
         <span class="k">return</span> <span class="n">cubes_concat</span></div>
     
     
-    
+    <span class="k">def</span> <span class="nf">_get_aux_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_to_compute</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper that searches auxiliary variables for computation of input var</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_to_compute : str</span>
+<span class="sd">            one of the auxiliary variables that is supported by this interface</span>
+<span class="sd">            (cf. :attr:`AUX_REQUIRES`)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns </span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            list of variables that are used as input for computation method </span>
+<span class="sd">            of input variable (cf. :attr:`AUX_FUNS`)</span>
+<span class="sd">            </span>
+<span class="sd">        Raises </span>
+<span class="sd">        ------</span>
+<span class="sd">        VarNotAvailableError</span>
+<span class="sd">            if one of the required variables for computation is not available </span>
+<span class="sd">            in the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vars_req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">[</span><span class="n">var_to_compute</span><span class="p">]</span>
+        
+        <span class="n">vars_to_read</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_req</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">vars_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_ALT_VARS</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">alt_var</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AUX_ALT_VARS</span><span class="p">[</span><span class="n">var</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">alt_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
+                        <span class="n">found</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">vars_to_read</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alt_var</span><span class="p">)</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s1">&#39;Cannot compute </span><span class="si">{}</span><span class="s1">, since </span><span class="si">{}</span><span class="s1"> &#39;</span>
+                                           <span class="s1">&#39;(req. for computation) is not &#39;</span>
+                                           <span class="s1">&#39;available in data&#39;</span>
+                                           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_to_compute</span><span class="p">,</span> 
+                                                   <span class="n">var</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">vars_to_read</span>
+                
+<div class="viewcode-block" id="ReadGridded.compute_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.compute_var">[docs]</a>    <span class="k">def</span> <span class="nf">compute_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute auxiliary variable</span>
+<span class="sd">        </span>
+<span class="sd">        Like :func:`read_var` but for auxiliary variables </span>
+<span class="sd">        (cf. :attr:`AUX_REQUIRES`)</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : str</span>
+<span class="sd">            variable that are supposed to be read</span>
+<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            start time of data import (if valid input, then the current </span>
+<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            stop time of data import (if valid input, then the current </span>
+<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">        ts_type : str</span>
+<span class="sd">            string specifying temporal resolution (choose from </span>
+<span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;). If None, prioritised </span>
+<span class="sd">            of the available resolutions is used</span>
+<span class="sd">        flex_ts_type : bool</span>
+<span class="sd">            if True and if applicable,start_time=None, stop_time=None, </span>
+<span class="sd">                 ts_type=None, flex_ts_type=True then another ts_type is used in case </span>
+<span class="sd">            the input ts_type is not available for this variable</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GriddedData</span>
+<span class="sd">            loaded data object</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AttributeError</span>
+<span class="sd">            if none of the ts_types identified from file names is valid</span>
+<span class="sd">        VarNotAvailableError</span>
+<span class="sd">            if specified ts_type is not supported</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vars_to_read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_aux_vars</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> 
+                                       <span class="n">stop_time</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="p">))</span>
+        <span class="n">cube</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_FUNS</span><span class="p">[</span><span class="n">var_name</span><span class="p">](</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">cube</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
+                           <span class="n">ts_type</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ts_type</span><span class="p">,</span>
+                           <span class="n">computed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+            
+        <span class="c1">#raise NotImplementedError</span>
+            
 <div class="viewcode-block" id="ReadGridded.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                  <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read model data for a specific variable</span>
@@ -815,7 +988,8 @@
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;). If None, prioritised </span>
 <span class="sd">            of the available resolutions is used</span>
 <span class="sd">        flex_ts_type : bool</span>
-<span class="sd">            if True and if applicable, then another ts_type is used in case </span>
+<span class="sd">            if True and if applicable,start_time=None, stop_time=None, </span>
+<span class="sd">                 ts_type=None, flex_ts_type=True then another ts_type is used in case </span>
 <span class="sd">            the input ts_type is not available for this variable</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
@@ -832,33 +1006,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ts_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ts_type</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
         
-        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s2">&quot;Error: variable </span><span class="si">{}</span><span class="s2"> not found in files &quot;</span>
-                                       <span class="s2">&quot;contained in model directory: </span><span class="si">{}</span><span class="s2">&quot;</span>
-                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">))</span>
-        
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span>
+        <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span>
                               <span class="n">flex_ts_type</span><span class="p">)</span>
-        
-        <span class="c1"># crop cube in time (if applicable)</span>
-        <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">crop_time_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
-            
-        <span class="k">if</span> <span class="n">crop_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="n">crop_time_range</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> 
+                                    <span class="n">ts_type</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s2">&quot;Error: variable </span><span class="si">{}</span><span class="s2"> not available in &quot;</span>
+                                       <span class="s2">&quot;files and can also not be computed.&quot;</span>
+                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
         
         <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: Data for variable </span><span class="si">{}</span><span class="s2"> already exists &quot;</span>
@@ -922,13 +1079,13 @@
                           <span class="s2">&quot;also leave it empty (None) in which case all &quot;</span>
                           <span class="s2">&quot;available variables are loaded&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_names</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">require_all_vars_avail</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_names</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_provided</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_names</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s1">&#39;One or more of the specified vars &#39;</span>
                                         <span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) is not available in </span><span class="si">{}</span><span class="s1"> database. &#39;</span>
                                         <span class="s1">&#39;Available vars: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                         <span class="n">var_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">))</span>
-        <span class="n">var_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">,</span> <span class="n">var_names</span><span class="p">))</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">vars_provided</span><span class="p">))</span>
+        <span class="n">var_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars_provided</span><span class="p">,</span> <span class="n">var_names</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s1">&#39;None of the desired variables is &#39;</span>
                                         <span class="s1">&#39;available in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
@@ -1126,10 +1283,35 @@
             <span class="n">cube</span> <span class="o">=</span> <span class="n">cube_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         
         <span class="n">from_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">[</span><span class="n">var_name</span><span class="p">]]</span>    
-        <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cube</span><span class="p">,</span> 
+        <span class="n">data</span> <span class="o">=</span> <span class="n">GriddedData</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">cube</span><span class="p">,</span> 
                            <span class="n">from_files</span><span class="o">=</span><span class="n">from_files</span><span class="p">,</span>
                            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
                            <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
+        
+        <span class="c1"># crop cube in time (if applicable)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_crop_time</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+    
+    <span class="k">def</span> <span class="nf">_check_crop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">):</span>
+        <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">crop_time_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+            
+        <span class="k">if</span> <span class="n">crop_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="n">crop_time_range</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
     
     <span class="k">def</span> <span class="nf">_check_ts_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check and, if applicable, update ts_type</span>
@@ -1274,6 +1456,8 @@
         <span class="c1">#: datset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_failed</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        
         <span class="c1"># only overwrite if there is input, note that the attributes</span>
         <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
         <span class="c1"># setter methods, that ensure that the input is convertible to </span>
@@ -1354,13 +1538,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> 
-                                             <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
-                                             <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span></div>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> 
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">init_failed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
     
         
 <div class="viewcode-block" id="ReadGriddedMulti.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+             <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;High level method to import data for multiple variables and models</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -1377,7 +1564,10 @@
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;).If None, prioritised </span>
 <span class="sd">            of the available resolutions is used</span>
-<span class="sd">            </span>
+<span class="sd">        flex_ts_type : bool</span>
+<span class="sd">            if True and if applicable, then another ts_type is used in case </span>
+<span class="sd">            the input ts_type is not available for this variable</span>
+<span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
@@ -1398,7 +1588,8 @@
     
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span>
+                <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
+                            <span class="n">flex_ts_type</span><span class="o">=</span><span class="n">flex_ts_type</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">reader</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Failed to read data of </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
                                         <span class="s1">&#39;Error message: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span>
@@ -1451,6 +1642,7 @@
 <span class="sd">            variables is available in this object</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">&#39;Method is deprecated&#39;</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">reader</span><span class="o">.</span><span class="n">read_individual_years</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">years_to_load</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
                                          <span class="n">require_all_years_avail</span><span class="p">,</span>
@@ -1493,21 +1685,29 @@
         <span class="k">return</span> <span class="n">s</span></div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECHAM6.3-HAM2.3_AP3-CTRL2016-PD&#39;</span><span class="p">)</span>
+    <span class="n">var_info</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_var_info_from_files</span><span class="p">()</span>
     
+    <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">var_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">info</span><span class="p">))</span>
     
-    <span class="n">read</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">)</span>
+    <span class="n">CONT</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">CONT</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">)</span>
     
+        <span class="n">var_info1</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_var_info_from_files</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
+        <span class="n">read</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">)</span>
+        
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;2009&quot;</span><span class="p">,</span> <span class="s2">&quot;2011&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
+        
+        <span class="n">read_caliop</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;CALIOP3&#39;</span><span class="p">)</span>
+        <span class="n">alt</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;z3d&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+        <span class="n">ec532aer</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;ec5323Daer&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
     
-    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="s2">&quot;2009&quot;</span><span class="p">,</span> <span class="s2">&quot;2011&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
+        
     
-    <span class="n">read_caliop</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;CALIOP3&#39;</span><span class="p">)</span>
-    <span class="n">alt</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;z3d&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
-    <span class="n">ec532aer</span> <span class="o">=</span> <span class="n">read_caliop</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;ec5323Daer&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
-
-    
-
 </pre></div>
 
            </div>

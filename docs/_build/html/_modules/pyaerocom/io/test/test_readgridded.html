@@ -208,9 +208,9 @@
 <div class="viewcode-block" id="test_meta"><a class="viewcode-back" href="../../../../api_testsuite.html#pyaerocom.io.test.test_readgridded.test_meta">[docs]</a><span class="k">def</span> <span class="nf">test_meta</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
     <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">files</span><span class="p">),</span>
                             <span class="n">dataset</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span>
-                            <span class="n">dataset</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
-                            <span class="n">dataset</span><span class="o">.</span><span class="n">stop_time</span><span class="p">,</span> 
-                            <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">years_to_load</span><span class="p">)],</span>
+                            <span class="n">dataset</span><span class="o">.</span><span class="n">_start_time</span><span class="p">,</span> 
+                            <span class="n">dataset</span><span class="o">.</span><span class="n">_stop_time</span><span class="p">,</span> 
+                            <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_years_to_load</span><span class="p">())],</span>
                             <span class="p">[</span><span class="mi">190</span><span class="p">,</span>
                              <span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed&#39;</span><span class="p">,</span>
                              <span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">),</span> 

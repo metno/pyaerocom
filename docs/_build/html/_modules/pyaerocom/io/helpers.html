@@ -217,7 +217,6 @@
             <span class="n">ferr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span>
                                            <span class="n">err_msg</span><span class="p">))</span></div>
         
-
 <div class="viewcode-block" id="get_standard_name"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.get_standard_name">[docs]</a><span class="k">def</span> <span class="nf">get_standard_name</span><span class="p">(</span><span class="n">var_name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get standard name of aerocom variable</span>
 <span class="sd">    </span>
@@ -251,6 +250,9 @@
     <span class="n">browser</span> <span class="o">=</span> <span class="n">AerocomBrowser</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">browser</span><span class="o">.</span><span class="n">find_data_dir</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">ignorecase</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="find_vars_around_wavelength"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.find_vars_around_wavelength">[docs]</a><span class="k">def</span> <span class="nf">find_vars_around_wavelength</span><span class="p">(</span><span class="n">var_list</span><span class="p">,</span> <span class="n">wvl</span><span class="o">=</span><span class="mi">440</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;od*aer&#39;</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+    
 <div class="viewcode-block" id="get_obsnetwork_dir"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.helpers.get_obsnetwork_dir">[docs]</a><span class="k">def</span> <span class="nf">get_obsnetwork_dir</span><span class="p">(</span><span class="n">obs_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns data path for obsnetwork ID</span>
 <span class="sd">    </span>

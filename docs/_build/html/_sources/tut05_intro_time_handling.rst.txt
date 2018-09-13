@@ -47,24 +47,24 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    2018-09-07 17:43:51,246:INFO:
+    2018-09-13 12:05:33,642:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.027642011642456055 s
+    Elapsed time init all variables: 0.024219512939453125 s
 
 
 .. parsed-literal::
 
-    2018-09-07 17:43:52,133:WARNING:
+    2018-09-13 12:05:34,374:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.9664804935455322 s
+    Elapsed time init pyaerocom: 0.7899806499481201 s
 
 
 .. code:: ipython3
@@ -75,23 +75,23 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
       warnings.warn(msg)
-    2018-09-07 17:43:52,329:WARNING:
-    File /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc contains more than one data field: 0: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
+      warnings.warn(msg)
+    2018-09-13 12:05:34,587:WARNING:
+    File /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc contains more than one data field: 0: Black Carbon Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
     1: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    2: Black Carbon Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    3: Sulphate Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    4: Organic Matter Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    2018-09-07 17:43:52,332:INFO:
+    2: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    3: Organic Matter Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    4: Sulphate Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    2018-09-13 12:05:34,590:INFO:
     Rolling longitudes to -180 -> 180 definition
 
 
@@ -260,7 +260,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    126 ms ± 8.36 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    121 ms ± 1.85 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -271,7 +271,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    124 ms ± 11.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    104 ms ± 829 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -287,7 +287,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    186 ms ± 43.7 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    122 ms ± 451 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -298,7 +298,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    144 ms ± 25 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    106 ms ± 633 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -323,7 +323,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.97 ms ± 134 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.63 ms ± 3.88 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -453,7 +453,7 @@ Now let’s see how this one performs.
 
 .. parsed-literal::
 
-    64.3 µs ± 4.62 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    55.9 µs ± 1.87 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How pya does it
@@ -476,7 +476,7 @@ here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. parsed-literal::
 
-    384 µs ± 15.8 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    334 µs ± 8.78 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -490,7 +490,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    2.81 ms ± 380 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.05 ms ± 26 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -510,7 +510,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    406 µs ± 9.75 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    359 µs ± 4.01 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -521,5 +521,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.6 ms ± 347 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.1 ms ± 26.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

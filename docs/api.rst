@@ -244,8 +244,8 @@ Region defintions
    :members:
    :undoc-members:
 
-Class for filtering
-^^^^^^^^^^^^^^^^^^^
+Filter class
+^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.filter
    :members:
@@ -298,18 +298,22 @@ Colors etc.
    :members:
    :undoc-members:
 
+Utils
+-----
+
+.. automodule:: pyaerocom.utils
+   :members:
+   :undoc-members:
+   
 Helpers
 -------
-
-General helper methods
-^^^^^^^^^^^^^^^^^^^^^^ 
 
 .. automodule:: pyaerocom.helpers
    :members:
    :undoc-members:
    
 Mathematical helpers
-^^^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 .. automodule:: pyaerocom.mathutils
    :members:

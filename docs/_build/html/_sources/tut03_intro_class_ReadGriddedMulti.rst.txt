@@ -17,24 +17,24 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-07 17:43:25,244:INFO:
+    2018-09-13 12:05:08,322:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.03511834144592285 s
+    Elapsed time init all variables: 0.024323225021362305 s
 
 
 .. parsed-literal::
 
-    2018-09-07 17:43:26,095:WARNING:
+    2018-09-13 12:05:09,063:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.9219846725463867 s
+    Elapsed time init pyaerocom: 0.8006720542907715 s
 
 
 Define two models (this list can contain as many models as you like)
