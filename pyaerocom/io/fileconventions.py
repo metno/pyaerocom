@@ -59,7 +59,7 @@ class FileConventionRead(object):
         """Empty dictionary containing init values of infos to be 
         extracted from filenames
         """
-        return od(year=None, var_name=None, ts_type=None, vert_info=None,
+        return od(year=None, var_name=None, ts_type=None, vert_pos=None,
                   is_at_stations=False)
         
     def from_file(self, file):

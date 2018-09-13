@@ -232,7 +232,7 @@ class ReadGridded(object):
             raise ValueError("Could not set directory: %s" %value)
             
     @property
-    def vars_read(self):
+    def vars_to_read(self):
         return [k for k in self.data.keys()]
     
     
@@ -422,6 +422,59 @@ class ReadGridded(object):
         for item in self.TS_TYPES:
             if item in _ts_types:
                 self.ts_types.append(item)
+                
+    def get_var_info_from_files(self):
+        """Creates dicitonary that contains variable specific meta information
+        
+        Returns
+        -------
+        OrderedDict
+            dictionary where keys are available variables and values (for each
+            variable) contain information about available ts_types, years, etc.
+        """
+        result = od()
+        for file in self.files:
+            finfo = self.file_convention.get_info_from_file(file)
+            var_name = finfo['var_name']
+            if not var_name in result:
+                result[var_name] = var_info = od()
+                for key in finfo.keys():
+                    if not key == 'var_name':
+                        var_info[key] = []
+            else:
+                var_info = result[var_name]
+            for key, val in finfo.items():
+                if key == 'var_name':
+                    continue
+                if val is not None and not val in var_info[key]:
+                    var_info[key].append(val)
+        # now check auxiliary variables
+        for var_to_compute in self.AUX_REQUIRES.keys():
+            if var_to_compute in result:
+                continue
+            try:
+                vars_to_read = self._get_aux_vars(var_to_compute)
+            except VarNotAvailableError:
+                pass
+            else:
+                # init result info dict for aux variable
+                result[var_to_compute] = var_info = od()
+                first = result[vars_to_read[0]]
+                # init with results from first required variable
+                var_info.update(**first)
+                if len(vars_to_read) > 1:
+                    for info_other in vars_to_read[1:]:
+                        other = result[info_other]
+                        for key, info in var_info.items():
+                            # compute match with other variable
+                            var_info[key] = list(np.intersect1d(info,
+                                                               other[key]))
+                var_info['aux_vars'] = vars_to_read
+                            
+        return result
+           
+        
+                
         
     def update(self, **kwargs):
         """Update one or more valid parameters
@@ -633,32 +686,91 @@ class ReadGridded(object):
         return cubes_concat
     
     
-    
-    def compute_var(self, var_name, start_time=None, stop_time=None, 
-                 ts_type=None, flex_ts_type=True):
-        vars_req = self.AUX_REQUIRES[var_name]
+    def _get_aux_vars(self, var_to_compute):
+        """Helper that searches auxiliary variables for computation of input var
         
-        vars_read = []
+        Parameters
+        ----------
+        var_to_compute : str
+            one of the auxiliary variables that is supported by this interface
+            (cf. :attr:`AUX_REQUIRES`)
+        
+        Returns 
+        -------
+        list
+            list of variables that are used as input for computation method 
+            of input variable (cf. :attr:`AUX_FUNS`)
+            
+        Raises 
+        ------
+        VarNotAvailableError
+            if one of the required variables for computation is not available 
+            in the data
+        """
+        vars_req = self.AUX_REQUIRES[var_to_compute]
+        
+        vars_to_read = []
         for var in vars_req:
             found = 0
             if var in self.vars:
                 found = 1
-                vars_read.append(var)
+                vars_to_read.append(var)
             elif var in self.AUX_ALT_VARS:
                 for alt_var in list(self.AUX_ALT_VARS[var]):
                     if alt_var in self.vars:
                         found = 1
-                        vars_read.append(alt_var)
+                        vars_to_read.append(alt_var)
                         break
             if not found:
                 raise VarNotAvailableError('Cannot compute {}, since {} '
                                            '(req. for computation) is not '
                                            'available in data'
-                                           .format(var_name, 
+                                           .format(var_to_compute, 
                                                    var))
+        return vars_to_read
                 
+    def compute_var(self, var_name, start_time=None, stop_time=None, 
+                 ts_type=None, flex_ts_type=True):
+        """Compute auxiliary variable
+        
+        Like :func:`read_var` but for auxiliary variables 
+        (cf. :attr:`AUX_REQUIRES`)
+        
+        Parameters
+        ----------
+        var_name : str
+            variable that are supposed to be read
+        start_time : :obj:`Timestamp` or :obj:`str`, optional
+            start time of data import (if valid input, then the current 
+            :attr:`start_time` will be overwritten)
+        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            stop time of data import (if valid input, then the current 
+            :attr:`start_time` will be overwritten)
+        ts_type : str
+            string specifying temporal resolution (choose from 
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
+        flex_ts_type : bool
+            if True and if applicable,start_time=None, stop_time=None, 
+                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
+            the input ts_type is not available for this variable
+            
+        Returns
+        -------
+        GriddedData
+            loaded data object
+            
+        Raises
+        ------
+        AttributeError
+            if none of the ts_types identified from file names is valid
+        VarNotAvailableError
+            if specified ts_type is not supported
+            
+        """
+        vars_to_read = self._get_aux_vars(var_name)
         data = []
-        for var in vars_read:
+        for var in vars_to_read:
             data.append(self._load_var(var, ts_type, start_time, 
                                        stop_time, flex_ts_type))
         cube = self.AUX_FUNS[var_name](*data)
@@ -1401,18 +1513,26 @@ class ReadGriddedMulti(object):
         return s
     
 if __name__=="__main__":
-    r = ReadGridded('ECMWF_CAMS_REAN')
-    data = r.read_var('od550aer')
+    r = ReadGridded('ECHAM6.3-HAM2.3_AP3-CTRL2016-PD')
+    var_info = r.get_var_info_from_files()
     
+    for var, info in var_info.items():
+        print('{}\n{}\n\n'.format(var, info))
     
-    read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015")
+    CONT = False
+    if CONT:
+        r = ReadGridded('ECMWF_CAMS_REAN')
     
+        var_info1 = r.get_var_info_from_files()
+        data = r.read_var('od550aer')
+        read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015")
+        
+        
+        data = read.read_var("od550aer", "2009", "2011", ts_type="monthly")
+        
+        read_caliop = ReadGridded('CALIOP3')
+        alt = read_caliop.read_var('z3d', ts_type='monthly')
+        ec532aer = read_caliop.read_var('ec5323Daer', ts_type='monthly')
     
-    data = read.read_var("od550aer", "2009", "2011", ts_type="monthly")
+        
     
-    read_caliop = ReadGridded('CALIOP3')
-    alt = read_caliop.read_var('z3d', ts_type='monthly')
-    ec532aer = read_caliop.read_var('ec5323Daer', ts_type='monthly')
-
-    
-
