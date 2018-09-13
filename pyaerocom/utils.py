@@ -36,11 +36,11 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
         - At stations: data is at stations (inferred from filename)
         - AUX vars: Auxiliary variable required to compute Var (col 1). Only \
           relevant for variables that are computed by the interface
-        - Dim: number of dimensions (only retrieved if :arg:`read_data` is True)
+        - Dim: number of dimensions (only retrieved if *read_data* is True)
         - Dim names: names of dimension coordinates (only retrieved if \
-                                                     :arg:`read_data` is True)
-        - Shape: Shape of data (only retrieved if :arg:`read_data` is True)
-        - Read ok: reading was successful (only retrieved if :arg:`read_data` \
+                                                     *read_data* is True)
+        - Shape: Shape of data (only retrieved if *read_data* is True)
+        - Read ok: reading was successful (only retrieved if *read_data* \
                                            is True)
         
     

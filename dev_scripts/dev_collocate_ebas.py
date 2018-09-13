@@ -28,3 +28,5 @@ if __name__ == '__main__':
     
     ds = xarr.open_dataset(model.suppl_info['from_files'][0])
     print(ds)
+    
+    

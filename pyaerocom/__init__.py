@@ -43,6 +43,7 @@ def _init_config(package_dir):
     return Config(config_file=cfg)
 
 __version__, __dir__ = _init_supplemental()
+
 from time import time
 t0=time()
 logger = _init_logger()
