@@ -33,10 +33,24 @@ Import setup and imports
 
 .. parsed-literal::
 
-    2018-08-28 14:19:21,873:INFO:
-    Reading aliases ini file: /home/jonasg/github/cloned/pyaerocom/pyaerocom/data/aliases.ini
-    2018-08-28 14:19:22,654:WARNING:
+    2018-09-13 12:06:41,123:INFO:
+    Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
+
+
+.. parsed-literal::
+
+    Elapsed time init all variables: 0.024342060089111328 s
+
+
+.. parsed-literal::
+
+    2018-09-13 12:06:41,869:WARNING:
     geopy library is not available. Aeolus data read not enabled
+
+
+.. parsed-literal::
+
+    Elapsed time init pyaerocom: 0.8050520420074463 s
 
 
 Import of model data
@@ -67,8 +81,8 @@ Since we are only interested in a single year we can use the method
 
 .. code:: ipython3
 
-    read_result = model_reader.read_individual_years(VAR, YEAR)
-    model_data = read_result[VAR][YEAR]
+    model_data = model_reader.read_var(VAR, start_time=YEAR)
+    #model_data = read_result[VAR][YEAR]
     print(model_data)
 
 
@@ -119,10 +133,10 @@ located at altitudes between 0 and 1000 m.
     -----------------------
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['od550aer']
-    Contains instruments: []
+    Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20180828141929
+     Filter time log: 20180913120646
     	stat_alt: [0, 1000]
 
 
@@ -144,11 +158,11 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 .. parsed-literal::
 
     <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 278)>
-    array([[[     nan, 0.117798, ...,      nan,      nan],
-            [     nan, 0.132204, ...,      nan,      nan],
+    array([[[     nan, 0.117588, ...,      nan,      nan],
+            [     nan, 0.132128, ...,      nan,      nan],
             ...,
-            [0.132491, 0.19501 , ...,      nan,      nan],
-            [     nan, 0.098458, ...,      nan,      nan]],
+            [0.132236, 0.195057, ...,      nan,      nan],
+            [     nan, 0.098409, ...,      nan,      nan]],
     
            [[0.189948, 0.140062, ..., 0.079353, 0.204337],
             [0.150408, 0.190089, ..., 0.10622 , 0.257806],
@@ -157,22 +171,25 @@ Now perform collocation and plot corresponding scatter plots with statistical va
             [0.147172, 0.138039, ..., 0.077916, 0.19986 ]]])
     Coordinates:
       * data_source   (data_source) <U22 'AeronetSunV3Lev2.daily' 'ECMWF_CAMS_REAN'
+        var_name      (data_source) <U8 'od550aer' 'od550aer'
       * time          (time) datetime64[ns] 2010-01-01 2010-02-01 2010-03-01 ...
       * station_name  (station_name) <U19 'ARM_Darwin' 'ATHENS-NOA' 'Agoufou' ...
         latitude      (station_name) float64 -12.43 37.97 15.35 -9.871 42.02 ...
         longitude     (station_name) float64 130.9 23.72 -1.479 -56.1 -93.77 ...
         altitude      (station_name) float64 29.9 130.0 305.0 277.0 338.0 49.0 ...
     Attributes:
-        data_source_idx:  ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
-        var_name:         od550aer
-        ts_type:          monthly
-        start:            2010-01-01 00:00:00
-        stop:             2010-12-31 00:00:00
-        filter_name:      WORLD-noMOUNTAINS
-        region:           WORLD
-        lon_range:        [-180, 180]
-        lat_range:        [-90, 90]
-        alt_range:        [-1000000.0, 1000.0]
+        data_source:  ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
+        var_name:     ['od550aer', 'od550aer']
+        ts_type:      monthly
+        filter_name:  WORLD-noMOUNTAINS
+        ts_type_src:  daily
+        start_str:    20100101
+        stop_str:     20101231
+        data_level:   collocated
+        region:       WORLD
+        lon_range:    [-180, 180]
+        lat_range:    [-90, 90]
+        alt_range:    [-1000000.0, 1000.0]
 
 
 
@@ -185,7 +202,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f911050bcf8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7feb49af8860>
 
 
 
@@ -208,8 +225,8 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 .. parsed-literal::
 
     <xarray.DataArray 'od550aer' (data_source: 2, time: 365, station_name: 89)>
-    array([[[0.163582,      nan, ...,      nan,      nan],
-            [0.078742,      nan, ...,      nan,      nan],
+    array([[[0.163447,      nan, ...,      nan,      nan],
+            [0.078648,      nan, ...,      nan,      nan],
             ...,
             [     nan,      nan, ...,      nan,      nan],
             [     nan,      nan, ...,      nan,      nan]],
@@ -221,22 +238,25 @@ Now perform collocation and plot corresponding scatter plots with statistical va
             [0.079498, 0.122098, ..., 0.027066, 0.019639]]])
     Coordinates:
       * data_source   (data_source) <U22 'AeronetSunV3Lev2.daily' 'ECMWF_CAMS_REAN'
+        var_name      (data_source) <U8 'od550aer' 'od550aer'
       * time          (time) datetime64[ns] 2010-01-01 2010-01-02 2010-01-03 ...
       * station_name  (station_name) <U19 'ATHENS-NOA' 'Andenes' 'Arcachon' ...
         latitude      (station_name) float64 37.97 69.28 44.66 45.76 42.0 43.93 ...
         longitude     (station_name) float64 23.72 16.01 -1.163 3.111 -4.603 ...
         altitude      (station_name) float64 130.0 379.0 11.0 423.0 873.0 32.0 ...
     Attributes:
-        data_source_idx:  ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
-        var_name:         od550aer
-        ts_type:          daily
-        start:            2010-01-01 00:00:00
-        stop:             2010-12-31 00:00:00
-        filter_name:      EUROPE-noMOUNTAINS
-        region:           EUROPE
-        lon_range:        [-20, 70]
-        lat_range:        [30, 80]
-        alt_range:        [-1000000.0, 1000.0]
+        data_source:  ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
+        var_name:     ['od550aer', 'od550aer']
+        ts_type:      daily
+        filter_name:  EUROPE-noMOUNTAINS
+        ts_type_src:  daily
+        start_str:    20100101
+        stop_str:     20101231
+        data_level:   collocated
+        region:       EUROPE
+        lon_range:    [-20, 70]
+        lat_range:    [30, 80]
+        alt_range:    [-1000000.0, 1000.0]
 
 
 
@@ -249,7 +269,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f91106428d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7feb49b80208>
 
 
 
