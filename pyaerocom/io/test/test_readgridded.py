@@ -47,9 +47,9 @@ def test_years_available(dataset):
 def test_meta(dataset):
     npt.assert_array_equal([len(dataset.files),
                             dataset.data_dir,
-                            dataset.start_time, 
-                            dataset.stop_time, 
-                            list(dataset.years_to_load)],
+                            dataset._start_time, 
+                            dataset._stop_time, 
+                            list(dataset.get_years_to_load())],
                             [190,
                              '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
                              Timestamp("1-1-2003"), 

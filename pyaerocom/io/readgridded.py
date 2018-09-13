@@ -302,7 +302,10 @@ class ReadGridded(object):
         """
         load_only_year = False
         if start_time is None:
-            start_time = self.start_time
+            if self._start_time is None:
+                start_time = self.start_time
+            else:
+                start_time = self._start_time
         else:
             start_time = to_pandas_timestamp(start_time)
             #take only this year
@@ -310,7 +313,10 @@ class ReadGridded(object):
                 load_only_year = True
                 stop_time = start_time #same year
         if stop_time is None:
-            stop_time = self.stop_time
+            if self._stop_time is None:
+                stop_time = self.stop_time
+            else:
+                stop_time = self._stop_time
         elif not load_only_year: #stop time was input
             stop_time = to_pandas_timestamp(stop_time)
             
@@ -1380,7 +1386,7 @@ class ReadGriddedMulti(object):
     
         
     def read(self, var_names, start_time=None, stop_time=None,
-             ts_type=None):
+             ts_type=None, flex_ts_type=True):
         """High level method to import data for multiple variables and models
         
         Parameters
@@ -1397,7 +1403,10 @@ class ReadGriddedMulti(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly").If None, prioritised 
             of the available resolutions is used
-            
+        flex_ts_type : bool
+            if True and if applicable, then another ts_type is used in case 
+            the input ts_type is not available for this variable
+        
         Returns
         -------
         dict
@@ -1418,7 +1427,8 @@ class ReadGriddedMulti(object):
     
         for name, reader in self.results.items():
             try:
-                reader.read(var_names, start_time, stop_time, ts_type)
+                reader.read(var_names, start_time, stop_time, ts_type,
+                            flex_ts_type=flex_ts_type)
             except Exception as e:
                 reader.logger.exception('Failed to read data of {}\n'
                                         'Error message: {}'.format(name,
@@ -1471,6 +1481,7 @@ class ReadGriddedMulti(object):
             variables is available in this object
         
         """
+        raise NotImplementedError(DeprecationWarning('Method is deprecated'))
         for name, reader in self.results.items():
             reader.read_individual_years(var_names, years_to_load, ts_type,
                                          require_all_years_avail,

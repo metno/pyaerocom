@@ -45,7 +45,8 @@ def test_info_available(dataset):
         npt.assert_array_equal(d.years, years_nominal[i])
         
 def test_read_vars(dataset):
-    result = dataset.read(TEST_VARS, ts_type="daily")
+    result = dataset.read(TEST_VARS, ts_type="daily",
+                          flex_ts_type=False)
     
     npt.assert_array_equal([2,2,0], [len(x.data) for x in result.values()])
     dataset["ECHAM6-SALSA_AP3-CTRL2015"].read(TEST_VARS, ts_type="monthly")
