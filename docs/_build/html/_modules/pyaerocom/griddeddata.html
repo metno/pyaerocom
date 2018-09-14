@@ -315,38 +315,42 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="k">return</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
     
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Longitudes of data&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     @property</span>
+<span class="c1">#     def longitude(self):</span>
+<span class="c1">#         &quot;&quot;&quot;Longitudes of data&quot;&quot;&quot;</span>
+<span class="c1">#         if self.is_cube:</span>
+<span class="c1">#             return self.grid.coord(&quot;longitude&quot;)</span>
+<span class="c1">#         </span>
+<span class="c1">#     @longitude.setter</span>
+<span class="c1">#     def longitude(self, value):</span>
+<span class="c1">#         raise AttributeError(&quot;Longitudes cannot be changed, please check &quot;</span>
+<span class="c1">#                              &quot;underlying data type stored in attribute grid&quot;)</span>
+<span class="c1">#     </span>
+<span class="c1">#     @property</span>
+<span class="c1">#     def latitude(self):</span>
+<span class="c1">#         &quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
+<span class="c1">#         if self.is_cube:</span>
+<span class="c1">#             return self.grid.coord(&quot;latitude&quot;)</span>
+<span class="c1">#         </span>
+<span class="c1">#     @latitude.setter</span>
+<span class="c1">#     def latitude(self, value):</span>
+<span class="c1">#         raise AttributeError(&quot;Latitudes cannot be changed, please check &quot;</span>
+<span class="c1">#                              &quot;underlying data type stored in attribute grid&quot;)</span>
+<span class="c1"># =============================================================================</span>
         
-    <span class="nd">@longitude</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Longitudes cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
-    
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;latitude&quot;</span><span class="p">)</span>
-        
-    <span class="nd">@latitude</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Latitudes cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
-        
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Time dimension of data&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
-        
-    <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#     @property</span>
+<span class="c1">#     def time(self):</span>
+<span class="c1">#         &quot;&quot;&quot;Time dimension of data&quot;&quot;&quot;</span>
+<span class="c1">#         if self.is_cube:</span>
+<span class="c1">#             return self.grid.coord(&quot;time&quot;)</span>
+<span class="c1">#         </span>
+<span class="c1">#     @time.setter</span>
+<span class="c1">#     def time(self, value):</span>
+<span class="c1">#         raise AttributeError(&quot;Time array cannot be changed, please check &quot;</span>
+<span class="c1">#                              &quot;underlying data type stored in attribute grid&quot;)</span>
+<span class="c1"># =============================================================================</span>
             
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -429,8 +433,13 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">coords_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Array containing the order of coordinates&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_names</span>    
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">coord_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List containing coordinate names&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;No data available...&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coords</span><span class="p">()]</span>
     
     <span class="nd">@property</span>
@@ -1099,11 +1108,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">load_input</span><span class="p">(</span><span class="n">get</span><span class="p">()[</span><span class="s2">&quot;models&quot;</span><span class="p">][</span><span class="s2">&quot;ecmwf_osuite&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
     
-    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+    
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_or_attr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;x.__getitem__(y) &lt;==&gt; x[y]&quot;&quot;&quot;</span>
-        <span class="n">sub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices_or_attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">indices_or_attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">indices_or_attr</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">indices_or_attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to interpret input </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">indices_or_attr</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="n">indices_or_attr</span><span class="p">)</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">indices_or_attr</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">sub</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
-        
+     
+    <span class="k">def</span> <span class="nf">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_names</span> <span class="o">+</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">()</span>
+    
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;For now, use string representation of underlying data&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;pyaerocom.GriddedData: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">Grid data: </span><span class="si">%s</span><span class="s2">&quot;</span>
@@ -1120,7 +1141,7 @@
     <span class="n">RUN_OLD_STUFF</span> <span class="o">=</span> <span class="kc">False</span>
     
     <span class="n">reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read_individual_years</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="mi">2010</span><span class="p">)[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">][</span><span class="mi">2010</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="mi">2010</span><span class="p">)</span>
     
     <span class="n">t1</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_time_series</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="p">[</span><span class="mi">30</span><span class="p">],</span> <span class="n">latitude</span><span class="o">=</span><span class="p">[</span><span class="mi">40</span><span class="p">])</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_time_series_single_coord</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>

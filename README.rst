@@ -28,6 +28,7 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 - matplotlib >= 2.1.2
 - Optional
 
+	- geonum (for SRTM access and basic atmospheric calculations, e.g. conversion of pressure to altitude)
 	- geopy (for reading Aeolus data)
 
 Installation

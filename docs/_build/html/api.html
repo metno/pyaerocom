@@ -127,6 +127,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.filter">Filter class</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyaerocom.vert_coords">Conversion of vertical coordinates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting-visualisation">Plotting / Visualisation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.plot.mapping">Plotting maps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.plot.plotscatter">Scatter plots</a></li>
@@ -352,24 +353,6 @@ the metadata representation of the underlying data object)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.longitude">
-<code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.longitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Longitudes of data</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.latitude">
-<code class="descname">latitude</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.latitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Latitudes of data</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.time">
-<code class="descname">time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.time" title="Permalink to this definition">¶</a></dt>
-<dd><p>Time dimension of data</p>
-</dd></dl>
-
-<dl class="attribute">
 <dt>
 <code class="descname">grid</code></dt>
 <dd><p>Underlying grid data object</p>
@@ -435,6 +418,12 @@ method simply returns <a class="reference internal" href="#pyaerocom.griddeddata
 <dt id="pyaerocom.griddeddata.GriddedData.coords_order">
 <code class="descname">coords_order</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.coords_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array containing the order of coordinates</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.coord_names">
+<code class="descname">coord_names</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.coord_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>List containing coordinate names</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -2247,7 +2236,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f72c53e2620&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7fb3f9e93620&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3539,7 +3528,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f72c53e22f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f72c53e2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7fb3f9e932f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -3940,7 +3929,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f72c53e22f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f72c53e2378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f72c53e2488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f72c53e2510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7fb3f9e932f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fb3f9e93488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fb3f9e93510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4346,7 +4335,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f72c53e2400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f72c53e2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7fb3f9e93400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4770,7 +4759,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f72c53e22f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f72c53e2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7fb3f9e932f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5168,7 +5157,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f72c53e2378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f72c53e2488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f72c53e2510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fb3f9e93488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fb3f9e93510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5562,7 +5551,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f72c53e2400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f72c53e2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7fb3f9e93400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -8604,6 +8593,80 @@ etc.)</p>
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="module-pyaerocom.vert_coords">
+<span id="conversion-of-vertical-coordinates"></span><h2>Conversion of vertical coordinates<a class="headerlink" href="#module-pyaerocom.vert_coords" title="Permalink to this headline">¶</a></h2>
+<p>Methods to convert different standards of vertical coordinates</p>
+<p>For details see here:</p>
+<blockquote>
+<div><a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html">http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html</a></div></blockquote>
+<dl class="function">
+<dt id="pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure">
+<code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">atmosphere_sigma_coordinate_to_pressure</code><span class="sig-paren">(</span><em>sigma</em>, <em>psurf</em>, <em>ptop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#atmosphere_sigma_coordinate_to_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert atmosphere sigma coordinate to altitude in m</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>This formula only works at one lon lat coordinate and at one instant in
+time.</p>
+<p><strong>Formula</strong>:</p>
+<div class="last math notranslate nohighlight">
+\[p(k) = p_{top} + \sigma(k) \cdot (p_{surf} - p_{top})\]</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sigma</strong> (<em>ndarray</em>) – sigma coordinate (1D) array</li>
+<li><strong>psurf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – surface pressure (may be multidimensional). Note that it</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.vert_coords.pressure2altitude">
+<code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">pressure2altitude</code><span class="sig-paren">(</span><em>p</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#pressure2altitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.pressure2altitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>General formula to convert atm. pressure to altitude</p>
+<p>Wrapper method for <code class="xref py py-func docutils literal notranslate"><span class="pre">geonum.atmosphere.pressure2altitude()</span></code></p>
+<p><strong>Formula:</strong></p>
+<div class="math notranslate nohighlight">
+\[h = h_{ref} + \frac{T_{ref}}{L} \left(\exp\left[-\frac{\ln\left(\frac{p}{p_{ref}} \right)}{\beta}\right] - 1\right) \quad [m]\]</div>
+<p>where:</p>
+<blockquote>
+<div><ul class="simple">
+<li><span class="math notranslate nohighlight">\($h_{ref}$\)</span> is a reference altitude</li>
+<li><span class="math notranslate nohighlight">\($T_{ref}$\)</span> is a reference temperature</li>
+<li><span class="math notranslate nohighlight">\($L$\)</span> is the atmospheric lapse-rate (cf. <code class="xref py py-attr docutils literal notranslate"><span class="pre">L_STD_ATM</span></code>,                                                      <code class="xref py py-attr docutils literal notranslate"><span class="pre">L_DRY_AIR</span></code>)</li>
+<li><span class="math notranslate nohighlight">\($p$\)</span> is the pressure (cf. <code class="xref py py-func docutils literal notranslate"><span class="pre">pressure()</span></code>)</li>
+<li><span class="math notranslate nohighlight">\($p_{ref}$\)</span> is a reference pressure</li>
+<li><span class="math notranslate nohighlight">\($\beta$\)</span> is computed using <code class="xref py py-func docutils literal notranslate"><span class="pre">beta_exp()</span></code></li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – pressure in Pa</li>
+<li><strong>**kwargs</strong> (<em>*args</em><em>,</em>) – <p>additional arguments supported by <code class="xref py py-func docutils literal notranslate"><span class="pre">geonum.atmosphere.</span>
+<span class="pre">pressure2altitude()</span></code> (cf. <a class="reference external" href="https://geonum.readthedocs.io/en/latest/api.html#geonum.atmosphere.pressure2altitude">geonum docs</a>)</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">altitude corresponding to pressure level in defined atmosphere</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="plotting-visualisation">
 <h2>Plotting / Visualisation<a class="headerlink" href="#plotting-visualisation" title="Permalink to this headline">¶</a></h2>

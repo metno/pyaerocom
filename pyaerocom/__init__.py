@@ -42,6 +42,15 @@ def _init_config(package_dir):
         cfg = join(package_dir, 'data', 'paths.ini')
     return Config(config_file=cfg)
 
+def check_requirements(logger):
+    GEONUM_AVAILABLE = True
+    try:
+        import geonum
+    except:
+        GEONUM_AVAILABLE = False
+        logger.warn('geonum library is not installed. Some features will not '
+                    'be available (e.g. conversion of pressure to altitude')
+    return (GEONUM_AVAILABLE)
 __version__, __dir__ = _init_supplemental()
 
 from time import time
@@ -76,7 +85,6 @@ from .filter import Filter
 from .collocateddata import CollocatedData
 from . import collocation
 
-
 from . import io
 from . import plot
 
@@ -86,5 +94,6 @@ from .io.utils import browse_database
 from .utils import create_varinfo_table
 #from .obsdata import ObsData, ProfileData, StationData
 print('Elapsed time init pyaerocom: {} s'.format(time()-t0))
+GEONUM_AVAILABLE = check_requirements(logger)
 
 

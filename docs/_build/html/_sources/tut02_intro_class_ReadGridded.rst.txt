@@ -39,24 +39,24 @@ information about what is in there.
 
 .. parsed-literal::
 
-    2018-09-13 12:04:48,611:INFO:
+    2018-09-14 16:31:47,843:INFO:
     Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.024329423904418945 s
+    Elapsed time init all variables: 0.02443981170654297 s
 
 
 .. parsed-literal::
 
-    2018-09-13 12:04:49,353:WARNING:
+    2018-09-14 16:31:48,639:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.8007891178131104 s
+    Elapsed time init pyaerocom: 0.9475233554840088 s
     
     Pyaerocom ReadGridded
     ---------------------

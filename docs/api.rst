@@ -230,6 +230,7 @@ I/O utils
    
 I/O helpers
 ^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.io.helpers
    :members:
    :undoc-members:
@@ -251,6 +252,13 @@ Filter class
    :members:
    :undoc-members:
   
+Conversion of vertical coordinates
+----------------------------------
+
+.. automodule:: pyaerocom.vert_coords
+   :members:
+   :undoc-members:
+
 Plotting / Visualisation
 -------------------------
 
