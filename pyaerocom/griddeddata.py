@@ -154,38 +154,42 @@ class GriddedData(object):
             return np.nan
         return cftime_to_datetime64(self.time[-1])[0]
     
-    @property
-    def longitude(self):
-        """Longitudes of data"""
-        if self.is_cube:
-            return self.grid.coord("longitude")
+# =============================================================================
+#     @property
+#     def longitude(self):
+#         """Longitudes of data"""
+#         if self.is_cube:
+#             return self.grid.coord("longitude")
+#         
+#     @longitude.setter
+#     def longitude(self, value):
+#         raise AttributeError("Longitudes cannot be changed, please check "
+#                              "underlying data type stored in attribute grid")
+#     
+#     @property
+#     def latitude(self):
+#         """Latitudes of data"""
+#         if self.is_cube:
+#             return self.grid.coord("latitude")
+#         
+#     @latitude.setter
+#     def latitude(self, value):
+#         raise AttributeError("Latitudes cannot be changed, please check "
+#                              "underlying data type stored in attribute grid")
+# =============================================================================
         
-    @longitude.setter
-    def longitude(self, value):
-        raise AttributeError("Longitudes cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
-    
-    @property
-    def latitude(self):
-        """Latitudes of data"""
-        if self.is_cube:
-            return self.grid.coord("latitude")
-        
-    @latitude.setter
-    def latitude(self, value):
-        raise AttributeError("Latitudes cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
-        
-    @property
-    def time(self):
-        """Time dimension of data"""
-        if self.is_cube:
-            return self.grid.coord("time")
-        
-    @time.setter
-    def time(self, value):
-        raise AttributeError("Time array cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
+# =============================================================================
+#     @property
+#     def time(self):
+#         """Time dimension of data"""
+#         if self.is_cube:
+#             return self.grid.coord("time")
+#         
+#     @time.setter
+#     def time(self, value):
+#         raise AttributeError("Time array cannot be changed, please check "
+#                              "underlying data type stored in attribute grid")
+# =============================================================================
             
     @property
     def grid(self):
@@ -268,8 +272,13 @@ class GriddedData(object):
     @property
     def coords_order(self):
         """Array containing the order of coordinates"""
+        return self.coord_names    
+    
+    @property
+    def coord_names(self):
+        """List containing coordinate names"""
         if not self.has_data:
-            raise NotImplementedError("No data available...")
+            return []
         return [x.name() for x in self.grid.coords()]
     
     @property
@@ -938,11 +947,23 @@ class GriddedData(object):
         self.load_input(get()["models"]["ecmwf_osuite"], var_name="od550aer")
         return self
     
-    def __getitem__(self, indices):
+    def __getattr__(self, attr):
+        return self[attr]
+    
+    def __getitem__(self, indices_or_attr):
         """x.__getitem__(y) <==> x[y]"""
-        sub = self.grid.__getitem__(indices)
+        if isinstance(indices_or_attr, str):
+            if indices_or_attr in self.__dict__:
+                return self.__dict__[indices_or_attr]
+            if not indices_or_attr in self.coord_names:
+                raise ValueError('Failed to interpret input {}'.format(indices_or_attr))
+            return self.grid.coord(indices_or_attr)
+        sub = self.grid.__getitem__(indices_or_attr)
         return GriddedData(sub, **self.suppl_info)
-        
+     
+    def __dir__(self):
+        return self.coord_names + super().__dir__()
+    
     def __str__(self):
         """For now, use string representation of underlying data"""
         return ("pyaerocom.GriddedData: %s\nGrid data: %s"
@@ -959,7 +980,7 @@ if __name__=='__main__':
     RUN_OLD_STUFF = False
     
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    data = reader.read_individual_years('od550aer', 2010)['od550aer'][2010]
+    data = reader.read_var('od550aer', 2010)
     
     t1 = data.to_time_series(longitude=[30], latitude=[40])
     ts = data.to_time_series_single_coord(longitude=30, latitude=40)
