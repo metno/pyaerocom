@@ -29,10 +29,19 @@ class CollocationError(ValueError):
 class CoordinateError(ValueError):
     pass
 
+class CoordinateNameError(CoordinateError):
+    pass
+
 class DataCoverageError(ValueError):
     pass
 
 class DataDimensionError(ValueError):
+    pass
+
+class DimensionOrderError(DataDimensionError):
+    pass
+
+class NDimError(DataDimensionError):
     pass
 
 class DataExtractionError(ValueError):

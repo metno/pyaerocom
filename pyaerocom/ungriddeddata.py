@@ -156,8 +156,7 @@ class UngriddedData(object):
 
     @longitude.setter
     def longitude(self, value):
-        raise AttributeError("Longitudes cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
+        raise AttributeError("Station longitudes cannot be changed")
 
     @property
     def latitude(self):
@@ -166,9 +165,17 @@ class UngriddedData(object):
 
     @latitude.setter
     def latitude(self, value):
-        raise AttributeError("Latitudes cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
+        raise AttributeError("Station latitudes cannot be changed")
+        
+    @property
+    def altitude(self):
+        """Alttudes of stations"""
+        return [stat['stat_alt'] for stat in self.metadata.values()]
 
+    @altitude.setter
+    def altitude(self, value):
+        raise AttributeError("Station altitudes cannot be changed")
+        
     @property
     def station_name(self):
         """Latitudes of data"""
@@ -177,8 +184,7 @@ class UngriddedData(object):
 
     @station_name.setter
     def station_name(self, value):
-        raise AttributeError("Station names cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
+        raise AttributeError("Station names cannot be changed")
     
     @property
     def time(self):
@@ -187,8 +193,7 @@ class UngriddedData(object):
 
     @time.setter
     def time(self, value):
-        raise AttributeError("Time array cannot be changed, please check "
-                             "underlying data type stored in attribute grid")
+        raise AttributeError("Time array cannot be changed")
         
     def last_filter_applied(self):
         if not self.is_filtered:

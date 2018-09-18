@@ -3,7 +3,7 @@ Test script for collocation of gridded vs gridded at different resolutions
 """
 
 import pyaerocom as pya
-
+from time import time
 MODEL_ID_3D = 'SPRINTARS-T213_AP3-CTRL2016-PD'
 OBS_ID = 'EBASMC'
 
@@ -25,14 +25,34 @@ if __name__ == '__main__':
     model = model_reader.read_var(MODEL_VAR, start_time=YEAR)
     print(model)
     
+    
+    print('\nDecreasing temporal resolution')
+    t0=time()
+    model = model.downscale_time(TS_TYPE)
+    print('Successfully decreased t-res (in {:.3f} s)'.format(time() - t0))
+    
+    tseries_surf = model.to_time_series(longitude=obs.longitude, 
+                                        latitude=obs.latitude,
+                                        vert_scheme='surface')
+    raise Exception
+    tseries_mean = model.to_time_series(longitude=obs.longitude, 
+                                        latitude=obs.latitude)
+    
     #model = model.downscale_time(TS_TYPE)
     
     #get one column of sigma levels
     
-    sigma_levels = model[0,:,0,0]
+    sigma = model.atmosphere_sigma_coordinate.points
     
-    psurf = model
+    psurf = model.surface_air_pressure
     
+    ptop = 0
+    
+    ps = float(psurf[0,0,0].points)
+    
+    altitude = pya.vert_coords.atmosphere_sigma_coordinate_to_pressure(sigma, 
+                                                                       ps, 
+                                                                       ptop)
     #pya.vert_coords.atmosphere_sigma_coordinate_to_pressure(leve)
     
     

@@ -4,18 +4,11 @@
 This module contains scatter plot routines for Aerocom data.
 """
 
-from pyaerocom import const
-import pyaerocom.io as pio
-import pyaerocom as pa
+from pyaerocom import const, BASEMAP_AVAILABLE
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-try:
-    from mpl_toolkits.basemap import Basemap
-    BASEMAP_AVAILABLE = True
-except ModuleNotFoundError:
-    BASEMAP_AVAILABLE = False
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 

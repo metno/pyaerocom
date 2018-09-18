@@ -9,8 +9,9 @@ For details see here:
 """
 
 from pyaerocom import GEONUM_AVAILABLE
-    
-def atmosphere_sigma_coordinate_to_pressure(sigma, psurf, ptop):
+from pyaerocom.exceptions import CoordinateNameError
+
+def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
     """Convert atmosphere sigma coordinate to altitude in m
     
     Note
@@ -22,14 +23,19 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, psurf, ptop):
     
     .. math::
         
-        p(k) = p_{top} + \\sigma(k) \\cdot (p_{surf} - p_{top})
+        p(k) = p_{top} + \\sigma(k) \\cdot (p_{surface} - p_{top})
     
     Parameters
     ----------
     sigma : ndarray
         sigma coordinate (1D) array
-    psurf : :obj:`float` or :obj:`ndarray`
+    ps : :obj:`float` or :obj:`ndarray`
         surface pressure (may be multidimensional). Note that it 
+    
+    Returns
+    -------
+    ndarray
+        pressure levels in Pa
     """
     if not isinstance(ptop, float):
         try:
@@ -37,7 +43,7 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, psurf, ptop):
         except Exception as e:
             raise ValueError('Invalid input for ptop. Need floating point\n'
                              'Error: {}'.format(repr(e)))
-    return ptop * sigma * (psurf - ptop)
+    return ptop + sigma * (ps - ptop)
 
 def pressure2altitude(p, *args, **kwargs):
     """General formula to convert atm. pressure to altitude
@@ -79,6 +85,61 @@ def pressure2altitude(p, *args, **kwargs):
     from geonum import atmosphere as atm
     return atm.pressure2altitude(p)
 
+class _VertCoordConverter(object):
+    atmosphere_sigma_coordinate = dict(sigma=['lev', 'sigma'],
+                                       ps=['ps'],
+                                       ptop=['ptop'])
+    VARS = dict(atmosphere_sigma_coordinate)
+    FUNS = dict(atmosphere_sigma_coordinate = atmosphere_sigma_coordinate_to_pressure)
+    
+    @property
+    def supported(self):
+        return list(self.VARS.keys())
+    
+    def calc_pressure(self, standard_name, **kwargs):
+        """Compute pressure levels for input vertical coordinate
+        
+        Parameters
+        ----------
+        standard_name : str
+            standard name of vertical coordinate
+        **kwargs
+            additional  keyword args required for computation of pressure
+            levels (cf. :attr:`FUNS` and corresponding inputs for method 
+            available)
+            
+        Returns
+        -------
+        ndarray
+            pressure levels in Pa
+        """
+        if not standard_name in self.VARS:
+            raise CoordinateNameError('Invalid standard name: {}. Supported '
+                                      'coordinate names are: {}'
+                                      .format(standard_name,
+                                              self.VARS.keys()))
+        coord_values = kwargs.pop(standard_name)
+        return self.FUNS[standard_name](coord_values, **kwargs)
+    
+    def calc_altitude(self, standard_name, **kwargs):
+        """Compute altitude for input vertical coordinates
+        
+        Parameters
+        ----------
+        standard_name : str
+            standard name of vertical coordinate
+        **kwargs
+            additional  keyword args required for computation of pressure
+            levels (cf. :attr:`FUNS` and corresponding inputs for method 
+            available)
+            
+        Returns
+        -------
+        ndarray
+            pressure levels in Pa
+        """
+        return pressure2altitude(self.calc_pressure(standard_name, **kwargs))
+        
 if __name__ == '__main__':
     import pyaerocom as pya
     

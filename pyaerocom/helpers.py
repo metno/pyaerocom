@@ -35,6 +35,7 @@ _STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
                     max         = iris.analysis.MAX, 
                     mean        = iris.analysis.MEAN,
                     median      = iris.analysis.MEDIAN,
+                    sum         = iris.analysis.SUM,
                     nearest     = iris.analysis.Nearest,
                     linear      = iris.analysis.Linear,
                     areaweighted= iris.analysis.AreaWeighted)
