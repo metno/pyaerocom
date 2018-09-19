@@ -1030,14 +1030,18 @@ class GriddedData(object):
                 str(pd.Timestamp(self.start_time).year), self.ts_type]
         return '_'.format(fconv.file_sep).join(name) + '.nc'
     
-    def compute_at_stations_file(self, stat_lons=None, stat_lats=None, 
+    def compute_at_stations_file(self, stat_lats=None, stat_lons=None, 
                                  obs_id=None, out_dir=None, savename=None,
                                  obs_data=None):
-        """Creates new netcdf file at input coordinates
+        """Creates and saves new netcdf file at input lat / lon coordinates
+        
+        This method can be used to reduce the size of too large grid files.
+        It reduces the lon / lat dimensionality corresponding to the locations
+        of the input lat / lon coordinates.
         
         Parameters
         ----------
-        stat_lons
+        stat_lats 
         """
         from pyaerocom import UngriddedData, print_log
         print_log.info('Computing AtStations file. This may take a while')
