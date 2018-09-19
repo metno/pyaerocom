@@ -251,6 +251,11 @@ class UngriddedData(object):
         else:
             return None
     
+    def to_gridded_data(self):
+        lons = self.longitude
+        lats = self.latitude
+        raise NotImplementedError
+        
     # TODO: review docstring        
     def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
                       freq=None):
