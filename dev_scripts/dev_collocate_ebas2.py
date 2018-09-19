@@ -25,27 +25,17 @@ if __name__ == '__main__':
     model_reader = pya.io.ReadGridded(MODEL_ID_3D)
     model = model_reader.read_var(MODEL_VAR, start_time=YEAR)
     print(obs)
+    print(model)
     
     model_at_stats = model.compute_at_stations_file(out_dir='out', 
                                                     obs_data=obs)
     
-    
     model_reload = pya.GriddedData(model_at_stats)
     
-    raise Exception
-    obs_stat_data = obs.to_station_data_all(OBS_VARS,
-                                            freq=TS_TYPE,
-                                            start=YEAR,
-                                            stop=YEAR+1)
+    coll1 = pya.collocation.collocate_gridded_ungridded_2D(model, 
+                                                           obs, 
+                                                           'monthly')
     
-    
-   
-    
-    
-    
-    model_reader = pya.io.ReadGridded(MODEL_ID_3D)
-    model = model_reader.read_var(MODEL_VAR, start_time=YEAR)
-    print(model)
     print('\nDecreasing temporal resolution')
     t0=time()
     model = model.downscale_time(TS_TYPE)
