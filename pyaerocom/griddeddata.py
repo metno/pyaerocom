@@ -3,7 +3,8 @@
 """
 Pyaerocom GriddedData class
 """
-from os.path import exists
+
+import os
 from copy import deepcopy
 from collections import OrderedDict as od
 import iris
@@ -24,7 +25,8 @@ from pyaerocom.helpers import (get_time_constraint,
                                str_to_iris,
                                IRIS_AGGREGATORS,
                                to_pandas_timestamp)
-
+from pyaerocom.mathutils import closest_index
+from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 
 
@@ -98,6 +100,7 @@ class GriddedData(object):
     _GRID_IO = const.GRID_IO
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
+    _MAX_SIZE_GB = 1 #maximum file size for
     def __init__(self, input=None, var_name=None, **suppl_info):
         self.suppl_info = od(from_files     = [],
                              name           = "Unknown",
@@ -126,6 +129,11 @@ class GriddedData(object):
         """List with valid filename encryptions specifying temporal resolution
         """
         return self.io_opts.GRID_IO.TS_TYPES
+      
+    @property
+    def from_files(self):
+        """List of file paths from which this data object was created"""
+        return self.suppl_info['from_files']
         
     @property
     def is_masked(self):
@@ -292,6 +300,15 @@ class GriddedData(object):
         return self.grid.ndim
     
     @property
+    def _size_GB(self):
+        """Size of original data files from which this object is created
+        
+        These method is intended to be used for operations that actually 
+        require the *realisation* of the (lazy loaded) data. 
+        """
+        return sum([os.path.getsize(f) for f in self.from_files]) / 10**9
+    
+    @property
     def coords_order(self):
         """Array containing the order of coordinates"""
         return self.coord_names    
@@ -338,10 +355,11 @@ class GriddedData(object):
         """
         if isinstance(input, iris.cube.Cube):
             self.grid = input #instance of Cube
-        elif isinstance(input, str) and exists(input):
+        elif isinstance(input, str) and os.path.exists(input):
             from pyaerocom.io.iris_io import load_cube_custom
             self.grid = load_cube_custom(input, var_name)
             self.suppl_info["from_files"].append(input)
+            
         else:
             raise IOError('Failed to load input: {}'.format(input))
             
@@ -431,8 +449,12 @@ class GriddedData(object):
         if not self.ndim in (3,4):
             raise NDimError('Time series extraction requires at least 3 '
                             'coordinates in cube')
-        check = self.coords_order[:3]
-        for i, item in enumerate(check):
+        check = self.dimcoord_names
+        if not len(check) >= 3:
+            raise DataDimensionError('One of the data dimension coordinates '
+                                     'may not be defined')
+            
+        for i, item in enumerate(check[:3]):
             if not item == order[i]:
                 raise DimensionOrderError('Invalid order of grid '
                                           'dimension, need {}, got {}'
@@ -481,7 +503,7 @@ class GriddedData(object):
             return False
         arg_info = conv.VARS[coord_name]
         args_dict = {}
-        
+        name1
         for arg, possible_vals in arg_info.items():
             pass
             
@@ -521,11 +543,13 @@ class GriddedData(object):
             altitude information, this parameter will be set automatically to
             'altitude'. Allowed inputs are all data collapse schemes that 
             are supported by :func:`pyaerocom.helpers.str_to_iris` (e.g. `mean, 
-            median, sum`). Further valid schemes are `altitude, surface`.
+            median, sum`). Further valid schemes are `altitude, surface, 
+            profile`.
             If not other specified and if `altitude` coordinates are provided
             via sample_points (or **coords parameters) then, vert_scheme will 
-            be set to `altitude`.
+            be set to `altitude`. Else, `profile` is used.
         iter_coords : bool
+            CURRTENTLY NOT IMPLEMENTED
             boolean specifying how the data extraction is supposed to be done.
             If False, the data object is interpolated first, to the specified 
             input lon, lat coordinates and then, the data extraction is done.
@@ -568,47 +592,9 @@ class GriddedData(object):
         if self.ndim == 3: #data does not contain vertical dimension
             return self._to_timeseries_2D(sample_points, scheme,
                                           collapse_scalar)
-        # data contains vertical dimension
-        if 'altitude' in [sp[0] for sp in sample_points]:
-            if not self._check_altitude_access():
-                raise DataDimensionError('Cannot access altitude '
-                                         'information')
-            if vert_scheme is not None and not vert_scheme=='altitude':
-                    raise ValueError('Conflict: Input sample points include ' 
-                                     'altitude information but input for '
-                                     'vert_scheme is {}'.format(vert_scheme))
-            vert_scheme = 'altitude'
         
-        if vert_scheme is None:
-            vert_scheme = 'mean'
-            logger.info('Data is 4D and vertical scheme has not been '
-                        'defined, but is required for timeseries retrieval '
-                        'Using mean values in vertical direction')
-            
-        if vert_scheme == 'altitude':
-            return self._to_timeseries_3D(sample_points, scheme, 
-                                          collapse_scalar)
-        else:
-            cname = self.dimcoord_names[-1]
-            if vert_scheme == 'surface':
-# =============================================================================
-#                 first = self.grid.coord(cname).points[0]
-#                 C = iris.Constraint(coord_values={cname : lambda c: c==first})
-# =============================================================================
-                data = self[:,:,:,0]
-            else:
-                try:
-                    aggr = str_to_iris(vert_scheme)
-                except KeyError as e:
-                    raise ValueError('Invalid input for vert_scheme. '
-                                     'Choose from altitude, surface or '
-                                     'either of the following variables: {}'
-                                     .format(repr(e)))
-                else:
-                    data = self.collapsed(cname, aggr)
-                    
-            return data.to_time_series(sample_points, scheme, 
-                                       collapse_scalar)
+        return self._to_timeseries_3D(sample_points, scheme, 
+                                      collapse_scalar, vert_scheme)
     
     def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar,
                           iter_coords=False):
@@ -652,40 +638,82 @@ class GriddedData(object):
             for i, lat in enumerate(lats):
                 lon = lons[i]
                 j = np.where(grid_lons==lon)[0][0]
-                result.append({'latitude'   :   lat,
-                               'longitude'  :   lon,
-                               'name'       :   self.name, 
-                                var         :   Series(arr[:, i, j], 
-                                                       index=times)})
+                
+                data = StationData(latitude=lat, 
+                                   longitude=lon,
+                                   dataset_name=self.name)
+                
+                data[var] = Series(arr[:, i, j], index=times)
+                result.append(data)
             return result
         except MemoryError:
             return self._to_timeseries_iter_coords_2D(sample_points, scheme, 
                                                    collapse_scalar)
                 
-    def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar):
+    def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
+                          vert_scheme='profile'):
     
+        # data contains vertical dimension
+        if 'altitude' in [sp[0] for sp in sample_points]:
+            if not self._check_altitude_access():
+                raise DataDimensionError('Cannot access altitude '
+                                         'information')
+            if vert_scheme is not None and not vert_scheme=='altitude':
+                    raise ValueError('Conflict: Input sample points include ' 
+                                     'altitude information but input for '
+                                     'vert_scheme is {}'.format(vert_scheme))
+            vert_scheme = 'altitude'
+        
+        if vert_scheme is None:
+            vert_scheme = 'mean'
+            logger.info('Data is 4D and vertical scheme has not been '
+                        'defined, but is required for timeseries retrieval '
+                        'Using mean values in vertical direction')
+            
+        if vert_scheme in ('altitude', 'profile'):
+            return self._to_timeseries_3D(sample_points, scheme, 
+                                          collapse_scalar, vert_scheme)
+        else:
+            cname = self.dimcoord_names[-1]
+            if vert_scheme == 'surface':
+# =============================================================================
+#                 first = self.grid.coord(cname).points[0]
+#                 C = iris.Constraint(coord_values={cname : lambda c: c==first})
+# =============================================================================
+                data = self[:,:,:,0]
+            else:
+                try:
+                    aggr = str_to_iris(vert_scheme)
+                except KeyError as e:
+                    raise ValueError('Invalid input for vert_scheme. '
+                                     'Choose from altitude, surface or '
+                                     'either of the following variables: {}'
+                                     .format(repr(e)))
+                else:
+                    data = self.collapsed(cname, aggr)
+                    
+            return data.to_time_series(sample_points, scheme, 
+                                       collapse_scalar)
         # go over individual stations (interpolate)
         try:
             data = self.interpolate(sample_points, scheme, collapse_scalar)
+        except MemoryError:
+            return self._to_timeseries_iter_coords_3D(sample_points, scheme, 
+                                                      collapse_scalar)
+        else:
             var = self.var_name
             times = data.time_stamps()
             lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
             lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
-            arr = data.grid.data
-            grid_lons = data.longitude.points
             result = []
-            for i, lat in enumerate(lats):
-                lon = lons[i]
-                j = np.where(grid_lons == lon)[0][0]
-                result.append({'latitude'   :   lat,
-                               'longitude'  :   lon,
-                               'name'       :   self.name, 
-                                var         :   Series(arr[:, i, j], 
-                                                       index=times)})
+            if vert_scheme == 'altitude':
+                alts = [x[1] for x in sample_points if x[0] == "altitude"][0]
+                for i, lat in enumerate(lats):
+                    lon = lons[i]
+                    alt = alts[i]
             return result
-        except MemoryError:
-            return self._to_timeseries_iter_coords_3D(sample_points, scheme, 
-                                                      collapse_scalar)
+    
+            
     
     def _to_timeseries_iter_coords_2D(self, sample_points, scheme, 
                                       collapse_scalar):
@@ -769,10 +797,10 @@ class GriddedData(object):
                                       collapse_scalar):
         """Extract time-series for provided input coordinates (lat, lon, alt)
         """
+        raise NotImplementedError
         self.check_dimcoords_tseries()
         if not scheme=="nearest":
             raise NotImplementedError
-        raise NotImplementedError
         lats, lons, alts = None, None, None
         for val in enumerate(sample_points):
             name, vals = val[0], val[1]
@@ -970,6 +998,113 @@ class GriddedData(object):
     # Cube and return a Cube instance. These may be expanded (e.g. for 
     # instance what they accept as input
     
+    def aerocom_filename(self, at_stations=False, obs_id=None):
+        """Filename of data following Aerocom 3 conventions
+        
+        Parameters
+        ----------
+        at_stations : str
+            if True, then AtStations string will be included in filename
+        obs_id : :obj:`str`, optional
+            if provided, the ID of the obsnetwork will be added to the filename
+        
+        Returns
+        -------
+        str
+            generated file name based on what is in this object
+        """
+        from pyaerocom.io import FileConventionRead
+        f = self.from_files[0]
+        fconv = FileConventionRead().from_file(f)
+        base_info = fconv.get_info_from_file(f)
+    
+        vert_pos = base_info['vert_pos']
+        if vert_pos is None:
+            vert_pos = 'UNDEFINED'
+        if at_stations:
+            vert_pos += 'AtStations'
+        if obs_id:
+            vert_pos += obs_id
+            
+        name = [fconv.name, self.name, self.var_name, vert_pos,
+                str(pd.Timestamp(self.start_time).year), self.ts_type]
+        return '_'.format(fconv.file_sep).join(name) + '.nc'
+    
+    def compute_at_stations_file(self, stat_lons=None, stat_lats=None, 
+                                 obs_id=None, out_dir=None, savename=None,
+                                 obs_data=None):
+        """Creates new netcdf file at input coordinates
+        
+        Parameters
+        ----------
+        stat_lons
+        """
+        from pyaerocom import UngriddedData, print_log
+        print_log.info('Computing AtStations file. This may take a while')
+        if isinstance(obs_data, UngriddedData):
+            ds = obs_data.contains_datasets
+            if len(ds) == 1:
+                obs_id = ds[0]
+            else:
+                obs_id = 'MULTIOBS'
+            stat_lons = obs_data.longitude
+            stat_lats = obs_data.latitude
+        
+        if not len(stat_lons) == len(stat_lats):
+            raise ValueError('Longitude and latitude arrays need to have the '
+                             'same length (since they are supposed to belong) '
+                             'to station_coordinates')
+        if out_dir is None:
+            out_dir = const.CACHEDIR
+        if savename is None:
+            savename = self.aerocom_filename(at_stations=True,
+                                             obs_id=obs_id)
+        lons = self.longitude.points
+        lats = self.latitude.points
+        
+        lon_idx = []
+        lat_idx = []
+        
+        for lat, lon in zip(stat_lats, stat_lons):
+            lon_idx.append(closest_index(lons, lon))
+            lat_idx.append(closest_index(lats, lat))
+        
+        lon_idx = sorted(dict.fromkeys(lon_idx))
+        lat_idx = sorted(dict.fromkeys(lat_idx))
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+           
+            
+        subset = self[:, lat_idx][:,:,lon_idx]
+        # make sure everything went well with the dimensions
+        subset.check_dimcoords_tseries()
+        path = subset.to_netcdf(out_dir, savename)
+        print_log.info('Finished computing AtStations file.')
+        return path
+        
+    def to_netcdf(self, out_dir, savename=None):
+        """Save as netcdf file
+        
+        Paraemeters
+        -----------
+        out_dir : str
+            output direcory (must exist)
+        savename : :obj:`str`, optional
+            name of file. If None, :func:`aerocom_filename` is used
+            
+        Returns
+        -------
+        str
+            file path
+        """
+        if savename is None:
+            savename = self.aerocom_filename()
+        fp = os.path.join(out_dir, savename)
+        iris.save(self.grid, fp)
+        return fp
+        
     def interpolate(self, sample_points=None, scheme="nearest", 
                     collapse_scalar=True, **coords):
         """Interpolate cube at certain discrete points
@@ -1019,6 +1154,9 @@ class GriddedData(object):
             >>> print(itp.shape)
             (365, 1, 1)
         """
+        if self._size_GB > self._MAX_SIZE_GB:
+            raise MemoryError('Data is too large for interpolation (which '
+                              'requires loading data into memory)')
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
         if not sample_points:
