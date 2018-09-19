@@ -10,6 +10,7 @@ For details see here:
 
 from pyaerocom import GEONUM_AVAILABLE
 from pyaerocom.exceptions import CoordinateNameError
+from pyaerocom._lowlevel_helpers import BrowseDict
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
     """Convert atmosphere sigma coordinate to altitude in m
@@ -85,18 +86,27 @@ def pressure2altitude(p, *args, **kwargs):
     from geonum import atmosphere as atm
     return atm.pressure2altitude(p)
 
-class _VertCoordConverter(object):
-    atmosphere_sigma_coordinate = dict(sigma=['lev', 'sigma'],
-                                       ps=['ps'],
-                                       ptop=['ptop'])
-    VARS = dict(atmosphere_sigma_coordinate)
-    FUNS = dict(atmosphere_sigma_coordinate = atmosphere_sigma_coordinate_to_pressure)
+
+class VerticalCoordinate(BrowseDict):
+
+    FUNS = dict(atmosphere_sigma_coordinate=
+                atmosphere_sigma_coordinate_to_pressure)
     
+    ARG_NAMES = dict(atmosphere_sigma_coordinate=dict(sigma=['lev', 'sigma'],
+                                                      ps=['ps'],
+                                                      ptop=['ptop']))
+    
+    LEV_INCREASES_WITH_ALT = dict(atmosphere_sigma_coordinate=False)
+    
+    def __init__(self, name=None):
+        if not name in self.supported:
+            raise ValueError('Invalid name for vertical coordinate')
+            
     @property
     def supported(self):
         return list(self.VARS.keys())
     
-    def calc_pressure(self, standard_name, **kwargs):
+    def calc_pressure(self, **kwargs):
         """Compute pressure levels for input vertical coordinate
         
         Parameters
@@ -113,13 +123,13 @@ class _VertCoordConverter(object):
         ndarray
             pressure levels in Pa
         """
-        if not standard_name in self.VARS:
+        if not self.name in self.VARS:
             raise CoordinateNameError('Invalid standard name: {}. Supported '
                                       'coordinate names are: {}'
-                                      .format(standard_name,
+                                      .format(self.name,
                                               self.VARS.keys()))
-        coord_values = kwargs.pop(standard_name)
-        return self.FUNS[standard_name](coord_values, **kwargs)
+        coord_values = kwargs.pop(self.name)
+        return self.FUNS[self.name](coord_values, **kwargs)
     
     def calc_altitude(self, standard_name, **kwargs):
         """Compute altitude for input vertical coordinates
