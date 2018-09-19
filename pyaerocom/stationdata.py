@@ -3,8 +3,8 @@
 import pandas as pd
 import numpy as np
 from pyaerocom.station import Station
-from pyaerocom import VerticalProfile
-from pyaerocom._lowlevel_helpers import list_to_shortstr
+from pyaerocom import VerticalProfile, logger
+from pyaerocom._lowlevel_helpers import list_to_shortstr, BrowseDict
 
 class StationData(Station):
     """Dict-like base class for single station data
@@ -33,6 +33,7 @@ class StationData(Station):
         self._data_coords = {'latitude' : None, 
                              'longitude': None,
                              'altitude' : None}
+        
         self.dtime = []
         self.instrument_name=None
         super(StationData, self).__init__(*args, **kwargs)
@@ -110,6 +111,9 @@ class StationData(Station):
             raise KeyError("Variable {} does not exist".format(var_name))
         self.check_dtime()
         data = self[var_name]
+        if isinstance(data, pd.Series):
+            logger.info('Data is already instance of pandas.Series')
+            return data
         if not data.ndim == 1:
             raise NotImplementedError('Multi-dimensional data columns cannot '
                                       'be converted to time-series')
@@ -162,7 +166,8 @@ class StationData(Station):
                 value = float(value)
             if not isinstance(value, (float, np.floating, 
                                       tuple, list, np.ndarray)):
-                raise ValueError('Need floating point or list-like, got: {}'.format(value))
+                raise ValueError('Need floating point or list-like, got: {}'
+                                 .format(value))
             self._data_coords[name] = value
         else:
             # no special treatment
