@@ -80,6 +80,16 @@ class VarNameInfo(object):
         if self.contains_wavelength_nm:
             return self.var_name.replace(str(self.wavelength_nm))
     
+    def __str__(self):
+        s = ('\nVariable {}\n'
+             'is_wavelength_dependent: {}\n'
+             'is_optical_density: {}'.format(self.var_name,
+                                                self.is_wavelength_dependent,
+                                                self.is_optical_density))
+        if self.is_wavelength_dependent:
+            s += '\nwavelength_nm: {}'.format(self.wavelength_nm)
+        return s
+    
 class Variable(BrowseDict):
     """Interface that specifies default settings for a variable
     
@@ -160,6 +170,15 @@ class Variable(BrowseDict):
                 'map_cbar_ticks': literal_eval_list}
     
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
+        self._var_name = var_name #save orig. input for whatever reasons
+        self.is_3d = False
+        
+        var_name = var_name.lower()
+        if '3d' in var_name:
+            logger.info('Variable name {} contains 3d. Activating flag is_3d '
+                        'and removing from var_name string'.format(var_name))
+            var_name = var_name.replace('3d','')
+            self.is_3d = True
         self.var_name = var_name
         self.standard_name = None
         self.unit = None
@@ -170,6 +189,7 @@ class Variable(BrowseDict):
         self.maximum = 9e30
         self.description = None
         self.comments_and_purpose = None
+        
         
         # parameters for reading of obsdata
         
@@ -198,7 +218,6 @@ class Variable(BrowseDict):
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
-    
     
     @property
     def lower_limit(self):
@@ -229,6 +248,10 @@ class Variable(BrowseDict):
         cfg.read(fpath)
         return cfg
     
+    @property
+    def var_name_info(self):
+        return VarNameInfo(self.var_name)
+        
     def parse_from_ini(self, var_name=None, cfg=None):
         """Import information about default region
         
@@ -414,10 +437,13 @@ class AllVariables(object):
         >>> all_vars['od550aer']
         Variable od550aer
         """
-        if not var_name in self:
-            raise VariableDefinitionError("No default configuration available for "
-                           "variable {}".format(var_name))
-        elif var_name in self.alias_info:
+        #make sure to be in the right namespace
+        
+        check = var_name.lower().replace('3d','')
+        if not check in self:
+            raise VariableDefinitionError("No default configuration available "
+                                          "for variable {}".format(var_name))
+        elif check in self.alias_info:
             var_name = self.alias_info[var_name]
             logger.info('Input is alias for variable {}'.format(var_name))
         return Variable(var_name, cfg=self._cfg)
@@ -434,6 +460,10 @@ class AllVariables(object):
             s += '\n{} = {}'.format(k, v)
         return s   
   
+def get_variable(var_name):
+    from pyaerocom import const
+    return const.VAR_PARAM[var_name]
+
 def all_var_names():
     """Helper method that returns all currently defined variable names"""
     return [k for k in Variable.read_config().keys()]
@@ -455,3 +485,6 @@ if __name__=="__main__":
     print(vi.is_optical_density) 
     
     print(VarNameInfo('od440lt1aer').is_optical_density)
+    
+    print(get_variable('od5503daer'))
+    
