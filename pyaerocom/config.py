@@ -315,24 +315,34 @@ class Config(object):
     
     @property
     def EBASMC_SQL_DATABASE(self):
+        """Path to EBAS SQL database"""
         return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 
                                 'ebas_file_index.sqlite3')
         
     @property
     def EBASMC_DATA_DIR(self):
+        """Data directory of EBAS multicolumn files"""
         return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 'data')
                             
     @property
     def OBSDIRS(self):
+        """Direcories of observation networks"""
         return [x["PATH"] for x in self.OBSCONFIG.values()]
     
     @property 
     def OBS_START_YEARS(self):
+        """Start years of observation networks"""
         return [x["START_YEAR"] for x in self.OBSCONFIG.values()]
     
     @property
     def OBS_IDS(self):
+        """List of all IDs of observations"""
         return [x for x in self.OBSCONFIG.keys()]
+    
+    @property
+    def CACHEDIR(self):
+        """Directory for storing cached files"""
+        return self.OBSDATACACHEDIR
     
     def check_dir(self, path):
         """Checks if directory exists"""
@@ -341,6 +351,7 @@ class Config(object):
         return False
     
     def reload(self, keep_basedirs=True):
+        """Reload file"""
         self.read_config(self._config_ini, keep_basedirs)
         
     def read_config(self, config_file, keep_basedirs=True):
