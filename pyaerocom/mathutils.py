@@ -97,6 +97,10 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None):
     
     return result
 
+def closest_index(num_array, value):
+    """Returns index in number array that is closest to input value"""
+    return np.argmin(np.abs(np.asarray(num_array) - value))
+
 def numbers_in_str(input_string):
     """This method finds all numbers in a string
     
