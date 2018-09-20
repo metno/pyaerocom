@@ -33,24 +33,24 @@ Import setup and imports
 
 .. parsed-literal::
 
-    2018-09-14 16:33:33,455:INFO:
-    Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
+    2018-09-20 15:33:56,306:WARNING:
+    basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.023622512817382812 s
+    Elapsed time init all variables: 0.02593088150024414 s
 
 
 .. parsed-literal::
 
-    2018-09-14 16:33:34,494:WARNING:
+    2018-09-20 15:33:57,019:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.1872787475585938 s
+    Elapsed time init pyaerocom: 1.0189259052276611 s
 
 
 Import of model data
@@ -136,7 +136,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20180914163339
+     Filter time log: 20180920153408
     	stat_alt: [0, 1000]
 
 
@@ -151,6 +151,12 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_colloc = pya.collocation.collocate_gridded_ungridded_2D(model_data, obs_data, ts_type='monthly',
                                                                  filter_name='WORLD-noMOUNTAINS')
     data_colloc
+
+
+.. parsed-literal::
+
+    Interpolating data of shape (12, 161, 320). This may take a while.
+    Successfully interpolated cube
 
 
 
@@ -202,7 +208,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fd3cde42cc0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f6739fba2b0>
 
 
 
@@ -218,6 +224,12 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_colloc = pya.collocation.collocate_gridded_ungridded_2D(model_data, obs_data, ts_type='daily',
                                                                  filter_name='EUROPE-noMOUNTAINS')
     data_colloc
+
+
+.. parsed-literal::
+
+    Interpolating data of shape (365, 161, 320). This may take a while.
+    Successfully interpolated cube
 
 
 
@@ -269,7 +281,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fd3cdc30da0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f6739d28978>
 
 
 

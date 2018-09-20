@@ -49,24 +49,24 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    2018-09-14 16:31:30,491:INFO:
-    Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
+    2018-09-20 15:31:35,440:WARNING:
+    basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.02456378936767578 s
+    Elapsed time init all variables: 0.02588176727294922 s
 
 
 .. parsed-literal::
 
-    2018-09-14 16:31:31,221:WARNING:
+    2018-09-20 15:31:36,371:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.8773398399353027 s
+    Elapsed time init pyaerocom: 1.2451450824737549 s
     Installation base directory: /home/jonasg/github/pyaerocom/pyaerocom
     Version: 0.3.0
 
@@ -173,6 +173,7 @@ via an instance of the ``Config`` class.
     scatc550aer
     scatc550lt1aer
     bscatc550aer
+    absc550aer
     absc550lt1aer
     ssa440aer
     ssa675aer
@@ -617,7 +618,6 @@ via an instance of the ``Config`` class.
     
     Aliases
     .......
-    absc550aer = abs550aer
 
 
 You can check if the relevant base directories ``MODELBASEDIR`` and
@@ -765,6 +765,7 @@ See what’s currently in there.
     scatc550aer
     scatc550lt1aer
     bscatc550aer
+    absc550aer
     absc550lt1aer
     ssa440aer
     ssa675aer
@@ -1209,7 +1210,6 @@ See what’s currently in there.
     
     Aliases
     .......
-    absc550aer = abs550aer
 
 
 As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
@@ -1315,6 +1315,7 @@ the method ``load_config(config_file)`` or the wrapper method
     scatc550aer
     scatc550lt1aer
     bscatc550aer
+    absc550aer
     absc550lt1aer
     ssa440aer
     ssa675aer
@@ -1759,7 +1760,6 @@ the method ``load_config(config_file)`` or the wrapper method
     
     Aliases
     .......
-    absc550aer = abs550aer
 
 
 The ``reload`` (and ``load_config``) method actually checks if the
@@ -1871,6 +1871,7 @@ choose valid paths, this should work.
     scatc550aer
     scatc550lt1aer
     bscatc550aer
+    absc550aer
     absc550lt1aer
     ssa440aer
     ssa675aer
@@ -2315,7 +2316,6 @@ choose valid paths, this should work.
     
     Aliases
     .......
-    absc550aer = abs550aer
 
 
 This is it! Note, however, that we just inserted the current directory
@@ -2419,6 +2419,7 @@ have to reload the config as it was at the beginning:
     scatc550aer
     scatc550lt1aer
     bscatc550aer
+    absc550aer
     absc550lt1aer
     ssa440aer
     ssa675aer
@@ -2863,7 +2864,6 @@ have to reload the config as it was at the beginning:
     
     Aliases
     .......
-    absc550aer = abs550aer
 
 
 Now with everything being set up correctly, we can start analysing the
@@ -2895,48 +2895,6 @@ find a unique ID and thus raise an Exception):
 
 .. parsed-literal::
 
-    2018-09-14 16:31:31,520:INFO:
-    Searching database for CAM*CTRL*
-    2018-09-14 16:31:31,623:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,795:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,800:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,804:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,809:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,813:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,817:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,821:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,827:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,831:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,835:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,859:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,864:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,869:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,873:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,877:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,881:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:31,885:INFO:
-    Checking if renamed directory exists
-
-
-.. parsed-literal::
-
     OSError("Found multiple matches for search pattern CAM*CTRL*. Please choose from ['CAMS_REANCTRL', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM4-Oslo_Vprelim.A2.CTRL', 'CAM5-MAM3-PNNL.A2.CTRL', 'CAM4-Oslo-Vcmip5online.A2.CTRL', 'CAM4-Oslo-Vcmip5.A2.CTRL', 'CAM4-Oslo-Vcmip5emi2000.A2.CTRL', 'CAM5.1-MAM3-PNNL.A2.CTRL', 'CAM3.A2.CTRL', 'CAM4-Oslo.A2.CTRL', 'BCC_AGCM2.0.1_CAM.A2.CTRL', 'ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD', 'ECMWF-IFS-CY43R1-CAMS-NITRATE-DEV_AP3-CTRL2016-PD', 'CAM5.4_CTRL2016', 'CAM5_CTRL2016', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']",)
 
 
@@ -2956,114 +2914,22 @@ data import since we know the model and run ID from the previous cell
 
 .. parsed-literal::
 
-    2018-09-14 16:31:31,980:INFO:
-    Searching database for CAM5.3-Oslo_CTRL2016
-    2018-09-14 16:31:32,235:INFO:
-    Checking if renamed directory exists
-    2018-09-14 16:31:32,237:INFO:
-    Found match for ID CAM5.3-Oslo_CTRL2016
-    2018-09-14 16:31:32,252:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2006_daily.nc
-    2018-09-14 16:31:32,253:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2008_daily.nc
-    2018-09-14 16:31:32,255:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,257:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2008_daily.nc
-    2018-09-14 16:31:32,259:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2008_daily.nc
-    2018-09-14 16:31:32,261:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,262:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,263:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2010_daily.nc
-    2018-09-14 16:31:32,265:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,267:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2006_daily.nc
-    2018-09-14 16:31:32,268:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2010_daily.nc
-    2018-09-14 16:31:32,270:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,271:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2006_daily.nc
-    2018-09-14 16:31:32,273:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,274:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,275:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2006_daily.nc
-    2018-09-14 16:31:32,276:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2010_daily.nc
-    2018-09-14 16:31:32,277:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,278:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,279:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,280:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2008_daily.nc
-    2018-09-14 16:31:32,281:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2010_daily.nc
-    2018-09-14 16:31:32,282:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2006_daily.nc
-    2018-09-14 16:31:32,282:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,283:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,284:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_daily.nc
-    2018-09-14 16:31:32,285:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,285:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,286:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,288:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2010_daily.nc
-    2018-09-14 16:31:32,288:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2008_daily.nc
-    2018-09-14 16:31:32,289:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2006_daily.nc
-    2018-09-14 16:31:32,289:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2008_daily.nc
-    2018-09-14 16:31:32,290:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2006_daily.nc
-    2018-09-14 16:31:32,290:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,291:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer3d_ModelLevel_2010_3hourly.nc
-    2018-09-14 16:31:32,291:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od870aer_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,291:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2006_3hourly.nc
-    2018-09-14 16:31:32,292:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
-    2018-09-14 16:31:32,292:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2008_daily.nc
-    2018-09-14 16:31:32,293:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aerh2o_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,293:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dryaer_Column_2008_daily.nc
-    2018-09-14 16:31:32,294:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2010_daily.nc
-    2018-09-14 16:31:32,294:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550lt1aer_Column_2006_daily.nc
-    2018-09-14 16:31:32,295:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,295:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_abs550aer_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,295:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,296:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_deltaz3d_ModelLevel_2010_3hourly.nc
-    2018-09-14 16:31:32,296:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od440aer_Column_2008_3hourly.nc
-    2018-09-14 16:31:32,297:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550dust_Column_2010_daily.nc
-    2018-09-14 16:31:32,297:DEBUG:
-    Read file /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_humidity3d_ModelLevel_2010_3hourly.nc
+    2018-09-20 15:31:37,233:WARNING:
+    No default configuration available for variable od550dryaer. Using DEFAULT settings
+    2018-09-20 15:31:37,495:WARNING:
+    No default configuration available for variable od550dryaer. Using DEFAULT settings
+    2018-09-20 15:31:37,742:WARNING:
+    No default configuration available for variable od550dryaer. Using DEFAULT settings
+    2018-09-20 15:31:37,858:WARNING:
+    No default configuration available for variable od550dryaer. Using DEFAULT settings
+    2018-09-20 15:31:38,251:WARNING:
+    No default configuration available for variable od550dryaer. Using DEFAULT settings
+    2018-09-20 15:31:38,560:WARNING:
+    No default configuration available for variable od550dryaer. Using DEFAULT settings
+    2018-09-20 15:31:38,784:WARNING:
+    No default configuration available for variable deltaz. Using DEFAULT settings
+    2018-09-20 15:31:38,928:WARNING:
+    No default configuration available for variable humidity. Using DEFAULT settings
 
 
 Okay, let’s see what is in there.
@@ -3099,24 +2965,16 @@ data object has to be accessed using the first index of the tuple.
 
 .. parsed-literal::
 
-    2018-09-14 16:31:32,345:DEBUG:
-    FOUND MATCH: aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc
-    2018-09-14 16:31:37,274:WARNING:
-    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: gauss weights / (1)                 (latitude: 192)
-    1: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
-    2018-09-14 16:31:37,281:WARNING:
+    2018-09-20 15:31:41,232:WARNING:
+    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
+    1: gauss weights / (1)                 (latitude: 192)
+    2018-09-20 15:31:41,236:WARNING:
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
-    2018-09-14 16:31:37,282:WARNING:
+    2018-09-20 15:31:41,237:WARNING:
     Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. 
-    2018-09-14 16:31:37,282:WARNING:
+    2018-09-20 15:31:41,237:WARNING:
     Attempting to correct time coordinate using information in file name
-    2018-09-14 16:31:37,808:INFO:
-    Rolling longitudes to -180 -> 180 definition
-    2018-09-14 16:31:37,813:INFO:
-    Applying temporal cropping of result cube
-    2018-09-14 16:31:37,814:INFO:
-    Cropping along time axis based on Timestamps
 
 
 Accessing the data and plotting a map
@@ -3358,7 +3216,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f5dfce3c978>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f2f5ed299e8>
 
 
 
