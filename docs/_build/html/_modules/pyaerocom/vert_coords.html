@@ -170,9 +170,11 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GEONUM_AVAILABLE</span>
-    
-<div class="viewcode-block" id="atmosphere_sigma_coordinate_to_pressure"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure">[docs]</a><span class="k">def</span> <span class="nf">atmosphere_sigma_coordinate_to_pressure</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">psurf</span><span class="p">,</span> <span class="n">ptop</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert atmosphere sigma coordinate to altitude in m</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">CoordinateNameError</span>
+<span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">BrowseDict</span>
+
+<div class="viewcode-block" id="atmosphere_sigma_coordinate_to_pressure"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure">[docs]</a><span class="k">def</span> <span class="nf">atmosphere_sigma_coordinate_to_pressure</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="n">ps</span><span class="p">,</span> <span class="n">ptop</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert atmosphere sigma coordinate to pressure in Pa</span>
 <span class="sd">    </span>
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -183,14 +185,19 @@
 <span class="sd">    </span>
 <span class="sd">    .. math::</span>
 <span class="sd">        </span>
-<span class="sd">        p(k) = p_{top} + \\sigma(k) \\cdot (p_{surf} - p_{top})</span>
+<span class="sd">        p(k) = p_{top} + \\sigma(k) \\cdot (p_{surface} - p_{top})</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sigma : ndarray</span>
 <span class="sd">        sigma coordinate (1D) array</span>
-<span class="sd">    psurf : :obj:`float` or :obj:`ndarray`</span>
+<span class="sd">    ps : :obj:`float` or :obj:`ndarray`</span>
 <span class="sd">        surface pressure (may be multidimensional). Note that it </span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        pressure levels in Pa</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ptop</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -198,7 +205,46 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid input for ptop. Need floating point</span><span class="se">\n</span><span class="s1">&#39;</span>
                              <span class="s1">&#39;Error: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">ptop</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="p">(</span><span class="n">psurf</span> <span class="o">-</span> <span class="n">ptop</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">ptop</span> <span class="o">+</span> <span class="n">sigma</span> <span class="o">*</span> <span class="p">(</span><span class="n">ps</span> <span class="o">-</span> <span class="n">ptop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="atmosphere_hybrid_sigma_pressure_coordinate_to_pressure"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.atmosphere_hybrid_sigma_pressure_coordinate_to_pressure">[docs]</a><span class="k">def</span> <span class="nf">atmosphere_hybrid_sigma_pressure_coordinate_to_pressure</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">ps</span><span class="p">,</span> <span class="n">p0</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert atmosphere_hybrid_sigma_pressure_coordinate to  pressure in Pa</span>
+<span class="sd">    </span>
+<span class="sd">    **Formula**:</span>
+<span class="sd">        </span>
+<span class="sd">    Either</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        </span>
+<span class="sd">        p(k) = a(k) \\cdot p_0 + b(k) \\cdot p_{surface}</span>
+<span class="sd">        </span>
+<span class="sd">    or</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        </span>
+<span class="sd">        p(k) = ap(k) + b(k) \\cdot p_{surface}</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a : ndarray</span>
+<span class="sd">        sigma level values (a(k) in formula 1, and ap(k) in formula 2)</span>
+<span class="sd">    b : ndarray</span>
+<span class="sd">        dimensionless fraction per level (must be same length as a)</span>
+<span class="sd">    ps : float</span>
+<span class="sd">        surface pressure</span>
+<span class="sd">    p0 : reference pressure (only relevant for alternative formula 1)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        pressure levels in Pa</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid input: a and b must have the same length&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">ps</span>
+    <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">p0</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">ps</span></div>
 
 <div class="viewcode-block" id="pressure2altitude"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.pressure2altitude">[docs]</a><span class="k">def</span> <span class="nf">pressure2altitude</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;General formula to convert atm. pressure to altitude</span>
@@ -240,6 +286,94 @@
     <span class="kn">from</span> <span class="nn">geonum</span> <span class="k">import</span> <span class="n">atmosphere</span> <span class="k">as</span> <span class="n">atm</span>
     <span class="k">return</span> <span class="n">atm</span><span class="o">.</span><span class="n">pressure2altitude</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="supported"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.supported">[docs]</a><span class="k">def</span> <span class="nf">supported</span><span class="p">(</span><span class="n">standard_name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">standard_name</span> <span class="ow">in</span> <span class="n">VerticalCoordinate</span><span class="o">.</span><span class="n">_FUNS</span> <span class="k">else</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="VerticalCoordinate"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.VerticalCoordinate">[docs]</a><span class="k">class</span> <span class="nc">VerticalCoordinate</span><span class="p">(</span><span class="n">BrowseDict</span><span class="p">):</span>
+    <span class="n">_FUNS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">atmosphere_sigma_coordinate</span><span class="o">=</span>
+        <span class="n">atmosphere_sigma_coordinate_to_pressure</span><span class="p">,</span>
+        <span class="n">atmosphere_hybrid_sigma_pressure_coordinate</span><span class="o">=</span>
+        <span class="n">atmosphere_hybrid_sigma_pressure_coordinate_to_pressure</span><span class="p">)</span>
+    
+    <span class="n">_ARG_NAMES</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">atmosphere_sigma_coordinate</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lev&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">],</span>
+                                         <span class="n">ps</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">],</span>
+                                         <span class="n">ptop</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ptop&#39;</span><span class="p">]),</span>
+        <span class="n">atmosphere_hybrid_sigma_pressure_coordinate</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;lev&#39;</span><span class="p">],</span>
+                                                         <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">],</span>
+                                                         <span class="n">ps</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ps&#39;</span><span class="p">],</span>
+                                                         <span class="n">p0</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;p0&#39;</span><span class="p">]))</span>
+    
+    <span class="n">_LEV_INCREASES_WITH_ALT</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">atmosphere_sigma_coordinate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">atmosphere_hybrid_sigma_pressure_coordinate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FUNS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid name for vertical coordinate&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function used to convert levels into pressure&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FUNS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">arg_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Valid argument names for :func:`fun`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ARG_NAMES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lev_increases_with_alt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Boolean specifying whether coordinate levels increase or decrease with altitude&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_LEV_INCREASES_WITH_ALT</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="VerticalCoordinate.calc_pressure"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.VerticalCoordinate.calc_pressure">[docs]</a>    <span class="k">def</span> <span class="nf">calc_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute pressure levels for input vertical coordinate</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        standard_name : str</span>
+<span class="sd">            standard name of vertical coordinate</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional  keyword args required for computation of pressure</span>
+<span class="sd">            levels (cf. :attr:`_FUNS` and corresponding inputs for method </span>
+<span class="sd">            available)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            pressure levels in Pa</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">VARS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CoordinateNameError</span><span class="p">(</span><span class="s1">&#39;Invalid standard name: </span><span class="si">{}</span><span class="s1">. Supported &#39;</span>
+                                      <span class="s1">&#39;coordinate names are: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                              <span class="bp">self</span><span class="o">.</span><span class="n">VARS</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="n">coord_values</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_FUNS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">](</span><span class="n">coord_values</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="VerticalCoordinate.calc_altitude"><a class="viewcode-back" href="../../api.html#pyaerocom.vert_coords.VerticalCoordinate.calc_altitude">[docs]</a>    <span class="k">def</span> <span class="nf">calc_altitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute altitude for input vertical coordinates</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        standard_name : str</span>
+<span class="sd">            standard name of vertical coordinate</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional  keyword args required for computation of pressure</span>
+<span class="sd">            levels (cf. :attr:`_FUNS` and corresponding inputs for method </span>
+<span class="sd">            available)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            pressure levels in Pa</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pressure2altitude</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_pressure</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div></div>
+        
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
     

@@ -247,12 +247,9 @@
 <p>Pyaerocom GriddedData class</p>
 <dl class="class">
 <dt id="pyaerocom.griddeddata.GriddedData">
-<em class="property">class </em><code class="descclassname">pyaerocom.griddeddata.</code><code class="descname">GriddedData</code><span class="sig-paren">(</span><em>input=None</em>, <em>var_name=None</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.griddeddata.</code><code class="descname">GriddedData</code><span class="sig-paren">(</span><em>input=None</em>, <em>var_name=None</em>, <em>convert_unit_on_init=True</em>, <em>**suppl_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class representing model data</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<p>Add support for
-This class is largely based on the <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.Cube</span></code> object. However, this
+<p>This class is largely based on the <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.Cube</span></code> object. However, this
 object comes with an expanded functionality for convenience, for instance,
 netCDF files can directly be loaded in the <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code></a> object,
 whereas <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> instances are typically created using
@@ -262,11 +259,10 @@ helper methods such as</p>
 instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">Cube</span></code> objects, one for each variable) or</p>
 <p>2. <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.load_cube()</span></code> which directly returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code>
 instance and typically requires specification of a variable constraint.</p>
-<p class="last">The <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code></a> object represents one variable in space and time, as
-well as corresponding meta information. Since it is based on the
+<p>The <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code></a> object represents one variable in space and time, as
+well as corresponding meta information. Since it is based on the <a class="reference external" href="https://github.com/SciTools/iris/issues/1977">https://github.com/SciTools/iris/issues/1977</a>
 <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> it is optimised for netCDF files that follow the
 CF conventions and may not work for files that do not follow this standard.</p>
-</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -319,6 +315,24 @@ the metadata representation of the underlying data object)</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.COORDS_ORDER_TSERIES">
+<code class="descname">COORDS_ORDER_TSERIES</code><em class="property"> = ['time', 'latitude', 'longitude']</em><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.COORDS_ORDER_TSERIES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Req. order of dimension coordinates for time-series computation</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.unit">
+<code class="descname">unit</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unit of data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.var_info">
+<code class="descname">var_info</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.var_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print information about variable</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.griddeddata.GriddedData.ts_type">
 <code class="descname">ts_type</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.ts_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Temporal resolution</p>
@@ -328,6 +342,12 @@ the metadata representation of the underlying data object)</p>
 <dt id="pyaerocom.griddeddata.GriddedData.TS_TYPES">
 <code class="descname">TS_TYPES</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.TS_TYPES" title="Permalink to this definition">¶</a></dt>
 <dd><p>List with valid filename encryptions specifying temporal resolution</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.from_files">
+<code class="descname">from_files</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.from_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of file paths from which this data object was created</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -409,6 +429,16 @@ method simply returns <a class="reference internal" href="#pyaerocom.griddeddata
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.lon_res">
+<code class="descname">lon_res</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.lon_res" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.lat_res">
+<code class="descname">lat_res</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.lat_res" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.griddeddata.GriddedData.ndim">
 <code class="descname">ndim</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.ndim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of dimensions</p>
@@ -423,6 +453,12 @@ method simply returns <a class="reference internal" href="#pyaerocom.griddeddata
 <dl class="attribute">
 <dt id="pyaerocom.griddeddata.GriddedData.coord_names">
 <code class="descname">coord_names</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.coord_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>List containing coordinate names</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.griddeddata.GriddedData.dimcoord_names">
+<code class="descname">dimcoord_names</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.dimcoord_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>List containing coordinate names</p>
 </dd></dl>
 
@@ -457,6 +493,12 @@ if <cite>input</cite> is preloaded Cube</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.convert_unit">
+<code class="descname">convert_unit</code><span class="sig-paren">(</span><em>new_unit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.convert_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.convert_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert unit of data to new unit</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyaerocom.griddeddata.GriddedData.time_stamps">
 <code class="descname">time_stamps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.time_stamps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.time_stamps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert time stamps into list of numpy datetime64 objects</p>
@@ -474,81 +516,77 @@ if <cite>input</cite> is preloaded Cube</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.griddeddata.GriddedData.crop_around_coord">
-<code class="descname">crop_around_coord</code><span class="sig-paren">(</span><em>lon</em>, <em>lat</em>, <em>step_deg=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.crop_around_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.crop_around_coord" title="Permalink to this definition">¶</a></dt>
-<dd><p>Crop cube around a single lon / lat coordinate</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>lon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – longitude of coordinate</li>
-<li><strong>lat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – latitude of coordinate</li>
-<li><strong>step_deg</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – </li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="pyaerocom.griddeddata.GriddedData.check_coord_order">
 <code class="descname">check_coord_order</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.check_coord_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.check_coord_order" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper for <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.check_dimcoords_order" title="pyaerocom.griddeddata.GriddedData.check_dimcoords_order"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_dimcoords_order()</span></code></a></p>
+<dd><p>Wrapper for <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.check_dimcoords_tseries" title="pyaerocom.griddeddata.GriddedData.check_dimcoords_tseries"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_dimcoords_tseries()</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.griddeddata.GriddedData.check_dimcoords_order">
-<code class="descname">check_dimcoords_order</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.check_dimcoords_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.check_dimcoords_order" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.griddeddata.GriddedData.to_timeseries_iter_coords">
-<code class="descname">to_timeseries_iter_coords</code><span class="sig-paren">(</span><em>sample_points</em>, <em>scheme</em>, <em>collapse_scalar</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_timeseries_iter_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_timeseries_iter_coords" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract time-series for provided input coordinates (lon, lat)</p>
-<p>Other than <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.to_time_series" title="pyaerocom.griddeddata.GriddedData.to_time_series"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_time_series()</span></code></a>, this method extracts the time-series
-at all input coordinates by iterating over the coordinate locations,
-cropping the grid around the coordinate and then interpolating it using
-the provided interpolation scheme.</p>
-<p>This method may be faster for a small number of coordinates (compared
-to <code class="xref py py-func docutils literal notranslate"><span class="pre">to_timeseries()</span></code>). It may also be the better choice in case the
-number of coordinates is too large in which case <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.to_time_series" title="pyaerocom.griddeddata.GriddedData.to_time_series"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_time_series()</span></code></a>
-may fail due to a MemoryError (i.e. the case where the final
-interpolated object is too large to fit into memory).</p>
+<dt id="pyaerocom.griddeddata.GriddedData.check_dimcoords_tseries">
+<code class="descname">check_dimcoords_tseries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.check_dimcoords_tseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.check_dimcoords_tseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check order of dimension coordinates for time series retrieval</p>
+<p>For computation of time series at certain lon / lat coordinates, the
+data dimensions have to be in a certain order specified by
+<a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.COORDS_ORDER_TSERIES" title="pyaerocom.griddeddata.GriddedData.COORDS_ORDER_TSERIES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">COORDS_ORDER_TSERIES</span></code></a>.</p>
+<p>This method checks the current order (and dimensionality) of data and
+raises appropriate errors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sample_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – coordinates (e.g. lon / lat) at which time series is supposed to be
-retrieved</li>
-<li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
-<li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
-<li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
-coordinates (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">NDimError</span></code> – if dimension of data is not supported (currently, 3D or 4D data
+is supported)</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">DimensionOrderError</span></code> – if dimensions are not in the right order (in which case
+<a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.reorder_dimensions_tseries" title="pyaerocom.griddeddata.GriddedData.reorder_dimensions_tseries"><code class="xref py py-func docutils literal notranslate"><span class="pre">reorder_dimensions_tseries()</span></code></a> may be used to catch the
+Exception)</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of result dictionaries for each coordinate. Dictionary keys
-are: <code class="docutils literal notranslate"><span class="pre">longitude,</span> <span class="pre">latitude,</span> <span class="pre">var_name</span></code></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
 </td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.reorder_dimensions_tseries">
+<code class="descname">reorder_dimensions_tseries</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.reorder_dimensions_tseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.reorder_dimensions_tseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reorders dimensions of data such that <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.to_time_series" title="pyaerocom.griddeddata.GriddedData.to_time_series"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_time_series()</span></code></a> works</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.transpose">
+<code class="descname">transpose</code><span class="sig-paren">(</span><em>new_order</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.transpose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-order data dimensions in object</p>
+<p>Wrapper for <code class="xref py py-func docutils literal notranslate"><span class="pre">iris.cube.Cube.transpoe()</span></code></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Changes THIS object (i.e. no new instance of <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code></a> will
+be created)</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – new index order</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.get_altitude">
+<code class="descname">get_altitude</code><span class="sig-paren">(</span><em>coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.get_altitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.get_altitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract (or try to compute) altitude values at input coordinates</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyaerocom.griddeddata.GriddedData.to_time_series">
-<code class="descname">to_time_series</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_time_series" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_time_series</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em>, <em>vert_scheme=None</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_time_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract time-series for provided input coordinates (lon, lat)</p>
 <p>Extract time series for each lon / lat coordinate in this cube or at
 predefined sample points (e.g. station data). If sample points are
 provided, the cube is interpolated first onto the sample points.</p>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-0">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check Memory error handle</p>
 </div>
@@ -561,6 +599,17 @@ provided, the cube is interpolated first onto the sample points.</p>
 retrieved</li>
 <li><strong>scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em> or </em><em>iris interpolator object</em>) – interpolation scheme (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
 <li><strong>collapse_scalar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li><strong>vert_scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying how to treat vertical coordinates. This is only
+relevant for data that contains vertical levels. It will be ignored
+otherwise. Note that if the input coordinate specifications contain
+altitude information, this parameter will be set automatically to
+‘altitude’. Allowed inputs are all data collapse schemes that
+are supported by <a class="reference internal" href="#pyaerocom.helpers.str_to_iris" title="pyaerocom.helpers.str_to_iris"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.helpers.str_to_iris()</span></code></a> (e.g. <cite>mean,
+median, sum</cite>). Further valid schemes are <cite>altitude, surface,
+profile</cite>.
+If not other specified and if <cite>altitude</cite> coordinates are provided
+via sample_points (or <a href="#id1"><span class="problematic" id="id2">**</span></a>coords parameters) then, vert_scheme will
+be set to <cite>altitude</cite>. Else, <cite>profile</cite> is used.</li>
 <li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
 coordinates (for details, see <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="pyaerocom.griddeddata.GriddedData.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a>)</li>
 </ul>
@@ -581,6 +630,10 @@ are: <code class="docutils literal notranslate"><span class="pre">longitude,</sp
 <dt id="pyaerocom.griddeddata.GriddedData.to_time_series_single_coord">
 <code class="descname">to_time_series_single_coord</code><span class="sig-paren">(</span><em>latitude</em>, <em>longitude</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_time_series_single_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_time_series_single_coord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make time series dictionary of single location using neirest coordinate</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Crop before extraction</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -692,6 +745,63 @@ the <code class="xref py py-class docutils literal notranslate"><span class="pre
 </dd></dl>
 
 <dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.aerocom_filename">
+<code class="descname">aerocom_filename</code><span class="sig-paren">(</span><em>at_stations=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.aerocom_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.aerocom_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filename of data following Aerocom 3 conventions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>at_stations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – if True, then AtStations string will be included in filename</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">generated file name based on what is in this object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.compute_at_stations_file">
+<code class="descname">compute_at_stations_file</code><span class="sig-paren">(</span><em>stat_lats=None</em>, <em>stat_lons=None</em>, <em>out_dir=None</em>, <em>savename=None</em>, <em>obs_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.compute_at_stations_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.compute_at_stations_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and saves new netcdf file at input lat / lon coordinates</p>
+<p>This method can be used to reduce the size of too large grid files.
+It reduces the lon / lat dimensionality corresponding to the locations
+of the input lat / lon coordinates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stat_lats</strong> – </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.griddeddata.GriddedData.to_netcdf">
+<code class="descname">to_netcdf</code><span class="sig-paren">(</span><em>out_dir</em>, <em>savename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_netcdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save as netcdf file</p>
+<dl class="docutils">
+<dt>out_dir <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>output direcory (must exist)</dd>
+<dt>savename <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional</span></dt>
+<dd>name of file. If None, <a class="reference internal" href="#pyaerocom.griddeddata.GriddedData.aerocom_filename" title="pyaerocom.griddeddata.GriddedData.aerocom_filename"><code class="xref py py-func docutils literal notranslate"><span class="pre">aerocom_filename()</span></code></a> is used</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">file path</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyaerocom.griddeddata.GriddedData.interpolate">
 <code class="descname">interpolate</code><span class="sig-paren">(</span><em>sample_points=None</em>, <em>scheme='nearest'</em>, <em>collapse_scalar=True</em>, <em>**coords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.interpolate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolate cube at certain discrete points</p>
@@ -699,7 +809,7 @@ the <code class="xref py py-class docutils literal notranslate"><span class="pre
 details <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.10.0/iris/iris/cube.html#iris.cube.Cube.interpolate">see here</a></p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The input coordinates may also be provided using the input arg <a href="#id1"><span class="problematic" id="id2">**</span></a>coords
+<p class="last">The input coordinates may also be provided using the input arg <a href="#id3"><span class="problematic" id="id4">**</span></a>coords
 which provides a more intuitive option (e.g. input
 <code class="docutils literal notranslate"><span class="pre">(sample_points=[(&quot;longitude&quot;,</span> <span class="pre">[10,</span> <span class="pre">20]),</span> <span class="pre">(&quot;latitude&quot;,</span> <span class="pre">[1,</span> <span class="pre">2])])</span></code>
 is the same as input
@@ -718,7 +828,7 @@ object, see <code class="xref py py-func docutils literal notranslate"><span cla
 resulting cube. Default is True.</li>
 <li><strong>**coords</strong> – additional keyword args that may be used to provide the interpolation
 coordinates in an easier way than using the <code class="docutils literal notranslate"><span class="pre">Cube</span></code> argument
-<a href="#id3"><span class="problematic" id="id4">:arg:`sample_points``</span></a>. May also be a combination of both.</li>
+<a href="#id5"><span class="problematic" id="id6">:arg:`sample_points``</span></a>. May also be a combination of both.</li>
 </ul>
 </td>
 </tr>
@@ -1025,6 +1135,12 @@ index of this variable in data numpy array (in column specified by
 </dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.ungriddeddata.UngriddedData.altitude">
+<code class="descname">altitude</code><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.altitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alttudes of stations</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.station_name">
 <code class="descname">station_name</code><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.station_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latitudes of data</p>
@@ -1056,6 +1172,11 @@ latter is used.</td>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.ungriddeddata.UngriddedData.to_gridded_data">
+<code class="descname">to_gridded_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.to_gridded_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.to_gridded_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.to_timeseries">
@@ -1514,9 +1635,9 @@ datasets that were compared</p>
 <li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – Collocated data. If str, then it is attempted to be loaded from file.
 Else, it is assumed that data is numpy array and that all further
 supplementary inputs (e.g. coords, dims) for the
-instantiation of <code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code> is provided via <a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs. I</li>
+instantiation of <code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code> is provided via <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs. I</li>
 <li><strong>**kwargs</strong> – Additional keyword args that are passed to init of <code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code>
-in case input <a href="#id7"><span class="problematic" id="id8">:arg:`data`</span></a> is numpy array.</li>
+in case input <a href="#id9"><span class="problematic" id="id10">:arg:`data`</span></a> is numpy array.</li>
 </ul>
 </td>
 </tr>
@@ -2031,6 +2152,24 @@ must be list or array and must have the same length as attribute
 <dd><p><em>list</em> – array of values</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt>
+<code class="descname">data</code></dt>
+<dd><p>Array containing data values corresponding to data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.vertical_profile.VerticalProfile.altitude">
+<code class="descname">altitude</code><a class="headerlink" href="#pyaerocom.vertical_profile.VerticalProfile.altitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array containing altitude values corresponding to data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.vertical_profile.VerticalProfile.compute_altitude">
+<code class="descname">compute_altitude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vertical_profile.html#VerticalProfile.compute_altitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vertical_profile.VerticalProfile.compute_altitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute altitude based on vertical coorinate information</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -2039,9 +2178,25 @@ must be list or array and must have the same length as attribute
 <h2>Collocation of data<a class="headerlink" href="#collocation-of-data" title="Permalink to this headline">¶</a></h2>
 <p>This module contains collocation methods (cf. <code class="xref py py-class docutils literal notranslate"><span class="pre">CollocatedData</span></code>)</p>
 <span class="target" id="module-pyaerocom.collocation"></span><p>Methods and / or classes to perform collocation</p>
+<dl class="class">
+<dt id="pyaerocom.collocation.Collocator">
+<em class="property">class </em><code class="descclassname">pyaerocom.collocation.</code><code class="descname">Collocator</code><span class="sig-paren">(</span><em>data_ref</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#Collocator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.Collocator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper / factory class for performing collocation of data</p>
+<dl class="attribute">
+<dt id="pyaerocom.collocation.Collocator.SUPPORTED">
+<code class="descname">SUPPORTED</code><em class="property"> = (&lt;class 'pyaerocom.griddeddata.GriddedData'&gt;, &lt;class 'pyaerocom.ungriddeddata.UngriddedData'&gt;)</em><a class="headerlink" href="#pyaerocom.collocation.Collocator.SUPPORTED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.collocation.Collocator.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>data</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>**add_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#Collocator.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.Collocator.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="pyaerocom.collocation.collocate_gridded_gridded">
-<code class="descclassname">pyaerocom.collocation.</code><code class="descname">collocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type='yearly'</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>**regrid_opts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#collocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.collocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.collocation.</code><code class="descname">collocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>regrid_scheme='areaweighted'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#collocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.collocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collocate 2 gridded data objects</p>
 <div class="admonition-todo admonition" id="index-7">
 <p class="first admonition-title">Todo</p>
@@ -2051,11 +2206,12 @@ must be list or array and must have the same length as attribute
 
 <dl class="function">
 <dt id="pyaerocom.collocation.collocate_gridded_ungridded_2D">
-<code class="descclassname">pyaerocom.collocation.</code><code class="descname">collocate_gridded_ungridded_2D</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>ungridded_data</em>, <em>ts_type='daily'</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>var_ref=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#collocate_gridded_ungridded_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.collocate_gridded_ungridded_2D" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.collocation.</code><code class="descname">collocate_gridded_ungridded_2D</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>ungridded_data</em>, <em>ts_type='daily'</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>var_ref=None</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#collocate_gridded_ungridded_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.collocate_gridded_ungridded_2D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collocate gridded with ungridded data of 2D data</p>
 <p>2D means, that the vertical direction is only sampled at one altitude or
 the variable is of integrated nature (or averaged) so that the dimensionality
-of the data is reduced to lon lat and time</p>
+of the grid data is (or can be -&gt; cf. input parameter <cite>vert_scheme</cite>)
+reduced to dimensionality time, lat, lon.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Uses the variable that is contained in input <code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code> object
@@ -2082,6 +2238,12 @@ stations at altitudes exceeding 1000 m.</li>
 <li><strong>var_ref</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable against which data in <code class="xref py py-attr docutils literal notranslate"><span class="pre">gridded_data</span></code> is supposed to be
 compared. If None, then the same variable is used
 (i.e. <cite>gridded_data.var_name</cite>).</li>
+<li><strong>vert_scheme</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying scheme used to reduce the dimensionality in case
+input grid data contains vertical dimension. Example schemes are
+<cite>mean, surface, altitude</cite>, for details see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">GriddedData.to_time_series()</span></code>.</li>
+<li><strong>**kwargs</strong> – additional keyword args (not used here, but included such that factory
+class can handle different methods with different inputs)</li>
 </ul>
 </td>
 </tr>
@@ -2236,7 +2398,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7fb3f9e93620&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7fba66777620&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2274,13 +2436,6 @@ identified from the filenames in the data directory</p>
 
 <dl class="attribute">
 <dt>
-<code class="descname">vars</code><em class="property"> = None</em></dt>
-<dd><p>List of unique Aerocom variable names that were identified from
-the filenames in the data directory</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
 <code class="descname">years</code><em class="property"> = None</em></dt>
 <dd><p>List of unique years that were
 identified from the filenames in the data directory</p>
@@ -2306,6 +2461,11 @@ private attribute <code class="xref py py-attr docutils literal notranslate"><sp
 <code class="descname">browser</code><em class="property"> = None</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.browser" title="Permalink to this definition">¶</a></dt>
 <dd><p>This object can be used to</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">vars</code></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.vars_provided">
@@ -3402,7 +3562,7 @@ all variables in <a class="reference internal" href="#pyaerocom.io.readaeronetba
 <dt id="pyaerocom.io.readaeronetbase.ReadAeronetBase.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.readaeronetbase.ReadAeronetBase.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.readaeronetbase.ReadAeronetBase.get_file_list" title="pyaerocom.io.readaeronetbase.ReadAeronetBase.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id9"><span class="problematic" id="id10">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id11"><span class="problematic" id="id12">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3528,7 +3688,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7fb3f9e932f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7fba667772f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fba66777378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -3810,7 +3970,7 @@ in the list is used</li>
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_file_list" title="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id11"><span class="problematic" id="id12">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id13"><span class="problematic" id="id14">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -3929,7 +4089,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7fb3f9e932f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fb3f9e93488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fb3f9e93510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7fba667772f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fba66777378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fba66777488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fba66777510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4204,7 +4364,7 @@ in the list is used</li>
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.get_file_list" title="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id13"><span class="problematic" id="id14">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id15"><span class="problematic" id="id16">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -4335,7 +4495,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7fb3f9e93400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7fba66777400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fba66777378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4637,7 +4797,7 @@ in the list is used</li>
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.get_file_list" title="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id15"><span class="problematic" id="id16">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id17"><span class="problematic" id="id18">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -4759,7 +4919,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7fb3f9e932f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7fba667772f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fba66777378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5037,7 +5197,7 @@ in the list is used</li>
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.get_file_list" title="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id17"><span class="problematic" id="id18">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id19"><span class="problematic" id="id20">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -5157,7 +5317,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fb3f9e93488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fb3f9e93510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7fba66777378&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7fba66777488&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7fba66777510&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5435,7 +5595,7 @@ in the list is used</li>
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.get_file_list" title="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id19"><span class="problematic" id="id20">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id21"><span class="problematic" id="id22">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -5551,7 +5711,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7fb3f9e93400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fb3f9e93378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7fba66777400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7fba66777378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5865,7 +6025,7 @@ in the list is used</li>
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.get_file_list" title="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id21"><span class="problematic" id="id22">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id23"><span class="problematic" id="id24">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -6179,7 +6339,7 @@ in their filename)</td>
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list" title="pyaerocom.io.read_earlinet.ReadEarlinet.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id23"><span class="problematic" id="id24">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id25"><span class="problematic" id="id26">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -6560,7 +6720,7 @@ in their filename)</td>
 <dt id="pyaerocom.io.read_ebas.ReadEbas.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.read_ebas.ReadEbas.get_file_list" title="pyaerocom.io.read_ebas.ReadEbas.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id25"><span class="problematic" id="id26">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id27"><span class="problematic" id="id28">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -6943,7 +7103,7 @@ to read all files from this station into data object.</p>
 <dt id="pyaerocom.io.readungriddedbase.ReadUngriddedBase.read_first_file">
 <code class="descname">read_first_file</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungriddedbase.html#ReadUngriddedBase.read_first_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBase.read_first_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read first file returned from <a class="reference internal" href="#pyaerocom.io.readungriddedbase.ReadUngriddedBase.get_file_list" title="pyaerocom.io.readungriddedbase.ReadUngriddedBase.get_file_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_file_list()</span></code></a></p>
-<p>This method may be used for test purposes. It calls :func:<a href="#id27"><span class="problematic" id="id28">`</span></a>get</p>
+<p>This method may be used for test purposes. It calls :func:<a href="#id29"><span class="problematic" id="id30">`</span></a>get</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -7815,7 +7975,7 @@ accessed from this class instance)</p>
 <p>Low level classes and methods for io</p>
 <dl class="class">
 <dt id="pyaerocom.io.fileconventions.FileConventionRead">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.fileconventions.</code><code class="descname">FileConventionRead</code><span class="sig-paren">(</span><em>name='aerocom3'</em>, <em>file_sep=''</em>, <em>year_pos=None</em>, <em>var_pos=None</em>, <em>ts_pos=None</em>, <em>vert_pos=None</em>, <em>from_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.fileconventions.</code><code class="descname">FileConventionRead</code><span class="sig-paren">(</span><em>name='aerocom3'</em>, <em>file_sep=''</em>, <em>year_pos=None</em>, <em>var_pos=None</em>, <em>ts_pos=None</em>, <em>vert_pos=None</em>, <em>name_pos=None</em>, <em>from_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/fileconventions.html#FileConventionRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.fileconventions.FileConventionRead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class that represents a file naming convention for reading Aerocom files</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.fileconventions.FileConventionRead.name">
@@ -8259,11 +8419,6 @@ found (e.g. available variables, years, etc.)</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyaerocom.io.helpers.find_vars_around_wavelength">
-<code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">find_vars_around_wavelength</code><span class="sig-paren">(</span><em>var_list</em>, <em>wvl=440</em>, <em>pattern='od*aer'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#find_vars_around_wavelength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.find_vars_around_wavelength" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="pyaerocom.io.helpers.get_obsnetwork_dir">
 <code class="descclassname">pyaerocom.io.helpers.</code><code class="descname">get_obsnetwork_dir</code><span class="sig-paren">(</span><em>obs_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/helpers.html#get_obsnetwork_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.helpers.get_obsnetwork_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns data path for obsnetwork ID</p>
@@ -8602,24 +8757,63 @@ etc.)</p>
 <div><a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html">http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html</a></div></blockquote>
 <dl class="function">
 <dt id="pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure">
-<code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">atmosphere_sigma_coordinate_to_pressure</code><span class="sig-paren">(</span><em>sigma</em>, <em>psurf</em>, <em>ptop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#atmosphere_sigma_coordinate_to_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert atmosphere sigma coordinate to altitude in m</p>
+<code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">atmosphere_sigma_coordinate_to_pressure</code><span class="sig-paren">(</span><em>sigma</em>, <em>ps</em>, <em>ptop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#atmosphere_sigma_coordinate_to_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.atmosphere_sigma_coordinate_to_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert atmosphere sigma coordinate to pressure in Pa</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>This formula only works at one lon lat coordinate and at one instant in
 time.</p>
 <p><strong>Formula</strong>:</p>
 <div class="last math notranslate nohighlight">
-\[p(k) = p_{top} + \sigma(k) \cdot (p_{surf} - p_{top})\]</div>
+\[p(k) = p_{top} + \sigma(k) \cdot (p_{surface} - p_{top})\]</div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>sigma</strong> (<em>ndarray</em>) – sigma coordinate (1D) array</li>
-<li><strong>psurf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – surface pressure (may be multidimensional). Note that it</li>
+<li><strong>ps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code>) – surface pressure (may be multidimensional). Note that it</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pressure levels in Pa</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.vert_coords.atmosphere_hybrid_sigma_pressure_coordinate_to_pressure">
+<code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">atmosphere_hybrid_sigma_pressure_coordinate_to_pressure</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>ps</em>, <em>p0=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#atmosphere_hybrid_sigma_pressure_coordinate_to_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.atmosphere_hybrid_sigma_pressure_coordinate_to_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert atmosphere_hybrid_sigma_pressure_coordinate to  pressure in Pa</p>
+<p><strong>Formula</strong>:</p>
+<p>Either</p>
+<div class="math notranslate nohighlight">
+\[p(k) = a(k) \cdot p_0 + b(k) \cdot p_{surface}\]</div>
+<p>or</p>
+<div class="math notranslate nohighlight">
+\[p(k) = ap(k) + b(k) \cdot p_{surface}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> (<em>ndarray</em>) – sigma level values (a(k) in formula 1, and ap(k) in formula 2)</li>
+<li><strong>b</strong> (<em>ndarray</em>) – dimensionless fraction per level (must be same length as a)</li>
+<li><strong>ps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – surface pressure</li>
+<li><strong>p0</strong> (<em>reference pressure</em><em> (</em><em>only relevant for alternative formula 1</em><em>)</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pressure levels in Pa</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
 </td>
 </tr>
 </tbody>
@@ -8665,6 +8859,86 @@ time.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.vert_coords.supported">
+<code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">supported</code><span class="sig-paren">(</span><em>standard_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#supported"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.supported" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="pyaerocom.vert_coords.VerticalCoordinate">
+<em class="property">class </em><code class="descclassname">pyaerocom.vert_coords.</code><code class="descname">VerticalCoordinate</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#VerticalCoordinate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.VerticalCoordinate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="pyaerocom.vert_coords.VerticalCoordinate.fun">
+<code class="descname">fun</code><a class="headerlink" href="#pyaerocom.vert_coords.VerticalCoordinate.fun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function used to convert levels into pressure</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.vert_coords.VerticalCoordinate.arg_names">
+<code class="descname">arg_names</code><a class="headerlink" href="#pyaerocom.vert_coords.VerticalCoordinate.arg_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Valid argument names for <a class="reference internal" href="#pyaerocom.vert_coords.VerticalCoordinate.fun" title="pyaerocom.vert_coords.VerticalCoordinate.fun"><code class="xref py py-func docutils literal notranslate"><span class="pre">fun()</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.vert_coords.VerticalCoordinate.lev_increases_with_alt">
+<code class="descname">lev_increases_with_alt</code><a class="headerlink" href="#pyaerocom.vert_coords.VerticalCoordinate.lev_increases_with_alt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean specifying whether coordinate levels increase or decrease with altitude</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.vert_coords.VerticalCoordinate.calc_pressure">
+<code class="descname">calc_pressure</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#VerticalCoordinate.calc_pressure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.VerticalCoordinate.calc_pressure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute pressure levels for input vertical coordinate</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>standard_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – standard name of vertical coordinate</li>
+<li><strong>**kwargs</strong> – additional  keyword args required for computation of pressure
+levels (cf. <code class="xref py py-attr docutils literal notranslate"><span class="pre">_FUNS</span></code> and corresponding inputs for method
+available)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pressure levels in Pa</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.vert_coords.VerticalCoordinate.calc_altitude">
+<code class="descname">calc_altitude</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/vert_coords.html#VerticalCoordinate.calc_altitude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.vert_coords.VerticalCoordinate.calc_altitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute altitude for input vertical coordinates</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>standard_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – standard name of vertical coordinate</li>
+<li><strong>**kwargs</strong> – additional  keyword args required for computation of pressure
+levels (cf. <code class="xref py py-attr docutils literal notranslate"><span class="pre">_FUNS</span></code> and corresponding inputs for method
+available)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pressure levels in Pa</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -9455,6 +9729,12 @@ where either <code class="docutils literal notranslate"><span class="pre">data</
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.mathutils.closest_index">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">closest_index</code><span class="sig-paren">(</span><em>num_array</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#closest_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.closest_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns index in number array that is closest to input value</p>
 </dd></dl>
 
 <dl class="function">

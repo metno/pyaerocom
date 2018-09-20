@@ -164,8 +164,8 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.station</span> <span class="k">import</span> <span class="n">Station</span>
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">VerticalProfile</span>
-<span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">list_to_shortstr</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">VerticalProfile</span><span class="p">,</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">list_to_shortstr</span><span class="p">,</span> <span class="n">BrowseDict</span>
 
 <div class="viewcode-block" id="StationData"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData">[docs]</a><span class="k">class</span> <span class="nc">StationData</span><span class="p">(</span><span class="n">Station</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Dict-like base class for single station data</span>
@@ -194,6 +194,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;latitude&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">,</span> 
                              <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="s1">&#39;altitude&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">dtime</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">instrument_name</span><span class="o">=</span><span class="kc">None</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">StationData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -271,6 +272,9 @@
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Variable </span><span class="si">{}</span><span class="s2"> does not exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_dtime</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Data is already instance of pandas.Series&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Multi-dimensional data columns cannot &#39;</span>
                                       <span class="s1">&#39;be converted to time-series&#39;</span><span class="p">)</span>
@@ -323,7 +327,8 @@
                 <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">,</span> 
                                       <span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need floating point or list-like, got: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Need floating point or list-like, got: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_coords</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># no special treatment</span>

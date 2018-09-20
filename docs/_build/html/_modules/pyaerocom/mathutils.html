@@ -258,6 +258,10 @@
     
     <span class="k">return</span> <span class="n">result</span></div>
 
+<div class="viewcode-block" id="closest_index"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.closest_index">[docs]</a><span class="k">def</span> <span class="nf">closest_index</span><span class="p">(</span><span class="n">num_array</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns index in number array that is closest to input value&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">num_array</span><span class="p">)</span> <span class="o">-</span> <span class="n">value</span><span class="p">))</span></div>
+
 <div class="viewcode-block" id="numbers_in_str"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.numbers_in_str">[docs]</a><span class="k">def</span> <span class="nf">numbers_in_str</span><span class="p">(</span><span class="n">input_string</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;This method finds all numbers in a string</span>
 <span class="sd">    </span>

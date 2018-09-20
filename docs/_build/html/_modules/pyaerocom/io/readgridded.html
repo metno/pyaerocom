@@ -205,6 +205,7 @@
 <span class="kn">import</span> <span class="nn">iris</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">CONST</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">Variable</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">compute_angstrom_coeff_cubes</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">to_pandas_timestamp</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">IllegalArgumentError</span><span class="p">,</span> 
@@ -345,7 +346,8 @@
         
         <span class="c1">#: List of unique Aerocom variable names that were identified from </span>
         <span class="c1">#: the filenames in the data directory</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars_2d</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars_3d</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="c1">#: List of unique years that were </span>
         <span class="c1">#: identified from the filenames in the data directory</span>
@@ -368,6 +370,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">search_data_dir</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">search_all_files</span><span class="p">()</span>
      
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars_2d</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_3d</span><span class="p">)</span>
+    
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">vars_provided</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Variables provided by this interface&quot;&quot;&quot;</span>
@@ -555,15 +561,20 @@
                               <span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">data_dir: </span><span class="si">%s</span><span class="s2">&quot;</span>
                               <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">))</span>
         <span class="n">_vars_temp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">_vars_temp_3d</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">_years_temp</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">_ts_types_temp</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">nc_files</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-                
-                <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;var_name&quot;</span><span class="p">])</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span>
+                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_3d</span><span class="p">:</span>
+                    <span class="n">_vars_temp_3d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">_var_name</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">_var_name</span><span class="p">)</span>
+                
                 <span class="n">_years_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
                 <span class="n">_ts_types_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">])</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
@@ -576,11 +587,12 @@
                 <span class="k">if</span> <span class="n">CONST</span><span class="o">.</span><span class="n">WRITE_FILEIO_ERR_LOG</span><span class="p">:</span>
                     <span class="n">add_file_to_log</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
                     
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">_vars_temp</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_vars_temp</span> <span class="o">+</span> <span class="n">_vars_temp_3d</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to extract information from filenames&quot;</span><span class="p">)</span>
         <span class="c1"># make sorted list of unique vars</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars_2d</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars_3d</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_vars_temp_3d</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">years</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_years_temp</span><span class="p">))</span>
         
         <span class="n">_ts_types</span> <span class="o">=</span> <span class="n">od</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">_ts_types_temp</span><span class="p">)</span>
@@ -748,8 +760,9 @@
 <span class="sd">        IOError </span>
 <span class="sd">            if no files could be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">match_files</span> <span class="o">=</span> <span class="p">[]</span>
         
+        <span class="n">match_files</span> <span class="o">=</span> <span class="p">[]</span>
+    
         <span class="n">years_to_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_years_to_load</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years_to_load</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
@@ -1006,9 +1019,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ts_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_ts_type</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
         
+        <span class="n">var_to_read</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span>
-                              <span class="n">flex_ts_type</span><span class="p">)</span>
+            <span class="n">var_to_read</span> <span class="o">=</span> <span class="n">var_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># e.g. user asks for od550aer but files contain only 3d var od5503daer</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">var_to_read</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span> 
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_3d</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">Variable</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="o">.</span><span class="n">var_name</span> <span class="o">==</span> <span class="n">var_name</span><span class="p">:</span>
+                        <span class="n">var_to_read</span> <span class="o">=</span> <span class="n">var</span>
+        
+        <span class="k">if</span> <span class="n">var_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var_to_read</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span>
+                                  <span class="n">flex_ts_type</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> 
                                     <span class="n">ts_type</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="p">)</span>

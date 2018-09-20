@@ -38,24 +38,24 @@ E.g.:
 
 .. parsed-literal::
 
-    2018-09-14 16:34:20,386:INFO:
-    Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
+    2018-09-20 15:34:46,948:WARNING:
+    basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.024876117706298828 s
+    Elapsed time init all variables: 0.026494741439819336 s
 
 
 .. parsed-literal::
 
-    2018-09-14 16:34:21,119:WARNING:
+    2018-09-20 15:34:47,690:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.8807373046875 s
+    Elapsed time init pyaerocom: 1.0594265460968018 s
     
     Pyaerocom EbasSQLRequest
     ------------------------
@@ -288,139 +288,41 @@ Let’s read the files:
 
 .. parsed-literal::
 
-    2018-09-14 16:34:26,410:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/CA0420G.20100101000000.20150209103939.nephelometer...1y.1h.CA01L_TSI_3563_ALT.CA01L_scat_coef.lev2.nas
-    2018-09-14 16:34:26,477:WARNING:
+    2018-09-20 15:34:52,129:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 09
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:26,485:DEBUG:
-    Ignoring line no. 97: 0
-    
-    2018-09-14 16:34:26,488:DEBUG:
-    Ignoring line no. 98: 53
-    
-    2018-09-14 16:34:26,491:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:26,493:DEBUG:
-      0.000000   0.041667   973.59 0.392000   0.70 0.392000  301.32 0.392000  1.70400000 0.392000 99.99999999 0.460000  1.398528 0.392000 99.999999 0.460000  1.897151 0.392000 99.999999 0.460000  1.60500000 0.392000 99.99999999 0.460000  1.520000 0.392000 99.999999 0.460000  1.682868 0.392000 99.999999 0.460000  1.41100000 0.392000 99.99999999 0.460000  1.302849 0.392000 99.999999 0.460000  1.537151 0.392000 99.999999 0.460000  16.39900000 0.392000 999.99999999 0.460000  15.911377 0.392000 999.999999 0.460000  17.052887 0.392000 999.999999 0.460000  14.22400000 0.392000 999.99999999 0.460000  13.938566 0.392000 999.999999 0.460000  14.567189 0.392000 999.999999 0.460000  11.62600000 0.392000 999.99999999 0.460000  11.227075 0.392000 999.999999 0.460000  11.987189 0.392000 999.999999 0.460000 99999.99 0.460000 999.99 0.460000 9999.99 0.460000
-    
-    2018-09-14 16:34:26,908:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/CA0420G.20100101000000.20170516083933.nephelometer..pm10.1y.1h.CA01L_TSI_3563_ALT_pm10.CA01L_scat_coef.lev2.nas
-    2018-09-14 16:34:26,963:WARNING:
+    2018-09-20 15:34:52,418:WARNING:
     Failed to read header row 6.
     2010 01 01 2017 05 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:26,967:DEBUG:
-    Ignoring line no. 35: 0
-    
-    2018-09-14 16:34:26,970:DEBUG:
-    Ignoring line no. 36: 54
-    
-    2018-09-14 16:34:26,973:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:26,975:DEBUG:
-      0.000000   0.041667   973.59   0.70  301.32  1.11600000  0.808528  1.317151  1.06500000  0.980000  1.142868 -0.96600000 -1.072868 -0.842849  14.61500000  14.062792  15.367189  11.70000000  11.392830  12.000057   6.56100000   6.185641   6.912868 0.392000
-    
-    2018-09-14 16:34:27,211:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/FI0050R.20100101000000.20121004000000.nephelometer..aerosol.1y.1h.FI03L_TSI3563.FI03L_Corrected_according_to_Anderson_and_Ogre..nas
-    2018-09-14 16:34:27,279:WARNING:
+    2018-09-20 15:34:52,535:WARNING:
     Failed to read header row 6.
     2010 01 01 2012 10 04
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:27,283:DEBUG:
-    Ignoring line no. 34: 0
-    
-    2018-09-14 16:34:27,285:DEBUG:
-    Ignoring line no. 35: 33
-    
-    2018-09-14 16:34:27,289:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:27,291:DEBUG:
-      0.000000   0.041667   2.97   2.87   3.07   2.47   2.42   2.51   2.10   1.91   2.25   27.20   26.77   27.60   19.72   19.37   20.04   12.53   12.26   12.81   980.61  291.42 0.247000
-    
-    2018-09-14 16:34:27,493:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/FI0096G.20100412110000.20160705103730.nephelometer..pm10.9mo.1h.FI01L_TSI_3563_PAL_dry.FI01L_neph_control_lev1_0_0_1.lev2.nas
-    2018-09-14 16:34:27,557:WARNING:
+    2018-09-20 15:34:52,641:WARNING:
     Failed to read header row 6.
     2010 01 01 2016 07 05
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:27,561:DEBUG:
-    Ignoring line no. 34: 0
-    
-    2018-09-14 16:34:27,563:DEBUG:
-    Ignoring line no. 35: 60
-    
-    2018-09-14 16:34:27,567:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:27,570:DEBUG:
-    101.458333 101.500000  939.0000000  299.4000000   1.196056   1.150314   1.241439   1.005160   0.974795   1.036001   1.022035   0.957909   1.084102   10.408017   10.305080   10.513390    7.616671    7.525326    7.708703   5.327212   5.288039    5.365250 0.390191
-    
-    2018-09-14 16:34:27,725:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/NO0042G.20100101000000.20150216111241.nephelometer..pm10.1y.1h.SE02L_TSI_3563_ZEP_dry.SE02L_scat_coef.lev2.nas
-    2018-09-14 16:34:27,776:WARNING:
+    2018-09-20 15:34:52,719:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:27,779:DEBUG:
-    Ignoring line no. 35: 0
-    
-    2018-09-14 16:34:27,782:DEBUG:
-    Ignoring line no. 36: 39
-    
-    2018-09-14 16:34:27,785:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:27,787:DEBUG:
-      0.000000   0.041667  955.500   6.800  300.000    -9.457    -9.629    -9.123   -6.280   -6.519   -6.110  -12.471  -12.627  -12.314     7.019     6.583     7.700     5.635     5.173     5.955    3.842    3.730    4.224 0.459000
-    
-    2018-09-14 16:34:28,022:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/US0008R.20100101000000.20150819091559.nephelometer...1y.1h.US06L_TSI_3563_BRW.US06L_scat_coef..nas
-    2018-09-14 16:34:28,084:WARNING:
+    2018-09-20 15:34:52,832:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:28,091:DEBUG:
-    Ignoring line no. 85: 0
-    
-    2018-09-14 16:34:28,094:DEBUG:
-    Ignoring line no. 86: 37
-    
-    2018-09-14 16:34:28,098:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:28,100:DEBUG:
-      0.000000   0.041667  1.25384600 0.000000  1.02888900 0.000000  0.459675 0.000000  0.375144 0.000000   2.001625 0.000000  1.751166 0.000000  0.87384610 0.000000  0.53888890 0.000000  0.659675 0.000000  0.392524 0.000000  1.040975 0.000000  0.712428 0.000000  0.68038460 0.000000  0.39518520 0.000000  0.539675 0.000000  0.251262 0.000000  0.880325 0.000000  0.596214 0.000000  9.8123080E+00 0.000000   5.71963000 0.000000   8.787725 0.000000   4.503978 0.000000   10.482100 0.000000   6.792332 0.000000   8.06538500 0.000000   4.37518500 0.000000   7.818700 0.000000   4.045144 0.000000   8.412600 0.000000   4.726214 0.000000   6.30153800 0.000000   2.75666700 0.000000   5.889675 0.000000   2.540000 0.000000   6.640975 0.000000   2.987476 0.000000
-    
-    2018-09-14 16:34:28,645:INFO:
-    Reading NASA Ames file:
-    /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/US0008R.20100101000000.20150819091559.nephelometer..pm10.1y.1h.US06L_TSI_3563_BRW.US06L_scat_coef.lev2.nas
-    2018-09-14 16:34:29,162:WARNING:
+    2018-09-20 15:34:53,088:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     
     Error msg: IndexError('list index out of range',)
-    2018-09-14 16:34:29,165:DEBUG:
-    Ignoring line no. 35: 0
-    
-    2018-09-14 16:34:29,168:DEBUG:
-    Ignoring line no. 36: 53
-    
-    2018-09-14 16:34:29,171:DEBUG:
-    REACHED DATA BLOCK
-    2018-09-14 16:34:29,173:DEBUG:
-      0.000000   0.041667  1030.95   0.00  302.69  1.25384615  0.459675   2.001625  0.87384615  0.659675  1.040975  0.68038462  0.539675  0.880325    9.81230769   8.787725   10.482100   8.06538462   7.818700   8.412600   6.30153846   5.889675   6.640975 0.000000
-    
 
 
 .. code:: ipython3

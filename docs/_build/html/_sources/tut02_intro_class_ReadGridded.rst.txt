@@ -39,24 +39,24 @@ information about what is in there.
 
 .. parsed-literal::
 
-    2018-09-14 16:31:47,843:INFO:
-    Reading aliases ini file: /home/jonasg/github/pyaerocom/pyaerocom/data/aliases.ini
+    2018-09-20 15:31:52,665:WARNING:
+    basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.02443981170654297 s
+    Elapsed time init all variables: 0.027283430099487305 s
 
 
 .. parsed-literal::
 
-    2018-09-14 16:31:48,639:WARNING:
+    2018-09-20 15:31:53,387:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 0.9475233554840088 s
+    Elapsed time init pyaerocom: 1.0575881004333496 s
     
     Pyaerocom ReadGridded
     ---------------------
@@ -290,6 +290,8 @@ series at the coordinates in the city of Leipzig, Germany.
 
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/analysis/cartography.py:377: UserWarning: Using DEFAULT_SPHERICAL_EARTH_RADIUS.
       warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+    Interpolating data of shape (1826, 161, 320). This may take a while.
+    Successfully interpolated cube
 
 
 

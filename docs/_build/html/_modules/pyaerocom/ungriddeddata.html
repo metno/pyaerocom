@@ -317,8 +317,7 @@
 
     <span class="nd">@longitude</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">longitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Longitudes cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station longitudes cannot be changed&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -327,9 +326,17 @@
 
     <span class="nd">@latitude</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">latitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Latitudes cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station latitudes cannot be changed&quot;</span><span class="p">)</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">altitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Alttudes of stations&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">stat</span><span class="p">[</span><span class="s1">&#39;stat_alt&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
 
+    <span class="nd">@altitude</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">altitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station altitudes cannot be changed&quot;</span><span class="p">)</span>
+        
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Latitudes of data&quot;&quot;&quot;</span>
@@ -338,8 +345,7 @@
 
     <span class="nd">@station_name</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station names cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station names cannot be changed&quot;</span><span class="p">)</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -348,8 +354,7 @@
 
     <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed, please check &quot;</span>
-                             <span class="s2">&quot;underlying data type stored in attribute grid&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Time array cannot be changed&quot;</span><span class="p">)</span>
         
 <div class="viewcode-block" id="UngriddedData.last_filter_applied"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.last_filter_applied">[docs]</a>    <span class="k">def</span> <span class="nf">last_filter_applied</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_filtered</span><span class="p">:</span>
@@ -407,6 +412,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
     
+<div class="viewcode-block" id="UngriddedData.to_gridded_data"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.to_gridded_data">[docs]</a>    <span class="k">def</span> <span class="nf">to_gridded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        
     <span class="c1"># TODO: review docstring        </span>
 <div class="viewcode-block" id="UngriddedData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                       <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

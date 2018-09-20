@@ -199,7 +199,8 @@
                           <span class="s1">&#39;3d&#39;</span>  <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;modellevelatstations&#39;</span><span class="p">]}</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">file_sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">year_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">var_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">from_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">var_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">from_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
        
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_sep</span> <span class="o">=</span> <span class="n">file_sep</span>
@@ -207,6 +208,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">var_pos</span> <span class="o">=</span> <span class="n">var_pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_pos</span> <span class="o">=</span> <span class="n">ts_pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vert_pos</span> <span class="o">=</span> <span class="n">vert_pos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_pos</span> <span class="o">=</span> <span class="n">name_pos</span>
+        
         <span class="k">if</span> <span class="n">from_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">from_file</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -221,7 +224,7 @@
 <span class="sd">        extracted from filenames</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">od</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                  <span class="n">is_at_stations</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                  <span class="n">is_at_stations</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         
 <div class="viewcode-block" id="FileConventionRead.from_file"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.fileconventions.FileConventionRead.from_file">[docs]</a>    <span class="k">def</span> <span class="nf">from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Identify convention from a file</span>
@@ -336,6 +339,13 @@
             <span class="n">info</span><span class="p">[</span><span class="s2">&quot;vert_pos&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spl</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vert_pos</span><span class="p">]</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">FileConventionError</span><span class="p">(</span><span class="s1">&#39;Failed to extract vert_pos from &#39;</span>
+                                      <span class="s1">&#39;file </span><span class="si">{}</span><span class="s1"> using file convention </span><span class="si">{}</span><span class="s1">&#39;</span> 
+                                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name_pos</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">var_pos</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FileConventionError</span><span class="p">(</span><span class="s1">&#39;Failed to extract model name from &#39;</span>
                                       <span class="s1">&#39;file </span><span class="si">{}</span><span class="s1"> using file convention </span><span class="si">{}</span><span class="s1">&#39;</span> 
                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
         <span class="k">if</span><span class="s1">&#39;atstations&#39;</span> <span class="ow">in</span> <span class="n">file</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
@@ -510,7 +520,8 @@
                   <span class="n">year_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year_pos</span><span class="p">,</span>
                   <span class="n">var_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_pos</span><span class="p">,</span>
                   <span class="n">ts_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_pos</span><span class="p">,</span>
-                  <span class="n">vert_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vert_pos</span><span class="p">)</span></div>
+                  <span class="n">vert_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vert_pos</span><span class="p">,</span>
+                  <span class="n">name_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_pos</span><span class="p">)</span></div>
       
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">super</span><span class="p">(</span><span class="n">FileConventionRead</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()))</span>

@@ -166,24 +166,62 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">VarNotAvailableError</span><span class="p">,</span> <span class="n">TimeMatchError</span><span class="p">,</span>
-                                  <span class="n">CollocationError</span><span class="p">)</span>
+                                  <span class="n">CollocationError</span><span class="p">,</span> <span class="n">DataDimensionError</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">to_pandas_timestamp</span><span class="p">,</span> 
                                <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">,</span>
                                <span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">,</span>
                                <span class="n">to_datestring_YYYYMMDD</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.filter</span> <span class="k">import</span> <span class="n">Filter</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GriddedData</span><span class="p">,</span> <span class="n">UngriddedData</span><span class="p">,</span> <span class="n">print_log</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.collocateddata</span> <span class="k">import</span> <span class="n">CollocatedData</span>
 
-<div class="viewcode-block" id="collocate_gridded_gridded"><a class="viewcode-back" href="../../api.html#pyaerocom.collocation.collocate_gridded_gridded">[docs]</a><span class="k">def</span> <span class="nf">collocate_gridded_gridded</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">gridded_data_ref</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;yearly&#39;</span><span class="p">,</span>
-                              <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                              <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regrid_opts</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Collocator"><a class="viewcode-back" href="../../api.html#pyaerocom.collocation.Collocator">[docs]</a><span class="k">class</span> <span class="nc">Collocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper / factory class for performing collocation of data&quot;&quot;&quot;</span>
+    <span class="n">SUPPORTED</span> <span class="o">=</span> <span class="p">(</span><span class="n">GriddedData</span><span class="p">,</span> <span class="n">UngriddedData</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_ref</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Coming soon...&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot instantiate collocation class. Need &#39;</span>
+                             <span class="s1">&#39;either of the supported data types </span><span class="si">{}</span><span class="s1"> as &#39;</span>
+                             <span class="s1">&#39;reference dataset&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span> <span class="o">=</span> <span class="n">data_ref</span>
+        
+<div class="viewcode-block" id="Collocator.run"><a class="viewcode-back" href="../../api.html#pyaerocom.collocation.Collocator.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">add_args</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot instantiate collocation class. Need &#39;</span>
+                             <span class="s1">&#39;either of the supported data types </span><span class="si">{}</span><span class="s1"> as &#39;</span>
+                             <span class="s1">&#39;reference dataset&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span><span class="p">,</span> <span class="n">UngriddedData</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">collocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span><span class="p">,</span>
+                                                      <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">,</span>
+                                                      <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                                      <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+                                                      <span class="n">filter_name</span><span class="o">=</span><span class="n">filter_name</span><span class="p">,</span>
+                                                      <span class="o">**</span><span class="n">add_args</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
+                <span class="k">pass</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+        
+<div class="viewcode-block" id="collocate_gridded_gridded"><a class="viewcode-back" href="../../api.html#pyaerocom.collocation.collocate_gridded_gridded">[docs]</a><span class="k">def</span> <span class="nf">collocate_gridded_gridded</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">gridded_data_ref</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                              <span class="n">regrid_scheme</span><span class="o">=</span><span class="s1">&#39;areaweighted&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Collocate 2 gridded data objects</span>
 <span class="sd">    </span>
 <span class="sd">    Todo</span>
 <span class="sd">    ----</span>
 <span class="sd">    Complete docstring</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ts_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ts_type</span> <span class="o">=</span> <span class="s1">&#39;yearly&#39;</span>
+    <span class="k">if</span> <span class="n">filter_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span>
     <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
     <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
     <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
@@ -216,7 +254,8 @@
     <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
     
     <span class="c1"># perform regridding</span>
-    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">regrid</span><span class="p">(</span><span class="n">gridded_data_ref</span><span class="p">,</span> <span class="o">**</span><span class="n">regrid_opts</span><span class="p">)</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">regrid</span><span class="p">(</span><span class="n">gridded_data_ref</span><span class="p">,</span> 
+                                       <span class="n">scheme</span><span class="o">=</span><span class="n">regrid_scheme</span><span class="p">)</span>
     
     <span class="c1"># perform region extraction (if applicable)</span>
     <span class="n">regfilter</span> <span class="o">=</span> <span class="n">Filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">filter_name</span><span class="p">)</span>
@@ -263,12 +302,14 @@
 <div class="viewcode-block" id="collocate_gridded_ungridded_2D"><a class="viewcode-back" href="../../api.html#pyaerocom.collocation.collocate_gridded_ungridded_2D">[docs]</a><span class="k">def</span> <span class="nf">collocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">ungridded_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> 
                                    <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                                    <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span>
-                                   <span class="n">var_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                   <span class="n">var_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                   <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Collocate gridded with ungridded data of 2D data </span>
 <span class="sd">    </span>
 <span class="sd">    2D means, that the vertical direction is only sampled at one altitude or</span>
 <span class="sd">    the variable is of integrated nature (or averaged) so that the dimensionality</span>
-<span class="sd">    of the data is reduced to lon lat and time</span>
+<span class="sd">    of the grid data is (or can be -&gt; cf. input parameter `vert_scheme`) </span>
+<span class="sd">    reduced to dimensionality time, lat, lon.</span>
 <span class="sd">    </span>
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -301,6 +342,14 @@
 <span class="sd">        variable against which data in :attr:`gridded_data` is supposed to be</span>
 <span class="sd">        compared. If None, then the same variable is used </span>
 <span class="sd">        (i.e. `gridded_data.var_name`).</span>
+<span class="sd">    vert_scheme : str</span>
+<span class="sd">        string specifying scheme used to reduce the dimensionality in case </span>
+<span class="sd">        input grid data contains vertical dimension. Example schemes are </span>
+<span class="sd">        `mean, surface, altitude`, for details see </span>
+<span class="sd">        :func:`GriddedData.to_time_series`.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        additional keyword args (not used here, but included such that factory </span>
+<span class="sd">        class can handle different methods with different inputs)</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -376,7 +425,8 @@
     
     <span class="c1"># conver</span>
     <span class="n">grid_stat_data</span> <span class="o">=</span> <span class="n">grid_data</span><span class="o">.</span><span class="n">to_time_series</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">ungridded_lons</span><span class="p">,</span>
-                                              <span class="n">latitude</span><span class="o">=</span><span class="n">ungridded_lats</span><span class="p">)</span>
+                                              <span class="n">latitude</span><span class="o">=</span><span class="n">ungridded_lats</span><span class="p">,</span>
+                                              <span class="n">vert_scheme</span><span class="o">=</span><span class="n">vert_scheme</span><span class="p">)</span>
 
     <span class="c1"># pandas frequency string for TS type</span>
     <span class="n">freq_pd</span> <span class="o">=</span> <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
