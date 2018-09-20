@@ -32,42 +32,19 @@ if __name__ == '__main__':
     
     model_reload = pya.GriddedData(model_at_stats)
     
+    raise Exception
+    
     coll1 = pya.collocation.collocate_gridded_ungridded_2D(model, 
                                                            obs, 
-                                                           'monthly')
+                                                           'monthly',
+                                                           var_ref='scatc550aer',
+                                                           vert_scheme='surface')
     
-    print('\nDecreasing temporal resolution')
-    t0=time()
-    model = model.downscale_time(TS_TYPE)
-    print('Successfully decreased t-res (in {:.3f} s)'.format(time() - t0))
+    coll2 = pya.collocation.collocate_gridded_ungridded_2D(model_reload, 
+                                                           obs, 
+                                                           'monthly',
+                                                           var_ref='scatc550aer',
+                                                           vert_scheme='surface')
     
-    tseries_surf = model.to_time_series(longitude=obs.longitude, 
-                                        latitude=obs.latitude,
-                                        vert_scheme='surface')
-    
-    tseries_mean = model.to_time_series(longitude=obs.longitude, 
-                                        latitude=obs.latitude)
-    
-    tseries_mean = model.to_time_series(longitude=obs.longitude, 
-                                        latitude=obs.latitude,
-                                        vert_scheme='altitude')
-    
-    #model = model.downscale_time(TS_TYPE)
-    
-    #get one column of sigma levels
-    
-    sigma = model.atmosphere_sigma_coordinate.points
-    
-    psurf = model.surface_air_pressure
-    
-    ptop = 0
-    
-    ps = float(psurf[0,0,0].points)
-    
-    altitude = pya.vert_coords.atmosphere_sigma_coordinate_to_pressure(sigma, 
-                                                                       ps, 
-                                                                       ptop)
-    #pya.vert_coords.atmosphere_sigma_coordinate_to_pressure(leve)
-    
-    
-    #pya.collocation.collocate_gridded_ungridded_2D(model, obs, var_ref='scatc550aer')
+    coll1.plot_scatter()
+    coll2.plot_scatter()
