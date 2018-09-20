@@ -3,7 +3,7 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
-from os.path import join, exists
+import os
 from ast import literal_eval
 import re
 try:
@@ -89,7 +89,21 @@ class VarNameInfo(object):
         if self.is_wavelength_dependent:
             s += '\nwavelength_nm: {}'.format(self.wavelength_nm)
         return s
-    
+ 
+def _read_alias_ini():
+    file = os.path.join(__dir__, "data", "aliases.ini")
+    if not os.path.exists(file):
+        return {}
+    parser = ConfigParser()
+    parser.read(file)
+    if not 'aliases' in parser:
+        raise IOError('aliases ini file does not contain section aliases')
+    aliases = {}
+    items = parser['aliases']
+    for alias in items:
+        var_name = items[alias]
+        aliases[alias] = var_name
+    return aliases
 class Variable(BrowseDict):
     """Interface that specifies default settings for a variable
     
@@ -240,8 +254,8 @@ class Variable(BrowseDict):
     
     @staticmethod
     def read_config():
-        fpath = join(__dir__, "data", "variables.ini")
-        if not exists(fpath):
+        fpath = os.path.join(__dir__, "data", "variables.ini")
+        if not os.path.exists(fpath):
             raise IOError("Variable ini file could not be found: %s"
                           %fpath)
         cfg = ConfigParser()
@@ -287,8 +301,12 @@ class Variable(BrowseDict):
                 var_info = cfg[var_name]
                 self.var_name = var_name
             else:
-                logger.warning("No default configuration available for "
-                               "variable {}. Using DEFAULT settings".format(var_name))
+                aliases = _read_alias_ini()
+                if var_name in aliases:
+                    var_info = cfg[aliases[var_name]]
+                else:
+                    logger.warning("No default configuration available for "
+                                   "variable {}. Using DEFAULT settings".format(var_name))
             
         default = cfg['DEFAULT']
         
@@ -338,7 +356,7 @@ class AllVariables(object):
     """Container class that handles access to all available variables"""
     _var_ini = None
     _alias_ini = None
-    def __init__(self, var_ini=None, alias_ini=None, var_csv=None):
+    def __init__(self, var_ini=None, var_csv=None):
         
         self.var_ini = var_ini
         self.var_csv = var_csv
@@ -346,12 +364,10 @@ class AllVariables(object):
         self._cfg = self._read_ini()
         
         self.all_vars = [k for k in self._cfg.keys()]
+    
         
-        self.alias_ini = alias_ini
-        if exists(self.alias_ini):
-            logger.info("Reading aliases ini file: {}".format(self.alias_ini))
-            self.alias_info = self._import_aliases()
-            self.all_vars.extend(list(self.alias_info.keys()))
+        logger.info("Importing variable aliases info")
+        self.all_vars.extend(list(_read_alias_ini()))
             
     @property
     def var_ini(self):
@@ -361,42 +377,16 @@ class AllVariables(object):
     @var_ini.setter
     def var_ini(self, var_ini):
         if var_ini is None:
-            var_ini = join(__dir__, "data", "variables.ini")
-        if not exists(var_ini):
+            var_ini = os.path.join(__dir__, "data", "variables.ini")
+        if not os.path.exists(var_ini):
             raise IOError("Variable ini file could not be found: %s"
                           %var_ini)
         self._var_ini = var_ini
-    
-    
-        
-    @property
-    def alias_ini(self):
-        """Config file specifying alias information for variables"""
-        return self._alias_ini
-    
-    @alias_ini.setter
-    def alias_ini(self, alias_ini):
-        if alias_ini is None:
-            alias_ini = join(__dir__, "data", "aliases.ini")
-        if exists(alias_ini):
-            self._alias_ini = alias_ini
         
     def _read_ini(self):
         parser = ConfigParser()
         parser.read(self.var_ini)
         return parser
-    
-    def _import_aliases(self):
-        parser = ConfigParser()
-        parser.read(self.alias_ini)
-        if not 'aliases' in parser:
-            raise IOError('aliases ini file does not contain section aliases')
-        aliases = {}
-        items = parser['aliases']
-        for alias in items:
-            var_name = items[alias]
-            aliases[alias] = var_name
-        return aliases
         
     def __dir__(self):
         """Activates auto tab-completion for all variables"""
@@ -443,21 +433,14 @@ class AllVariables(object):
         if not check in self:
             raise VariableDefinitionError("No default configuration available "
                                           "for variable {}".format(var_name))
-        elif check in self.alias_info:
-            var_name = self.alias_info[var_name]
-            logger.info('Input is alias for variable {}'.format(var_name))
         return Variable(var_name, cfg=self._cfg)
-            
+        
         
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = '\n{}\n{}\n{}'.format(len(head)*"-", head, len(head)*"-")
         for v in self.all_vars:
-            if not v in self.alias_info:
-                s += '\n{}'.format(v)
-        s += '\n\nAliases\n.......'
-        for k, v in self.alias_info.items():
-            s += '\n{} = {}'.format(k, v)
+            s += '\n{}'.format(v)
         return s   
   
 def get_variable(var_name):
@@ -486,5 +469,5 @@ if __name__=="__main__":
     
     print(VarNameInfo('od440lt1aer').is_optical_density)
     
-    print(get_variable('od5503daer'))
+    print(get_variable('ec550dryaer'))
     
