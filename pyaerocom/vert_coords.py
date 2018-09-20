@@ -13,7 +13,7 @@ from pyaerocom.exceptions import CoordinateNameError
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
-    """Convert atmosphere sigma coordinate to altitude in m
+    """Convert atmosphere sigma coordinate to pressure in Pa
     
     Note
     ----
@@ -45,6 +45,45 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
             raise ValueError('Invalid input for ptop. Need floating point\n'
                              'Error: {}'.format(repr(e)))
     return ptop + sigma * (ps - ptop)
+
+def atmosphere_hybrid_sigma_pressure_coordinate_to_pressure(a, b, ps, p0=None):
+    """Convert atmosphere_hybrid_sigma_pressure_coordinate to  pressure in Pa
+    
+    **Formula**:
+        
+    Either
+    
+    .. math::
+        
+        p(k) = a(k) \\cdot p_0 + b(k) \\cdot p_{surface}
+        
+    or
+    
+    .. math::
+        
+        p(k) = ap(k) + b(k) \\cdot p_{surface}
+        
+    Parameters
+    ----------
+    a : ndarray
+        sigma level values (a(k) in formula 1, and ap(k) in formula 2)
+    b : ndarray
+        dimensionless fraction per level (must be same length as a)
+    ps : float
+        surface pressure
+    p0 : reference pressure (only relevant for alternative formula 1)
+    
+    Returns
+    -------
+    ndarray
+        pressure levels in Pa
+    
+    """
+    if not len(a) == len(b):
+        raise ValueError('Invalid input: a and b must have the same length')
+    if p0 is None:
+        return a + b*ps
+    return a*p0 + b*ps
 
 def pressure2altitude(p, *args, **kwargs):
     """General formula to convert atm. pressure to altitude
@@ -87,24 +126,48 @@ def pressure2altitude(p, *args, **kwargs):
     return atm.pressure2altitude(p)
 
 
-class VerticalCoordinate(BrowseDict):
+def supported(standard_name):
+    return True if standard_name in VerticalCoordinate._FUNS else False
 
-    FUNS = dict(atmosphere_sigma_coordinate=
-                atmosphere_sigma_coordinate_to_pressure)
+class VerticalCoordinate(BrowseDict):
+    _FUNS = dict(
+        atmosphere_sigma_coordinate=
+        atmosphere_sigma_coordinate_to_pressure,
+        atmosphere_hybrid_sigma_pressure_coordinate=
+        atmosphere_hybrid_sigma_pressure_coordinate_to_pressure)
     
-    ARG_NAMES = dict(atmosphere_sigma_coordinate=dict(sigma=['lev', 'sigma'],
-                                                      ps=['ps'],
-                                                      ptop=['ptop']))
+    _ARG_NAMES = dict(
+        atmosphere_sigma_coordinate=dict(sigma=['lev', 'sigma'],
+                                         ps=['ps'],
+                                         ptop=['ptop']),
+        atmosphere_hybrid_sigma_pressure_coordinate=dict(a=['a', 'lev'],
+                                                         b=['b'],
+                                                         ps=['ps'],
+                                                         p0=['p0']))
     
-    LEV_INCREASES_WITH_ALT = dict(atmosphere_sigma_coordinate=False)
+    _LEV_INCREASES_WITH_ALT = dict(
+        atmosphere_sigma_coordinate=False,
+        atmosphere_hybrid_sigma_pressure_coordinate=False)
     
     def __init__(self, name=None):
-        if not name in self.supported:
+        if not name in self._FUNS:
             raise ValueError('Invalid name for vertical coordinate')
-            
+        self.name = name
+    
     @property
-    def supported(self):
-        return list(self.VARS.keys())
+    def fun(self):
+        """Function used to convert levels into pressure"""
+        return self._FUNS[self.name]
+    
+    @property
+    def arg_names(self):
+        """Valid argument names for :func:`fun`"""
+        return self._ARG_NAMES[self.name]
+    
+    @property
+    def lev_increases_with_alt(self):
+        """Boolean specifying whether coordinate levels increase or decrease with altitude"""
+        return self._LEV_INCREASES_WITH_ALT[self.name]
     
     def calc_pressure(self, **kwargs):
         """Compute pressure levels for input vertical coordinate
@@ -115,7 +178,7 @@ class VerticalCoordinate(BrowseDict):
             standard name of vertical coordinate
         **kwargs
             additional  keyword args required for computation of pressure
-            levels (cf. :attr:`FUNS` and corresponding inputs for method 
+            levels (cf. :attr:`_FUNS` and corresponding inputs for method 
             available)
             
         Returns
@@ -129,9 +192,9 @@ class VerticalCoordinate(BrowseDict):
                                       .format(self.name,
                                               self.VARS.keys()))
         coord_values = kwargs.pop(self.name)
-        return self.FUNS[self.name](coord_values, **kwargs)
+        return self._FUNS[self.name](coord_values, **kwargs)
     
-    def calc_altitude(self, standard_name, **kwargs):
+    def calc_altitude(self, **kwargs):
         """Compute altitude for input vertical coordinates
         
         Parameters
@@ -140,7 +203,7 @@ class VerticalCoordinate(BrowseDict):
             standard name of vertical coordinate
         **kwargs
             additional  keyword args required for computation of pressure
-            levels (cf. :attr:`FUNS` and corresponding inputs for method 
+            levels (cf. :attr:`_FUNS` and corresponding inputs for method 
             available)
             
         Returns
@@ -148,7 +211,7 @@ class VerticalCoordinate(BrowseDict):
         ndarray
             pressure levels in Pa
         """
-        return pressure2altitude(self.calc_pressure(standard_name, **kwargs))
+        return pressure2altitude(self.calc_pressure(**kwargs))
         
 if __name__ == '__main__':
     import pyaerocom as pya
