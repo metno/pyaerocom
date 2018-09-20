@@ -38,7 +38,8 @@ class FileConventionRead(object):
                           '3d'  : ['modellevelatstations']}
     
     def __init__(self, name="aerocom3", file_sep="", year_pos=None,
-                 var_pos=None, ts_pos=None, vert_pos=None, from_file=None):
+                 var_pos=None, ts_pos=None, vert_pos=None, name_pos=None,
+                 from_file=None):
        
         self.name = name
         self.file_sep = file_sep
@@ -46,6 +47,8 @@ class FileConventionRead(object):
         self.var_pos = var_pos
         self.ts_pos = ts_pos
         self.vert_pos = vert_pos
+        self.name_pos = name_pos
+        
         if from_file is not None:
             self.from_file(from_file)
         else:
@@ -60,7 +63,7 @@ class FileConventionRead(object):
         extracted from filenames
         """
         return od(year=None, var_name=None, ts_type=None, vert_pos=None,
-                  is_at_stations=False)
+                  is_at_stations=False, name=None)
         
     def from_file(self, file):
         """Identify convention from a file
@@ -175,6 +178,13 @@ class FileConventionRead(object):
             info["vert_pos"] = spl[self.vert_pos]
         except:
             raise FileConventionError('Failed to extract vert_pos from '
+                                      'file {} using file convention {}' 
+                                      .format(basename(file), self.name))
+            
+        try:
+            info["name"] = self.file_sep.join(spl[self.name_pos:self.var_pos])
+        except:
+            raise FileConventionError('Failed to extract model name from '
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
         if'atstations' in file.lower():
@@ -349,7 +359,8 @@ class FileConventionRead(object):
                   year_pos = self.year_pos,
                   var_pos = self.var_pos,
                   ts_pos = self.ts_pos,
-                  vert_pos = self.vert_pos)
+                  vert_pos = self.vert_pos,
+                  name_pos = self.name_pos)
       
     def __repr__(self):
        return ("%s %s" %(self.name, super(FileConventionRead, self).__repr__()))
