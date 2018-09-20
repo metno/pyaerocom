@@ -5,6 +5,7 @@ Methods and / or classes to perform collocation
 """
 import pandas as pd
 import numpy as np
+
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   CollocationError, DataDimensionError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
@@ -12,17 +13,54 @@ from pyaerocom.helpers import (to_pandas_timestamp,
                                TS_TYPE_TO_NUMPY_FREQ,
                                to_datestring_YYYYMMDD)
 from pyaerocom.filter import Filter
+from pyaerocom import GriddedData, UngriddedData, print_log
 from pyaerocom.collocateddata import CollocatedData
 
-def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
-                              start=None, stop=None, 
-                              filter_name='WORLD-wMOUNTAINS', **regrid_opts):
+
+class Collocator(object):
+    """Helper / factory class for performing collocation of data"""
+    SUPPORTED = (GriddedData, UngriddedData)
+    
+    def __init__(self, data_ref):
+        raise NotImplementedError('Coming soon...')
+        if not isinstance(data_ref, self.SUPPORTED):
+            raise ValueError('Cannot instantiate collocation class. Need '
+                             'either of the supported data types {} as '
+                             'reference dataset'.format(self.SUPPORTED))
+        self.data_ref = data_ref
+        
+    def run(self, data, ts_type=None, start=None, stop=None, filter_name=None,
+            **add_args):
+        if not isinstance(data, self.SUPPORTED):
+            raise ValueError('Cannot instantiate collocation class. Need '
+                             'either of the supported data types {} as '
+                             'reference dataset'.format(self.SUPPORTED))
+        if isinstance(self.data_ref, UngriddedData):
+            if isinstance(data, GriddedData):
+                return collocate_gridded_ungridded_2D(data, self.data_ref,
+                                                      ts_type=ts_type,
+                                                      start=start,
+                                                      stop=stop,
+                                                      filter_name=filter_name,
+                                                      **add_args)
+        elif isinstance(self.data_ref, GriddedData):
+            if isinstance(data, GriddedData):
+                pass
+        raise NotImplementedError
+        
+def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
+                              start=None, stop=None, filter_name=None, 
+                              regrid_scheme='areaweighted', **kwargs):
     """Collocate 2 gridded data objects
     
     Todo
     ----
     Complete docstring
     """
+    if ts_type is None:
+        ts_type = 'yearly'
+    if filter_name is None:
+        filter_name = 'WORLD-wMOUNTAINS'
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start_time)
     grid_stop = to_pandas_timestamp(gridded_data.stop_time)
@@ -55,7 +93,8 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
     gridded_data_ref._check_lonlat_bounds()
     
     # perform regridding
-    gridded_data = gridded_data.regrid(gridded_data_ref, **regrid_opts)
+    gridded_data = gridded_data.regrid(gridded_data_ref, 
+                                       scheme=regrid_scheme)
     
     # perform region extraction (if applicable)
     regfilter = Filter(name=filter_name)
@@ -102,12 +141,14 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type='yearly',
 def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily', 
                                    start=None, stop=None, 
                                    filter_name='WORLD-wMOUNTAINS',
-                                   var_ref=None):
+                                   var_ref=None, vert_scheme=None,
+                                   **kwargs):
     """Collocate gridded with ungridded data of 2D data 
     
     2D means, that the vertical direction is only sampled at one altitude or
     the variable is of integrated nature (or averaged) so that the dimensionality
-    of the data is reduced to lon lat and time
+    of the grid data is (or can be -> cf. input parameter `vert_scheme`) 
+    reduced to dimensionality time, lat, lon.
     
     Note
     ----
@@ -140,6 +181,14 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         variable against which data in :attr:`gridded_data` is supposed to be
         compared. If None, then the same variable is used 
         (i.e. `gridded_data.var_name`).
+    vert_scheme : str
+        string specifying scheme used to reduce the dimensionality in case 
+        input grid data contains vertical dimension. Example schemes are 
+        `mean, surface, altitude`, for details see 
+        :func:`GriddedData.to_time_series`.
+    **kwargs
+        additional keyword args (not used here, but included such that factory 
+        class can handle different methods with different inputs)
         
     Returns
     -------
@@ -159,8 +208,6 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
         if none of the data points in input :class:`UngriddedData` matches 
         the input collocation constraints
     """
-    if gridded_data.ndim > 3:
-        raise AttributeError()
     var = gridded_data.var_name
     if var_ref is None:
         var_ref = var
@@ -217,7 +264,8 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
     
     # conver
     grid_stat_data = grid_data.to_time_series(longitude=ungridded_lons,
-                                              latitude=ungridded_lats)
+                                              latitude=ungridded_lats,
+                                              vert_scheme=vert_scheme)
 
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
