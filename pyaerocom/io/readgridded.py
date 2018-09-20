@@ -44,6 +44,7 @@ from datetime import datetime
 import iris
 
 from pyaerocom import const as CONST
+from pyaerocom import Variable
 from pyaerocom.mathutils import compute_angstrom_coeff_cubes
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (IllegalArgumentError, 
@@ -184,7 +185,8 @@ class ReadGridded(object):
         
         #: List of unique Aerocom variable names that were identified from 
         #: the filenames in the data directory
-        self.vars = []
+        self._vars_2d = []
+        self._vars_3d = []
         
         #: List of unique years that were 
         #: identified from the filenames in the data directory
@@ -207,6 +209,10 @@ class ReadGridded(object):
             self.search_data_dir()
             self.search_all_files()
      
+    @property
+    def vars(self):
+        return sorted(self._vars_2d + self._vars_3d)
+    
     @property
     def vars_provided(self):
         """Variables provided by this interface"""
@@ -394,15 +400,20 @@ class ReadGridded(object):
                               "%s\ndata_dir: %s"
                               %(self.name, self.data_dir))
         _vars_temp = []
+        _vars_temp_3d = []
         _years_temp = []
         _ts_types_temp = []
         for _file in nc_files:
             try:
                 info = self.file_convention.get_info_from_file(_file)
-                
-                _vars_temp.append(info["var_name"])
+                var = Variable(info['var_name'])
                 if info['var_name'] is None:
                     raise Exception
+                if var.is_3d:
+                    _vars_temp_3d.append(var._var_name)
+                else:
+                    _vars_temp.append(var._var_name)
+                
                 _years_temp.append(info["year"])
                 _ts_types_temp.append(info["ts_type"])
                 self.files.append(_file)
@@ -415,11 +426,12 @@ class ReadGridded(object):
                 if CONST.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
                     
-        if not _vars_temp or not len(_vars_temp) == len(_years_temp):
+        if len(_vars_temp + _vars_temp_3d) == 0:
             raise IOError("Failed to extract information from filenames")
         # make sorted list of unique vars
 
-        self.vars = sorted(od.fromkeys(_vars_temp))
+        self._vars_2d = sorted(od.fromkeys(_vars_temp))
+        self._vars_3d = sorted(od.fromkeys(_vars_temp_3d))
         self.years = sorted(od.fromkeys(_years_temp))
         
         _ts_types = od.fromkeys(_ts_types_temp)
@@ -587,8 +599,9 @@ class ReadGridded(object):
         IOError 
             if no files could be found
         """
-        match_files = []
         
+        match_files = []
+    
         years_to_load = self.get_years_to_load(start_time, stop_time)
         for year in years_to_load:
             if CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
@@ -845,9 +858,19 @@ class ReadGridded(object):
         """
         ts_type = self._check_ts_type(ts_type)
         
+        var_to_read = None
         if var_name in self.vars:
-            data = self._load_var(var_name, ts_type, start_time, stop_time,
-                              flex_ts_type)
+            var_to_read = var_name
+        else:
+            # e.g. user asks for od550aer but files contain only 3d var od5503daer
+            if not var_to_read in self.vars: 
+                for var in self._vars_3d:
+                    if Variable(var).var_name == var_name:
+                        var_to_read = var
+        
+        if var_to_read is not None:
+            data = self._load_var(var_to_read, ts_type, start_time, stop_time,
+                                  flex_ts_type)
         elif var_name in self.AUX_REQUIRES:
             data = self.compute_var(var_name, start_time, stop_time, 
                                     ts_type, flex_ts_type)
