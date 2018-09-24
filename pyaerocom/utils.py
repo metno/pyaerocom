@@ -10,6 +10,7 @@ Note
 """
 from pyaerocom.io import ReadGridded
 import fnmatch
+import os
 import pandas as pd
     
 def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False, 
@@ -124,3 +125,11 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
     if sort_by_cols:
         df.sort_values(sort_by_cols, inplace=True)
     return df
+
+def print_file(file_path):
+    if not os.path.exists(file_path):
+        raise IOError('File not found...')
+    with open(file_path) as f:
+        for line in f:
+            if line.strip():
+                print(line)
