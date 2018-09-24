@@ -32,7 +32,6 @@ if __name__ == '__main__':
     
     model_reload = pya.GriddedData(model_at_stats)
     
-    raise Exception
     
     coll1 = pya.collocation.collocate_gridded_ungridded_2D(model, 
                                                            obs, 
