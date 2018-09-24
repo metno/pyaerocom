@@ -138,8 +138,8 @@ def to_pandas_timestamp(value):
             return pd.Timestamp(str(numval))
         except Exception as e:
             raise ValueError('Failed to convert {} to Timestamp: {}'
-                             .format(value, repr(e)))
-
+                             .format(value, repr(e)))    
+  
 def start_stop_from_year(year):
     """Create start / stop timestamp from year
     

@@ -72,8 +72,6 @@ def check_requirements(logger):
 
 __version__, __dir__ = _init_supplemental()
 
-from time import time
-t0=time()
 logger, print_log = _init_logger()
 LOGLEVELS = {'debug': 10,
              'info': 20,
@@ -117,7 +115,7 @@ from .io.utils import browse_database
 from .variable import get_variable
 from .utils import create_varinfo_table
 #from .obsdata import ObsData, ProfileData, StationData
-print('Elapsed time init pyaerocom: {} s'.format(time()-t0))
+#print('Elapsed time init pyaerocom: {} s'.format(time()-t0))
 
 
 
