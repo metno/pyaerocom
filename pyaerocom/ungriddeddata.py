@@ -41,6 +41,11 @@ class UngriddedData(object):
     is height resolved, containing 100 altitudes => 3*5*30*100=4500 data points, 
     thus, the final shape will be 4500x11.
     
+    TODO
+    ----
+    Include unit attribute for each variable (in pyaerocom.io package: make
+    sure to include units during ungridded read, if available)
+    
     Attributes
     ----------
     _data : ndarray
