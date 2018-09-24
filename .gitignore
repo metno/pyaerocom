@@ -111,3 +111,5 @@ pyaerocom.egg-info
 # test cache
 .pytest_cache/
 
+# development modules
+pyaerocom/helpers_DEV.py
