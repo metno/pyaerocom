@@ -139,6 +139,26 @@ def to_pandas_timestamp(value):
         except Exception as e:
             raise ValueError('Failed to convert {} to Timestamp: {}'
                              .format(value, repr(e)))
+
+def start_stop_from_year(year):
+    """Create start / stop timestamp from year
+    
+    Parameters
+    ----------
+    year : int
+        the year for which start / stop is to be instantiated
+        
+    Returns
+    -------
+    tuple
+        2-element tuple containing
+        
+        - :obj:`pandas.Timestamp`: start timestamp
+        - :obj:`pandas.Timestamp`: end timestamp
+    """
+    start = to_pandas_timestamp(year)
+    stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
+    return (start, stop)
             
 def to_datestring_YYYYMMDD(value):
     """Convert input time to string with format YYYYMMDD
