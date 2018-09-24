@@ -71,11 +71,11 @@ class Region(BrowseDict):
     def __init__(self, name="WORLD", lon_range=None, lat_range=None, 
                  **kwargs):
         self._name = name
-        # longitude / latitude range of data import
+        # longitude / latitude range of data 
         self.lon_range = lon_range
         self.lat_range = lat_range
         
-        # longitude / latitude range of data import
+        # longitude / latitude range of data in plots
         self.lon_range_plot = None
         self.lat_range_plot = None
         
@@ -91,6 +91,7 @@ class Region(BrowseDict):
     
     @property
     def name(self):
+        """Name of region"""
         return self._name
     
     def import_default(self, name):
@@ -111,14 +112,15 @@ class Region(BrowseDict):
             if default region with ID specified by input parameter ``name`` 
             cannot be found in regions.ini file
         """
+        name = name.upper()
         fpath = join(__dir__, "data", "regions.ini")
         if not exists(fpath):
-            raise IOError("File conventions ini file could not be found: %s"
+            raise IOError("Regions ini file could not be found: %s"
                           %fpath)
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
         if not name in conf_reader:
-            raise NameError("No default available for %s" %name)
+            raise AttributeError("No default region available for %s" %name)
         self._name = name
         for key, val in conf_reader[name].items():
             if key in self.keys():
