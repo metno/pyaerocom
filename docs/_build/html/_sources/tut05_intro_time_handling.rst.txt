@@ -6,18 +6,19 @@ The
 `GriddedData <http://aerocom.met.no/pya/api.html#module-pya.griddeddata>`__
 class of *pyaerocom* was introduced in the previous tutorial.
 
-Here, we want to illustrate one particular feature of *pya*, namely the
-conversion of CF conform numerical time stamps with a defined unit
-(i.e. basedate and calendar, see e.g.
+Here, we illustrate how *pyaerocom* handles time. In particular, how
+*pyaerocom* performs the conversion of CF conform numerical time stamps
+with a defined unit (i.e. basedate and calendar, see e.g.
 `here <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate>`__
 for details) into datetime-like objects that can be interpreted by tools
-such as `Pandas <https://pandas.pydata.org/>`__. The easiest way to work
-with time stamps in model data is, to simply work on the internal
-numerical indices, avoiding the necessity to convert them into actual
-datetime objects. However, sometimes (e.g. if we want to extract and
-analyse a time-series of global average Aerosol optical densities), we
-wish to use third party libraries such as Pandas, which require the
-timestamps to be datetime-like objects.
+such as `Pandas <https://pandas.pydata.org/>`__.
+
+The easiest way to work with time stamps in model data is, to simply
+work on the internal numerical indices, avoiding the necessity to
+convert them into actual datetime objects. However, sometimes (e.g. if
+we want to extract and analyse a time-series of global average Aerosol
+optical densities), we wish to use third party libraries such as Pandas,
+which require the timestamps to be datetime-like objects.
 
 This notebook illustrates how time is handled in the iris module,
 particularly in the
@@ -47,9 +48,9 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    2018-09-24 15:35:19,395:WARNING:
+    2018-09-24 17:04:45,662:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 15:35:20,059:WARNING:
+    2018-09-24 17:04:46,357:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -61,21 +62,21 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
       warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
+      warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
-    2018-09-24 15:35:20,170:WARNING:
-    File /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc contains more than one data field: 0: Black Carbon Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    1: Organic Matter Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    2: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
-    3: Sulphate Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
+      warnings.warn(msg)
+    2018-09-24 17:04:46,465:WARNING:
+    File /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc contains more than one data field: 0: Organic Matter Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    1: Sulphate Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    2: Black Carbon Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
+    3: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
     4: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
 
 
@@ -211,7 +212,7 @@ conversion method ready that handles any calendar, and that is
 considerably fast. We just saw, that ``datetime64`` works for both
 datetime formats that we get when calling the ``cell`` method of the
 ``DimCoord`` object that holds the time stamps. However, keep in mind,
-that whenever ``call`` is called, it performs a conversion of the
+that whenever ``cell`` is called, it performs a conversion of the
 numeric value into either ``datetime.datetime`` or, for non-standard
 calendars, into a datetime object from the
 `cftime <https://github.com/Unidata/cftime>`__ package. So, either way,
@@ -244,7 +245,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    137 ms ± 1.3 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    123 ms ± 3.31 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -255,7 +256,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    119 ms ± 4.31 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    104 ms ± 635 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -271,7 +272,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    130 ms ± 11.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    124 ms ± 5.07 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -282,7 +283,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    107 ms ± 1.26 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    103 ms ± 547 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -307,7 +308,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.61 ms ± 20.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.63 ms ± 12.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -437,7 +438,7 @@ Now let’s see how this one performs.
 
 .. parsed-literal::
 
-    55.8 µs ± 323 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    54.6 µs ± 455 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How pya does it
@@ -460,7 +461,7 @@ here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. parsed-literal::
 
-    341 µs ± 1.48 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    330 µs ± 4.47 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -474,7 +475,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    2.04 ms ± 16.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.04 ms ± 42 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -494,7 +495,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    396 µs ± 11.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    383 µs ± 4.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -505,5 +506,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.17 ms ± 61.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.16 ms ± 48.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

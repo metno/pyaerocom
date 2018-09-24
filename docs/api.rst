@@ -11,9 +11,9 @@ Documentation of the pyaerocom programming interface.
 Data types and data representation
 ----------------------------------
 
-..todo::
+.. todo::
 
-	Introduce for main data classes :class:`UngriddedData`, :class:`GriddedData`, :class:`StationData` and :class:`CollocatedData`
+	Introduce for main data classes :class:`UngriddedData`, :class:`GriddedData`, :class:`StationData` and :class:`ColocatedData`
 	
 Gridded data
 ^^^^^^^^^^^^
@@ -31,14 +31,14 @@ Ungridded data
    :members:
    :undoc-members:
 
-Collocated data
+Colocated data
 ^^^^^^^^^^^^^^^
 
 .. note::
 
 	This module is a beta version and currently more a draft for handling of merged and temorally regularised data objects. It may undergo significant changes in the near future.
 	
-.. automodule:: pyaerocom.collocateddata
+.. automodule:: pyaerocom.colocateddata
    :members:
    :undoc-members:
    
@@ -57,12 +57,12 @@ Other data classes
    :members:
    :undoc-members:
 
-Collocation of data
+Colocation of data
 -------------------
 
-This module contains collocation methods (cf. :class:`CollocatedData`)
+This module contains colocation methods (cf. :class:`ColocatedData`)
 
-.. automodule:: pyaerocom.collocation
+.. automodule:: pyaerocom.colocation
    :members:
    :undoc-members:
    

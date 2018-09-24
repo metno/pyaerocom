@@ -49,9 +49,9 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    2018-09-24 15:34:01,181:WARNING:
+    2018-09-24 17:03:24,394:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 15:34:01,870:WARNING:
+    2018-09-24 17:03:25,099:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -2894,21 +2894,21 @@ data import since we know the model and run ID from the previous cell
 
 .. parsed-literal::
 
-    2018-09-24 15:34:02,562:WARNING:
+    2018-09-24 17:03:25,816:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 15:34:02,826:WARNING:
+    2018-09-24 17:03:26,092:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 15:34:03,072:WARNING:
+    2018-09-24 17:03:26,354:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 15:34:03,215:WARNING:
+    2018-09-24 17:03:26,468:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 15:34:03,619:WARNING:
+    2018-09-24 17:03:26,867:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 15:34:03,945:WARNING:
+    2018-09-24 17:03:27,192:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 15:34:04,177:WARNING:
+    2018-09-24 17:03:27,459:WARNING:
     No default configuration available for variable deltaz. Using DEFAULT settings
-    2018-09-24 15:34:04,320:WARNING:
+    2018-09-24 17:03:27,644:WARNING:
     No default configuration available for variable humidity. Using DEFAULT settings
 
 
@@ -2945,15 +2945,15 @@ data object has to be accessed using the first index of the tuple.
 
 .. parsed-literal::
 
-    2018-09-24 15:34:08,983:WARNING:
-    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
-    1: gauss weights / (1)                 (latitude: 192)
-    2018-09-24 15:34:08,989:WARNING:
+    2018-09-24 17:03:38,500:WARNING:
+    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: gauss weights / (1)                 (latitude: 192)
+    1: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
+    2018-09-24 17:03:38,503:WARNING:
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
-    2018-09-24 15:34:08,989:WARNING:
+    2018-09-24 17:03:38,504:WARNING:
     Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. 
-    2018-09-24 15:34:08,990:WARNING:
+    2018-09-24 17:03:38,504:WARNING:
     Attempting to correct time coordinate using information in file name
 
 
@@ -3196,7 +3196,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fb8fa49c780>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f997ac3aa20>
 
 
 

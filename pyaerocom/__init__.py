@@ -103,8 +103,8 @@ from .stationdata import StationData
 from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
 from .filter import Filter
-from .collocateddata import CollocatedData
-from . import collocation
+from .colocateddata import ColocatedData
+from . import colocation
 
 from . import io
 from . import plot

@@ -1,0 +1,621 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pyaerocom.colocation &mdash; pyaerocom  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="pyaerocom  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> pyaerocom
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_testsuite.html">Tests (for developers)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../config_files.html">Configuration files</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pyaerocom</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>pyaerocom.colocation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for pyaerocom.colocation</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Methods and / or classes to perform colocation</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">VarNotAvailableError</span><span class="p">,</span> <span class="n">TimeMatchError</span><span class="p">,</span>
+                                  <span class="n">ColocationError</span><span class="p">,</span> <span class="n">DataDimensionError</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">to_pandas_timestamp</span><span class="p">,</span> 
+                               <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">,</span>
+                               <span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">,</span>
+                               <span class="n">to_datestring_YYYYMMDD</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.filter</span> <span class="k">import</span> <span class="n">Filter</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">GriddedData</span><span class="p">,</span> <span class="n">UngriddedData</span><span class="p">,</span> <span class="n">print_log</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.colocateddata</span> <span class="k">import</span> <span class="n">ColocatedData</span>
+
+
+<div class="viewcode-block" id="Colocator"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.Colocator">[docs]</a><span class="k">class</span> <span class="nc">Colocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper / factory class for performing colocation of data&quot;&quot;&quot;</span>
+    <span class="n">SUPPORTED</span> <span class="o">=</span> <span class="p">(</span><span class="n">GriddedData</span><span class="p">,</span> <span class="n">UngriddedData</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_ref</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Coming soon...&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot instantiate colocation class. Need &#39;</span>
+                             <span class="s1">&#39;either of the supported data types </span><span class="si">{}</span><span class="s1"> as &#39;</span>
+                             <span class="s1">&#39;reference dataset&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span> <span class="o">=</span> <span class="n">data_ref</span>
+        
+<div class="viewcode-block" id="Colocator.run"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.Colocator.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">add_args</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot instantiate colocation class. Need &#39;</span>
+                             <span class="s1">&#39;either of the supported data types </span><span class="si">{}</span><span class="s1"> as &#39;</span>
+                             <span class="s1">&#39;reference dataset&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span><span class="p">,</span> <span class="n">UngriddedData</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span><span class="p">,</span>
+                                                      <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">,</span>
+                                                      <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                                      <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+                                                      <span class="n">filter_name</span><span class="o">=</span><span class="n">filter_name</span><span class="p">,</span>
+                                                      <span class="o">**</span><span class="n">add_args</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_ref</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">GriddedData</span><span class="p">):</span>
+                <span class="k">pass</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+        
+<div class="viewcode-block" id="colocate_gridded_gridded"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_gridded">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_gridded</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">gridded_data_ref</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                              <span class="n">regrid_scheme</span><span class="o">=</span><span class="s1">&#39;areaweighted&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Colocate 2 gridded data objects</span>
+<span class="sd">    </span>
+<span class="sd">    Todo</span>
+<span class="sd">    ----</span>
+<span class="sd">    Complete docstring</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ts_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ts_type</span> <span class="o">=</span> <span class="s1">&#39;yearly&#39;</span>
+    <span class="k">if</span> <span class="n">filter_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span>
+    <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
+    <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+    
+    <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
+    
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">grid_start</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>    
+    <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">grid_stop</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+    
+    <span class="c1"># check overlap</span>
+    <span class="k">if</span> <span class="n">stop</span> <span class="o">&lt;</span> <span class="n">grid_start</span> <span class="ow">or</span> <span class="n">start</span> <span class="o">&gt;</span>  <span class="n">grid_stop</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">TimeMatchError</span><span class="p">(</span><span class="s1">&#39;Input time range </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1"> does not &#39;</span>
+                             <span class="s1">&#39;overlap with data range: </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">grid_start</span><span class="p">,</span> <span class="n">grid_stop</span><span class="p">))</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+    <span class="n">gridded_data_ref</span> <span class="o">=</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+    
+    <span class="c1"># get both objects in same time resolution</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">downscale_time</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
+    <span class="n">gridded_data_ref</span> <span class="o">=</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">downscale_time</span><span class="p">(</span><span class="n">ts_type</span><span class="p">)</span>
+    
+    <span class="c1"># guess bounds (for area weighted regridding, which is the default)</span>
+    <span class="n">gridded_data</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
+    <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
+    
+    <span class="c1"># perform regridding</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">regrid</span><span class="p">(</span><span class="n">gridded_data_ref</span><span class="p">,</span> 
+                                       <span class="n">scheme</span><span class="o">=</span><span class="n">regrid_scheme</span><span class="p">)</span>
+    
+    <span class="c1"># perform region extraction (if applicable)</span>
+    <span class="n">regfilter</span> <span class="o">=</span> <span class="n">Filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">filter_name</span><span class="p">)</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">regfilter</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">)</span>
+    <span class="n">gridded_data_ref</span> <span class="o">=</span> <span class="n">regfilter</span><span class="p">(</span><span class="n">gridded_data_ref</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ColocationError</span><span class="p">(</span><span class="s1">&#39;Shape mismatch between two colocated data &#39;</span>
+                               <span class="s1">&#39;arrays, please debug&#39;</span><span class="p">)</span>
+    
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span>       <span class="p">:</span>   <span class="p">[</span><span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                    <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+            <span class="s1">&#39;var_name&#39;</span>          <span class="p">:</span>   <span class="p">[</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span>
+                                     <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">var_name</span><span class="p">],</span>
+            <span class="s1">&#39;ts_type&#39;</span>           <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;filter_name&#39;</span>       <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src&#39;</span>       <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;start_str&#39;</span>         <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
+            <span class="s1">&#39;stop_str&#39;</span>          <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;data_level&#39;</span>        <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">}</span>
+
+    
+    <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">regfilter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+    <span class="n">data_ref</span> <span class="o">=</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_ref</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+        <span class="n">data_ref</span> <span class="o">=</span> <span class="n">data_ref</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">data_ref</span><span class="p">,</span>
+                      <span class="n">gridded_data</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
+    <span class="c1"># create coordinates of DataArray</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span> <span class="p">:</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">],</span>
+              <span class="s1">&#39;var_name&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;data_source&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]),</span>
+              <span class="s1">&#39;time&#39;</span>        <span class="p">:</span> <span class="n">time</span><span class="p">,</span>
+              <span class="s1">&#39;longitude&#39;</span>   <span class="p">:</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+              <span class="s1">&#39;latitude&#39;</span>    <span class="p">:</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span>
+              <span class="p">}</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ColocatedData</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span>
+                          <span class="n">name</span><span class="o">=</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="colocate_gridded_ungridded_2D"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_ungridded_2D">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">ungridded_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span>
+                                   <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                                   <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span>
+                                   <span class="n">var_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                   <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Colocate gridded with ungridded data of 2D data</span>
+<span class="sd">    </span>
+<span class="sd">    2D means, that the vertical direction is only sampled at one altitude or</span>
+<span class="sd">    the variable is of integrated nature (or averaged) so that the dimensionality</span>
+<span class="sd">    of the grid data is (or can be -&gt; cf. input parameter `vert_scheme`) </span>
+<span class="sd">    reduced to dimensionality time, lat, lon.</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Uses the variable that is contained in input :class:`GriddedData` object </span>
+<span class="sd">    (since these objects only contain a single variable)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gridded_data : GriddedData</span>
+<span class="sd">        gridded data (e.g. model results)</span>
+<span class="sd">    ungridded_data : UngriddedData</span>
+<span class="sd">        ungridded data (e.g. observations)</span>
+<span class="sd">    var_name : str</span>
+<span class="sd">        variable to be colocated</span>
+<span class="sd">    ts_type : str</span>
+<span class="sd">        desired temporal resolution of colocated data (must be valid AeroCom</span>
+<span class="sd">        ts_type str such as daily, monthly, yearly..)</span>
+<span class="sd">    start : :obj:`str` or :obj:`datetime64` or similar, optional</span>
+<span class="sd">        start time for colocation, if None, the start time of the input</span>
+<span class="sd">        :class:`GriddedData` object is used</span>
+<span class="sd">    stop : :obj:`str` or :obj:`datetime64` or similar, optional</span>
+<span class="sd">        stop time for colocation, if None, the stop time of the input</span>
+<span class="sd">        :class:`GriddedData` object is used</span>
+<span class="sd">    filter_name : str</span>
+<span class="sd">        string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for</span>
+<span class="sd">        details). Default is &#39;WORLD-wMOUNTAINS&#39;, which corresponds to no </span>
+<span class="sd">        filtering (world with mountains). Use WORLD-noMOUNTAINS to exclude</span>
+<span class="sd">        stations at altitudes exceeding 1000 m.</span>
+<span class="sd">    var_ref : :obj:`str`, optional</span>
+<span class="sd">        variable against which data in :attr:`gridded_data` is supposed to be</span>
+<span class="sd">        compared. If None, then the same variable is used </span>
+<span class="sd">        (i.e. `gridded_data.var_name`).</span>
+<span class="sd">    vert_scheme : str</span>
+<span class="sd">        string specifying scheme used to reduce the dimensionality in case </span>
+<span class="sd">        input grid data contains vertical dimension. Example schemes are </span>
+<span class="sd">        `mean, surface, altitude`, for details see </span>
+<span class="sd">        :func:`GriddedData.to_time_series`.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        additional keyword args (not used here, but included such that factory </span>
+<span class="sd">        class can handle different methods with different inputs)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ColocatedData</span>
+<span class="sd">        instance of colocated data</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    VarNotAvailableError</span>
+<span class="sd">        if grid data variable is not available in ungridded data object</span>
+<span class="sd">    AttributeError</span>
+<span class="sd">        if instance of input :class:`UngriddedData` object contains more than</span>
+<span class="sd">        one dataset</span>
+<span class="sd">    TimeMatchError</span>
+<span class="sd">        if gridded data time range does not overlap with input time range</span>
+<span class="sd">    ColocationError</span>
+<span class="sd">        if none of the data points in input :class:`UngriddedData` matches </span>
+<span class="sd">        the input colocation constraints</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span>
+    <span class="k">if</span> <span class="n">var_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">var_ref</span> <span class="o">=</span> <span class="n">var</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">var_ref</span> <span class="ow">in</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_vars</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s1">&#39;Variable </span><span class="si">{}</span><span class="s1"> is not available in ungridded &#39;</span>
+                                   <span class="s1">&#39;data (which contains </span><span class="si">{}</span><span class="s1">)&#39;</span>
+                                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_ref</span><span class="p">,</span>
+                                           <span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_vars</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Colocation can only be performed with &#39;</span>
+                             <span class="s1">&#39;ungridded data objects that only contain a &#39;</span>
+                             <span class="s1">&#39;single dataset. Use method `extract_dataset` of &#39;</span>
+                             <span class="s1">&#39;UngriddedData object to extract single datasets&#39;</span><span class="p">)</span>
+        
+    <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
+    <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+    
+    <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
+    
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">grid_start</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>    
+    <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">grid_stop</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+    
+    <span class="c1"># check overlap</span>
+    <span class="k">if</span> <span class="n">stop</span> <span class="o">&lt;</span> <span class="n">grid_start</span> <span class="ow">or</span> <span class="n">start</span> <span class="o">&gt;</span>  <span class="n">grid_stop</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">TimeMatchError</span><span class="p">(</span><span class="s1">&#39;Input time range </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1"> does not &#39;</span>
+                             <span class="s1">&#39;overlap with data range: </span><span class="si">{}</span><span class="s1">-</span><span class="si">{}</span><span class="s1">&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">grid_start</span><span class="p">,</span> <span class="n">grid_stop</span><span class="p">))</span>
+        
+    <span class="c1"># create instance of Filter class (may, in the future, also include all</span>
+    <span class="c1"># filter options, e.g. start, stop, variables, only land, only oceans, and</span>
+    <span class="c1"># may also be linked with other data object, e.g. if data is only supposed</span>
+    <span class="c1"># to be used if other data object exceeds a certain threshold... but for </span>
+    <span class="c1"># now, only region and altitude range)</span>
+    <span class="n">regfilter</span> <span class="o">=</span> <span class="n">Filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">filter_name</span><span class="p">)</span>
+    
+    <span class="c1"># apply filter to data</span>
+    <span class="n">ungridded_data</span> <span class="o">=</span> <span class="n">regfilter</span><span class="p">(</span><span class="n">ungridded_data</span><span class="p">)</span>
+    
+    <span class="n">ungridded_lons</span> <span class="o">=</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">longitude</span>
+    <span class="n">ungridded_lats</span> <span class="o">=</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">latitude</span>               
+
+    <span class="c1">#crop time</span>
+    <span class="n">gridded_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">time_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
+    
+    <span class="c1"># downscale time (if applicable)</span>
+    <span class="n">grid_data</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">downscale_time</span><span class="p">(</span><span class="n">to_ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
+    
+    <span class="c1"># conver</span>
+    <span class="n">grid_stat_data</span> <span class="o">=</span> <span class="n">grid_data</span><span class="o">.</span><span class="n">to_time_series</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">ungridded_lons</span><span class="p">,</span>
+                                              <span class="n">latitude</span><span class="o">=</span><span class="n">ungridded_lats</span><span class="p">,</span>
+                                              <span class="n">vert_scheme</span><span class="o">=</span><span class="n">vert_scheme</span><span class="p">)</span>
+
+    <span class="c1"># pandas frequency string for TS type</span>
+    <span class="n">freq_pd</span> <span class="o">=</span> <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
+    <span class="n">freq_np</span> <span class="o">=</span> <span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">[</span><span class="n">ts_type</span><span class="p">]</span>
+    
+    <span class="n">start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">to_datetime64</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">freq_np</span><span class="p">)))</span>
+    <span class="c1">#stop = pd.Timestamp(stop.to_datetime64().astype(&#39;datetime64[{}]&#39;.format(freq_np)))</span>
+    
+    <span class="n">obs_stat_data</span> <span class="o">=</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">to_station_data_all</span><span class="p">(</span><span class="n">vars_to_convert</span><span class="o">=</span><span class="n">var_ref</span><span class="p">,</span> 
+                                                       <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> 
+                                                       <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span> 
+                                                       <span class="n">freq</span><span class="o">=</span><span class="n">freq_pd</span><span class="p">,</span> 
+                                                       <span class="n">interp_nans</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="n">obs_vals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">grid_vals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">alts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">station_names</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># TIME INDEX ARRAY FOR COLLOCATED DATA OBJECT</span>
+    
+    
+    <span class="n">TIME_IDX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="n">freq_pd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">stop</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">obs_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obs_stat_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obs_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># get observations (Note: the index of the observation time series</span>
+            <span class="c1"># is already in the specified frequency format, and thus, does not</span>
+            <span class="c1"># need to be updated, for details (or if errors occur), cf. </span>
+            <span class="c1"># UngriddedData.to_station_data, where the conversion happens)</span>
+            <span class="n">obs_tseries</span> <span class="o">=</span> <span class="n">obs_data</span><span class="p">[</span><span class="n">var_ref</span><span class="p">]</span>
+            <span class="c1"># get model data corresponding to station</span>
+            <span class="n">grid_tseries</span> <span class="o">=</span> <span class="n">grid_stat_data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">grid_tseries</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;DEVELOPER: PLEASE DEBUG AND FIND SOLUTION&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid_tseries</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">TIME_IDX</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;DEVELOPER: PLEASE DEBUG AND FIND SOLUTION&#39;</span><span class="p">)</span>
+            <span class="c1"># make sure, time index is defined in the right way (i.e.</span>
+            <span class="c1"># according to TIME_INDEX, e.g. if ts_type=&#39;monthly&#39;, it should</span>
+            <span class="c1"># not be the mid or end of month)</span>
+            <span class="n">grid_tseries</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">grid_tseries</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                                     <span class="n">index</span><span class="o">=</span><span class="n">TIME_IDX</span><span class="p">)</span>
+            
+            <span class="c1"># the following command takes care of filling up with NaNs where</span>
+            <span class="c1"># data is missing</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;ungridded&#39;</span> <span class="p">:</span> <span class="n">obs_tseries</span><span class="p">,</span> 
+                               <span class="s1">&#39;gridded&#39;</span>   <span class="p">:</span> <span class="n">grid_tseries</span><span class="p">},</span> 
+                              <span class="n">index</span><span class="o">=</span><span class="n">TIME_IDX</span><span class="p">)</span>
+            
+            <span class="n">grid_vals_temp</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;gridded&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+            <span class="n">obs_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;ungridded&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="n">grid_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid_vals_temp</span><span class="p">)</span>
+            
+            <span class="n">lons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">longitude</span><span class="p">)</span>
+            <span class="n">lats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">latitude</span><span class="p">)</span>
+            <span class="n">alts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">altitude</span><span class="p">)</span>
+            <span class="n">station_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">station_name</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_vals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ColocationError</span><span class="p">(</span><span class="s1">&#39;No observations could be found that match &#39;</span>
+                               <span class="s1">&#39;the colocation constraints&#39;</span><span class="p">)</span>
+        
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span>  <span class="p">:</span>   <span class="p">[</span><span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+            <span class="s1">&#39;var_name&#39;</span>      <span class="p">:</span>   <span class="p">[</span><span class="n">var</span><span class="p">,</span> <span class="n">var_ref</span><span class="p">],</span>
+            <span class="s1">&#39;ts_type&#39;</span>       <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;filter_name&#39;</span>   <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src&#39;</span>   <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;start_str&#39;</span>     <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
+            <span class="s1">&#39;stop_str&#39;</span>      <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;data_level&#39;</span>    <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">}</span>
+
+    
+    <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">regfilter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
+    
+    <span class="n">grid_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">grid_vals</span><span class="p">)</span>
+    <span class="n">obs_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs_vals</span><span class="p">)</span>
+    
+    <span class="n">stat_dim</span><span class="p">,</span> <span class="n">time_dim</span> <span class="o">=</span> <span class="n">grid_vals</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">obs_vals</span><span class="p">,</span> <span class="n">grid_vals</span><span class="p">))</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1">#.reshape((2, time_dim, stat_dim))</span>
+    
+    <span class="c1"># create coordinates of DataArray</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span> <span class="p">:</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">],</span>
+              <span class="s1">&#39;var_name&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;data_source&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]),</span>
+              <span class="s1">&#39;time&#39;</span>        <span class="p">:</span> <span class="n">TIME_IDX</span><span class="p">,</span>
+              <span class="s1">&#39;station_name&#39;</span><span class="p">:</span> <span class="n">station_names</span><span class="p">,</span>
+              <span class="s1">&#39;latitude&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="n">lats</span><span class="p">),</span>
+              <span class="s1">&#39;longitude&#39;</span>   <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="n">lons</span><span class="p">),</span>
+              <span class="s1">&#39;altitude&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="n">alts</span><span class="p">)</span>
+              <span class="p">}</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;station_name&#39;</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">ColocatedData</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                          <span class="n">attrs</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
+    
+    <span class="n">r</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
+    
+    <span class="n">obs_r1</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;MODIS6.terra&#39;</span><span class="p">)</span>
+    <span class="n">obs1</span> <span class="o">=</span> <span class="n">obs_r1</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
+    
+    <span class="n">obs_r2</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">)</span>
+    <span class="n">obs2</span> <span class="o">=</span> <span class="n">obs_r2</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="o">=</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
+    
+    <span class="n">coll_data1</span> <span class="o">=</span> <span class="n">colocate_gridded_gridded</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obs1</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+    
+    <span class="n">coll_data1</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
+    
+    <span class="n">coll_data2</span> <span class="o">=</span> <span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obs2</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span>
+    <span class="n">coll_data2</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">obs1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">obs2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">coll_data1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">coll_data2</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, met.no.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

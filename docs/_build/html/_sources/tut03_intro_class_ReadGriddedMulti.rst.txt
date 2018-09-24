@@ -17,9 +17,9 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-24 15:34:48,978:WARNING:
+    2018-09-24 17:04:17,284:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 15:34:49,633:WARNING:
+    2018-09-24 17:04:17,949:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -120,7 +120,48 @@ this data manually.
 
     r = read["ECHAM6-SALSA_AP3-CTRL2015"]
     r.vars
-    r.verbose = True
+
+
+
+
+.. parsed-literal::
+
+    ['depbc',
+     'depdust',
+     'depoa',
+     'depso4',
+     'depss',
+     'emibc',
+     'emidms',
+     'emidust',
+     'emiso2',
+     'emiso4',
+     'emiss',
+     'emivoc',
+     'emivoct',
+     'loadbc',
+     'loaddust',
+     'loadoa',
+     'loadso4',
+     'loadss',
+     'od550aer',
+     'od550bc',
+     'od550dust',
+     'od550oa',
+     'od550so4',
+     'od550ss',
+     'sconcbc',
+     'sconcdust',
+     'sconcoa',
+     'sconcso4',
+     'sconcss']
+
+
+
+Now read the aerosol optical depth at 550 nm and in monthly resolution.
+
+.. code:: ipython3
+
     r.read_var("od550aer", ts_type="monthly")
 
 
@@ -297,7 +338,7 @@ Plot a map of the first day.
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_23_0.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_0.png
 
 
 Iterate over models and variables
@@ -314,25 +355,25 @@ plots the first time stamp of each result file.
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_0.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_27_0.png
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_1.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_27_1.png
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_2.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_27_2.png
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_3.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_27_3.png
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_4.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_27_4.png
 
 
 
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_25_5.png
+.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_27_5.png
 

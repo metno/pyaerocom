@@ -1,5 +1,5 @@
 """
-Test script for collocation of gridded vs gridded at different resolutions
+Test script for colocation of gridded vs gridded at different resolutions
 """
 
 import pyaerocom as pya

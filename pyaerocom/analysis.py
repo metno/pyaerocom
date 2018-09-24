@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 High level module containing analysis classes and methods to perform 
-collocation.
+colocation.
 
 .. note::
     
@@ -18,9 +18,9 @@ from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import Filter, const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                start_stop_from_year)
-from pyaerocom.collocation import (collocate_gridded_gridded,
-                                   collocate_gridded_ungridded_2D)
-from pyaerocom import CollocatedData
+from pyaerocom.colocation import (colocate_gridded_gridded,
+                                  colocate_gridded_ungridded_2D)
+from pyaerocom import ColocatedData
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.exceptions import NetworkNotSupported, DataCoverageError
 
@@ -35,14 +35,14 @@ class _AnalysisTasks(BrowseDict):
     ----------
     
     """
-    _TASKS_AVAIL = ['collocate']
-    _NAMES_OUTPUT_DIRS = {'collocate'           :   'colocated_data',
+    _TASKS_AVAIL = ['colocate']
+    _NAMES_OUTPUT_DIRS = {'colocate'           :   'colocated_data',
                           'plot_maps'           :   'maps',
                           'plot_scatter'        :   'scatter',
                           'plot_stat_tseries'   :   'stat_tseries'}
-    def __init__(self, collocate=True, plot_maps=False, 
+    def __init__(self, colocate=True, plot_maps=False,
                  plot_scatter=False, plot_stat_tseries=False):
-        self.collocate = collocate
+        self.colocate = colocate
         self.plot_maps = plot_maps
         self.plot_scatter = plot_scatter
         self.plot_stat_tseries = plot_stat_tseries
@@ -82,9 +82,9 @@ class _TS_TYPESetup(BrowseDict):
 class AnalysisSetup(BrowseDict):
     """Setup class for model / obs intercomparison
     
-    An instance of this setup class can be used to run a collocation analysis
+    An instance of this setup class can be used to run a colocation analysis
     between a model and an observation network and will create a number of 
-    :class:`pya.CollocatedData` instances and save them as netCDF file.
+    :class:`pya.ColocatedData` instances and save them as netCDF file.
     
     Note
     ----
@@ -222,9 +222,9 @@ class Analyser(AnalysisSetup):
         return (ts_type_matches, ts_type_setup)
    
 
-    def _colldata_save_name(self, model_data, ts_type_ana, start=None, 
+    def _coldata_save_name(self, model_data, ts_type_ana, start=None,
                            stop=None):
-        """Based on current setup, get savename of collocated data file
+        """Based on current setup, get savename of colocated data file
         """
         if start is None:
             start = model_data.start
@@ -238,7 +238,7 @@ class Analyser(AnalysisSetup):
         start_str = to_datestring_YYYYMMDD(start)
         stop_str = to_datestring_YYYYMMDD(stop)
         ts_type_src = model_data.ts_type
-        coll_data_name = CollocatedData._aerocom_savename(model_data.var_name, 
+        coll_data_name = ColocatedData._aerocom_savename(model_data.var_name,
                                                           self.obs_id, 
                                                           self.model_id, 
                                                           ts_type_src, 
@@ -249,17 +249,17 @@ class Analyser(AnalysisSetup):
         return coll_data_name + '.nc'
     
     def output_dir(self, task_name):
-        """Output directory for collocated data"""
+        """Output directory for colocated data"""
         return self._output_dirs[task_name]
     
-    def _check_colldata_exists(self, model_id, colldata_save_name):
-        """Check if collocated data file exists"""
-        folder = os.path.join(self.output_dir('collocate'), 
+    def _check_coldata_exists(self, model_id, coldata_save_name):
+        """Check if colocated data file exists"""
+        folder = os.path.join(self.output_dir('colocate'),
                               model_id)
         if not os.path.exists(folder):
             return False
         files = os.listdir(folder)
-        if colldata_save_name in files:
+        if coldata_save_name in files:
             return True
         return False
     
@@ -347,12 +347,12 @@ class Analyser(AnalysisSetup):
                     for ts_type_ana in ts_types_ana:
                         if ts_types.index(ts_type_ana) >= ts_types.index(ts_type):
                         
-                            out_dir = self.output_dir('collocate')
-                            savename = self._colldata_save_name(model_data, 
+                            out_dir = self.output_dir('colocate')
+                            savename = self._coldata_save_name(model_data,
                                                                 ts_type_ana, 
                                                                 start,
                                                                 stop)
-                            file_exists = self._check_colldata_exists(
+                            file_exists = self._check_coldata_exists(
                                                                 self.model_id, 
                                                                 savename)
                             if file_exists:
@@ -364,7 +364,7 @@ class Analyser(AnalysisSetup):
                                 else:
                                     os.remove(os.path.join(out_dir, savename))
                             
-                            data_coll = collocate_gridded_ungridded_2D(
+                            data_coll = colocate_gridded_ungridded_2D(
                                                     model_data, obs_data, 
                                                     ts_type=ts_type_ana, 
                                                     start=start, stop=stop,
@@ -442,13 +442,13 @@ class Analyser(AnalysisSetup):
                     for ts_type_ana in ts_types_ana:
                         if ts_types.index(ts_type_ana) >= ts_types.index(ts_type):
                             obs_data = obs_reader.data[var]
-                            out_dir = self.output_dir('collocate')
-                            savename = self._colldata_save_name(model_data, 
+                            out_dir = self.output_dir('colocate')
+                            savename = self._coldata_save_name(model_data,
                                                                 ts_type_ana, 
                                                                 start,
                                                                 stop)
                             
-                            file_exists = self._check_colldata_exists(self.model_id,
+                            file_exists = self._check_coldata_exists(self.model_id,
                                                                       savename)
                             if file_exists:
                                 if not self.options.REANALYSE_EXISTING:
@@ -458,7 +458,7 @@ class Analyser(AnalysisSetup):
                                 else:
                                     os.remove(os.path.join(out_dir, savename))
                                 
-                            data_coll = collocate_gridded_gridded(
+                            data_coll = colocate_gridded_gridded(
                                             model_data, obs_data, 
                                             ts_type=ts_type_ana, 
                                             start=start, stop=stop, 

@@ -38,9 +38,9 @@ E.g.:
 
 .. parsed-literal::
 
-    2018-09-24 15:37:24,564:WARNING:
+    2018-09-24 17:06:25,541:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 15:37:25,259:WARNING:
+    2018-09-24 17:06:26,243:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -278,37 +278,37 @@ Let’s read the files:
 
 .. parsed-literal::
 
-    2018-09-24 15:37:30,135:WARNING:
+    2018-09-24 17:06:30,590:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 09
     
     Error msg: IndexError('list index out of range',)
-    2018-09-24 15:37:30,601:WARNING:
+    2018-09-24 17:06:30,881:WARNING:
     Failed to read header row 6.
     2010 01 01 2017 05 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-24 15:37:30,913:WARNING:
+    2018-09-24 17:06:30,984:WARNING:
     Failed to read header row 6.
     2010 01 01 2012 10 04
     
     Error msg: IndexError('list index out of range',)
-    2018-09-24 15:37:31,187:WARNING:
+    2018-09-24 17:06:31,083:WARNING:
     Failed to read header row 6.
     2010 01 01 2016 07 05
     
     Error msg: IndexError('list index out of range',)
-    2018-09-24 15:37:31,418:WARNING:
+    2018-09-24 17:06:31,199:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-24 15:37:31,676:WARNING:
+    2018-09-24 17:06:31,317:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     
     Error msg: IndexError('list index out of range',)
-    2018-09-24 15:37:32,328:WARNING:
+    2018-09-24 17:06:31,583:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     

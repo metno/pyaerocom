@@ -90,7 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
@@ -188,9 +188,9 @@ an interface for importing results from a single dataset.</p>
 <span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">48</span><span class="p">,</span><span class="mi">978</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">17</span><span class="p">,</span><span class="mi">284</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">basemap</span> <span class="n">extension</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">installed</span> <span class="p">(</span><span class="ow">or</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">imported</span><span class="o">.</span> <span class="n">Some</span> <span class="n">features</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">available</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">49</span><span class="p">,</span><span class="mi">633</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">17</span><span class="p">,</span><span class="mi">949</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">geopy</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">available</span><span class="o">.</span> <span class="n">Aeolus</span> <span class="n">data</span> <span class="n">read</span> <span class="ow">not</span> <span class="n">enabled</span>
 </pre></div>
 </div>
@@ -271,8 +271,41 @@ this is, that these data only exists in monthly resolution. We can load
 this data manually.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
 <span class="n">r</span><span class="o">.</span><span class="n">vars</span>
-<span class="n">r</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;depbc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;depdust&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;depoa&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;depso4&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;depss&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emibc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emidms&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emidust&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emiso2&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emiso4&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emiss&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emivoc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;emivoct&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;loadbc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;loaddust&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;loadoa&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;loadso4&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;loadss&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sconcbc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sconcdust&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sconcoa&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sconcso4&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sconcss&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now read the aerosol optical depth at 550 nm and in monthly resolution.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span>
@@ -422,7 +455,7 @@ containing the od550aer values and draw a map.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">dat_crop</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_23_0.png" src="_images/tut03_intro_class_ReadGriddedMulti_23_0.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_0.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_0.png" />
 <div class="section" id="iterate-over-models-and-variables">
 <h2>Iterate over models and variables<a class="headerlink" href="#iterate-over-models-and-variables" title="Permalink to this headline">¶</a></h2>
 <p>The following cell iterates over all imported variables and models and
@@ -432,12 +465,12 @@ plots the first time stamp of each result file.</p>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 </pre></div>
 </div>
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_0.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_0.png" />
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_1.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_1.png" />
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_2.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_2.png" />
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_3.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_3.png" />
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_4.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_4.png" />
-<img alt="_images/tut03_intro_class_ReadGriddedMulti_25_5.png" src="_images/tut03_intro_class_ReadGriddedMulti_25_5.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_27_0.png" src="_images/tut03_intro_class_ReadGriddedMulti_27_0.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_27_1.png" src="_images/tut03_intro_class_ReadGriddedMulti_27_1.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_27_2.png" src="_images/tut03_intro_class_ReadGriddedMulti_27_2.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_27_3.png" src="_images/tut03_intro_class_ReadGriddedMulti_27_3.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_27_4.png" src="_images/tut03_intro_class_ReadGriddedMulti_27_4.png" />
+<img alt="_images/tut03_intro_class_ReadGriddedMulti_27_5.png" src="_images/tut03_intro_class_ReadGriddedMulti_27_5.png" />
 </div>
 </div>
 

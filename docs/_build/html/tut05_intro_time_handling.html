@@ -90,7 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
@@ -181,18 +181,18 @@
 <p>The
 <a class="reference external" href="http://aerocom.met.no/pya/api.html#module-pya.griddeddata">GriddedData</a>
 class of <em>pyaerocom</em> was introduced in the previous tutorial.</p>
-<p>Here, we want to illustrate one particular feature of <em>pya</em>, namely the
-conversion of CF conform numerical time stamps with a defined unit
-(i.e.&nbsp;basedate and calendar, see e.g.
+<p>Here, we illustrate how <em>pyaerocom</em> handles time. In particular, how
+<em>pyaerocom</em> performs the conversion of CF conform numerical time stamps
+with a defined unit (i.e.&nbsp;basedate and calendar, see e.g.
 <a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate">here</a>
 for details) into datetime-like objects that can be interpreted by tools
-such as <a class="reference external" href="https://pandas.pydata.org/">Pandas</a>. The easiest way to work
-with time stamps in model data is, to simply work on the internal
-numerical indices, avoiding the necessity to convert them into actual
-datetime objects. However, sometimes (e.g.&nbsp;if we want to extract and
-analyse a time-series of global average Aerosol optical densities), we
-wish to use third party libraries such as Pandas, which require the
-timestamps to be datetime-like objects.</p>
+such as <a class="reference external" href="https://pandas.pydata.org/">Pandas</a>.</p>
+<p>The easiest way to work with time stamps in model data is, to simply
+work on the internal numerical indices, avoiding the necessity to
+convert them into actual datetime objects. However, sometimes (e.g.&nbsp;if
+we want to extract and analyse a time-series of global average Aerosol
+optical densities), we wish to use third party libraries such as Pandas,
+which require the timestamps to be datetime-like objects.</p>
 <p>This notebook illustrates how time is handled in the iris module,
 particularly in the
 <a class="reference external" href="http://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube">Cube</a>
@@ -214,9 +214,9 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
 <span class="n">fpath_aatsr</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span><span class="mi">395</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">662</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">basemap</span> <span class="n">extension</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">installed</span> <span class="p">(</span><span class="ow">or</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">imported</span><span class="o">.</span> <span class="n">Some</span> <span class="n">features</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">available</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="mi">059</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">46</span><span class="p">,</span><span class="mi">357</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">geopy</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">available</span><span class="o">.</span> <span class="n">Aeolus</span> <span class="n">data</span> <span class="n">read</span> <span class="ow">not</span> <span class="n">enabled</span>
 </pre></div>
 </div>
@@ -224,21 +224,21 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="mi">170</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
-<span class="n">File</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom</span><span class="o">.</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2018.</span><span class="n">nc</span> <span class="n">contains</span> <span class="n">more</span> <span class="n">than</span> <span class="n">one</span> <span class="n">data</span> <span class="n">field</span><span class="p">:</span> <span class="mi">0</span><span class="p">:</span> <span class="n">Black</span> <span class="n">Carbon</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
-<span class="mi">1</span><span class="p">:</span> <span class="n">Organic</span> <span class="n">Matter</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
-<span class="mi">2</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
-<span class="mi">3</span><span class="p">:</span> <span class="n">Sulphate</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">46</span><span class="p">,</span><span class="mi">465</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom</span><span class="o">.</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2018.</span><span class="n">nc</span> <span class="n">contains</span> <span class="n">more</span> <span class="n">than</span> <span class="n">one</span> <span class="n">data</span> <span class="n">field</span><span class="p">:</span> <span class="mi">0</span><span class="p">:</span> <span class="n">Organic</span> <span class="n">Matter</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
+<span class="mi">1</span><span class="p">:</span> <span class="n">Sulphate</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
+<span class="mi">2</span><span class="p">:</span> <span class="n">Black</span> <span class="n">Carbon</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
+<span class="mi">3</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
 <span class="mi">4</span><span class="p">:</span> <span class="n">Dust</span> <span class="n">Aerosol</span> <span class="n">Optical</span> <span class="n">Depth</span> <span class="n">at</span> <span class="mi">550</span><span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="n">unknown</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">451</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">900</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -344,7 +344,7 @@ conversion method ready that handles any calendar, and that is
 considerably fast. We just saw, that <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> works for both
 datetime formats that we get when calling the <code class="docutils literal notranslate"><span class="pre">cell</span></code> method of the
 <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> object that holds the time stamps. However, keep in mind,
-that whenever <code class="docutils literal notranslate"><span class="pre">call</span></code> is called, it performs a conversion of the
+that whenever <code class="docutils literal notranslate"><span class="pre">cell</span></code> is called, it performs a conversion of the
 numeric value into either <code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code> or, for non-standard
 calendars, into a datetime object from the
 <a class="reference external" href="https://github.com/Unidata/cftime">cftime</a> package. So, either way,
@@ -367,14 +367,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>137 ms ± 1.3 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>123 ms ± 3.31 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>119 ms ± 4.31 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>104 ms ± 635 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -385,14 +385,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>130 ms ± 11.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>124 ms ± 5.07 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>107 ms ± 1.26 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 547 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -411,7 +411,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.61 ms ± 20.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.63 ms ± 12.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -529,7 +529,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>55.8 µs ± 323 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>54.6 µs ± 455 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -547,7 +547,7 @@ here</a>).</p>
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>341 µs ± 1.48 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>330 µs ± 4.47 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -556,7 +556,7 @@ pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 pya_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.04 ms ± 16.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.04 ms ± 42 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -570,14 +570,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>396 µs ± 11.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>383 µs ± 4.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.17 ms ± 61.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.16 ms ± 48.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>

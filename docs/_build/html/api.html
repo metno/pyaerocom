@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="pyaerocom  documentation" href="index.html"/>
         <link rel="next" title="Tests (for developers)" href="api_testsuite.html"/>
-        <link rel="prev" title="Tutorials (Jupyter Notebooks)" href="notebooks.html"/> 
+        <link rel="prev" title="Tutorials (Jupyter Notebooks)" href="tutorials.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -92,16 +92,16 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#data-types-and-data-representation">Data types and data representation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.griddeddata">Gridded data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.ungriddeddata">Ungridded data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#collocated-data">Collocated data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#colocated-data">Colocated data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.station">Other data classes</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#collocation-of-data">Collocation of data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#colocation-of-data">Colocation of data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-import-io-module">Data import (io module)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-pyaerocom.io.readgridded">Reading of gridded data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reading-of-ungridded-data">Reading of ungridded data</a><ul>
@@ -238,9 +238,9 @@
 </div>
 <div class="section" id="data-types-and-data-representation">
 <h2>Data types and data representation<a class="headerlink" href="#data-types-and-data-representation" title="Permalink to this headline">¶</a></h2>
-<p>..todo:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Introduce for main data classes :class:`UngriddedData`, :class:`GriddedData`, :class:`StationData` and :class:`CollocatedData`
-</pre></div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Introduce for main data classes <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">StationData</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">ColocatedData</span></code></p>
 </div>
 <div class="section" id="module-pyaerocom.griddeddata">
 <span id="gridded-data"></span><h3>Gridded data<a class="headerlink" href="#module-pyaerocom.griddeddata" title="Permalink to this headline">¶</a></h3>
@@ -586,7 +586,7 @@ be created)</p>
 <p>Extract time series for each lon / lat coordinate in this cube or at
 predefined sample points (e.g. station data). If sample points are
 provided, the cube is interpolated first onto the sample points.</p>
-<div class="admonition-todo admonition" id="index-0">
+<div class="admonition-todo admonition" id="index-1">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check Memory error handle</p>
 </div>
@@ -630,7 +630,7 @@ are: <code class="docutils literal notranslate"><span class="pre">longitude,</sp
 <dt id="pyaerocom.griddeddata.GriddedData.to_time_series_single_coord">
 <code class="descname">to_time_series_single_coord</code><span class="sig-paren">(</span><em>latitude</em>, <em>longitude</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/griddeddata.html#GriddedData.to_time_series_single_coord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.to_time_series_single_coord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make time series dictionary of single location using neirest coordinate</p>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">Crop before extraction</p>
 </div>
@@ -1044,7 +1044,7 @@ points and hence, the shape of the underlying numpy array will be 450x11.</p>
 is height resolved, containing 100 altitudes =&gt; 3*5*30*100=4500 data points,
 thus, the final shape will be 4500x11.</p>
 </div>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">Include unit attribute for each variable (in pyaerocom.io package: make
 sure to include units during ungridded read, if available)</p>
@@ -1223,7 +1223,7 @@ station_names is list or None: list of dictionaries with station data</p>
 <dt id="pyaerocom.ungriddeddata.UngriddedData.to_station_data">
 <code class="descname">to_station_data</code><span class="sig-paren">(</span><em>meta_idx</em>, <em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em>, <em>data_as_series=True</em>, <em>_test_mode=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.to_station_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert data from one station to <code class="xref py py-class docutils literal notranslate"><span class="pre">StationData</span></code></p>
-<div class="admonition-todo admonition" id="index-3">
+<div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Review for retrieval of profile data (e.g. Lidar data)</li>
@@ -1321,7 +1321,7 @@ etc.)</p>
 <p class="first admonition-title">Note</p>
 <p class="last">Beta version</p>
 </div>
-<div class="admonition-todo admonition" id="index-4">
+<div class="admonition-todo admonition" id="index-5">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check filter history (attr filter_hist) before applying filter in
 order to see if filter(s) already have been applied before</p>
@@ -1389,7 +1389,7 @@ input network</td>
 <dl class="method">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.station_data_to_ascii">
 <code class="descname">station_data_to_ascii</code><span class="sig-paren">(</span><em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.station_data_to_ascii"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.station_data_to_ascii" title="Permalink to this definition">¶</a></dt>
-<dd><div class="admonition-todo admonition" id="index-5">
+<dd><div class="admonition-todo admonition" id="index-6">
 <p class="first admonition-title">Todo</p>
 <p class="last">Write docstring</p>
 </div>
@@ -1412,7 +1412,7 @@ determine single locations</p>
 <dt id="pyaerocom.ungriddeddata.UngriddedData.merge_common_meta">
 <code class="descname">merge_common_meta</code><span class="sig-paren">(</span><em>ignore_keys=['PI', 'var_info']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.merge_common_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.merge_common_meta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge all meta entries that are the same</p>
-<div class="admonition-todo admonition" id="index-6">
+<div class="admonition-todo admonition" id="index-7">
 <p class="first admonition-title">Todo</p>
 <p class="last">Keep mapping of <code class="docutils literal notranslate"><span class="pre">var_info</span></code> (if defined in <code class="docutils literal notranslate"><span class="pre">metadata</span></code>) to data
 points (e.g. EBAS), since the data sources may be at different
@@ -1607,24 +1607,24 @@ station in the other object</p>
 <dd></dd></dl>
 
 </div>
-<div class="section" id="collocated-data">
-<h3>Collocated data<a class="headerlink" href="#collocated-data" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="colocated-data">
+<h3>Colocated data<a class="headerlink" href="#colocated-data" title="Permalink to this headline">¶</a></h3>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This module is a beta version and currently more a draft for handling of merged and temorally regularised data objects. It may undergo significant changes in the near future.</p>
 </div>
-<span class="target" id="module-pyaerocom.collocateddata"></span><dl class="class">
-<dt id="pyaerocom.collocateddata.CollocatedData">
-<em class="property">class </em><code class="descclassname">pyaerocom.collocateddata.</code><code class="descname">CollocatedData</code><span class="sig-paren">(</span><em>data=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class representing collocated and unified data from two sources</p>
+<span class="target" id="module-pyaerocom.colocateddata"></span><dl class="class">
+<dt id="pyaerocom.colocateddata.ColocatedData">
+<em class="property">class </em><code class="descclassname">pyaerocom.colocateddata.</code><code class="descname">ColocatedData</code><span class="sig-paren">(</span><em>data=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing colocated and unified data from two sources</p>
 <p>Sources may be instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code> or
 <code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code> that have been compared to each other.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Currently, it is not foreseen, that this object is instantiated from
 scratch, but it is rather created in and returned by objects / methods
-that perform collocation.
-The purpose of this object is thus, not the creation of collocated objects,
+that perform colocation.
+The purpose of this object is thus, not the creation of colocated objects,
 but solely the analysis of such data as well as I/O features (e.g. save as
 / read from .nc files, convert to pandas.DataFrame, plot station time
 series overlays, scatter plots, etc.)</p>
@@ -1637,7 +1637,7 @@ datasets that were compared</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – Collocated data. If str, then it is attempted to be loaded from file.
+<li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – Colocated data. If str, then it is attempted to be loaded from file.
 Else, it is assumed that data is numpy array and that all further
 supplementary inputs (e.g. coords, dims) for the
 instantiation of <code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code> is provided via <a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs. I</li>
@@ -1652,98 +1652,98 @@ in case input <a href="#id9"><span class="problematic" id="id10">:arg:`data`</sp
 </tbody>
 </table>
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.data">
-<code class="descname">data</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.data" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.data">
+<code class="descname">data</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Data object (instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.name">
-<code class="descname">name</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.name" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.name">
+<code class="descname">name</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Name of data (should be variable name)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.ndim">
-<code class="descname">ndim</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.ndim" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.ndim">
+<code class="descname">ndim</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.ndim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dimension of data array</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.shape">
-<code class="descname">shape</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.shape" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.shape">
+<code class="descname">shape</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shape of data array</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.data_source">
-<code class="descname">data_source</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.data_source" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.data_source">
+<code class="descname">data_source</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.data_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Coordinate array containing data sources (z-axis)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.var_name">
-<code class="descname">var_name</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.var_name" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.var_name">
+<code class="descname">var_name</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.var_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Coordinate array containing data sources (z-axis)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.longitude">
-<code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.longitude" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.longitude">
+<code class="descname">longitude</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.longitude" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array of longitude coordinates</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.latitude">
-<code class="descname">latitude</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.latitude" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.latitude">
+<code class="descname">latitude</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.latitude" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array of latitude coordinates</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.time">
-<code class="descname">time</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.time">
+<code class="descname">time</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array containing time stamps</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.start">
-<code class="descname">start</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.start" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.start">
+<code class="descname">start</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start datetime of data</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.stop">
-<code class="descname">stop</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.stop" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.stop">
+<code class="descname">stop</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop datetime of data</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.ts_type">
-<code class="descname">ts_type</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.ts_type" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.ts_type">
+<code class="descname">ts_type</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.ts_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>String specifying temporal resolution of data</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.meta">
-<code class="descname">meta</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.meta" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.meta">
+<code class="descname">meta</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.meta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Meta data</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.num_grid_points">
-<code class="descname">num_grid_points</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.num_grid_points" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.num_grid_points">
+<code class="descname">num_grid_points</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.num_grid_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of lon / lat grid points that contain data</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.check_dimensions">
-<code class="descname">check_dimensions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.check_dimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.check_dimensions" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.check_dimensions">
+<code class="descname">check_dimensions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.check_dimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.check_dimensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if data source and time dimension are at the right index</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.calc_statistics">
-<code class="descname">calc_statistics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.calc_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.calc_statistics" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.calc_statistics">
+<code class="descname">calc_statistics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.calc_statistics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.calc_statistics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate statistics from data ensemble</p>
 <p>Wrapper for function <a class="reference internal" href="#pyaerocom.mathutils.calc_statistics" title="pyaerocom.mathutils.calc_statistics"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.mathutils.calc_statistics()</span></code></a></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1759,8 +1759,8 @@ in case input <a href="#id9"><span class="problematic" id="id10">:arg:`data`</sp
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.plot_scatter">
-<code class="descname">plot_scatter</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.plot_scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.plot_scatter" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.plot_scatter">
+<code class="descname">plot_scatter</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.plot_scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.plot_scatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create scatter plot of data</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1777,14 +1777,14 @@ in case input <a href="#id9"><span class="problematic" id="id10">:arg:`data`</sp
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.collocateddata.CollocatedData.save_name_aerocom">
-<code class="descname">save_name_aerocom</code><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.save_name_aerocom" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.save_name_aerocom">
+<code class="descname">save_name_aerocom</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.save_name_aerocom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default save name for data object following AeroCom convention</p>
 </dd></dl>
 
 <dl class="staticmethod">
-<dt id="pyaerocom.collocateddata.CollocatedData.get_meta_from_filename">
-<em class="property">static </em><code class="descname">get_meta_from_filename</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.get_meta_from_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.get_meta_from_filename" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.get_meta_from_filename">
+<em class="property">static </em><code class="descname">get_meta_from_filename</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.get_meta_from_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.get_meta_from_filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get meta information from file name</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1805,15 +1805,15 @@ may include the delimiter _ in their name.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.to_netcdf">
-<code class="descname">to_netcdf</code><span class="sig-paren">(</span><em>out_dir</em>, <em>save_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.to_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.to_netcdf" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.to_netcdf">
+<code class="descname">to_netcdf</code><span class="sig-paren">(</span><em>out_dir</em>, <em>save_name=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.to_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.to_netcdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save data object as .nc file</p>
 <p>Wrapper for method <code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.DataArray.to_netdcf()</span></code>
 :param out_dir: output directory
 :type out_dir: str
 :param save_name: name of file, if None, the default save name is used (cf.</p>
 <blockquote>
-<div><a class="reference internal" href="#pyaerocom.collocateddata.CollocatedData.save_name_aerocom" title="pyaerocom.collocateddata.CollocatedData.save_name_aerocom"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_name_aerocom</span></code></a>)</div></blockquote>
+<div><a class="reference internal" href="#pyaerocom.colocateddata.ColocatedData.save_name_aerocom" title="pyaerocom.colocateddata.ColocatedData.save_name_aerocom"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_name_aerocom</span></code></a>)</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1826,8 +1826,8 @@ may include the delimiter _ in their name.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.read_netcdf">
-<code class="descname">read_netcdf</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.read_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.read_netcdf" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.read_netcdf">
+<code class="descname">read_netcdf</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.read_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.read_netcdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read data from NetCDF file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1840,8 +1840,8 @@ may include the delimiter _ in their name.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.to_dataframe">
-<code class="descname">to_dataframe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.to_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.to_dataframe" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.to_dataframe">
+<code class="descname">to_dataframe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.to_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.to_dataframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert this object into pandas.DataFrame</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1850,19 +1850,19 @@ may include the delimiter _ in their name.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.from_dataframe">
-<code class="descname">from_dataframe</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.from_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.from_dataframe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create collocated Data object from dataframe</p>
+<dt id="pyaerocom.colocateddata.ColocatedData.from_dataframe">
+<code class="descname">from_dataframe</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.from_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.from_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create colocated Data object from dataframe</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This is intended to be used as back-conversion from <a class="reference internal" href="#pyaerocom.collocateddata.CollocatedData.to_dataframe" title="pyaerocom.collocateddata.CollocatedData.to_dataframe"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_dataframe()</span></code></a>
-and methods that use the latter (e.g. <a class="reference internal" href="#pyaerocom.collocateddata.CollocatedData.to_csv" title="pyaerocom.collocateddata.CollocatedData.to_csv"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_csv()</span></code></a>).</p>
+<p class="last">This is intended to be used as back-conversion from <a class="reference internal" href="#pyaerocom.colocateddata.ColocatedData.to_dataframe" title="pyaerocom.colocateddata.ColocatedData.to_dataframe"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_dataframe()</span></code></a>
+and methods that use the latter (e.g. <a class="reference internal" href="#pyaerocom.colocateddata.ColocatedData.to_csv" title="pyaerocom.colocateddata.ColocatedData.to_csv"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_csv()</span></code></a>).</p>
 </div>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.to_csv">
-<code class="descname">to_csv</code><span class="sig-paren">(</span><em>out_dir</em>, <em>save_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.to_csv" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>out_dir</em>, <em>save_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.to_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save data object as .csv file</p>
 <p>Converts data to pandas.DataFrame and then saves as csv</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1872,7 +1872,7 @@ and methods that use the latter (e.g. <a class="reference internal" href="#pyaer
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>out_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – output directory</li>
 <li><strong>save_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – name of file, if None, the default save name is used (cf.
-<a class="reference internal" href="#pyaerocom.collocateddata.CollocatedData.save_name_aerocom" title="pyaerocom.collocateddata.CollocatedData.save_name_aerocom"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_name_aerocom</span></code></a>)</li>
+<a class="reference internal" href="#pyaerocom.colocateddata.ColocatedData.save_name_aerocom" title="pyaerocom.colocateddata.ColocatedData.save_name_aerocom"><code class="xref py py-attr docutils literal notranslate"><span class="pre">save_name_aerocom</span></code></a>)</li>
 </ul>
 </td>
 </tr>
@@ -1881,18 +1881,18 @@ and methods that use the latter (e.g. <a class="reference internal" href="#pyaer
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.from_csv">
-<code class="descname">from_csv</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.from_csv" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.from_csv">
+<code class="descname">from_csv</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.from_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read data from CSV file</p>
-<div class="admonition-todo admonition" id="index-7">
+<div class="admonition-todo admonition" id="index-8">
 <p class="first admonition-title">Todo</p>
 <p class="last">Complete docstring</p>
 </div>
 </dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocateddata.CollocatedData.open">
-<code class="descname">open</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocateddata.html#CollocatedData.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocateddata.CollocatedData.open" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocateddata.ColocatedData.open">
+<code class="descname">open</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>High level helper for reading from supported file sources</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2179,40 +2179,40 @@ must be list or array and must have the same length as attribute
 
 </div>
 </div>
-<div class="section" id="collocation-of-data">
-<h2>Collocation of data<a class="headerlink" href="#collocation-of-data" title="Permalink to this headline">¶</a></h2>
-<p>This module contains collocation methods (cf. <code class="xref py py-class docutils literal notranslate"><span class="pre">CollocatedData</span></code>)</p>
-<span class="target" id="module-pyaerocom.collocation"></span><p>Methods and / or classes to perform collocation</p>
+<div class="section" id="colocation-of-data">
+<h2>Colocation of data<a class="headerlink" href="#colocation-of-data" title="Permalink to this headline">¶</a></h2>
+<p>This module contains colocation methods (cf. <code class="xref py py-class docutils literal notranslate"><span class="pre">ColocatedData</span></code>)</p>
+<span class="target" id="module-pyaerocom.colocation"></span><p>Methods and / or classes to perform colocation</p>
 <dl class="class">
-<dt id="pyaerocom.collocation.Collocator">
-<em class="property">class </em><code class="descclassname">pyaerocom.collocation.</code><code class="descname">Collocator</code><span class="sig-paren">(</span><em>data_ref</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#Collocator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.Collocator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper / factory class for performing collocation of data</p>
+<dt id="pyaerocom.colocation.Colocator">
+<em class="property">class </em><code class="descclassname">pyaerocom.colocation.</code><code class="descname">Colocator</code><span class="sig-paren">(</span><em>data_ref</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#Colocator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.Colocator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper / factory class for performing colocation of data</p>
 <dl class="attribute">
-<dt id="pyaerocom.collocation.Collocator.SUPPORTED">
-<code class="descname">SUPPORTED</code><em class="property"> = (&lt;class 'pyaerocom.griddeddata.GriddedData'&gt;, &lt;class 'pyaerocom.ungriddeddata.UngriddedData'&gt;)</em><a class="headerlink" href="#pyaerocom.collocation.Collocator.SUPPORTED" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocation.Colocator.SUPPORTED">
+<code class="descname">SUPPORTED</code><em class="property"> = (&lt;class 'pyaerocom.griddeddata.GriddedData'&gt;, &lt;class 'pyaerocom.ungriddeddata.UngriddedData'&gt;)</em><a class="headerlink" href="#pyaerocom.colocation.Colocator.SUPPORTED" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pyaerocom.collocation.Collocator.run">
-<code class="descname">run</code><span class="sig-paren">(</span><em>data</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>**add_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#Collocator.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.Collocator.run" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.colocation.Colocator.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>data</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>**add_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#Colocator.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.Colocator.run" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="function">
-<dt id="pyaerocom.collocation.collocate_gridded_gridded">
-<code class="descclassname">pyaerocom.collocation.</code><code class="descname">collocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>regrid_scheme='areaweighted'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#collocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.collocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collocate 2 gridded data objects</p>
-<div class="admonition-todo admonition" id="index-8">
+<dt id="pyaerocom.colocation.colocate_gridded_gridded">
+<code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>regrid_scheme='areaweighted'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
+<dd><p>Colocate 2 gridded data objects</p>
+<div class="admonition-todo admonition" id="index-9">
 <p class="first admonition-title">Todo</p>
 <p class="last">Complete docstring</p>
 </div>
 </dd></dl>
 
 <dl class="function">
-<dt id="pyaerocom.collocation.collocate_gridded_ungridded_2D">
-<code class="descclassname">pyaerocom.collocation.</code><code class="descname">collocate_gridded_ungridded_2D</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>ungridded_data</em>, <em>ts_type='daily'</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>var_ref=None</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/collocation.html#collocate_gridded_ungridded_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.collocation.collocate_gridded_ungridded_2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collocate gridded with ungridded data of 2D data</p>
+<dt id="pyaerocom.colocation.colocate_gridded_ungridded_2D">
+<code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_ungridded_2D</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>ungridded_data</em>, <em>ts_type='daily'</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>var_ref=None</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_ungridded_2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_ungridded_2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Colocate gridded with ungridded data of 2D data</p>
 <p>2D means, that the vertical direction is only sampled at one altitude or
 the variable is of integrated nature (or averaged) so that the dimensionality
 of the grid data is (or can be -&gt; cf. input parameter <cite>vert_scheme</cite>)
@@ -2229,12 +2229,12 @@ reduced to dimensionality time, lat, lon.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>gridded_data</strong> (<a class="reference internal" href="#pyaerocom.griddeddata.GriddedData" title="pyaerocom.griddeddata.GriddedData"><em>GriddedData</em></a>) – gridded data (e.g. model results)</li>
 <li><strong>ungridded_data</strong> (<a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData" title="pyaerocom.ungriddeddata.UngriddedData"><em>UngriddedData</em></a>) – ungridded data (e.g. observations)</li>
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable to be collocated</li>
-<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – desired temporal resolution of collocated data (must be valid AeroCom
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable to be colocated</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – desired temporal resolution of colocated data (must be valid AeroCom
 ts_type str such as daily, monthly, yearly..)</li>
-<li><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime64</span></code> or similar, optional) – start time for collocation, if None, the start time of the input
+<li><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime64</span></code> or similar, optional) – start time for colocation, if None, the start time of the input
 <code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code> object is used</li>
-<li><strong>stop</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime64</span></code> or similar, optional) – stop time for collocation, if None, the stop time of the input
+<li><strong>stop</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">datetime64</span></code> or similar, optional) – stop time for colocation, if None, the stop time of the input
 <code class="xref py py-class docutils literal notranslate"><span class="pre">GriddedData</span></code> object is used</li>
 <li><strong>filter_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying filter used (cf. <a class="reference internal" href="#pyaerocom.filter.Filter" title="pyaerocom.filter.Filter"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.filter.Filter</span></code></a> for
 details). Default is ‘WORLD-wMOUNTAINS’, which corresponds to no
@@ -2252,10 +2252,10 @@ class can handle different methods with different inputs)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">instance of collocated data</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">instance of colocated data</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#pyaerocom.collocateddata.CollocatedData" title="pyaerocom.collocateddata.CollocatedData">CollocatedData</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#pyaerocom.colocateddata.ColocatedData" title="pyaerocom.colocateddata.ColocatedData">ColocatedData</a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
@@ -2263,8 +2263,8 @@ class can handle different methods with different inputs)</li>
 <li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">AttributeError</span></code></a> – if instance of input <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code> object contains more than
 one dataset</li>
 <li><code class="xref py py-exc docutils literal notranslate"><span class="pre">TimeMatchError</span></code> – if gridded data time range does not overlap with input time range</li>
-<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">CollocationError</span></code> – if none of the data points in input <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code> matches
-the input collocation constraints</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ColocationError</span></code> – if none of the data points in input <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code> matches
+the input colocation constraints</li>
 </ul>
 </td>
 </tr>
@@ -2403,7 +2403,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f16bd533950&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f008f872730&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2893,7 +2893,7 @@ variables is available in this object</li>
 number of models and specific for a certain time interval (that can be
 defined, but must not be defined). Largely based on
 <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded" title="pyaerocom.io.readgridded.ReadGridded"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReadGridded</span></code></a>.</p>
-<div class="admonition-todo admonition" id="index-9">
+<div class="admonition-todo admonition" id="index-10">
 <p class="first admonition-title">Todo</p>
 <p class="last">Sub-class from ReadGridded</p>
 </div>
@@ -3633,7 +3633,7 @@ to read all files from this station into data object.</p>
 <p class="first admonition-title">See also</p>
 <p class="last">Base classes <code class="xref py py-class docutils literal notranslate"><span class="pre">ReadAeronetBase</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">ReadUngriddedBase</span></code></p>
 </div>
-<div class="admonition-todo admonition" id="index-10">
+<div class="admonition-todo admonition" id="index-11">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check level 1.5 data and include</p>
 </div>
@@ -3693,7 +3693,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f16bd533620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f008f872400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f008f872488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4034,7 +4034,7 @@ to read all files from this station into data object.</p>
 <em class="property">class </em><code class="descclassname">pyaerocom.io.read_aeronet_sdav2.</code><code class="descname">ReadAeronetSdaV2</code><span class="sig-paren">(</span><em>dataset_to_read=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav2.html#ReadAeronetSdaV2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyaerocom.io.readaeronetbase.ReadAeronetBase" title="pyaerocom.io.readaeronetbase.ReadAeronetBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.io.readaeronetbase.ReadAeronetBase</span></code></a></p>
 <p>Interface for reading Aeronet Sun V2 Level 2 data</p>
-<div class="admonition-todo admonition" id="index-11">
+<div class="admonition-todo admonition" id="index-12">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check if also level 1.5 works and include</p>
 </div>
@@ -4094,7 +4094,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f16bd533620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f16bd5337b8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f16bd533840&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f008f872400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f008f872488&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f008f872598&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f008f872620&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4500,7 +4500,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f16bd533730&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f008f872510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f008f872488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4924,7 +4924,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f16bd533620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f008f872400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f008f872488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5322,7 +5322,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f16bd5337b8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f16bd533840&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f008f872488&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f008f872598&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f008f872620&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5716,7 +5716,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f16bd533730&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f008f872510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f008f872488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -6412,7 +6412,7 @@ in <code class="docutils literal notranslate"><span class="pre">SUPPORTED_DATASE
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-12">
+<div class="admonition-todo admonition" id="index-13">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check for negative values vs. detection limit</p>
 </div>
@@ -6544,7 +6544,7 @@ variables</td>
 <dt id="pyaerocom.io.read_ebas.ReadEbas.read_file">
 <code class="descname">read_file</code><span class="sig-paren">(</span><em>filename</em>, <em>vars_to_retrieve=None</em>, <em>_vars_to_read=None</em>, <em>_vars_to_compute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_ebas.html#ReadEbas.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.read_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read Aeronet file containing results from v2 inversion algorithm</p>
-<div class="admonition-todo admonition" id="index-13">
+<div class="admonition-todo admonition" id="index-14">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Introduce unit check</li>
@@ -8641,7 +8641,7 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 <p class="first admonition-title">Note</p>
 <p class="last">BETA version (currently being tested)</p>
 </div>
-<div class="admonition-todo admonition" id="index-14">
+<div class="admonition-todo admonition" id="index-15">
 <p class="first admonition-title">Todo</p>
 <p class="last">Include also temporal filtering and other filter options (e.g. variable,
 etc.)</p>
@@ -9042,7 +9042,7 @@ stamp, the first index is used)</li>
 <dt id="pyaerocom.plot.plotscatter.plotscatter">
 <code class="descclassname">pyaerocom.plot.plotscatter.</code><code class="descname">plotscatter</code><span class="sig-paren">(</span><em>model_name</em>, <em>model_data=None</em>, <em>obs_data=None</em>, <em>opts=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/plotscatter.html#plotscatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.plotscatter.plotscatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot scatterplots</p>
-<div class="admonition-todo admonition" id="index-15">
+<div class="admonition-todo admonition" id="index-16">
 <p class="first admonition-title">Todo</p>
 <p class="last">Complete docstring, review code</p>
 </div>
@@ -9063,7 +9063,7 @@ an example)</p>
 <p class="first admonition-title">Note</p>
 <p class="last">This is a beta version and thus, might undergo major changes</p>
 </div>
-<div class="admonition-todo admonition" id="index-16">
+<div class="admonition-todo admonition" id="index-17">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Review y axis limits (default variable info)</li>
@@ -10062,7 +10062,7 @@ corresponding wavelength shifted AOD</p>
         <a href="api_testsuite.html" class="btn btn-neutral float-right" title="Tests (for developers)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="notebooks.html" class="btn btn-neutral" title="Tutorials (Jupyter Notebooks)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tutorials.html" class="btn btn-neutral" title="Tutorials (Jupyter Notebooks)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

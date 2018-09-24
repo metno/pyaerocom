@@ -90,7 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
@@ -210,9 +210,9 @@ pyaerocom from within a Python3 console.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Version: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">pya</span>.__version__)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span><span class="mi">181</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span><span class="mi">394</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">basemap</span> <span class="n">extension</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">installed</span> <span class="p">(</span><span class="ow">or</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">imported</span><span class="o">.</span> <span class="n">Some</span> <span class="n">features</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">available</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span><span class="mi">870</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">25</span><span class="p">,</span><span class="mi">099</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">geopy</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">available</span><span class="o">.</span> <span class="n">Aeolus</span> <span class="n">data</span> <span class="n">read</span> <span class="ow">not</span> <span class="n">enabled</span>
 </pre></div>
 </div>
@@ -3005,21 +3005,21 @@ data import since we know the model and run ID from the previous cell
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;CAM5.3-Oslo_CTRL2016&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span><span class="mi">562</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">25</span><span class="p">,</span><span class="mi">816</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550dryaer</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span><span class="mi">826</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">092</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550dryaer</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">03</span><span class="p">,</span><span class="mi">072</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">354</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550dryaer</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">03</span><span class="p">,</span><span class="mi">215</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">468</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550dryaer</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">03</span><span class="p">,</span><span class="mi">619</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">867</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550dryaer</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">03</span><span class="p">,</span><span class="mi">945</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">192</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">od550dryaer</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">04</span><span class="p">,</span><span class="mi">177</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">459</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">deltaz</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
-<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mi">04</span><span class="p">,</span><span class="mi">320</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">17</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">27</span><span class="p">,</span><span class="mi">644</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">No</span> <span class="n">default</span> <span class="n">configuration</span> <span class="n">available</span> <span class="k">for</span> <span class="n">variable</span> <span class="n">humidity</span><span class="o">.</span> <span class="n">Using</span> <span class="n">DEFAULT</span> <span class="n">settings</span>
 </pre></div>
 </div>
@@ -3046,15 +3046,15 @@ data object has to be accessed using the first index of the tuple.</p>
 </pre></div>
 </div>
 <pre class="literal-block">
-2018-09-24 15:34:08,983:WARNING:
-File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
-1: gauss weights / (1)                 (latitude: 192)
-2018-09-24 15:34:08,989:WARNING:
+2018-09-24 17:03:38,500:WARNING:
+File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: gauss weights / (1)                 (latitude: 192)
+1: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
+2018-09-24 17:03:38,503:WARNING:
 Invalid time dimension.
 Error message: ValueError(&quot;Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']&quot;,)
-2018-09-24 15:34:08,989:WARNING:
+2018-09-24 17:03:38,504:WARNING:
 Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc.
-2018-09-24 15:34:08,990:WARNING:
+2018-09-24 17:03:38,504:WARNING:
 Attempting to correct time coordinate using information in file name
 </pre>
 </div>
@@ -3269,7 +3269,7 @@ that we extracted.</p>
 <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">weighted_mean</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fb8fa49c780</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f997ac3aa20</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_31_1.png" src="_images/tut00_get_started_31_1.png" />
