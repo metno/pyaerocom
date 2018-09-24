@@ -39,24 +39,24 @@ information about what is in there.
 
 .. parsed-literal::
 
-    2018-09-20 15:31:52,665:WARNING:
+    2018-09-21 11:33:55,733:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.027283430099487305 s
+    Elapsed time init all variables: 0.026061058044433594 s
 
 
 .. parsed-literal::
 
-    2018-09-20 15:31:53,387:WARNING:
+    2018-09-21 11:33:56,451:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.0575881004333496 s
+    Elapsed time init pyaerocom: 1.0348269939422607 s
     
     Pyaerocom ReadGridded
     ---------------------

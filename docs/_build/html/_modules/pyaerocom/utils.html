@@ -171,6 +171,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">ReadGridded</span>
 <span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
     
 <div class="viewcode-block" id="create_varinfo_table"><a class="viewcode-back" href="../../api.html#pyaerocom.utils.create_varinfo_table">[docs]</a><span class="k">def</span> <span class="nf">create_varinfo_table</span><span class="p">(</span><span class="n">model_ids</span><span class="p">,</span> <span class="n">vars_or_var_patterns</span><span class="p">,</span> <span class="n">read_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
@@ -285,6 +286,14 @@
     <span class="k">if</span> <span class="n">sort_by_cols</span><span class="p">:</span>
         <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">sort_by_cols</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="print_file"><a class="viewcode-back" href="../../api.html#pyaerocom.utils.print_file">[docs]</a><span class="k">def</span> <span class="nf">print_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;File not found...&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

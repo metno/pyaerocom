@@ -49,24 +49,24 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    2018-09-20 15:31:35,440:WARNING:
+    2018-09-21 11:33:38,521:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.02588176727294922 s
+    Elapsed time init all variables: 0.02725815773010254 s
 
 
 .. parsed-literal::
 
-    2018-09-20 15:31:36,371:WARNING:
+    2018-09-21 11:33:39,240:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.2451450824737549 s
+    Elapsed time init pyaerocom: 1.0342307090759277 s
     Installation base directory: /home/jonasg/github/pyaerocom/pyaerocom
     Version: 0.3.0
 
@@ -615,9 +615,7 @@ via an instance of the ``Config`` class.
     ua
     va
     wa
-    
-    Aliases
-    .......
+    ec550dryaer
 
 
 You can check if the relevant base directories ``MODELBASEDIR`` and
@@ -661,9 +659,9 @@ options to do this:
 
 .. parsed-literal::
 
-    /home/jonasg/github/pyaerocom/pyaerocom/config.py:307: UserWarning: Model base directory %s does not exist
+    /home/jonasg/github/pyaerocom/pyaerocom/config.py:321: UserWarning: Model base directory %s does not exist
       warn("Model base directory %s does not exist")
-    /home/jonasg/github/pyaerocom/pyaerocom/config.py:310: UserWarning: Observations base directory %s does not exist
+    /home/jonasg/github/pyaerocom/pyaerocom/config.py:324: UserWarning: Observations base directory %s does not exist
       warn("Observations base directory %s does not exist")
 
 
@@ -1207,9 +1205,7 @@ See what’s currently in there.
     ua
     va
     wa
-    
-    Aliases
-    .......
+    ec550dryaer
 
 
 As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
@@ -1757,9 +1753,7 @@ the method ``load_config(config_file)`` or the wrapper method
     ua
     va
     wa
-    
-    Aliases
-    .......
+    ec550dryaer
 
 
 The ``reload`` (and ``load_config``) method actually checks if the
@@ -2313,9 +2307,7 @@ choose valid paths, this should work.
     ua
     va
     wa
-    
-    Aliases
-    .......
+    ec550dryaer
 
 
 This is it! Note, however, that we just inserted the current directory
@@ -2861,9 +2853,7 @@ have to reload the config as it was at the beginning:
     ua
     va
     wa
-    
-    Aliases
-    .......
+    ec550dryaer
 
 
 Now with everything being set up correctly, we can start analysing the
@@ -2914,21 +2904,21 @@ data import since we know the model and run ID from the previous cell
 
 .. parsed-literal::
 
-    2018-09-20 15:31:37,233:WARNING:
+    2018-09-21 11:33:40,020:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-20 15:31:37,495:WARNING:
+    2018-09-21 11:33:40,286:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-20 15:31:37,742:WARNING:
+    2018-09-21 11:33:40,536:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-20 15:31:37,858:WARNING:
+    2018-09-21 11:33:40,653:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-20 15:31:38,251:WARNING:
+    2018-09-21 11:33:41,044:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-20 15:31:38,560:WARNING:
+    2018-09-21 11:33:41,368:WARNING:
     No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-20 15:31:38,784:WARNING:
+    2018-09-21 11:33:41,596:WARNING:
     No default configuration available for variable deltaz. Using DEFAULT settings
-    2018-09-20 15:31:38,928:WARNING:
+    2018-09-21 11:33:41,742:WARNING:
     No default configuration available for variable humidity. Using DEFAULT settings
 
 
@@ -2965,15 +2955,15 @@ data object has to be accessed using the first index of the tuple.
 
 .. parsed-literal::
 
-    2018-09-20 15:31:41,232:WARNING:
-    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
-    1: gauss weights / (1)                 (latitude: 192)
-    2018-09-20 15:31:41,236:WARNING:
+    2018-09-21 11:33:44,441:WARNING:
+    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: gauss weights / (1)                 (latitude: 192)
+    1: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
+    2018-09-21 11:33:44,445:WARNING:
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
-    2018-09-20 15:31:41,237:WARNING:
+    2018-09-21 11:33:44,445:WARNING:
     Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. 
-    2018-09-20 15:31:41,237:WARNING:
+    2018-09-21 11:33:44,446:WARNING:
     Attempting to correct time coordinate using information in file name
 
 
@@ -3216,7 +3206,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f2f5ed299e8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fd18359ea90>
 
 
 

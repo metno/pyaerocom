@@ -33,24 +33,24 @@ Import setup and imports
 
 .. parsed-literal::
 
-    2018-09-20 15:33:56,306:WARNING:
+    2018-09-21 11:36:09,329:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.02593088150024414 s
+    Elapsed time init all variables: 0.02587270736694336 s
 
 
 .. parsed-literal::
 
-    2018-09-20 15:33:57,019:WARNING:
+    2018-09-21 11:36:10,013:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.0189259052276611 s
+    Elapsed time init pyaerocom: 1.002335548400879 s
 
 
 Import of model data
@@ -136,7 +136,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20180920153408
+     Filter time log: 20180921113628
     	stat_alt: [0, 1000]
 
 
@@ -208,7 +208,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f6739fba2b0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7faf4a3f5630>
 
 
 
@@ -281,7 +281,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f6739d28978>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7faf4a9a8860>
 
 
 

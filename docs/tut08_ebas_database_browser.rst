@@ -38,24 +38,24 @@ E.g.:
 
 .. parsed-literal::
 
-    2018-09-20 15:34:46,948:WARNING:
+    2018-09-21 11:37:05,009:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.026494741439819336 s
+    Elapsed time init all variables: 0.02664804458618164 s
 
 
 .. parsed-literal::
 
-    2018-09-20 15:34:47,690:WARNING:
+    2018-09-21 11:37:05,695:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.0594265460968018 s
+    Elapsed time init pyaerocom: 1.000833511352539 s
     
     Pyaerocom EbasSQLRequest
     ------------------------
@@ -288,37 +288,37 @@ Let’s read the files:
 
 .. parsed-literal::
 
-    2018-09-20 15:34:52,129:WARNING:
+    2018-09-21 11:37:10,805:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 09
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:52,418:WARNING:
+    2018-09-21 11:37:11,316:WARNING:
     Failed to read header row 6.
     2010 01 01 2017 05 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:52,535:WARNING:
+    2018-09-21 11:37:11,602:WARNING:
     Failed to read header row 6.
     2010 01 01 2012 10 04
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:52,641:WARNING:
+    2018-09-21 11:37:11,906:WARNING:
     Failed to read header row 6.
     2010 01 01 2016 07 05
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:52,719:WARNING:
+    2018-09-21 11:37:12,183:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:52,832:WARNING:
+    2018-09-21 11:37:12,460:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:53,088:WARNING:
+    2018-09-21 11:37:12,946:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     

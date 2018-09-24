@@ -33,20 +33,20 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
-    2018-09-20 15:34:27,125:WARNING:
+    2018-09-21 11:36:46,200:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.026401758193969727 s
+    Elapsed time init all variables: 0.026292085647583008 s
 
 
 .. parsed-literal::
 
-    2018-09-20 15:34:27,869:WARNING:
+    2018-09-21 11:36:46,944:WARNING:
     geopy library is not available. Aeolus data read not enabled
-    2018-09-20 15:34:27,889:WARNING:
+    2018-09-21 11:36:47,100:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
@@ -55,7 +55,7 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.0843265056610107 s
+    Elapsed time init pyaerocom: 1.0720207691192627 s
     Pyaerocom EbasNasaAmesFile
     --------------------------
     
@@ -309,7 +309,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f42503158d0>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f36700d9908>)])
 
 
 
@@ -1167,4057 +1167,4057 @@ Read only header
 
 .. parsed-literal::
 
-    2018-09-20 15:34:28,064:WARNING:
+    2018-09-21 11:36:47,324:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,072:WARNING:
+    2018-09-21 11:36:47,330:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,077:WARNING:
+    2018-09-21 11:36:47,335:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,082:WARNING:
+    2018-09-21 11:36:47,340:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,088:WARNING:
+    2018-09-21 11:36:47,345:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,095:WARNING:
+    2018-09-21 11:36:47,350:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,101:WARNING:
+    2018-09-21 11:36:47,355:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,108:WARNING:
+    2018-09-21 11:36:47,359:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,115:WARNING:
+    2018-09-21 11:36:47,364:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,122:WARNING:
+    2018-09-21 11:36:47,369:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,129:WARNING:
+    2018-09-21 11:36:47,373:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,135:WARNING:
+    2018-09-21 11:36:47,378:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,140:WARNING:
+    2018-09-21 11:36:47,382:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,146:WARNING:
+    2018-09-21 11:36:47,388:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,152:WARNING:
+    2018-09-21 11:36:47,393:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,157:WARNING:
+    2018-09-21 11:36:47,397:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,165:WARNING:
+    2018-09-21 11:36:47,402:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,177:WARNING:
+    2018-09-21 11:36:47,407:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,183:WARNING:
+    2018-09-21 11:36:47,412:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,188:WARNING:
+    2018-09-21 11:36:47,417:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,194:WARNING:
+    2018-09-21 11:36:47,422:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,199:WARNING:
+    2018-09-21 11:36:47,427:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,204:WARNING:
+    2018-09-21 11:36:47,433:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,209:WARNING:
+    2018-09-21 11:36:47,438:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,214:WARNING:
+    2018-09-21 11:36:47,446:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,224:WARNING:
+    2018-09-21 11:36:47,454:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,229:WARNING:
+    2018-09-21 11:36:47,462:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,234:WARNING:
+    2018-09-21 11:36:47,471:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,240:WARNING:
+    2018-09-21 11:36:47,479:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,245:WARNING:
+    2018-09-21 11:36:47,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,249:WARNING:
+    2018-09-21 11:36:47,497:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,254:WARNING:
+    2018-09-21 11:36:47,506:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,259:WARNING:
+    2018-09-21 11:36:47,514:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,265:WARNING:
+    2018-09-21 11:36:47,522:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,272:WARNING:
+    2018-09-21 11:36:47,529:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,279:WARNING:
+    2018-09-21 11:36:47,537:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,286:WARNING:
+    2018-09-21 11:36:47,544:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,292:WARNING:
+    2018-09-21 11:36:47,551:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,300:WARNING:
+    2018-09-21 11:36:47,559:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,307:WARNING:
+    2018-09-21 11:36:47,566:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,315:WARNING:
+    2018-09-21 11:36:47,574:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,322:WARNING:
+    2018-09-21 11:36:47,580:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,329:WARNING:
+    2018-09-21 11:36:47,587:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,336:WARNING:
+    2018-09-21 11:36:47,594:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,343:WARNING:
+    2018-09-21 11:36:47,601:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,350:WARNING:
+    2018-09-21 11:36:47,608:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,357:WARNING:
+    2018-09-21 11:36:47,614:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,365:WARNING:
+    2018-09-21 11:36:47,621:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,372:WARNING:
+    2018-09-21 11:36:47,628:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,380:WARNING:
+    2018-09-21 11:36:47,638:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,387:WARNING:
+    2018-09-21 11:36:47,646:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,392:WARNING:
+    2018-09-21 11:36:47,652:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,396:WARNING:
+    2018-09-21 11:36:47,659:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,401:WARNING:
+    2018-09-21 11:36:47,666:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,406:WARNING:
+    2018-09-21 11:36:47,673:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,411:WARNING:
+    2018-09-21 11:36:47,680:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,416:WARNING:
+    2018-09-21 11:36:47,687:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,421:WARNING:
+    2018-09-21 11:36:47,694:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,426:WARNING:
+    2018-09-21 11:36:47,701:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,431:WARNING:
+    2018-09-21 11:36:47,708:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,436:WARNING:
+    2018-09-21 11:36:47,715:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,441:WARNING:
+    2018-09-21 11:36:47,722:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,446:WARNING:
+    2018-09-21 11:36:47,729:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,453:WARNING:
+    2018-09-21 11:36:47,738:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,460:WARNING:
+    2018-09-21 11:36:47,746:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,469:WARNING:
+    2018-09-21 11:36:47,753:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,475:WARNING:
+    2018-09-21 11:36:47,761:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,483:WARNING:
+    2018-09-21 11:36:47,770:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,490:WARNING:
+    2018-09-21 11:36:47,777:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,497:WARNING:
+    2018-09-21 11:36:47,786:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,504:WARNING:
+    2018-09-21 11:36:47,795:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,510:WARNING:
+    2018-09-21 11:36:47,802:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,517:WARNING:
+    2018-09-21 11:36:47,810:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,524:WARNING:
+    2018-09-21 11:36:47,818:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,530:WARNING:
+    2018-09-21 11:36:47,826:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,538:WARNING:
+    2018-09-21 11:36:47,833:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,545:WARNING:
+    2018-09-21 11:36:47,843:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,552:WARNING:
+    2018-09-21 11:36:47,851:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,559:WARNING:
+    2018-09-21 11:36:47,859:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,566:WARNING:
+    2018-09-21 11:36:47,868:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,573:WARNING:
+    2018-09-21 11:36:47,876:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,580:WARNING:
+    2018-09-21 11:36:47,883:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,587:WARNING:
+    2018-09-21 11:36:47,891:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,595:WARNING:
+    2018-09-21 11:36:47,898:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,603:WARNING:
+    2018-09-21 11:36:47,906:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,610:WARNING:
+    2018-09-21 11:36:47,914:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,617:WARNING:
+    2018-09-21 11:36:47,921:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,624:WARNING:
+    2018-09-21 11:36:47,927:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,632:WARNING:
+    2018-09-21 11:36:47,935:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,641:WARNING:
+    2018-09-21 11:36:47,942:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,647:WARNING:
+    2018-09-21 11:36:47,950:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,653:WARNING:
+    2018-09-21 11:36:47,974:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,659:WARNING:
+    2018-09-21 11:36:47,982:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,665:WARNING:
+    2018-09-21 11:36:47,989:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,670:WARNING:
+    2018-09-21 11:36:47,996:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,676:WARNING:
+    2018-09-21 11:36:48,002:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,683:WARNING:
+    2018-09-21 11:36:48,010:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,690:WARNING:
+    2018-09-21 11:36:48,017:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,697:WARNING:
+    2018-09-21 11:36:48,024:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,705:WARNING:
+    2018-09-21 11:36:48,030:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,712:WARNING:
+    2018-09-21 11:36:48,037:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,720:WARNING:
+    2018-09-21 11:36:48,045:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,727:WARNING:
+    2018-09-21 11:36:48,052:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,734:WARNING:
+    2018-09-21 11:36:48,059:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,742:WARNING:
+    2018-09-21 11:36:48,065:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,749:WARNING:
+    2018-09-21 11:36:48,072:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,758:WARNING:
+    2018-09-21 11:36:48,079:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,765:WARNING:
+    2018-09-21 11:36:48,086:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,774:WARNING:
+    2018-09-21 11:36:48,093:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,782:WARNING:
+    2018-09-21 11:36:48,099:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,791:WARNING:
+    2018-09-21 11:36:48,107:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,799:WARNING:
+    2018-09-21 11:36:48,116:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,807:WARNING:
+    2018-09-21 11:36:48,123:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,816:WARNING:
+    2018-09-21 11:36:48,132:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,823:WARNING:
+    2018-09-21 11:36:48,139:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,833:WARNING:
+    2018-09-21 11:36:48,146:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,842:WARNING:
+    2018-09-21 11:36:48,153:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,850:WARNING:
+    2018-09-21 11:36:48,159:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,858:WARNING:
+    2018-09-21 11:36:48,166:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,867:WARNING:
+    2018-09-21 11:36:48,173:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,875:WARNING:
+    2018-09-21 11:36:48,180:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,896:WARNING:
+    2018-09-21 11:36:48,186:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,904:WARNING:
+    2018-09-21 11:36:48,193:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,911:WARNING:
+    2018-09-21 11:36:48,199:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,918:WARNING:
+    2018-09-21 11:36:48,205:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,927:WARNING:
+    2018-09-21 11:36:48,215:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,933:WARNING:
+    2018-09-21 11:36:48,223:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,938:WARNING:
+    2018-09-21 11:36:48,230:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,945:WARNING:
+    2018-09-21 11:36:48,239:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,950:WARNING:
+    2018-09-21 11:36:48,247:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,954:WARNING:
+    2018-09-21 11:36:48,255:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,959:WARNING:
+    2018-09-21 11:36:48,262:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,965:WARNING:
+    2018-09-21 11:36:48,269:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,970:WARNING:
+    2018-09-21 11:36:48,276:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,975:WARNING:
+    2018-09-21 11:36:48,283:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,981:WARNING:
+    2018-09-21 11:36:48,290:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,987:WARNING:
+    2018-09-21 11:36:48,297:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:28,996:WARNING:
+    2018-09-21 11:36:48,304:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,004:WARNING:
+    2018-09-21 11:36:48,312:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,012:WARNING:
+    2018-09-21 11:36:48,319:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,018:WARNING:
+    2018-09-21 11:36:48,325:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,026:WARNING:
+    2018-09-21 11:36:48,337:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,033:WARNING:
+    2018-09-21 11:36:48,343:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,043:WARNING:
+    2018-09-21 11:36:48,351:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,051:WARNING:
+    2018-09-21 11:36:48,358:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,059:WARNING:
+    2018-09-21 11:36:48,365:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,068:WARNING:
+    2018-09-21 11:36:48,372:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,076:WARNING:
+    2018-09-21 11:36:48,380:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,084:WARNING:
+    2018-09-21 11:36:48,387:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,091:WARNING:
+    2018-09-21 11:36:48,395:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,098:WARNING:
+    2018-09-21 11:36:48,402:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,105:WARNING:
+    2018-09-21 11:36:48,410:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,113:WARNING:
+    2018-09-21 11:36:48,418:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,121:WARNING:
+    2018-09-21 11:36:48,425:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,128:WARNING:
+    2018-09-21 11:36:48,432:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,136:WARNING:
+    2018-09-21 11:36:48,440:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,144:WARNING:
+    2018-09-21 11:36:48,447:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,151:WARNING:
+    2018-09-21 11:36:48,455:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,158:WARNING:
+    2018-09-21 11:36:48,463:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,166:WARNING:
+    2018-09-21 11:36:48,470:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,174:WARNING:
+    2018-09-21 11:36:48,478:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,187:WARNING:
+    2018-09-21 11:36:48,484:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,194:WARNING:
+    2018-09-21 11:36:48,494:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,200:WARNING:
+    2018-09-21 11:36:48,501:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,206:WARNING:
+    2018-09-21 11:36:48,509:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,211:WARNING:
+    2018-09-21 11:36:48,517:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,217:WARNING:
+    2018-09-21 11:36:48,525:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,223:WARNING:
+    2018-09-21 11:36:48,533:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,228:WARNING:
+    2018-09-21 11:36:48,540:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,234:WARNING:
+    2018-09-21 11:36:48,547:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,239:WARNING:
+    2018-09-21 11:36:48,554:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,244:WARNING:
+    2018-09-21 11:36:48,562:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,249:WARNING:
+    2018-09-21 11:36:48,570:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,254:WARNING:
+    2018-09-21 11:36:48,578:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,264:WARNING:
+    2018-09-21 11:36:48,586:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,270:WARNING:
+    2018-09-21 11:36:48,594:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,276:WARNING:
+    2018-09-21 11:36:48,601:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,282:WARNING:
+    2018-09-21 11:36:48,608:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,287:WARNING:
+    2018-09-21 11:36:48,615:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,293:WARNING:
+    2018-09-21 11:36:48,622:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,298:WARNING:
+    2018-09-21 11:36:48,631:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,307:WARNING:
+    2018-09-21 11:36:48,640:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,315:WARNING:
+    2018-09-21 11:36:48,647:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,322:WARNING:
+    2018-09-21 11:36:48,654:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,329:WARNING:
+    2018-09-21 11:36:48,661:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,337:WARNING:
+    2018-09-21 11:36:48,668:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,344:WARNING:
+    2018-09-21 11:36:48,674:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,351:WARNING:
+    2018-09-21 11:36:48,682:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,358:WARNING:
+    2018-09-21 11:36:48,688:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,365:WARNING:
+    2018-09-21 11:36:48,695:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,575:WARNING:
+    2018-09-21 11:36:48,702:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,584:WARNING:
+    2018-09-21 11:36:48,709:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,596:WARNING:
+    2018-09-21 11:36:48,715:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,604:WARNING:
+    2018-09-21 11:36:48,722:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,611:WARNING:
+    2018-09-21 11:36:48,729:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,617:WARNING:
+    2018-09-21 11:36:48,736:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,622:WARNING:
+    2018-09-21 11:36:48,742:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,628:WARNING:
+    2018-09-21 11:36:48,749:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,635:WARNING:
+    2018-09-21 11:36:48,755:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,639:WARNING:
+    2018-09-21 11:36:48,762:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,644:WARNING:
+    2018-09-21 11:36:48,768:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,649:WARNING:
+    2018-09-21 11:36:48,776:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,653:WARNING:
+    2018-09-21 11:36:48,783:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,658:WARNING:
+    2018-09-21 11:36:48,790:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,663:WARNING:
+    2018-09-21 11:36:48,798:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,668:WARNING:
+    2018-09-21 11:36:48,805:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,674:WARNING:
+    2018-09-21 11:36:48,811:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,680:WARNING:
+    2018-09-21 11:36:48,818:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,684:WARNING:
+    2018-09-21 11:36:48,825:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,690:WARNING:
+    2018-09-21 11:36:48,832:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,695:WARNING:
+    2018-09-21 11:36:48,840:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,702:WARNING:
+    2018-09-21 11:36:48,847:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,709:WARNING:
+    2018-09-21 11:36:48,854:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,714:WARNING:
+    2018-09-21 11:36:48,861:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,720:WARNING:
+    2018-09-21 11:36:48,868:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,726:WARNING:
+    2018-09-21 11:36:48,874:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,732:WARNING:
+    2018-09-21 11:36:48,881:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,738:WARNING:
+    2018-09-21 11:36:48,888:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,746:WARNING:
+    2018-09-21 11:36:48,895:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,752:WARNING:
+    2018-09-21 11:36:48,902:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,760:WARNING:
+    2018-09-21 11:36:48,909:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,767:WARNING:
+    2018-09-21 11:36:48,916:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,774:WARNING:
+    2018-09-21 11:36:48,923:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,781:WARNING:
+    2018-09-21 11:36:48,929:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,788:WARNING:
+    2018-09-21 11:36:48,936:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,796:WARNING:
+    2018-09-21 11:36:48,945:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,802:WARNING:
+    2018-09-21 11:36:48,952:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,809:WARNING:
+    2018-09-21 11:36:48,958:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,817:WARNING:
+    2018-09-21 11:36:48,969:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,824:WARNING:
+    2018-09-21 11:36:48,982:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,832:WARNING:
+    2018-09-21 11:36:48,989:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,840:WARNING:
+    2018-09-21 11:36:48,995:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,847:WARNING:
+    2018-09-21 11:36:49,003:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,852:WARNING:
+    2018-09-21 11:36:49,009:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,857:WARNING:
+    2018-09-21 11:36:49,017:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,862:WARNING:
+    2018-09-21 11:36:49,024:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,867:WARNING:
+    2018-09-21 11:36:49,031:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,873:WARNING:
+    2018-09-21 11:36:49,037:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,878:WARNING:
+    2018-09-21 11:36:49,044:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,884:WARNING:
+    2018-09-21 11:36:49,052:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,902:WARNING:
+    2018-09-21 11:36:49,061:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,908:WARNING:
+    2018-09-21 11:36:49,069:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,914:WARNING:
+    2018-09-21 11:36:49,078:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,919:WARNING:
+    2018-09-21 11:36:49,086:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,924:WARNING:
+    2018-09-21 11:36:49,094:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,931:WARNING:
+    2018-09-21 11:36:49,102:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,939:WARNING:
+    2018-09-21 11:36:49,111:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,946:WARNING:
+    2018-09-21 11:36:49,120:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,955:WARNING:
+    2018-09-21 11:36:49,129:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,962:WARNING:
+    2018-09-21 11:36:49,135:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,969:WARNING:
+    2018-09-21 11:36:49,141:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,976:WARNING:
+    2018-09-21 11:36:49,147:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,982:WARNING:
+    2018-09-21 11:36:49,157:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,988:WARNING:
+    2018-09-21 11:36:49,166:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,993:WARNING:
+    2018-09-21 11:36:49,175:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:29,998:WARNING:
+    2018-09-21 11:36:49,182:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,003:WARNING:
+    2018-09-21 11:36:49,187:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,009:WARNING:
+    2018-09-21 11:36:49,192:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,016:WARNING:
+    2018-09-21 11:36:49,198:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,022:WARNING:
+    2018-09-21 11:36:49,203:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,030:WARNING:
+    2018-09-21 11:36:49,208:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,038:WARNING:
+    2018-09-21 11:36:49,217:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,046:WARNING:
+    2018-09-21 11:36:49,225:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,053:WARNING:
+    2018-09-21 11:36:49,233:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,061:WARNING:
+    2018-09-21 11:36:49,241:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,070:WARNING:
+    2018-09-21 11:36:49,249:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,077:WARNING:
+    2018-09-21 11:36:49,255:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,083:WARNING:
+    2018-09-21 11:36:49,263:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,094:WARNING:
+    2018-09-21 11:36:49,270:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,101:WARNING:
+    2018-09-21 11:36:49,277:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,107:WARNING:
+    2018-09-21 11:36:49,285:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,113:WARNING:
+    2018-09-21 11:36:49,293:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,121:WARNING:
+    2018-09-21 11:36:49,301:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,129:WARNING:
+    2018-09-21 11:36:49,310:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,139:WARNING:
+    2018-09-21 11:36:49,317:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,146:WARNING:
+    2018-09-21 11:36:49,324:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,151:WARNING:
+    2018-09-21 11:36:49,331:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,157:WARNING:
+    2018-09-21 11:36:49,337:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,162:WARNING:
+    2018-09-21 11:36:49,348:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,169:WARNING:
+    2018-09-21 11:36:49,354:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,175:WARNING:
+    2018-09-21 11:36:49,360:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,182:WARNING:
+    2018-09-21 11:36:49,366:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,195:WARNING:
+    2018-09-21 11:36:49,373:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,201:WARNING:
+    2018-09-21 11:36:49,379:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,206:WARNING:
+    2018-09-21 11:36:49,387:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,211:WARNING:
+    2018-09-21 11:36:49,394:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,217:WARNING:
+    2018-09-21 11:36:49,400:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,222:WARNING:
+    2018-09-21 11:36:49,406:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,228:WARNING:
+    2018-09-21 11:36:49,412:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,235:WARNING:
+    2018-09-21 11:36:49,418:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,243:WARNING:
+    2018-09-21 11:36:49,425:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,251:WARNING:
+    2018-09-21 11:36:49,431:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,259:WARNING:
+    2018-09-21 11:36:49,437:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,267:WARNING:
+    2018-09-21 11:36:49,445:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,274:WARNING:
+    2018-09-21 11:36:49,451:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,280:WARNING:
+    2018-09-21 11:36:49,458:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,285:WARNING:
+    2018-09-21 11:36:49,464:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,292:WARNING:
+    2018-09-21 11:36:49,470:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,298:WARNING:
+    2018-09-21 11:36:49,477:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,304:WARNING:
+    2018-09-21 11:36:49,484:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,309:WARNING:
+    2018-09-21 11:36:49,490:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,315:WARNING:
+    2018-09-21 11:36:49,497:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,322:WARNING:
+    2018-09-21 11:36:49,503:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,330:WARNING:
+    2018-09-21 11:36:49,510:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,338:WARNING:
+    2018-09-21 11:36:49,516:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,345:WARNING:
+    2018-09-21 11:36:49,524:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,351:WARNING:
+    2018-09-21 11:36:49,531:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,357:WARNING:
+    2018-09-21 11:36:49,538:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,361:WARNING:
+    2018-09-21 11:36:49,544:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,369:WARNING:
+    2018-09-21 11:36:49,551:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,376:WARNING:
+    2018-09-21 11:36:49,557:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,382:WARNING:
+    2018-09-21 11:36:49,564:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,388:WARNING:
+    2018-09-21 11:36:49,570:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,395:WARNING:
+    2018-09-21 11:36:49,577:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,403:WARNING:
+    2018-09-21 11:36:49,583:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,411:WARNING:
+    2018-09-21 11:36:49,589:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,418:WARNING:
+    2018-09-21 11:36:49,596:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,426:WARNING:
+    2018-09-21 11:36:49,603:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,434:WARNING:
+    2018-09-21 11:36:49,609:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,442:WARNING:
+    2018-09-21 11:36:49,616:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,449:WARNING:
+    2018-09-21 11:36:49,622:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,454:WARNING:
+    2018-09-21 11:36:49,630:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,461:WARNING:
+    2018-09-21 11:36:49,637:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,467:WARNING:
+    2018-09-21 11:36:49,643:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,472:WARNING:
+    2018-09-21 11:36:49,649:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,479:WARNING:
+    2018-09-21 11:36:49,654:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,485:WARNING:
+    2018-09-21 11:36:49,660:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,490:WARNING:
+    2018-09-21 11:36:49,666:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,495:WARNING:
+    2018-09-21 11:36:49,672:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,501:WARNING:
+    2018-09-21 11:36:49,678:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,507:WARNING:
+    2018-09-21 11:36:49,684:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,512:WARNING:
+    2018-09-21 11:36:49,689:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,517:WARNING:
+    2018-09-21 11:36:49,694:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,523:WARNING:
+    2018-09-21 11:36:49,700:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,529:WARNING:
+    2018-09-21 11:36:49,706:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,535:WARNING:
+    2018-09-21 11:36:49,713:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,541:WARNING:
+    2018-09-21 11:36:49,721:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,546:WARNING:
+    2018-09-21 11:36:49,727:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,551:WARNING:
+    2018-09-21 11:36:49,735:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,556:WARNING:
+    2018-09-21 11:36:49,741:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,562:WARNING:
+    2018-09-21 11:36:49,749:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,567:WARNING:
+    2018-09-21 11:36:49,756:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,572:WARNING:
+    2018-09-21 11:36:49,764:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,579:WARNING:
+    2018-09-21 11:36:49,771:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,589:WARNING:
+    2018-09-21 11:36:49,779:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,596:WARNING:
+    2018-09-21 11:36:49,786:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,603:WARNING:
+    2018-09-21 11:36:49,794:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,612:WARNING:
+    2018-09-21 11:36:49,801:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,620:WARNING:
+    2018-09-21 11:36:49,810:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,627:WARNING:
+    2018-09-21 11:36:49,818:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,633:WARNING:
+    2018-09-21 11:36:49,826:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,638:WARNING:
+    2018-09-21 11:36:49,833:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,643:WARNING:
+    2018-09-21 11:36:49,840:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,649:WARNING:
+    2018-09-21 11:36:49,847:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,657:WARNING:
+    2018-09-21 11:36:49,854:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,662:WARNING:
+    2018-09-21 11:36:49,861:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,668:WARNING:
+    2018-09-21 11:36:49,869:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,673:WARNING:
+    2018-09-21 11:36:49,875:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,679:WARNING:
+    2018-09-21 11:36:49,884:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,684:WARNING:
+    2018-09-21 11:36:49,893:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,689:WARNING:
+    2018-09-21 11:36:49,900:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,694:WARNING:
+    2018-09-21 11:36:49,907:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,700:WARNING:
+    2018-09-21 11:36:49,914:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,706:WARNING:
+    2018-09-21 11:36:49,920:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,712:WARNING:
+    2018-09-21 11:36:49,926:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,719:WARNING:
+    2018-09-21 11:36:49,933:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,724:WARNING:
+    2018-09-21 11:36:49,939:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,731:WARNING:
+    2018-09-21 11:36:49,945:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,737:WARNING:
+    2018-09-21 11:36:49,952:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,745:WARNING:
+    2018-09-21 11:36:49,958:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,750:WARNING:
+    2018-09-21 11:36:49,965:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,755:WARNING:
+    2018-09-21 11:36:49,976:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,762:WARNING:
+    2018-09-21 11:36:49,989:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,768:WARNING:
+    2018-09-21 11:36:49,996:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,776:WARNING:
+    2018-09-21 11:36:50,002:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,782:WARNING:
+    2018-09-21 11:36:50,010:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,788:WARNING:
+    2018-09-21 11:36:50,017:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,793:WARNING:
+    2018-09-21 11:36:50,024:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,799:WARNING:
+    2018-09-21 11:36:50,034:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,805:WARNING:
+    2018-09-21 11:36:50,042:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,811:WARNING:
+    2018-09-21 11:36:50,050:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,817:WARNING:
+    2018-09-21 11:36:50,057:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,823:WARNING:
+    2018-09-21 11:36:50,064:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,829:WARNING:
+    2018-09-21 11:36:50,073:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,835:WARNING:
+    2018-09-21 11:36:50,080:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,841:WARNING:
+    2018-09-21 11:36:50,087:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,846:WARNING:
+    2018-09-21 11:36:50,095:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,851:WARNING:
+    2018-09-21 11:36:50,102:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,857:WARNING:
+    2018-09-21 11:36:50,108:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,862:WARNING:
+    2018-09-21 11:36:50,113:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,868:WARNING:
+    2018-09-21 11:36:50,119:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,875:WARNING:
+    2018-09-21 11:36:50,125:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,882:WARNING:
+    2018-09-21 11:36:50,133:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,889:WARNING:
+    2018-09-21 11:36:50,140:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,897:WARNING:
+    2018-09-21 11:36:50,146:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,914:WARNING:
+    2018-09-21 11:36:50,152:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,920:WARNING:
+    2018-09-21 11:36:50,156:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,925:WARNING:
+    2018-09-21 11:36:50,162:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,930:WARNING:
+    2018-09-21 11:36:50,169:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,935:WARNING:
+    2018-09-21 11:36:50,175:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,940:WARNING:
+    2018-09-21 11:36:50,180:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,946:WARNING:
+    2018-09-21 11:36:50,185:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,952:WARNING:
+    2018-09-21 11:36:50,190:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,957:WARNING:
+    2018-09-21 11:36:50,195:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,963:WARNING:
+    2018-09-21 11:36:50,205:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,968:WARNING:
+    2018-09-21 11:36:50,213:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,975:WARNING:
+    2018-09-21 11:36:50,219:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,982:WARNING:
+    2018-09-21 11:36:50,224:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,989:WARNING:
+    2018-09-21 11:36:50,228:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:30,994:WARNING:
+    2018-09-21 11:36:50,234:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,000:WARNING:
+    2018-09-21 11:36:50,240:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,006:WARNING:
+    2018-09-21 11:36:50,248:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,013:WARNING:
+    2018-09-21 11:36:50,253:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,020:WARNING:
+    2018-09-21 11:36:50,259:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,027:WARNING:
+    2018-09-21 11:36:50,264:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,033:WARNING:
+    2018-09-21 11:36:50,270:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,040:WARNING:
+    2018-09-21 11:36:50,276:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,048:WARNING:
+    2018-09-21 11:36:50,281:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,054:WARNING:
+    2018-09-21 11:36:50,286:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,060:WARNING:
+    2018-09-21 11:36:50,291:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,065:WARNING:
+    2018-09-21 11:36:50,299:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,073:WARNING:
+    2018-09-21 11:36:50,305:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,079:WARNING:
+    2018-09-21 11:36:50,310:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,084:WARNING:
+    2018-09-21 11:36:50,315:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,089:WARNING:
+    2018-09-21 11:36:50,320:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,095:WARNING:
+    2018-09-21 11:36:50,325:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,099:WARNING:
+    2018-09-21 11:36:50,330:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,109:WARNING:
+    2018-09-21 11:36:50,335:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,117:WARNING:
+    2018-09-21 11:36:50,343:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,124:WARNING:
+    2018-09-21 11:36:50,355:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,131:WARNING:
+    2018-09-21 11:36:50,363:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,139:WARNING:
+    2018-09-21 11:36:50,371:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,146:WARNING:
+    2018-09-21 11:36:50,381:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,153:WARNING:
+    2018-09-21 11:36:50,390:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,160:WARNING:
+    2018-09-21 11:36:50,398:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,168:WARNING:
+    2018-09-21 11:36:50,403:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,176:WARNING:
+    2018-09-21 11:36:50,408:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,184:WARNING:
+    2018-09-21 11:36:50,413:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,190:WARNING:
+    2018-09-21 11:36:50,421:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,197:WARNING:
+    2018-09-21 11:36:50,428:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,203:WARNING:
+    2018-09-21 11:36:50,434:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,208:WARNING:
+    2018-09-21 11:36:50,441:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,214:WARNING:
+    2018-09-21 11:36:50,448:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,219:WARNING:
+    2018-09-21 11:36:50,457:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,228:WARNING:
+    2018-09-21 11:36:50,467:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,237:WARNING:
+    2018-09-21 11:36:50,477:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,246:WARNING:
+    2018-09-21 11:36:50,485:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,254:WARNING:
+    2018-09-21 11:36:50,492:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,264:WARNING:
+    2018-09-21 11:36:50,499:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,272:WARNING:
+    2018-09-21 11:36:50,506:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,278:WARNING:
+    2018-09-21 11:36:50,512:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,283:WARNING:
+    2018-09-21 11:36:50,518:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,290:WARNING:
+    2018-09-21 11:36:50,524:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,296:WARNING:
+    2018-09-21 11:36:50,530:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,301:WARNING:
+    2018-09-21 11:36:50,535:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,306:WARNING:
+    2018-09-21 11:36:50,541:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,312:WARNING:
+    2018-09-21 11:36:50,549:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,318:WARNING:
+    2018-09-21 11:36:50,556:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,325:WARNING:
+    2018-09-21 11:36:50,564:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,332:WARNING:
+    2018-09-21 11:36:50,571:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,338:WARNING:
+    2018-09-21 11:36:50,578:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,344:WARNING:
+    2018-09-21 11:36:50,586:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,350:WARNING:
+    2018-09-21 11:36:50,594:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,356:WARNING:
+    2018-09-21 11:36:50,601:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,362:WARNING:
+    2018-09-21 11:36:50,608:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,369:WARNING:
+    2018-09-21 11:36:50,614:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,376:WARNING:
+    2018-09-21 11:36:50,621:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,382:WARNING:
+    2018-09-21 11:36:50,628:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,388:WARNING:
+    2018-09-21 11:36:50,635:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,395:WARNING:
+    2018-09-21 11:36:50,641:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,401:WARNING:
+    2018-09-21 11:36:50,645:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,407:WARNING:
+    2018-09-21 11:36:50,650:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,413:WARNING:
+    2018-09-21 11:36:50,655:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,421:WARNING:
+    2018-09-21 11:36:50,659:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,432:WARNING:
+    2018-09-21 11:36:50,664:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,439:WARNING:
+    2018-09-21 11:36:50,669:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,445:WARNING:
+    2018-09-21 11:36:50,673:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,451:WARNING:
+    2018-09-21 11:36:50,681:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,457:WARNING:
+    2018-09-21 11:36:50,689:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,462:WARNING:
+    2018-09-21 11:36:50,697:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,467:WARNING:
+    2018-09-21 11:36:50,704:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,472:WARNING:
+    2018-09-21 11:36:50,711:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,476:WARNING:
+    2018-09-21 11:36:50,718:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,482:WARNING:
+    2018-09-21 11:36:50,725:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,486:WARNING:
+    2018-09-21 11:36:50,732:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,490:WARNING:
+    2018-09-21 11:36:50,739:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,495:WARNING:
+    2018-09-21 11:36:50,746:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,500:WARNING:
+    2018-09-21 11:36:50,754:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,505:WARNING:
+    2018-09-21 11:36:50,763:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,510:WARNING:
+    2018-09-21 11:36:50,769:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,515:WARNING:
+    2018-09-21 11:36:50,775:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,520:WARNING:
+    2018-09-21 11:36:50,780:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,525:WARNING:
+    2018-09-21 11:36:50,784:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,531:WARNING:
+    2018-09-21 11:36:50,790:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,536:WARNING:
+    2018-09-21 11:36:50,796:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,544:WARNING:
+    2018-09-21 11:36:50,802:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,551:WARNING:
+    2018-09-21 11:36:50,807:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,561:WARNING:
+    2018-09-21 11:36:50,811:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,568:WARNING:
+    2018-09-21 11:36:50,816:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,576:WARNING:
+    2018-09-21 11:36:50,821:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,585:WARNING:
+    2018-09-21 11:36:50,828:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,597:WARNING:
+    2018-09-21 11:36:50,836:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,607:WARNING:
+    2018-09-21 11:36:50,844:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,614:WARNING:
+    2018-09-21 11:36:50,852:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,625:WARNING:
+    2018-09-21 11:36:50,859:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,631:WARNING:
+    2018-09-21 11:36:50,867:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,636:WARNING:
+    2018-09-21 11:36:50,873:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,642:WARNING:
+    2018-09-21 11:36:50,881:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,646:WARNING:
+    2018-09-21 11:36:50,889:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,651:WARNING:
+    2018-09-21 11:36:50,896:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,657:WARNING:
+    2018-09-21 11:36:50,903:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,664:WARNING:
+    2018-09-21 11:36:50,908:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,671:WARNING:
+    2018-09-21 11:36:50,916:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,677:WARNING:
+    2018-09-21 11:36:50,924:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,683:WARNING:
+    2018-09-21 11:36:50,932:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,690:WARNING:
+    2018-09-21 11:36:50,940:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,699:WARNING:
+    2018-09-21 11:36:50,945:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,707:WARNING:
+    2018-09-21 11:36:50,951:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,715:WARNING:
+    2018-09-21 11:36:50,956:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,723:WARNING:
+    2018-09-21 11:36:50,962:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,732:WARNING:
+    2018-09-21 11:36:50,967:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,741:WARNING:
+    2018-09-21 11:36:50,972:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,750:WARNING:
+    2018-09-21 11:36:50,978:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,759:WARNING:
+    2018-09-21 11:36:50,989:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,767:WARNING:
+    2018-09-21 11:36:50,998:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,777:WARNING:
+    2018-09-21 11:36:51,003:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,784:WARNING:
+    2018-09-21 11:36:51,008:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,790:WARNING:
+    2018-09-21 11:36:51,012:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,795:WARNING:
+    2018-09-21 11:36:51,018:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,800:WARNING:
+    2018-09-21 11:36:51,023:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,805:WARNING:
+    2018-09-21 11:36:51,027:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,811:WARNING:
+    2018-09-21 11:36:51,032:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,816:WARNING:
+    2018-09-21 11:36:51,038:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,822:WARNING:
+    2018-09-21 11:36:51,043:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,827:WARNING:
+    2018-09-21 11:36:51,047:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,832:WARNING:
+    2018-09-21 11:36:51,052:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,837:WARNING:
+    2018-09-21 11:36:51,057:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,842:WARNING:
+    2018-09-21 11:36:51,063:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,847:WARNING:
+    2018-09-21 11:36:51,068:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,852:WARNING:
+    2018-09-21 11:36:51,073:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,858:WARNING:
+    2018-09-21 11:36:51,078:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,866:WARNING:
+    2018-09-21 11:36:51,086:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,874:WARNING:
+    2018-09-21 11:36:51,095:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,882:WARNING:
+    2018-09-21 11:36:51,102:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,892:WARNING:
+    2018-09-21 11:36:51,110:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,904:WARNING:
+    2018-09-21 11:36:51,118:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,914:WARNING:
+    2018-09-21 11:36:51,126:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,929:WARNING:
+    2018-09-21 11:36:51,134:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,937:WARNING:
+    2018-09-21 11:36:51,141:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,944:WARNING:
+    2018-09-21 11:36:51,148:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,951:WARNING:
+    2018-09-21 11:36:51,154:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,959:WARNING:
+    2018-09-21 11:36:51,163:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,966:WARNING:
+    2018-09-21 11:36:51,172:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,974:WARNING:
+    2018-09-21 11:36:51,180:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,982:WARNING:
+    2018-09-21 11:36:51,188:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,989:WARNING:
+    2018-09-21 11:36:51,196:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,994:WARNING:
+    2018-09-21 11:36:51,203:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:31,999:WARNING:
+    2018-09-21 11:36:51,211:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,004:WARNING:
+    2018-09-21 11:36:51,218:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,011:WARNING:
+    2018-09-21 11:36:51,227:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,016:WARNING:
+    2018-09-21 11:36:51,235:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,021:WARNING:
+    2018-09-21 11:36:51,243:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,029:WARNING:
+    2018-09-21 11:36:51,251:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,037:WARNING:
+    2018-09-21 11:36:51,258:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,046:WARNING:
+    2018-09-21 11:36:51,265:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,053:WARNING:
+    2018-09-21 11:36:51,272:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,061:WARNING:
+    2018-09-21 11:36:51,280:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,071:WARNING:
+    2018-09-21 11:36:51,287:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,080:WARNING:
+    2018-09-21 11:36:51,297:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,087:WARNING:
+    2018-09-21 11:36:51,304:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,094:WARNING:
+    2018-09-21 11:36:51,310:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,099:WARNING:
+    2018-09-21 11:36:51,316:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,106:WARNING:
+    2018-09-21 11:36:51,322:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,111:WARNING:
+    2018-09-21 11:36:51,327:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,119:WARNING:
+    2018-09-21 11:36:51,332:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,128:WARNING:
+    2018-09-21 11:36:51,336:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,139:WARNING:
+    2018-09-21 11:36:51,341:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,153:WARNING:
+    2018-09-21 11:36:51,347:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,162:WARNING:
+    2018-09-21 11:36:51,352:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,169:WARNING:
+    2018-09-21 11:36:51,359:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,177:WARNING:
+    2018-09-21 11:36:51,364:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,185:WARNING:
+    2018-09-21 11:36:51,369:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,197:WARNING:
+    2018-09-21 11:36:51,374:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,211:WARNING:
+    2018-09-21 11:36:51,379:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,219:WARNING:
+    2018-09-21 11:36:51,384:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,227:WARNING:
+    2018-09-21 11:36:51,390:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,237:WARNING:
+    2018-09-21 11:36:51,395:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,243:WARNING:
+    2018-09-21 11:36:51,400:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,250:WARNING:
+    2018-09-21 11:36:51,405:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,256:WARNING:
+    2018-09-21 11:36:51,410:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,261:WARNING:
+    2018-09-21 11:36:51,417:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,267:WARNING:
+    2018-09-21 11:36:51,422:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,273:WARNING:
+    2018-09-21 11:36:51,427:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,279:WARNING:
+    2018-09-21 11:36:51,431:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,285:WARNING:
+    2018-09-21 11:36:51,436:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,292:WARNING:
+    2018-09-21 11:36:51,441:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,299:WARNING:
+    2018-09-21 11:36:51,446:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,307:WARNING:
+    2018-09-21 11:36:51,451:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,314:WARNING:
+    2018-09-21 11:36:51,456:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,321:WARNING:
+    2018-09-21 11:36:51,461:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,328:WARNING:
+    2018-09-21 11:36:51,469:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,335:WARNING:
+    2018-09-21 11:36:51,477:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,342:WARNING:
+    2018-09-21 11:36:51,485:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,349:WARNING:
+    2018-09-21 11:36:51,492:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,356:WARNING:
+    2018-09-21 11:36:51,498:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,363:WARNING:
+    2018-09-21 11:36:51,504:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,368:WARNING:
+    2018-09-21 11:36:51,511:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,373:WARNING:
+    2018-09-21 11:36:51,519:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,378:WARNING:
+    2018-09-21 11:36:51,526:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,383:WARNING:
+    2018-09-21 11:36:51,533:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,388:WARNING:
+    2018-09-21 11:36:51,540:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,393:WARNING:
+    2018-09-21 11:36:51,548:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,398:WARNING:
+    2018-09-21 11:36:51,555:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,404:WARNING:
+    2018-09-21 11:36:51,562:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,408:WARNING:
+    2018-09-21 11:36:51,569:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,413:WARNING:
+    2018-09-21 11:36:51,577:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,418:WARNING:
+    2018-09-21 11:36:51,584:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,423:WARNING:
+    2018-09-21 11:36:51,591:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,429:WARNING:
+    2018-09-21 11:36:51,598:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,434:WARNING:
+    2018-09-21 11:36:51,605:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,439:WARNING:
+    2018-09-21 11:36:51,613:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,445:WARNING:
+    2018-09-21 11:36:51,620:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,450:WARNING:
+    2018-09-21 11:36:51,627:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,455:WARNING:
+    2018-09-21 11:36:51,635:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,460:WARNING:
+    2018-09-21 11:36:51,642:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,469:WARNING:
+    2018-09-21 11:36:51,649:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,477:WARNING:
+    2018-09-21 11:36:51,658:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,486:WARNING:
+    2018-09-21 11:36:51,667:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,494:WARNING:
+    2018-09-21 11:36:51,675:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,502:WARNING:
+    2018-09-21 11:36:51,683:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,509:WARNING:
+    2018-09-21 11:36:51,691:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,517:WARNING:
+    2018-09-21 11:36:51,701:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,522:WARNING:
+    2018-09-21 11:36:51,708:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,529:WARNING:
+    2018-09-21 11:36:51,714:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,535:WARNING:
+    2018-09-21 11:36:51,720:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,541:WARNING:
+    2018-09-21 11:36:51,726:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,546:WARNING:
+    2018-09-21 11:36:51,734:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,551:WARNING:
+    2018-09-21 11:36:51,742:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,556:WARNING:
+    2018-09-21 11:36:51,750:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,560:WARNING:
+    2018-09-21 11:36:51,759:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,564:WARNING:
+    2018-09-21 11:36:51,767:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,569:WARNING:
+    2018-09-21 11:36:51,776:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,574:WARNING:
+    2018-09-21 11:36:51,784:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,579:WARNING:
+    2018-09-21 11:36:51,792:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,585:WARNING:
+    2018-09-21 11:36:51,798:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,589:WARNING:
+    2018-09-21 11:36:51,804:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,594:WARNING:
+    2018-09-21 11:36:51,811:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,600:WARNING:
+    2018-09-21 11:36:51,818:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,604:WARNING:
+    2018-09-21 11:36:51,824:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,609:WARNING:
+    2018-09-21 11:36:51,832:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,615:WARNING:
+    2018-09-21 11:36:51,840:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,619:WARNING:
+    2018-09-21 11:36:51,848:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,624:WARNING:
+    2018-09-21 11:36:51,856:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,633:WARNING:
+    2018-09-21 11:36:51,862:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,640:WARNING:
+    2018-09-21 11:36:51,870:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,649:WARNING:
+    2018-09-21 11:36:51,878:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,657:WARNING:
+    2018-09-21 11:36:51,885:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,665:WARNING:
+    2018-09-21 11:36:51,894:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,671:WARNING:
+    2018-09-21 11:36:51,902:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,677:WARNING:
+    2018-09-21 11:36:51,910:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,683:WARNING:
+    2018-09-21 11:36:51,922:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,690:WARNING:
+    2018-09-21 11:36:51,931:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,696:WARNING:
+    2018-09-21 11:36:51,937:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,701:WARNING:
+    2018-09-21 11:36:51,942:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,707:WARNING:
+    2018-09-21 11:36:51,947:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,713:WARNING:
+    2018-09-21 11:36:51,954:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,718:WARNING:
+    2018-09-21 11:36:51,959:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,725:WARNING:
+    2018-09-21 11:36:51,964:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,731:WARNING:
+    2018-09-21 11:36:51,969:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,737:WARNING:
+    2018-09-21 11:36:51,974:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,743:WARNING:
+    2018-09-21 11:36:51,979:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,748:WARNING:
+    2018-09-21 11:36:51,984:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,754:WARNING:
+    2018-09-21 11:36:51,993:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,760:WARNING:
+    2018-09-21 11:36:52,001:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,766:WARNING:
+    2018-09-21 11:36:52,009:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,772:WARNING:
+    2018-09-21 11:36:52,014:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,779:WARNING:
+    2018-09-21 11:36:52,018:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,785:WARNING:
+    2018-09-21 11:36:52,023:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,791:WARNING:
+    2018-09-21 11:36:52,029:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,797:WARNING:
+    2018-09-21 11:36:52,035:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,802:WARNING:
+    2018-09-21 11:36:52,040:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,807:WARNING:
+    2018-09-21 11:36:52,050:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,812:WARNING:
+    2018-09-21 11:36:52,058:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,817:WARNING:
+    2018-09-21 11:36:52,063:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,823:WARNING:
+    2018-09-21 11:36:52,068:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,828:WARNING:
+    2018-09-21 11:36:52,073:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,834:WARNING:
+    2018-09-21 11:36:52,078:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,838:WARNING:
+    2018-09-21 11:36:52,084:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,843:WARNING:
+    2018-09-21 11:36:52,092:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,849:WARNING:
+    2018-09-21 11:36:52,098:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,853:WARNING:
+    2018-09-21 11:36:52,103:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,858:WARNING:
+    2018-09-21 11:36:52,108:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,864:WARNING:
+    2018-09-21 11:36:52,113:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,868:WARNING:
+    2018-09-21 11:36:52,117:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,873:WARNING:
+    2018-09-21 11:36:52,123:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,879:WARNING:
+    2018-09-21 11:36:52,129:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,884:WARNING:
+    2018-09-21 11:36:52,134:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,889:WARNING:
+    2018-09-21 11:36:52,140:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,895:WARNING:
+    2018-09-21 11:36:52,146:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,900:WARNING:
+    2018-09-21 11:36:52,151:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,907:WARNING:
+    2018-09-21 11:36:52,156:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,912:WARNING:
+    2018-09-21 11:36:52,161:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,918:WARNING:
+    2018-09-21 11:36:52,166:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,924:WARNING:
+    2018-09-21 11:36:52,171:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,939:WARNING:
+    2018-09-21 11:36:52,176:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,949:WARNING:
+    2018-09-21 11:36:52,182:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,958:WARNING:
+    2018-09-21 11:36:52,187:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,966:WARNING:
+    2018-09-21 11:36:52,193:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,975:WARNING:
+    2018-09-21 11:36:52,199:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,983:WARNING:
+    2018-09-21 11:36:52,204:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:32,992:WARNING:
+    2018-09-21 11:36:52,210:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,000:WARNING:
+    2018-09-21 11:36:52,215:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,010:WARNING:
+    2018-09-21 11:36:52,223:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,017:WARNING:
+    2018-09-21 11:36:52,231:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,023:WARNING:
+    2018-09-21 11:36:52,238:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,028:WARNING:
+    2018-09-21 11:36:52,246:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,034:WARNING:
+    2018-09-21 11:36:52,253:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,039:WARNING:
+    2018-09-21 11:36:52,260:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,048:WARNING:
+    2018-09-21 11:36:52,266:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,056:WARNING:
+    2018-09-21 11:36:52,273:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,065:WARNING:
+    2018-09-21 11:36:52,280:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,072:WARNING:
+    2018-09-21 11:36:52,287:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,079:WARNING:
+    2018-09-21 11:36:52,294:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,089:WARNING:
+    2018-09-21 11:36:52,301:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,097:WARNING:
+    2018-09-21 11:36:52,308:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,105:WARNING:
+    2018-09-21 11:36:52,316:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,113:WARNING:
+    2018-09-21 11:36:52,325:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,120:WARNING:
+    2018-09-21 11:36:52,333:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,127:WARNING:
+    2018-09-21 11:36:52,340:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,135:WARNING:
+    2018-09-21 11:36:52,348:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,144:WARNING:
+    2018-09-21 11:36:52,356:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,152:WARNING:
+    2018-09-21 11:36:52,367:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,159:WARNING:
+    2018-09-21 11:36:52,374:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,169:WARNING:
+    2018-09-21 11:36:52,382:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,176:WARNING:
+    2018-09-21 11:36:52,389:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,181:WARNING:
+    2018-09-21 11:36:52,397:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,187:WARNING:
+    2018-09-21 11:36:52,405:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,192:WARNING:
+    2018-09-21 11:36:52,413:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,198:WARNING:
+    2018-09-21 11:36:52,421:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,203:WARNING:
+    2018-09-21 11:36:52,429:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,208:WARNING:
+    2018-09-21 11:36:52,437:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,219:WARNING:
+    2018-09-21 11:36:52,445:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,225:WARNING:
+    2018-09-21 11:36:52,452:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,230:WARNING:
+    2018-09-21 11:36:52,459:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,235:WARNING:
+    2018-09-21 11:36:52,466:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,241:WARNING:
+    2018-09-21 11:36:52,473:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,246:WARNING:
+    2018-09-21 11:36:52,480:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,252:WARNING:
+    2018-09-21 11:36:52,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,257:WARNING:
+    2018-09-21 11:36:52,495:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,262:WARNING:
+    2018-09-21 11:36:52,502:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,267:WARNING:
+    2018-09-21 11:36:52,510:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,273:WARNING:
+    2018-09-21 11:36:52,516:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,280:WARNING:
+    2018-09-21 11:36:52,523:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,290:WARNING:
+    2018-09-21 11:36:52,528:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,299:WARNING:
+    2018-09-21 11:36:52,534:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,305:WARNING:
+    2018-09-21 11:36:52,542:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,309:WARNING:
+    2018-09-21 11:36:52,547:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,314:WARNING:
+    2018-09-21 11:36:52,552:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,319:WARNING:
+    2018-09-21 11:36:52,558:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,324:WARNING:
+    2018-09-21 11:36:52,563:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,329:WARNING:
+    2018-09-21 11:36:52,568:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,335:WARNING:
+    2018-09-21 11:36:52,574:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,341:WARNING:
+    2018-09-21 11:36:52,580:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,347:WARNING:
+    2018-09-21 11:36:52,585:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,351:WARNING:
+    2018-09-21 11:36:52,593:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,356:WARNING:
+    2018-09-21 11:36:52,599:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,362:WARNING:
+    2018-09-21 11:36:52,603:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,366:WARNING:
+    2018-09-21 11:36:52,607:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,371:WARNING:
+    2018-09-21 11:36:52,612:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,376:WARNING:
+    2018-09-21 11:36:52,618:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,382:WARNING:
+    2018-09-21 11:36:52,623:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,387:WARNING:
+    2018-09-21 11:36:52,628:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,393:WARNING:
+    2018-09-21 11:36:52,633:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,402:WARNING:
+    2018-09-21 11:36:52,637:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,411:WARNING:
+    2018-09-21 11:36:52,642:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,420:WARNING:
+    2018-09-21 11:36:52,648:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,431:WARNING:
+    2018-09-21 11:36:52,653:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,438:WARNING:
+    2018-09-21 11:36:52,659:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,443:WARNING:
+    2018-09-21 11:36:52,664:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,449:WARNING:
+    2018-09-21 11:36:52,669:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,454:WARNING:
+    2018-09-21 11:36:52,675:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,460:WARNING:
+    2018-09-21 11:36:52,679:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,467:WARNING:
+    2018-09-21 11:36:52,684:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,473:WARNING:
+    2018-09-21 11:36:52,688:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,479:WARNING:
+    2018-09-21 11:36:52,693:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,486:WARNING:
+    2018-09-21 11:36:52,698:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,492:WARNING:
+    2018-09-21 11:36:52,704:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,498:WARNING:
+    2018-09-21 11:36:52,709:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,504:WARNING:
+    2018-09-21 11:36:52,714:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,510:WARNING:
+    2018-09-21 11:36:52,719:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,517:WARNING:
+    2018-09-21 11:36:52,724:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,524:WARNING:
+    2018-09-21 11:36:52,730:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,532:WARNING:
+    2018-09-21 11:36:52,736:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,545:WARNING:
+    2018-09-21 11:36:52,744:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,553:WARNING:
+    2018-09-21 11:36:52,752:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,561:WARNING:
+    2018-09-21 11:36:52,760:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,570:WARNING:
+    2018-09-21 11:36:52,767:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,577:WARNING:
+    2018-09-21 11:36:52,774:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,585:WARNING:
+    2018-09-21 11:36:52,782:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,591:WARNING:
+    2018-09-21 11:36:52,789:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,597:WARNING:
+    2018-09-21 11:36:52,798:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,602:WARNING:
+    2018-09-21 11:36:52,806:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,610:WARNING:
+    2018-09-21 11:36:52,814:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,617:WARNING:
+    2018-09-21 11:36:52,823:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,624:WARNING:
+    2018-09-21 11:36:52,831:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,632:WARNING:
+    2018-09-21 11:36:52,839:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,639:WARNING:
+    2018-09-21 11:36:52,846:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,648:WARNING:
+    2018-09-21 11:36:52,853:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,655:WARNING:
+    2018-09-21 11:36:52,860:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,665:WARNING:
+    2018-09-21 11:36:52,867:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:33,675:WARNING:
+    2018-09-21 11:36:52,874:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
@@ -5226,7 +5226,7 @@ Read only header
 
 .. parsed-literal::
 
-    6.98 ms ± 926 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    6.81 ms ± 303 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Read raw:
@@ -5244,407 +5244,407 @@ Read raw:
 
 .. parsed-literal::
 
-    2018-09-20 15:34:34,089:WARNING:
+    2018-09-21 11:36:53,244:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,157:WARNING:
+    2018-09-21 11:36:53,311:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,217:WARNING:
+    2018-09-21 11:36:53,369:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,287:WARNING:
+    2018-09-21 11:36:53,428:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,345:WARNING:
+    2018-09-21 11:36:53,485:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,395:WARNING:
+    2018-09-21 11:36:53,543:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,444:WARNING:
+    2018-09-21 11:36:53,591:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,498:WARNING:
+    2018-09-21 11:36:53,645:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,550:WARNING:
+    2018-09-21 11:36:53,702:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,607:WARNING:
+    2018-09-21 11:36:53,749:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,673:WARNING:
+    2018-09-21 11:36:53,805:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,726:WARNING:
+    2018-09-21 11:36:53,863:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,773:WARNING:
+    2018-09-21 11:36:53,910:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,819:WARNING:
+    2018-09-21 11:36:53,957:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,883:WARNING:
+    2018-09-21 11:36:54,005:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:34,939:WARNING:
+    2018-09-21 11:36:54,063:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,003:WARNING:
+    2018-09-21 11:36:54,111:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,062:WARNING:
+    2018-09-21 11:36:54,169:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,137:WARNING:
+    2018-09-21 11:36:54,235:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,217:WARNING:
+    2018-09-21 11:36:54,296:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,274:WARNING:
+    2018-09-21 11:36:54,344:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,343:WARNING:
+    2018-09-21 11:36:54,412:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,407:WARNING:
+    2018-09-21 11:36:54,462:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,472:WARNING:
+    2018-09-21 11:36:54,509:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,533:WARNING:
+    2018-09-21 11:36:54,555:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,581:WARNING:
+    2018-09-21 11:36:54,601:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,628:WARNING:
+    2018-09-21 11:36:54,658:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,686:WARNING:
+    2018-09-21 11:36:54,725:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,739:WARNING:
+    2018-09-21 11:36:54,773:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,789:WARNING:
+    2018-09-21 11:36:54,820:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,837:WARNING:
+    2018-09-21 11:36:54,868:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,898:WARNING:
+    2018-09-21 11:36:54,914:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:35,961:WARNING:
+    2018-09-21 11:36:55,190:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,008:WARNING:
+    2018-09-21 11:36:55,264:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,074:WARNING:
+    2018-09-21 11:36:55,334:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,146:WARNING:
+    2018-09-21 11:36:55,383:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,193:WARNING:
+    2018-09-21 11:36:55,434:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,252:WARNING:
+    2018-09-21 11:36:55,502:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,307:WARNING:
+    2018-09-21 11:36:55,553:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,367:WARNING:
+    2018-09-21 11:36:55,625:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,436:WARNING:
+    2018-09-21 11:36:55,672:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,512:WARNING:
+    2018-09-21 11:36:55,718:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,577:WARNING:
+    2018-09-21 11:36:55,764:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,631:WARNING:
+    2018-09-21 11:36:55,811:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,679:WARNING:
+    2018-09-21 11:36:55,875:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,760:WARNING:
+    2018-09-21 11:36:55,933:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,822:WARNING:
+    2018-09-21 11:36:55,979:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,873:WARNING:
+    2018-09-21 11:36:56,035:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,922:WARNING:
+    2018-09-21 11:36:56,094:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:36,981:WARNING:
+    2018-09-21 11:36:56,142:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,060:WARNING:
+    2018-09-21 11:36:56,189:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,120:WARNING:
+    2018-09-21 11:36:56,236:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,186:WARNING:
+    2018-09-21 11:36:56,284:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,259:WARNING:
+    2018-09-21 11:36:56,356:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,309:WARNING:
+    2018-09-21 11:36:56,406:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,380:WARNING:
+    2018-09-21 11:36:56,459:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,437:WARNING:
+    2018-09-21 11:36:56,505:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,515:WARNING:
+    2018-09-21 11:36:56,563:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,564:WARNING:
+    2018-09-21 11:36:56,612:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,630:WARNING:
+    2018-09-21 11:36:56,660:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,699:WARNING:
+    2018-09-21 11:36:56,707:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,772:WARNING:
+    2018-09-21 11:36:56,753:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,826:WARNING:
+    2018-09-21 11:36:56,801:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,891:WARNING:
+    2018-09-21 11:36:56,855:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,948:WARNING:
+    2018-09-21 11:36:56,904:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:37,994:WARNING:
+    2018-09-21 11:36:56,950:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,040:WARNING:
+    2018-09-21 11:36:56,999:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,085:WARNING:
+    2018-09-21 11:36:57,047:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,138:WARNING:
+    2018-09-21 11:36:57,095:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,206:WARNING:
+    2018-09-21 11:36:57,144:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,276:WARNING:
+    2018-09-21 11:36:57,194:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,331:WARNING:
+    2018-09-21 11:36:57,261:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,381:WARNING:
+    2018-09-21 11:36:57,318:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,433:WARNING:
+    2018-09-21 11:36:57,389:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,484:WARNING:
+    2018-09-21 11:36:57,438:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,539:WARNING:
+    2018-09-21 11:36:57,488:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,598:WARNING:
+    2018-09-21 11:36:57,535:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,647:WARNING:
+    2018-09-21 11:36:57,597:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,700:WARNING:
+    2018-09-21 11:36:57,644:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,749:WARNING:
+    2018-09-21 11:36:57,703:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,796:WARNING:
+    2018-09-21 11:36:57,750:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
@@ -5653,7 +5653,7 @@ Read raw:
 
 .. parsed-literal::
 
-    58.8 ms ± 4.35 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    56.3 ms ± 9.93 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 Perform all operations:
@@ -5671,407 +5671,407 @@ Perform all operations:
 
 .. parsed-literal::
 
-    2018-09-20 15:34:38,885:WARNING:
+    2018-09-21 11:36:57,851:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:38,964:WARNING:
+    2018-09-21 11:36:57,940:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,019:WARNING:
+    2018-09-21 11:36:58,019:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,075:WARNING:
+    2018-09-21 11:36:58,087:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,139:WARNING:
+    2018-09-21 11:36:58,145:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,236:WARNING:
+    2018-09-21 11:36:58,201:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,302:WARNING:
+    2018-09-21 11:36:58,279:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,380:WARNING:
+    2018-09-21 11:36:58,335:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,440:WARNING:
+    2018-09-21 11:36:58,411:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,498:WARNING:
+    2018-09-21 11:36:58,473:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,558:WARNING:
+    2018-09-21 11:36:58,533:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,618:WARNING:
+    2018-09-21 11:36:58,590:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,676:WARNING:
+    2018-09-21 11:36:58,649:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,746:WARNING:
+    2018-09-21 11:36:58,719:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,801:WARNING:
+    2018-09-21 11:36:58,776:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,879:WARNING:
+    2018-09-21 11:36:58,831:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:39,951:WARNING:
+    2018-09-21 11:36:58,887:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,024:WARNING:
+    2018-09-21 11:36:58,951:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,108:WARNING:
+    2018-09-21 11:36:59,011:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,171:WARNING:
+    2018-09-21 11:36:59,084:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,237:WARNING:
+    2018-09-21 11:36:59,187:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,301:WARNING:
+    2018-09-21 11:36:59,251:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,379:WARNING:
+    2018-09-21 11:36:59,306:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,456:WARNING:
+    2018-09-21 11:36:59,372:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,544:WARNING:
+    2018-09-21 11:36:59,439:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,606:WARNING:
+    2018-09-21 11:36:59,496:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,674:WARNING:
+    2018-09-21 11:36:59,581:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,764:WARNING:
+    2018-09-21 11:36:59,653:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,823:WARNING:
+    2018-09-21 11:36:59,719:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,888:WARNING:
+    2018-09-21 11:36:59,774:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:40,945:WARNING:
+    2018-09-21 11:36:59,831:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,001:WARNING:
+    2018-09-21 11:36:59,888:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,069:WARNING:
+    2018-09-21 11:36:59,945:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,125:WARNING:
+    2018-09-21 11:37:00,003:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,193:WARNING:
+    2018-09-21 11:37:00,059:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,262:WARNING:
+    2018-09-21 11:37:00,133:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,326:WARNING:
+    2018-09-21 11:37:00,191:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,384:WARNING:
+    2018-09-21 11:37:00,249:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,463:WARNING:
+    2018-09-21 11:37:00,305:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,525:WARNING:
+    2018-09-21 11:37:00,383:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,582:WARNING:
+    2018-09-21 11:37:00,453:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,641:WARNING:
+    2018-09-21 11:37:00,509:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,702:WARNING:
+    2018-09-21 11:37:00,565:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,760:WARNING:
+    2018-09-21 11:37:00,627:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,819:WARNING:
+    2018-09-21 11:37:00,703:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,877:WARNING:
+    2018-09-21 11:37:00,761:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,936:WARNING:
+    2018-09-21 11:37:00,829:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:41,995:WARNING:
+    2018-09-21 11:37:00,897:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,059:WARNING:
+    2018-09-21 11:37:00,955:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,119:WARNING:
+    2018-09-21 11:37:01,012:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,187:WARNING:
+    2018-09-21 11:37:01,067:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,252:WARNING:
+    2018-09-21 11:37:01,127:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,330:WARNING:
+    2018-09-21 11:37:01,186:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,390:WARNING:
+    2018-09-21 11:37:01,264:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,454:WARNING:
+    2018-09-21 11:37:01,320:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,530:WARNING:
+    2018-09-21 11:37:01,375:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,609:WARNING:
+    2018-09-21 11:37:01,430:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,677:WARNING:
+    2018-09-21 11:37:01,518:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,749:WARNING:
+    2018-09-21 11:37:01,591:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,806:WARNING:
+    2018-09-21 11:37:01,658:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,874:WARNING:
+    2018-09-21 11:37:01,719:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:42,942:WARNING:
+    2018-09-21 11:37:01,789:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,004:WARNING:
+    2018-09-21 11:37:01,848:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,074:WARNING:
+    2018-09-21 11:37:01,908:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,135:WARNING:
+    2018-09-21 11:37:01,965:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,196:WARNING:
+    2018-09-21 11:37:02,025:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,256:WARNING:
+    2018-09-21 11:37:02,081:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,336:WARNING:
+    2018-09-21 11:37:02,144:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,418:WARNING:
+    2018-09-21 11:37:02,204:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,486:WARNING:
+    2018-09-21 11:37:02,284:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,565:WARNING:
+    2018-09-21 11:37:02,338:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,633:WARNING:
+    2018-09-21 11:37:02,393:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,691:WARNING:
+    2018-09-21 11:37:02,450:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,748:WARNING:
+    2018-09-21 11:37:02,508:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,811:WARNING:
+    2018-09-21 11:37:02,582:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,885:WARNING:
+    2018-09-21 11:37:02,646:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:43,949:WARNING:
+    2018-09-21 11:37:02,704:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:44,005:WARNING:
+    2018-09-21 11:37:02,765:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:44,066:WARNING:
+    2018-09-21 11:37:02,835:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:44,125:WARNING:
+    2018-09-21 11:37:02,890:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
     Error msg: IndexError('list index out of range',)
-    2018-09-20 15:34:44,189:WARNING:
+    2018-09-21 11:37:02,944:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
@@ -6080,5 +6080,5 @@ Perform all operations:
 
 .. parsed-literal::
 
-    66.4 ms ± 3.36 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    63 ms ± 2.2 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 

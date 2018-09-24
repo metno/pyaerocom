@@ -17,24 +17,24 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-20 15:32:18,412:WARNING:
+    2018-09-21 11:34:26,529:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
 
 
 .. parsed-literal::
 
-    Elapsed time init all variables: 0.028003692626953125 s
+    Elapsed time init all variables: 0.02482461929321289 s
 
 
 .. parsed-literal::
 
-    2018-09-20 15:32:19,112:WARNING:
+    2018-09-21 11:34:27,294:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.073530673980713 s
+    Elapsed time init pyaerocom: 1.1273043155670166 s
 
 
 Define two models (this list can contain as many models as you like)
