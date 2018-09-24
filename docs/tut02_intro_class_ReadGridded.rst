@@ -39,9 +39,9 @@ information about what is in there.
 
 .. parsed-literal::
 
-    2018-09-24 17:03:50,563:WARNING:
+    2018-09-24 17:17:34,789:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 17:03:51,270:WARNING:
+    2018-09-24 17:17:35,925:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 

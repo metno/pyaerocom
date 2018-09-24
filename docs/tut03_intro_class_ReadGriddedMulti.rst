@@ -17,9 +17,9 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-24 17:04:17,284:WARNING:
+    2018-09-24 17:18:13,670:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 17:04:17,949:WARNING:
+    2018-09-24 17:18:14,370:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 

@@ -33,11 +33,11 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
-    2018-09-24 17:06:21,958:WARNING:
+    2018-09-24 17:20:21,155:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 17:06:22,802:WARNING:
+    2018-09-24 17:20:21,814:WARNING:
     geopy library is not available. Aeolus data read not enabled
-    2018-09-24 17:06:22,823:WARNING:
+    2018-09-24 17:20:21,831:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
@@ -299,7 +299,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f2c84163940>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f8a3b5f49b0>)])
 
 
 
