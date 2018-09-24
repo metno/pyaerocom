@@ -4,6 +4,7 @@
 Small helper utility functions for pyaerocom
 """   
 import numpy as np
+import os
 from collections import OrderedDict
 
 class BrowseDict(OrderedDict):
@@ -20,8 +21,18 @@ class BrowseDict(OrderedDict):
     
     def __setattr__(self, key, val):
         self[key] = val
+        
+    def __str__(self):
+        return dict_to_str(self)
    
-     
+    
+def chk_make_subdir(base, name):
+    """Check if sub-directory exists in parent directory"""
+    d = os.path.join(base, name)
+    if not os.path.exists(d):
+        os.mkdir(d)
+    return d
+        
 def list_to_shortstr(lst, indent=3):
     """Custom function to convert a list into a short string representation"""
     if len(lst) == 0:
@@ -88,3 +99,6 @@ def str_underline(s, indent=0):
     s+= indent*" " + "{}".format(len(s)*"-")
     return s
 
+if __name__ == '__main__':
+    d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
+    print(d)
