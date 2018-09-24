@@ -298,7 +298,21 @@ class Config(object):
         print('Elapsed time init all variables: {} s'.format(time()-t0))
         self.READY
     
-        
+      
+    @property 
+    def BASEDIR(self):
+        """Base directory of data"""
+        return self.MODELBASEDIR
+    
+    @property
+    def COLLOCATED_DATA_DIR(self):
+        path = os.path.join(self.BASEDIR, 'aerocom2/pyaerocom/colocated-output')
+        if not os.path.exists(path):
+            path = os.path.join(self.OUT_BASEDIR + 'colocated-output')
+            if not os.path.exists(path):
+                os.mkdir(path)
+        return path
+            
     @property
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""
