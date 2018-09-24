@@ -84,8 +84,8 @@ class ReadEarlinet(ReadUngriddedBase):
         
     META_NAMES_FILE = od(location           = 'Location',
                          start_date         = 'StartDate',
-                         start_time_utc     = 'StartTime_UT',
-                         stop_time_utc      = 'StopTime_UT',
+                         start_utc     = 'StartTime_UT',
+                         stop_utc      = 'StopTime_UT',
                          stat_lon           = 'Longitude_degrees_east',
                          stat_lat           = 'Latitude_degrees_north',
                          wavelength_emis    = 'EmissionWavelength_nm',

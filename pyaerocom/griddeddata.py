@@ -167,7 +167,7 @@ class GriddedData(object):
         return isinstance(self.grid.data, np.ma.core.MaskedArray)
     
     @property
-    def start_time(self):
+    def start(self):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
             logger.warning("Start time could not be accessed in GriddedData")
@@ -175,7 +175,7 @@ class GriddedData(object):
         return cftime_to_datetime64(self.time[0])[0]
     
     @property
-    def stop_time(self):
+    def stop(self):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
             logger.warning("Stop time could not be accessed in GriddedData")
@@ -265,7 +265,7 @@ class GriddedData(object):
     @property
     def is_climatology(self):
         try:
-            year = to_pandas_timestamp(self.start_time).year
+            year = to_pandas_timestamp(self.start).year
             if year == 9999:
                 return True
             return False
@@ -868,7 +868,7 @@ class GriddedData(object):
             vert_pos += 'AtStations'
             
         name = [fconv.name, self.name, self.var_name, vert_pos,
-                str(pd.Timestamp(self.start_time).year), self.ts_type]
+                str(pd.Timestamp(self.start).year), self.ts_type]
         return '_'.format(fconv.file_sep).join(name) + '.nc'
     
     def compute_at_stations_file(self, stat_lats=None, stat_lons=None,
@@ -1193,8 +1193,8 @@ class GriddedData(object):
                                             len(head)*"-",
                                             self.var_name, 
                                             self.suppl_info["ts_type"],
-                                            self.start_time,
-                                            self.stop_time))
+                                            self.start,
+                                            self.stop))
         return s
     
     def _check_lonlat_bounds(self):

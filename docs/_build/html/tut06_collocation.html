@@ -203,18 +203,10 @@ online interface (see e.g.
 <span class="n">OBS_ID</span> <span class="o">=</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">21</span> <span class="mi">11</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">09</span><span class="p">,</span><span class="mi">329</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">29</span><span class="p">,</span><span class="mi">882</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">basemap</span> <span class="n">extension</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">installed</span> <span class="p">(</span><span class="ow">or</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">imported</span><span class="o">.</span> <span class="n">Some</span> <span class="n">features</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">available</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Elapsed</span> <span class="n">time</span> <span class="n">init</span> <span class="nb">all</span> <span class="n">variables</span><span class="p">:</span> <span class="mf">0.02587270736694336</span> <span class="n">s</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">21</span> <span class="mi">11</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span><span class="mi">013</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">24</span> <span class="mi">15</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">30</span><span class="p">,</span><span class="mi">629</span><span class="p">:</span><span class="n">WARNING</span><span class="p">:</span>
 <span class="n">geopy</span> <span class="n">library</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">available</span><span class="o">.</span> <span class="n">Aeolus</span> <span class="n">data</span> <span class="n">read</span> <span class="ow">not</span> <span class="n">enabled</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Elapsed</span> <span class="n">time</span> <span class="n">init</span> <span class="n">pyaerocom</span><span class="p">:</span> <span class="mf">1.002335548400879</span> <span class="n">s</span>
 </pre></div>
 </div>
 </div>
@@ -236,7 +228,7 @@ there.</p>
 </pre></div>
 </div>
 <p>Since we are only interested in a single year we can use the method</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_data</span> <span class="o">=</span> <span class="n">model_reader</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">VAR</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="n">YEAR</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_data</span> <span class="o">=</span> <span class="n">model_reader</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">VAR</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">YEAR</span><span class="p">)</span>
 <span class="c1">#model_data = read_result[VAR][YEAR]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model_data</span><span class="p">)</span>
 </pre></div>
@@ -278,7 +270,7 @@ located at altitudes between 0 and 1000 m.</p>
 <span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">]</span>
 <span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">985</span>
 <span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
- <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20180921113628</span>
+ <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20180924153648</span>
     <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -334,7 +326,7 @@ located at altitudes between 0 and 1000 m.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_colloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7faf4a3f5630</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f2420115f28</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_collocation_13_1.png" src="_images/tut06_collocation_13_1.png" />
@@ -388,7 +380,7 @@ located at altitudes between 0 and 1000 m.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_colloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7faf4a9a8860</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f23ea830828</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_collocation_16_1.png" src="_images/tut06_collocation_16_1.png" />

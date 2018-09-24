@@ -205,7 +205,7 @@ class ReadAeolusL2aData:
         """small helper routine to put the data read by the read_file method into
         the ndarray of self.data"""
 
-        # start_time_read = time.perf_counter()
+        # start_read = time.perf_counter()
         # return all data points
         num_points = len(file_data)
         if self.index_pointer == 0:
@@ -224,7 +224,7 @@ class ReadAeolusL2aData:
             self.index_pointer = self.index_pointer + num_points
 
             # end_time = time.perf_counter()
-            # elapsed_sec = end_time - start_time_read
+            # elapsed_sec = end_time - start_read
             # temp = 'time for single file read seconds: {:.3f}'.format(elapsed_sec)
             # self.logger.warning(temp)
 
@@ -500,7 +500,7 @@ class ReadAeolusL2aData:
         # base_time = pd.DatetimeIndex(['2000-01-01'])
         # seconds_to_add = (base_time.view('int64') // pd.Timedelta(1, unit='s'))[0]
 
-        start_time = time.perf_counter()
+        start = time.perf_counter()
         file_data = {}
 
         self.logger.info('reading file {}'.format(filename))
@@ -582,7 +582,7 @@ class ReadAeolusL2aData:
             file_data = data[0:index_pointer]
 
         end_time = time.perf_counter()
-        elapsed_sec = end_time - start_time
+        elapsed_sec = end_time - start
         temp = 'time for single file read [s]: {:.3f}'.format(elapsed_sec)
         self.logger.info(temp)
         # self.logger.info('{} points read'.format(index_pointer))
@@ -608,10 +608,10 @@ class ReadAeolusL2aData:
 
         import time
 
-        start_time = time.perf_counter()
+        start = time.perf_counter()
         self.files = self.get_file_list()
         after_file_search_time = time.perf_counter()
-        elapsed_sec = after_file_search_time - start_time
+        elapsed_sec = after_file_search_time - start
         temp = 'time for file find: {:.3f}'.format(elapsed_sec)
         self.logger.info(temp)
 
@@ -622,7 +622,7 @@ class ReadAeolusL2aData:
             self.ndarr2data(file_data)
 
         end_time = time.perf_counter()
-        elapsed_sec = end_time - start_time
+        elapsed_sec = end_time - start
         temp = 'overall time for file read [s]: {:.3f}'.format(elapsed_sec)
         self.logger.info(temp)
         self.logger.info('size of data object: {}'.format(self.index_pointer))
@@ -682,7 +682,7 @@ class ReadAeolusL2aData:
         >>> print('max distance: {:.3f} km'.format(np.nanmax(obj.data[:, obj._DISTINDEX])))
         """
 
-        start_time = time.perf_counter()
+        start = time.perf_counter()
         if backend == 'pyaerocom':
             if self.rads_in_array_flag:
                 # lat1 = self.data[:, self._LATINDEX]
@@ -711,7 +711,7 @@ class ReadAeolusL2aData:
                         2))))
 
             end_time = time.perf_counter()
-            elapsed_sec = end_time - start_time
+            elapsed_sec = end_time - start
             temp = 'time for single station distance calc [s]: {:.3f}'.format(elapsed_sec)
             self.logger.info(temp)
 
@@ -721,7 +721,7 @@ class ReadAeolusL2aData:
             # but told us that we did the calculation right and opens a possibility to use
             # a geopy supported geoid for the calculation. Although that will then be another
             # magnitude slower than geopy.distance.great_circle
-            start_time = time.perf_counter()
+            start = time.perf_counter()
             for idx in range(len(self.data[:,self._TIMEINDEX])):
                 # blend out NaNs in lat and long
                 if np.isnan(self.data[idx,self._LATINDEX] + self.data[idx,self._LONINDEX]):
@@ -736,7 +736,7 @@ class ReadAeolusL2aData:
                                                         self.data[idx, self._LONINDEX])).km
 
             end_time = time.perf_counter()
-            elapsed_sec = end_time - start_time
+            elapsed_sec = end_time - start
             temp = 'time for single station distance calc using geopy [s]: {:.3f}'.format(elapsed_sec)
             self.logger.info(temp)
         else:
@@ -777,7 +777,7 @@ class ReadAeolusL2aData:
         >>> result[indexes[0]]['data'].shape
         """
 
-        start_time = time.perf_counter()
+        start = time.perf_counter()
 
         ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
         index_counter = 0
@@ -815,7 +815,7 @@ class ReadAeolusL2aData:
             if cut_flag:
                 ret_data = ret_data[:index_counter, :]
             end_time = time.perf_counter()
-            elapsed_sec = end_time - start_time
+            elapsed_sec = end_time - start
             temp = 'time for single station distance calc [s]: {:.3f}'.format(elapsed_sec)
             self.logger.info(temp)
             # log the found times
@@ -836,7 +836,7 @@ class ReadAeolusL2aData:
             else:
                 pass
             end_time = time.perf_counter()
-            elapsed_sec = end_time - start_time
+            elapsed_sec = end_time - start
             temp = 'time for bbox calc [s]: {:.3f}'.format(elapsed_sec)
             self.logger.info(temp)
         elif resample_to_grid:
@@ -869,7 +869,7 @@ class ReadAeolusL2aData:
                     self.logger.warning('{} boxes co-located'.format(idx))
 
             end_time = time.perf_counter()
-            elapsed_sec = end_time - start_time
+            elapsed_sec = end_time - start
             temp = 'time for gridding calc [s]: {:.3f}'.format(elapsed_sec)
             self.logger.info(temp)
         else:
@@ -898,7 +898,7 @@ class ReadAeolusL2aData:
 
 
         """
-        start_time = time.perf_counter()
+        start = time.perf_counter()
 
         # ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
         # index_counter = 0
@@ -931,7 +931,7 @@ class ReadAeolusL2aData:
             # matching_length = len(matching_indexes[0])
 
             # end_time = time.perf_counter()
-            # elapsed_sec = end_time - start_time
+            # elapsed_sec = end_time - start
             # temp = 'time for single station bbox calc [s]: {:.3f}'.format(elapsed_sec)
             # self.logger.info(temp)
             # log the found times

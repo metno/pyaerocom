@@ -62,8 +62,8 @@ def collocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
     # get start / stop of gridded data as pandas.Timestamp
-    grid_start = to_pandas_timestamp(gridded_data.start_time)
-    grid_stop = to_pandas_timestamp(gridded_data.stop_time)
+    grid_start = to_pandas_timestamp(gridded_data.start)
+    grid_stop = to_pandas_timestamp(gridded_data.stop)
     
     grid_ts_type = gridded_data.ts_type
     
@@ -223,8 +223,8 @@ def collocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily'
                              'UngriddedData object to extract single datasets')
         
     # get start / stop of gridded data as pandas.Timestamp
-    grid_start = to_pandas_timestamp(gridded_data.start_time)
-    grid_stop = to_pandas_timestamp(gridded_data.stop_time)
+    grid_start = to_pandas_timestamp(gridded_data.start)
+    grid_stop = to_pandas_timestamp(gridded_data.stop)
     
     grid_ts_type = gridded_data.ts_type
     
@@ -372,10 +372,10 @@ if __name__=='__main__':
     import pyaerocom as pya
     
     r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    model = r.read_var('od550aer', start_time=2010)
+    model = r.read_var('od550aer', start=2010)
     
     obs_r1 = pya.io.ReadGridded('MODIS6.terra')
-    obs1 = obs_r1.read_var('od550aer', start_time=2010)
+    obs1 = obs_r1.read_var('od550aer', start=2010)
     
     obs_r2 = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
     obs2 = obs_r2.read(vars_to_retrieve='od550aer')

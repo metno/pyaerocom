@@ -434,7 +434,7 @@
                           <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
                           <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">))</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> mean </span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">var_name</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> 
-                 <span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span>
+                 <span class="n">to_datetime</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span>
                  <span class="n">data</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()))</span>
     <span class="k">return</span> <span class="n">fig</span></div>
     
@@ -456,8 +456,8 @@
     
     <span class="n">run_old</span><span class="o">=</span><span class="kc">True</span>
     <span class="k">if</span> <span class="n">run_old</span><span class="p">:</span>
-        <span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;2010&quot;</span><span class="p">,</span>
-                                          <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;2019&quot;</span><span class="p">)</span>
+        <span class="n">read</span> <span class="o">=</span> <span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2010&quot;</span><span class="p">,</span>
+                                          <span class="n">stop</span><span class="o">=</span><span class="s2">&quot;2019&quot;</span><span class="p">)</span>
         
         <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s2">&quot;od550aer&quot;</span><span class="p">)</span>
         <span class="n">fig0</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>

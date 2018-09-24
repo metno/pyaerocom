@@ -37,15 +37,15 @@ if __name__=="__main__":
                                       latitude=(35, 45))
                 
     # We only have the first 83 days of 2018 in the dataset
-    start_time = Timestamp("2018-1-15")
-    stop_time = Timestamp("2018-2-20")
+    start = Timestamp("2018-1-15")
+    stop = Timestamp("2018-2-20")
     
-    t_lower = iris.time.PartialDateTime(year=start_time.year,
-                                   month=start_time.month,
-                                   day=start_time.day)
-    t_upper = iris.time.PartialDateTime(year=stop_time.year,
-                                   month=stop_time.month,
-                                   day=stop_time.day)
+    t_lower = iris.time.PartialDateTime(year=start.year,
+                                   month=start.month,
+                                   day=start.day)
+    t_upper = iris.time.PartialDateTime(year=stop.year,
+                                   month=stop.month,
+                                   day=stop.day)
     
     time_constraint = iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
     crop_time_opt1 = 0

@@ -386,6 +386,6 @@ if __name__== "__main__":
     print(cube)
     
     data = pya.GriddedData(cube)
-    print(data.start_time)
-    print(data.stop_time)
+    print(data.start)
+    print(data.stop)
     print(data)

@@ -33,24 +33,10 @@ Import setup and imports
 
 .. parsed-literal::
 
-    2018-09-21 11:36:09,329:WARNING:
+    2018-09-24 15:36:29,882:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-
-
-.. parsed-literal::
-
-    Elapsed time init all variables: 0.02587270736694336 s
-
-
-.. parsed-literal::
-
-    2018-09-21 11:36:10,013:WARNING:
+    2018-09-24 15:36:30,629:WARNING:
     geopy library is not available. Aeolus data read not enabled
-
-
-.. parsed-literal::
-
-    Elapsed time init pyaerocom: 1.002335548400879 s
 
 
 Import of model data
@@ -81,7 +67,7 @@ Since we are only interested in a single year we can use the method
 
 .. code:: ipython3
 
-    model_data = model_reader.read_var(VAR, start_time=YEAR)
+    model_data = model_reader.read_var(VAR, start=YEAR)
     #model_data = read_result[VAR][YEAR]
     print(model_data)
 
@@ -136,7 +122,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20180921113628
+     Filter time log: 20180924153648
     	stat_alt: [0, 1000]
 
 
@@ -208,7 +194,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7faf4a3f5630>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f2420115f28>
 
 
 
@@ -281,7 +267,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7faf4a9a8860>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f23ea830828>
 
 
 

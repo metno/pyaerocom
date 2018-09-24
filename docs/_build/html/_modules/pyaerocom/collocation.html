@@ -223,8 +223,8 @@
     <span class="k">if</span> <span class="n">filter_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span>
     <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
-    <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
-    <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
+    <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
     
     <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
     
@@ -384,8 +384,8 @@
                              <span class="s1">&#39;UngriddedData object to extract single datasets&#39;</span><span class="p">)</span>
         
     <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
-    <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start_time</span><span class="p">)</span>
-    <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
+    <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+    <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
     
     <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
     
@@ -533,10 +533,10 @@
     <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
     
     <span class="n">r</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
     
     <span class="n">obs_r1</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;MODIS6.terra&#39;</span><span class="p">)</span>
-    <span class="n">obs1</span> <span class="o">=</span> <span class="n">obs_r1</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
+    <span class="n">obs1</span> <span class="o">=</span> <span class="n">obs_r1</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
     
     <span class="n">obs_r2</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">)</span>
     <span class="n">obs2</span> <span class="o">=</span> <span class="n">obs_r2</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="o">=</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>

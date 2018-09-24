@@ -219,7 +219,7 @@ if __name__ == '__main__':
     MODEL_ID_3D = 'SPRINTARS-T213_AP3-CTRL2016-PD'
     
     data = pya.io.ReadGridded(MODEL_ID_3D).read_var('ec550aer3d',
-                             start_time=2010)
+                             start=2010)
     
     surfp = data.grid.coord('surface_air_pressure')
     

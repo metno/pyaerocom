@@ -472,15 +472,15 @@ def get_lon_constraint(lon_range, meridian_centre=True):
         raise LongitudeConstraintError(msg)
     return iris.Constraint(longitude=lambda v: left <= v <= right)
 
-def get_time_constraint(start_time, stop_time):
+def get_time_constraint(start, stop):
     """Create iris.Constraint for data extraction along time axis
     
     Parameters
     ----------
-    start_time : :obj:`Timestamp` or :obj:` str`
+    start : :obj:`Timestamp` or :obj:` str`
         start time of desired subset. If string, it must be convertible 
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
-    stop_time : :obj:`Timestamp` or :obj:` str`
+    stop : :obj:`Timestamp` or :obj:` str`
         start time of desired subset. If string, it must be convertible 
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
     
@@ -490,17 +490,17 @@ def get_time_constraint(start_time, stop_time):
         iris Constraint instance that can, e.g., be used as input for
         :func:`pyaerocom.griddeddata.GriddedData.extract`
     """
-    if not isinstance(start_time, pd.Timestamp):
-        start_time = pd.Timestamp(start_time)
-    if not isinstance(stop_time, pd.Timestamp):
-        stop_time = pd.Timestamp(stop_time)
+    if not isinstance(start, pd.Timestamp):
+        start = pd.Timestamp(start)
+    if not isinstance(stop, pd.Timestamp):
+        stop = pd.Timestamp(stop)
         
-    t_lower = iris.time.PartialDateTime(year=start_time.year,
-                                        month=start_time.month,
-                                        day=start_time.day)
-    t_upper = iris.time.PartialDateTime(year=stop_time.year,
-                                        month=stop_time.month,
-                                        day=stop_time.day)
+    t_lower = iris.time.PartialDateTime(year=start.year,
+                                        month=start.month,
+                                        day=start.day)
+    t_upper = iris.time.PartialDateTime(year=stop.year,
+                                        month=stop.month,
+                                        day=stop.day)
     
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 

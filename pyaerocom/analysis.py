@@ -227,11 +227,11 @@ class Analyser(AnalysisSetup):
         """Based on current setup, get savename of collocated data file
         """
         if start is None:
-            start = model_data.start_time
+            start = model_data.start
         else:
             start = to_pandas_timestamp(start)    
         if stop is None:
-            stop = model_data.stop_time
+            stop = model_data.stop
         else:
             stop = to_pandas_timestamp(stop)
         
@@ -328,7 +328,7 @@ class Analyser(AnalysisSetup):
             for ts_type in ts_type_matches:
                 ts_types_ana = ts_type_setup[ts_type]
                 model_reader.read(var_matches, 
-                                  start_time=year,
+                                  start=year,
                                   ts_type=ts_type,
                                   flex_ts_type=False)
                             
@@ -419,11 +419,11 @@ class Analyser(AnalysisSetup):
                 ts_types_ana = ts_type_setup[ts_type]
                 # reads only year if starttime is provided but not stop time
                 model_reader.read(var_matches, 
-                                  start_time=year,
+                                  start=year,
                                   ts_type=ts_type,
                                   flex_ts_type=False)
                 
-                obs_reader.read(var_matches, start_time=year,
+                obs_reader.read(var_matches, start=year,
                                 ts_type = ts_type,
                                 flex_ts_type=True)
                 

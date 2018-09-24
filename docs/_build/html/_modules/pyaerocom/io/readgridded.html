@@ -236,9 +236,9 @@
 <span class="sd">        imported data object </span>
 <span class="sd">    data_dir : str</span>
 <span class="sd">        directory containing result files for this model</span>
-<span class="sd">    start_time : pandas.Timestamp</span>
+<span class="sd">    start : pandas.Timestamp</span>
 <span class="sd">        start time for data import</span>
-<span class="sd">    stop_time : pandas.Timestamp</span>
+<span class="sd">    stop : pandas.Timestamp</span>
 <span class="sd">        stop time for data import</span>
 <span class="sd">    file_convention : FileConventionRead</span>
 <span class="sd">        class specifying details of the file naming convention for the model</span>
@@ -262,10 +262,10 @@
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
 <span class="sd">        string ID of model (e.g. &quot;AATSR_SU_v4.3&quot;,&quot;CAM5.3-Oslo_CTRL2016&quot;)</span>
-<span class="sd">    start_time : :obj:`pandas.Timestamp` or :obj:`str`, optional</span>
+<span class="sd">    start : :obj:`pandas.Timestamp` or :obj:`str`, optional</span>
 <span class="sd">        desired start time of dataset (note, that strings are passed to </span>
 <span class="sd">        :class:`pandas.Timestamp` without further checking)</span>
-<span class="sd">    stop_time : :obj:`pandas.Timestamp` or :obj:`str`, optional</span>
+<span class="sd">    stop : :obj:`pandas.Timestamp` or :obj:`str`, optional</span>
 <span class="sd">        desired stop time of dataset (note, that strings are passed to </span>
 <span class="sd">        :class:`pandas.Timestamp` without further checking)</span>
 <span class="sd">    file_convention : str</span>
@@ -296,10 +296,10 @@
     
     <span class="c1">#: Directory containing model data for this species</span>
     <span class="n">_data_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_start</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_stop</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1">#VALID_DIM_STANDARD_NAMES = [&#39;longitude&#39;, &#39;latitude&#39;, &#39;altitude&#39;, &#39;time&#39;]</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">file_convention</span><span class="o">=</span><span class="s2">&quot;aerocom3&quot;</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="c1"># model ID</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -316,13 +316,13 @@
         
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="c1"># only overwrite if there is input, note that the attributes</span>
-        <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
+        <span class="c1"># start and stop are defined below as @property getter and</span>
         <span class="c1"># setter methods, that ensure that the input is convertible to </span>
         <span class="c1"># pandas.Timestamp</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
         
         <span class="c1">#: Dictionary containing loaded results for different variables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
@@ -415,7 +415,7 @@
         <span class="k">return</span> <span class="n">CONST</span><span class="o">.</span><span class="n">GRID_IO</span><span class="o">.</span><span class="n">TS_TYPES</span>
     
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;First available year in the dataset (inferred from filenames)</span>
 <span class="sd">        </span>
 <span class="sd">        Note</span>
@@ -430,7 +430,7 @@
         <span class="k">return</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
             
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Last available year in the dataset (inferred from filenames)</span>
 <span class="sd">        </span>
 <span class="sd">        Note</span>
@@ -453,13 +453,13 @@
         <span class="k">return</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">-12-31 23:59:59&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">))</span>
     
 <span class="c1"># =============================================================================</span>
-<span class="c1">#     @stop_time.setter</span>
-<span class="c1">#     def stop_time(self, value):</span>
+<span class="c1">#     @stop.setter</span>
+<span class="c1">#     def stop(self, value):</span>
 <span class="c1">#         value = to_pandas_timestamp(value)</span>
-<span class="c1">#         self._stop_time = value</span>
+<span class="c1">#         self._stop = value</span>
 <span class="c1">#     </span>
 <span class="c1"># =============================================================================</span>
-<div class="viewcode-block" id="ReadGridded.get_years_to_load"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.get_years_to_load">[docs]</a>    <span class="k">def</span> <span class="nf">get_years_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadGridded.get_years_to_load"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.get_years_to_load">[docs]</a>    <span class="k">def</span> <span class="nf">get_years_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Array containing year numbers that are supposed to be loaded</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
@@ -468,27 +468,27 @@
 <span class="sd">            all years to be loaded</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">load_only_year</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">start_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">start_time</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
             <span class="c1">#take only this year</span>
-            <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">load_only_year</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">stop_time</span> <span class="o">=</span> <span class="n">start_time</span> <span class="c1">#same year</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">stop_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="c1">#same year</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">stop_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">load_only_year</span><span class="p">:</span> <span class="c1">#stop time was input</span>
-            <span class="n">stop_time</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
             
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">and</span> <span class="n">stop_time</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start_time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">and</span> <span class="n">stop</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">stop</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;No information available for available &quot;</span>
                                  <span class="s2">&quot;years. Please run method &quot;</span>
@@ -673,7 +673,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Ignoring key </span><span class="si">%s</span><span class="s2"> in ModelImportResult.update()&quot;</span> <span class="o">%</span><span class="n">k</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="ReadGridded.find_var_files_flex_ts_type"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type">[docs]</a>    <span class="k">def</span> <span class="nf">find_var_files_flex_ts_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type_init</span><span class="p">,</span>
-                                    <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                    <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find available files for a variable in a time period </span>
 <span class="sd">        </span>
 <span class="sd">        Like :func:`find_var_files_in_timeperiod` but this method also checks</span>
@@ -686,12 +686,12 @@
 <span class="sd">            variable name</span>
 <span class="sd">        ts_type_init : str</span>
 <span class="sd">            desired temporal resolution of data</span>
-<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        start : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            start time of data. If None, then the first available time stamp </span>
-<span class="sd">            in this data object is used (i.e. :attr:`start_time`)</span>
-<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            in this data object is used (i.e. :attr:`start`)</span>
+<span class="sd">        stop : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            stop time of data. If None, then the last available time stamp </span>
-<span class="sd">            in this data object is used (i.e. :attr:`stop_time`)</span>
+<span class="sd">            in this data object is used (i.e. :attr:`stop`)</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
@@ -709,7 +709,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type_init</span><span class="p">,</span>
-                                                      <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
+                                                      <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">ts_type_init</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">DataCoverageError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No file match for ts_type </span><span class="si">{}</span><span class="s1">. Error: </span><span class="si">{}</span><span class="se">\n\n</span><span class="s1"> &#39;</span>
@@ -720,8 +720,8 @@
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
                                                                   <span class="n">ts_type</span><span class="p">,</span>
-                                                                  <span class="n">start_time</span><span class="p">,</span>
-                                                                  <span class="n">stop_time</span><span class="p">)</span>
+                                                                  <span class="n">start</span><span class="p">,</span>
+                                                                  <span class="n">stop</span><span class="p">)</span>
                         <span class="k">return</span> <span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span>
                     
                     <span class="k">except</span> <span class="n">DataCoverageError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -733,7 +733,7 @@
                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">ts_types</span><span class="p">))</span></div>
                         
 <div class="viewcode-block" id="ReadGridded.find_var_files_in_timeperiod"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod">[docs]</a>    <span class="k">def</span> <span class="nf">find_var_files_in_timeperiod</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
-                                     <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                     <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find all files that match variable, time period and temporal res.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -742,12 +742,12 @@
 <span class="sd">            variable name</span>
 <span class="sd">        ts_type : str</span>
 <span class="sd">            temporal resolution of data</span>
-<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        start : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            start time of data. If None, then the first available time stamp </span>
-<span class="sd">            in this data object is used (i.e. :attr:`start_time`)</span>
-<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            in this data object is used (i.e. :attr:`start`)</span>
+<span class="sd">        stop : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            stop time of data. If None, then the last available time stamp </span>
-<span class="sd">            in this data object is used (i.e. :attr:`stop_time`)</span>
+<span class="sd">            in this data object is used (i.e. :attr:`stop`)</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
@@ -763,7 +763,7 @@
         
         <span class="n">match_files</span> <span class="o">=</span> <span class="p">[]</span>
     
-        <span class="n">years_to_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_years_to_load</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
+        <span class="n">years_to_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_years_to_load</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years_to_load</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MIN_YEAR</span> <span class="o">&lt;=</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">CONST</span><span class="o">.</span><span class="n">MAX_YEAR</span><span class="p">:</span>
                 <span class="c1"># search for filename in self.files using ts_type as default ts size</span>
@@ -909,7 +909,7 @@
                                                    <span class="n">var</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">vars_to_read</span>
                 
-<div class="viewcode-block" id="ReadGridded.compute_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.compute_var">[docs]</a>    <span class="k">def</span> <span class="nf">compute_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<div class="viewcode-block" id="ReadGridded.compute_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.compute_var">[docs]</a>    <span class="k">def</span> <span class="nf">compute_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute auxiliary variable</span>
 <span class="sd">        </span>
@@ -920,18 +920,18 @@
 <span class="sd">        ----------</span>
 <span class="sd">        var_name : str</span>
 <span class="sd">            variable that are supposed to be read</span>
-<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        start : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            start time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
-<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
+<span class="sd">        stop : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            stop time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
 <span class="sd">        ts_type : str</span>
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;). If None, prioritised </span>
 <span class="sd">            of the available resolutions is used</span>
 <span class="sd">        flex_ts_type : bool</span>
-<span class="sd">            if True and if applicable,start_time=None, stop_time=None, </span>
+<span class="sd">            if True and if applicable,start=None, stop=None,</span>
 <span class="sd">                 ts_type=None, flex_ts_type=True then another ts_type is used in case </span>
 <span class="sd">            the input ts_type is not available for this variable</span>
 <span class="sd">            </span>
@@ -951,8 +951,8 @@
         <span class="n">vars_to_read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_aux_vars</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_read</span><span class="p">:</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> 
-                                       <span class="n">stop_time</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="p">))</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span>
+                                       <span class="n">stop</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="p">))</span>
         <span class="n">cube</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_FUNS</span><span class="p">[</span><span class="n">var_name</span><span class="p">](</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
         <span class="n">cube</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="n">var_name</span>
         
@@ -963,7 +963,7 @@
             
         <span class="c1">#raise NotImplementedError</span>
             
-<div class="viewcode-block" id="ReadGridded.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<div class="viewcode-block" id="ReadGridded.read_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read_var">[docs]</a>    <span class="k">def</span> <span class="nf">read_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read model data for a specific variable</span>
 <span class="sd">        </span>
@@ -990,18 +990,18 @@
 <span class="sd">        ----------</span>
 <span class="sd">        var_name : str</span>
 <span class="sd">            variable that are supposed to be read</span>
-<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        start : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            start time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
-<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
+<span class="sd">        stop : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            stop time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
 <span class="sd">        ts_type : str</span>
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;). If None, prioritised </span>
 <span class="sd">            of the available resolutions is used</span>
 <span class="sd">        flex_ts_type : bool</span>
-<span class="sd">            if True and if applicable,start_time=None, stop_time=None, </span>
+<span class="sd">            if True and if applicable,start=None, stop=None,</span>
 <span class="sd">                 ts_type=None, flex_ts_type=True then another ts_type is used in case </span>
 <span class="sd">            the input ts_type is not available for this variable</span>
 <span class="sd">            </span>
@@ -1030,10 +1030,10 @@
                         <span class="n">var_to_read</span> <span class="o">=</span> <span class="n">var</span>
         
         <span class="k">if</span> <span class="n">var_to_read</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var_to_read</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_var</span><span class="p">(</span><span class="n">var_to_read</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span>
                                   <span class="n">flex_ts_type</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> 
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span>
                                     <span class="n">ts_type</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s2">&quot;Error: variable </span><span class="si">{}</span><span class="s2"> not available in &quot;</span>
@@ -1048,7 +1048,7 @@
         <span class="k">return</span> <span class="n">data</span></div>
         
                 
-<div class="viewcode-block" id="ReadGridded.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<div class="viewcode-block" id="ReadGridded.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
              <span class="n">require_all_vars_avail</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read all variables that could be found </span>
@@ -1059,12 +1059,12 @@
 <span class="sd">        ----------</span>
 <span class="sd">        var_names : :obj:`list` or :obj:`str`</span>
 <span class="sd">            variables that are supposed to be read</span>
-<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        start : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            start time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
-<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
+<span class="sd">        stop : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            stop time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
 <span class="sd">        ts_type : str</span>
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;). If None, prioritised </span>
@@ -1115,7 +1115,7 @@
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_names</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
                                           <span class="n">flex_ts_type</span><span class="p">))</span>
             <span class="k">except</span> <span class="p">(</span><span class="n">VarNotAvailableError</span><span class="p">,</span> <span class="n">DataCoverageError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
@@ -1273,7 +1273,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">loaded_files</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">loaded_files</span>
         <span class="k">return</span> <span class="n">cubes</span>
     
-    <span class="k">def</span> <span class="nf">_load_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">_load_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Find files corresponding to input specs and load into GriddedData</span>
 <span class="sd">        </span>
@@ -1286,13 +1286,13 @@
         <span class="k">if</span> <span class="n">flex_ts_type</span><span class="p">:</span>
             <span class="n">match_files</span><span class="p">,</span> <span class="n">ts_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_flex_ts_type</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
                                                                     <span class="n">ts_type</span><span class="p">,</span>
-                                                                    <span class="n">start_time</span><span class="p">,</span>
-                                                                    <span class="n">stop_time</span><span class="p">)</span>
+                                                                    <span class="n">start</span><span class="p">,</span>
+                                                                    <span class="n">stop</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">match_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_var_files_in_timeperiod</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
                                                             <span class="n">ts_type</span><span class="p">,</span> 
-                                                            <span class="n">start_time</span><span class="p">,</span>
-                                                            <span class="n">stop_time</span><span class="p">)</span>
+                                                            <span class="n">start</span><span class="p">,</span>
+                                                            <span class="n">stop</span><span class="p">)</span>
         
         <span class="n">cube_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_files</span><span class="p">(</span><span class="n">match_files</span><span class="p">,</span> <span class="n">var_name</span><span class="p">)</span>
     
@@ -1312,24 +1312,24 @@
                            <span class="n">ts_type</span><span class="o">=</span><span class="n">ts_type</span><span class="p">)</span>
         
         <span class="c1"># crop cube in time (if applicable)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_crop_time</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_crop_time</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data</span>
     
-    <span class="k">def</span> <span class="nf">_check_crop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_check_crop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
         <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">crop_time_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">crop_time_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start_time</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop_time</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">crop_time</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+            <span class="n">crop_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
             
         <span class="k">if</span> <span class="n">crop_time</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Applying temporal cropping of result cube&quot;</span><span class="p">)</span>
@@ -1464,10 +1464,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># &quot;private attributes (defined with one underscore). These may be </span>
     <span class="c1"># controlled using getter and setter methods (@property operator, see </span>
-    <span class="c1"># e.g. definition of def start_time below)</span>
-    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_stop_time</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># e.g. definition of def start below)</span>
+    <span class="n">_start</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_stop</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
@@ -1482,18 +1482,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">init_failed</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         
         <span class="c1"># only overwrite if there is input, note that the attributes</span>
-        <span class="c1"># start_time and stop_time are defined below as @property getter and</span>
+        <span class="c1"># start and stop are defined below as @property getter and</span>
         <span class="c1"># setter methods, that ensure that the input is convertible to </span>
         <span class="c1"># pandas.Timestamp</span>
-        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
+        <span class="k">if</span> <span class="n">start</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="k">if</span> <span class="n">stop</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">init_results</span><span class="p">()</span>
         
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start time for the data import</span>
 <span class="sd">        </span>
 <span class="sd">        Note      </span>
@@ -1501,10 +1501,10 @@
 <span class="sd">        If input is not :class:`pandas.Timestamp`, it must be convertible </span>
 <span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start</span>
     
-    <span class="nd">@start_time</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">start_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="nd">@start</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -1517,10 +1517,10 @@
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert input value to pandas &quot;</span>
                                   <span class="s2">&quot;Timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start</span> <span class="o">=</span> <span class="n">value</span>
             
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Stop time for the data import</span>
 <span class="sd">        </span>
 <span class="sd">        Note      </span>
@@ -1529,10 +1529,10 @@
 <span class="sd">        into :class:`pandas.Timestamp` (e.g. &quot;2012-1-1&quot;)</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span>
 
-    <span class="nd">@stop_time</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">stop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="nd">@stop</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -1545,7 +1545,7 @@
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to convert input value to pandas &quot;</span>
                                   <span class="s2">&quot;Timestamp: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_time</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">value</span>
     
 <div class="viewcode-block" id="ReadGriddedMulti.init_results"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.init_results">[docs]</a>    <span class="k">def</span> <span class="nf">init_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initiate the reading classes for each dataset</span>
@@ -1563,13 +1563,13 @@
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> 
-                                                 <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> 
-                                                 <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span><span class="p">)</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">init_failed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
     
         
-<div class="viewcode-block" id="ReadGriddedMulti.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="ReadGriddedMulti.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGriddedMulti.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flex_ts_type</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;High level method to import data for multiple variables and models</span>
 <span class="sd">        </span>
@@ -1577,12 +1577,12 @@
 <span class="sd">        ----------</span>
 <span class="sd">        var_names : :obj:`str` or :obj:`list`</span>
 <span class="sd">            string IDs of all variables that are supposed to be imported</span>
-<span class="sd">        start_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">        start : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            start time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
-<span class="sd">        stop_time : :obj:`Timestamp` or :obj:`str`, optional</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
+<span class="sd">        stop : :obj:`Timestamp` or :obj:`str`, optional</span>
 <span class="sd">            stop time of data import (if valid input, then the current </span>
-<span class="sd">            :attr:`start_time` will be overwritten)</span>
+<span class="sd">            :attr:`start` will be overwritten)</span>
 <span class="sd">        ts_type : str</span>
 <span class="sd">            string specifying temporal resolution (choose from </span>
 <span class="sd">            &quot;hourly&quot;, &quot;3hourly&quot;, &quot;daily&quot;, &quot;monthly&quot;).If None, prioritised </span>
@@ -1604,14 +1604,14 @@
 <span class="sd">            &gt;&gt;&gt; read.read([&quot;od550aer&quot;, &quot;od550so4&quot;, &quot;od550bc&quot;])</span>
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">start_time</span>
-        <span class="k">if</span> <span class="n">stop_time</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stop_time</span> <span class="o">=</span> <span class="n">stop_time</span>
+        <span class="k">if</span> <span class="n">start</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="k">if</span> <span class="n">stop</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span>
     
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
+                <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">var_names</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">,</span>
                             <span class="n">flex_ts_type</span><span class="o">=</span><span class="n">flex_ts_type</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">reader</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Failed to read data of </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>

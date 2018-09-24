@@ -23,7 +23,7 @@ if __name__ == '__main__':
     obs = obs_reader.read(OBS_ID, OBS_VARS)
     
     model_reader = pya.io.ReadGridded(MODEL_ID_3D)
-    model = model_reader.read_var(MODEL_VAR, start_time=YEAR)
+    model = model_reader.read_var(MODEL_VAR, start=YEAR)
     print(obs)
     print(model)
     

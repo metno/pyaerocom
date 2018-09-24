@@ -54,7 +54,7 @@ def cli():
     >>> plot_min = 500
     >>> plot_max = 5000
     >>> var_to_read = 'zdust'
-    >>> model_obj = pio.ReadGridded(name = model, start_time = startdate, stop_time = enddate, verbose=True)
+    >>> model_obj = pio.ReadGridded(name = model, start = startdate, stop = enddate, verbose=True)
     >>> model_data = model_obj.read_var(var_name=var_to_read, ts_type="daily")
     >>> obs_data = pyaerocom.io.readungridded.ReadUngridded(dataset_to_read = obsnetwork_to_read, vars_to_retrieve = var_to_read, verbose=True)
     >>> obs_data.read()
@@ -226,11 +226,11 @@ def cli():
         if model_name != const.NOMODELNAME:
             # start model read
 
-            model_obj = pio.ReadGridded(name=model_name, start_time=args.startdate, stop_time=args.enddate, verbose=True)
+            model_obj = pio.ReadGridded(name=model_name, start=args.startdate, stop=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=options['VariablesToRun'][0], ts_type="daily")
             obs_data = pyaerocom.io.readungridded.ReadUngridded(dataset_to_read=options['ObsNetworkName'][0], vars_to_retrieve=[options['VariablesToRun'][0]],
                                                                 verbose=True)
-            model_obj = pio.ReadGridded(name=model_name, start_time=args.startdate, stop_time=args.enddate, verbose=True)
+            model_obj = pio.ReadGridded(name=model_name, start=args.startdate, stop=args.enddate, verbose=True)
             model_data = model_obj.read_var(var_name=options['VariablesToRun'][0], ts_type="daily")
             obs_data = pyaerocom.io.readungridded.ReadUngridded(
                 dataset_to_read=options['ObsNetworkName'][0],

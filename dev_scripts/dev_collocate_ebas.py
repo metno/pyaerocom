@@ -22,7 +22,7 @@ if __name__ == '__main__':
     print(obs)
     
     model_reader = pya.io.ReadGridded(MODEL_ID_3D)
-    model = model_reader.read_var(MODEL_VAR, start_time=YEAR)
+    model = model_reader.read_var(MODEL_VAR, start=YEAR)
     print(model)
     
     

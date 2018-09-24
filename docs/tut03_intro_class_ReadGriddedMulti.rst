@@ -17,24 +17,10 @@ an interface for importing results from a single dataset.
 
 .. parsed-literal::
 
-    2018-09-21 11:34:26,529:WARNING:
+    2018-09-24 15:34:48,978:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-
-
-.. parsed-literal::
-
-    Elapsed time init all variables: 0.02482461929321289 s
-
-
-.. parsed-literal::
-
-    2018-09-21 11:34:27,294:WARNING:
+    2018-09-24 15:34:49,633:WARNING:
     geopy library is not available. Aeolus data read not enabled
-
-
-.. parsed-literal::
-
-    Elapsed time init pyaerocom: 1.1273043155670166 s
 
 
 Define two models (this list can contain as many models as you like)
@@ -282,8 +268,8 @@ containing the od550aer values and draw a map.
 
     data = read["CAM5.3-Oslo_CTRL2016"]["od550aer"]
     print("\nStart / stop before crop: %s - %s\n"
-          %(data.start_time,
-            data.stop_time))
+          %(data.start,
+            data.stop))
     
     dat_crop = data.crop(lon_range=(-30, 30),
                          lat_range=(0, 45),

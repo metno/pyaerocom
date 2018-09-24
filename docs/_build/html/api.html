@@ -361,14 +361,14 @@ the metadata representation of the underlying data object)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.start_time">
-<code class="descname">start_time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.start_time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.griddeddata.GriddedData.start">
+<code class="descname">start</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start time of dataset as datetime64 object</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.griddeddata.GriddedData.stop_time">
-<code class="descname">stop_time</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.stop_time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.griddeddata.GriddedData.stop">
+<code class="descname">stop</code><a class="headerlink" href="#pyaerocom.griddeddata.GriddedData.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start time of dataset as datetime64 object</p>
 </dd></dl>
 
@@ -2283,7 +2283,7 @@ the input collocation constraints</li>
 <span id="reading-of-gridded-data"></span><h3>Reading of gridded data<a class="headerlink" href="#module-pyaerocom.io.readgridded" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="pyaerocom.io.readgridded.ReadGridded">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readgridded.</code><code class="descname">ReadGridded</code><span class="sig-paren">(</span><em>name=''</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>file_convention='aerocom3'</em>, <em>init=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readgridded.</code><code class="descname">ReadGridded</code><span class="sig-paren">(</span><em>name=''</em>, <em>start=None</em>, <em>stop=None</em>, <em>file_convention='aerocom3'</em>, <em>init=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for reading gridded files based on network or model ID</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2311,14 +2311,14 @@ plots lower left corner)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.readgridded.ReadGridded.start_time">
-<code class="descname">start_time</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgridded.ReadGridded.start">
+<code class="descname">start</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.start" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>pandas.Timestamp</em> – start time for data import</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.readgridded.ReadGridded.stop_time">
-<code class="descname">stop_time</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.stop_time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgridded.ReadGridded.stop">
+<code class="descname">stop</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>pandas.Timestamp</em> – stop time for data import</p>
 </dd></dl>
 
@@ -2369,9 +2369,9 @@ from filenames based on Aerocom model file naming convention</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string ID of model (e.g. “AATSR_SU_v4.3”,”CAM5.3-Oslo_CTRL2016”)</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired start time of dataset (note, that strings are passed to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – desired stop time of dataset (note, that strings are passed to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> without further checking)</li>
 <li><strong>file_convention</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string ID specifying the file convention of this model (cf.
 installation file <a class="reference external" href="https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/file_conventions.ini">file_conventions.ini</a>)</li>
@@ -2403,7 +2403,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f13d45f6840&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f16bd533950&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -2503,7 +2503,7 @@ private attribute <code class="xref py py-attr docutils literal notranslate"><sp
 
 <dl class="attribute">
 <dt>
-<code class="descname">start_time</code></dt>
+<code class="descname">start</code></dt>
 <dd><p>First available year in the dataset (inferred from filenames)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2515,7 +2515,7 @@ given that data from this year is available for all variables in
 
 <dl class="attribute">
 <dt>
-<code class="descname">stop_time</code></dt>
+<code class="descname">stop</code></dt>
 <dd><p>Last available year in the dataset (inferred from filenames)</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2527,7 +2527,7 @@ given that data from this year is available for all variables in
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.get_years_to_load">
-<code class="descname">get_years_to_load</code><span class="sig-paren">(</span><em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.get_years_to_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.get_years_to_load" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_years_to_load</code><span class="sig-paren">(</span><em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.get_years_to_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.get_years_to_load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Array containing year numbers that are supposed to be loaded</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2621,7 +2621,7 @@ attributes such as <cite>data, data_dir, files</cite></td>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type">
-<code class="descname">find_var_files_flex_ts_type</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type_init</em>, <em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_flex_ts_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_var_files_flex_ts_type</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type_init</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_flex_ts_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_flex_ts_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find available files for a variable in a time period</p>
 <p>Like <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod" title="pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_var_files_in_timeperiod()</span></code></a> but this method also checks
 other available ts_types in case, no files can be found for the
@@ -2633,10 +2633,10 @@ desired temporal resolution</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable name</li>
 <li><strong>ts_type_init</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – desired temporal resolution of data</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data. If None, then the first available time stamp
-in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a>)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data. If None, then the last available time stamp
-in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.stop_time" title="pyaerocom.io.readgridded.ReadGridded.stop_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stop_time</span></code></a>)</li>
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data. If None, then the first available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a>)</li>
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data. If None, then the last available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.stop" title="pyaerocom.io.readgridded.ReadGridded.stop"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stop</span></code></a>)</li>
 </ul>
 </td>
 </tr>
@@ -2658,7 +2658,7 @@ in this data object is used (i.e. <a class="reference internal" href="#pyaerocom
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod">
-<code class="descname">find_var_files_in_timeperiod</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type</em>, <em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_in_timeperiod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod" title="Permalink to this definition">¶</a></dt>
+<code class="descname">find_var_files_in_timeperiod</code><span class="sig-paren">(</span><em>var_name</em>, <em>ts_type</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.find_var_files_in_timeperiod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.find_var_files_in_timeperiod" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all files that match variable, time period and temporal res.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2667,10 +2667,10 @@ in this data object is used (i.e. <a class="reference internal" href="#pyaerocom
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable name</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – temporal resolution of data</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data. If None, then the first available time stamp
-in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a>)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data. If None, then the last available time stamp
-in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.stop_time" title="pyaerocom.io.readgridded.ReadGridded.stop_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stop_time</span></code></a>)</li>
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data. If None, then the first available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a>)</li>
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data. If None, then the last available time stamp
+in this data object is used (i.e. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.stop" title="pyaerocom.io.readgridded.ReadGridded.stop"><code class="xref py py-attr docutils literal notranslate"><span class="pre">stop</span></code></a>)</li>
 </ul>
 </td>
 </tr>
@@ -2739,7 +2739,7 @@ instance of <code class="xref py py-class docutils literal notranslate"><span cl
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.compute_var">
-<code class="descname">compute_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.compute_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.compute_var" title="Permalink to this definition">¶</a></dt>
+<code class="descname">compute_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.compute_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.compute_var" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute auxiliary variable</p>
 <p>Like <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="pyaerocom.io.readgridded.ReadGridded.read_var"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_var()</span></code></a> but for auxiliary variables
 (cf. <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.AUX_REQUIRES" title="pyaerocom.io.readgridded.ReadGridded.AUX_REQUIRES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">AUX_REQUIRES</span></code></a>)</p>
@@ -2749,15 +2749,15 @@ instance of <code class="xref py py-class docutils literal notranslate"><span cl
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable that are supposed to be read</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”). If None, prioritised
 of the available resolutions is used</li>
 <li><strong>flex_ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – <dl class="docutils">
-<dt>if True and if applicable,start_time=None, stop_time=None,</dt>
+<dt>if True and if applicable,start=None, stop=None,</dt>
 <dd>ts_type=None, flex_ts_type=True then another ts_type is used in case</dd>
 </dl>
 <p>the input ts_type is not available for this variable</p>
@@ -2783,7 +2783,7 @@ of the available resolutions is used</li>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.read_var">
-<code class="descname">read_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read_var" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read model data for a specific variable</p>
 <p>This method searches all valid files for a given variable and for a
 provided temporal resolution (e.g. <em>daily, monthly</em>), optionally
@@ -2807,15 +2807,15 @@ NetCDF import using the attribute <code class="xref py py-attr docutils literal 
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – variable that are supposed to be read</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”). If None, prioritised
 of the available resolutions is used</li>
 <li><strong>flex_ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – <dl class="docutils">
-<dt>if True and if applicable,start_time=None, stop_time=None,</dt>
+<dt>if True and if applicable,start=None, stop=None,</dt>
 <dd>ts_type=None, flex_ts_type=True then another ts_type is used in case</dd>
 </dl>
 <p>the input ts_type is not available for this variable</p>
@@ -2841,7 +2841,7 @@ of the available resolutions is used</li>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGridded.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em>, <em>require_all_vars_avail=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>var_names=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em>, <em>require_all_vars_avail=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all variables that could be found</p>
 <p>Reads all variables that are available (i.e. in <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.vars" title="pyaerocom.io.readgridded.ReadGridded.vars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">vars</span></code></a>)</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -2850,10 +2850,10 @@ of the available resolutions is used</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – variables that are supposed to be read</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start_time" title="pyaerocom.io.readgridded.ReadGridded.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded.start" title="pyaerocom.io.readgridded.ReadGridded.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”). If None, prioritised
 of the available resolutions is used</li>
@@ -2887,7 +2887,7 @@ variables is available in this object</li>
 
 <dl class="class">
 <dt id="pyaerocom.io.readgridded.ReadGriddedMulti">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readgridded.</code><code class="descname">ReadGriddedMulti</code><span class="sig-paren">(</span><em>names</em>, <em>start_time=None</em>, <em>stop_time=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGriddedMulti"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readgridded.</code><code class="descname">ReadGriddedMulti</code><span class="sig-paren">(</span><em>names</em>, <em>start=None</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGriddedMulti"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for import of AEROCOM model data from multiple models</p>
 <p>This class provides an interface to import model results from an arbitrary
 number of models and specific for a certain time interval (that can be
@@ -2947,8 +2947,8 @@ datset</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.readgridded.ReadGriddedMulti.start_time">
-<code class="descname">start_time</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start_time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgridded.ReadGriddedMulti.start">
+<code class="descname">start</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start time for the data import</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2958,8 +2958,8 @@ into <code class="xref py py-class docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="attribute">
-<dt id="pyaerocom.io.readgridded.ReadGriddedMulti.stop_time">
-<code class="descname">stop_time</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti.stop_time" title="Permalink to this definition">¶</a></dt>
+<dt id="pyaerocom.io.readgridded.ReadGriddedMulti.stop">
+<code class="descname">stop</code><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop time for the data import</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -2987,7 +2987,7 @@ type of Exception</td>
 
 <dl class="method">
 <dt id="pyaerocom.io.readgridded.ReadGriddedMulti.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>var_names</em>, <em>start_time=None</em>, <em>stop_time=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGriddedMulti.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>var_names</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>flex_ts_type=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readgridded.html#ReadGriddedMulti.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGriddedMulti.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>High level method to import data for multiple variables and models</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2995,10 +2995,10 @@ type of Exception</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>) – string IDs of all variables that are supposed to be imported</li>
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start_time" title="pyaerocom.io.readgridded.ReadGriddedMulti.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
-<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start_time" title="pyaerocom.io.readgridded.ReadGriddedMulti.start_time"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start_time</span></code></a> will be overwritten)</li>
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – start time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start" title="pyaerocom.io.readgridded.ReadGriddedMulti.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – stop time of data import (if valid input, then the current
+<a class="reference internal" href="#pyaerocom.io.readgridded.ReadGriddedMulti.start" title="pyaerocom.io.readgridded.ReadGriddedMulti.start"><code class="xref py py-attr docutils literal notranslate"><span class="pre">start</span></code></a> will be overwritten)</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – string specifying temporal resolution (choose from
 “hourly”, “3hourly”, “daily”, “monthly”).If None, prioritised
 of the available resolutions is used</li>
@@ -3693,7 +3693,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f13d45f6510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f13d45f6598&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f16bd533620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4094,7 +4094,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f13d45f6510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f13d45f6598&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f13d45f66a8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f13d45f6730&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f16bd533620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f16bd5337b8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f16bd533840&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4500,7 +4500,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f13d45f6620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f13d45f6598&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f16bd533730&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4924,7 +4924,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f13d45f6510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f13d45f6598&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f16bd533620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5322,7 +5322,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f13d45f6598&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f13d45f66a8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f13d45f6730&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f16bd5337b8&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f16bd533840&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5716,7 +5716,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f13d45f6620&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f13d45f6598&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f16bd533730&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f16bd5336a8&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -6136,7 +6136,7 @@ variable (keys)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.META_NAMES_FILE">
-<code class="descname">META_NAMES_FILE</code><em class="property"> = {'comments': 'Comments', 'detection_mode': 'DetectionMode', 'eval_method': 'EvaluationMethod', 'input_params': 'InputParameters', 'location': 'Location', 'res_eval': 'ResolutionEvaluated', 'res_raw_m': 'ResolutionRaw_meter', 'shots_avg': 'ShotsAveraged', 'start_date': 'StartDate', 'start_time_utc': 'StartTime_UT', 'stat_alt': 'Altitude_meter_asl', 'stat_lat': 'Latitude_degrees_north', 'stat_lon': 'Longitude_degrees_east', 'stop_time_utc': 'StopTime_UT', 'system': 'System', 'wavelength_det': 'DetectionWavelength_nm', 'wavelength_emis': 'EmissionWavelength_nm', 'zenith_ang_deg': 'ZenithAngle_degrees'}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.META_NAMES_FILE" title="Permalink to this definition">¶</a></dt>
+<code class="descname">META_NAMES_FILE</code><em class="property"> = {'comments': 'Comments', 'detection_mode': 'DetectionMode', 'eval_method': 'EvaluationMethod', 'input_params': 'InputParameters', 'location': 'Location', 'res_eval': 'ResolutionEvaluated', 'res_raw_m': 'ResolutionRaw_meter', 'shots_avg': 'ShotsAveraged', 'start_date': 'StartDate', 'start_utc': 'StartTime_UT', 'stat_alt': 'Altitude_meter_asl', 'stat_lat': 'Latitude_degrees_north', 'stat_lon': 'Longitude_degrees_east', 'stop_utc': 'StopTime_UT', 'system': 'System', 'wavelength_det': 'DetectionWavelength_nm', 'wavelength_emis': 'EmissionWavelength_nm', 'zenith_ang_deg': 'ZenithAngle_degrees'}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.META_NAMES_FILE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -9659,16 +9659,16 @@ data to be cropped. If True, then -180 -&gt; 180 is assumed, else 0 -&gt; 360</l
 
 <dl class="function">
 <dt id="pyaerocom.helpers.get_time_constraint">
-<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_time_constraint</code><span class="sig-paren">(</span><em>start_time</em>, <em>stop_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_time_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_time_constraint" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">get_time_constraint</code><span class="sig-paren">(</span><em>start</em>, <em>stop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#get_time_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.get_time_constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create iris.Constraint for data extraction along time axis</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>start_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
+<li><strong>start</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
 into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
-<li><strong>stop_time</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
+<li><strong>stop</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Timestamp</span></code> or :obj:` str`) – start time of desired subset. If string, it must be convertible
 into <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code> (e.g. “2012-1-1”)</li>
 </ul>
 </td>

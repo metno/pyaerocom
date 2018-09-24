@@ -19,7 +19,7 @@ model_id = "ECMWF_CAMS_REAN"
 obs_id = pyaerocom.const.AERONET_SUN_V2L2_AOD_DAILY_NAME
 
 
-model_io = pyaerocom.io.ReadGridded(model_id, start_time=start, stop_time=stop)
+model_io = pyaerocom.io.ReadGridded(model_id, start=start, stop=stop)
 
 model_io.read_var(var)
 model_data = model_io["od550aer"]

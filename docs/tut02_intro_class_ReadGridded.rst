@@ -32,31 +32,21 @@ information about what is in there.
     import pyaerocom as pya
     pya.change_verbosity('critical')
     read = pya.io.ReadGridded(name="ECMWF_CAMS_REAN",
-                              start_time="1-1-2003",
-                              stop_time="31-12-2007")
+                              start="1-1-2003",
+                              stop="31-12-2007")
     print(read)
 
 
 .. parsed-literal::
 
-    2018-09-21 11:33:55,733:WARNING:
+    2018-09-24 15:34:19,279:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-
-
-.. parsed-literal::
-
-    Elapsed time init all variables: 0.026061058044433594 s
-
-
-.. parsed-literal::
-
-    2018-09-21 11:33:56,451:WARNING:
+    2018-09-24 15:34:19,936:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
 .. parsed-literal::
 
-    Elapsed time init pyaerocom: 1.0348269939422607 s
     
     Pyaerocom ReadGridded
     ---------------------

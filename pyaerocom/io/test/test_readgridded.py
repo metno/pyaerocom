@@ -16,8 +16,8 @@ def dataset():
     '''Read ECMWF data between 2003 and 2008
     '''
     return ReadGridded(name="ECMWF_CAMS_REAN",
-                       start_time="1-1-2003",
-                       stop_time="31-12-2007")
+                       start="1-1-2003",
+                       stop="31-12-2007")
     
 def test_variables(dataset):
     npt.assert_array_equal(dataset.vars,
@@ -47,8 +47,8 @@ def test_years_available(dataset):
 def test_meta(dataset):
     npt.assert_array_equal([len(dataset.files),
                             dataset.data_dir,
-                            dataset._start_time, 
-                            dataset._stop_time, 
+                            dataset._start, 
+                            dataset._stop,
                             list(dataset.get_years_to_load())],
                             [190,
                              '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
@@ -59,7 +59,7 @@ def test_meta(dataset):
 def test_read_var(dataset):
     from numpy import datetime64
     d = dataset.read_var(var_name="od550aer", ts_type="daily")
-    npt.assert_array_equal([d.var_name, sum(d.shape), d.start_time, d.stop_time],
+    npt.assert_array_equal([d.var_name, sum(d.shape), d.start, d.stop],
                            ["od550aer", 1826 + 161 + 320,
                             datetime64('2003-01-01T00:00:00.000000'),
                             datetime64('2007-12-31T00:00:00.000000')])

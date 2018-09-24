@@ -177,8 +177,8 @@
     <span class="sd">&#39;&#39;&#39;Read ECMWF data between 2003 and 2008</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">return</span> <span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
-                       <span class="n">start_time</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
-                       <span class="n">stop_time</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">)</span></div>
+                       <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1-1-2003&quot;</span><span class="p">,</span>
+                       <span class="n">stop</span><span class="o">=</span><span class="s2">&quot;31-12-2007&quot;</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="test_variables"><a class="viewcode-back" href="../../../../api_testsuite.html#pyaerocom.io.test.test_readgridded.test_variables">[docs]</a><span class="k">def</span> <span class="nf">test_variables</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
     <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">vars</span><span class="p">,</span>
@@ -208,8 +208,8 @@
 <div class="viewcode-block" id="test_meta"><a class="viewcode-back" href="../../../../api_testsuite.html#pyaerocom.io.test.test_readgridded.test_meta">[docs]</a><span class="k">def</span> <span class="nf">test_meta</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
     <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">files</span><span class="p">),</span>
                             <span class="n">dataset</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span>
-                            <span class="n">dataset</span><span class="o">.</span><span class="n">_start_time</span><span class="p">,</span> 
-                            <span class="n">dataset</span><span class="o">.</span><span class="n">_stop_time</span><span class="p">,</span> 
+                            <span class="n">dataset</span><span class="o">.</span><span class="n">_start</span><span class="p">,</span> 
+                            <span class="n">dataset</span><span class="o">.</span><span class="n">_stop</span><span class="p">,</span>
                             <span class="nb">list</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_years_to_load</span><span class="p">())],</span>
                             <span class="p">[</span><span class="mi">190</span><span class="p">,</span>
                              <span class="s1">&#39;/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed&#39;</span><span class="p">,</span>
@@ -220,7 +220,7 @@
 <div class="viewcode-block" id="test_read_var"><a class="viewcode-back" href="../../../../api_testsuite.html#pyaerocom.io.test.test_readgridded.test_read_var">[docs]</a><span class="k">def</span> <span class="nf">test_read_var</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">datetime64</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s2">&quot;daily&quot;</span><span class="p">)</span>
-    <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">d</span><span class="o">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">stop_time</span><span class="p">],</span>
+    <span class="n">npt</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">d</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">stop</span><span class="p">],</span>
                            <span class="p">[</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="mi">1826</span> <span class="o">+</span> <span class="mi">161</span> <span class="o">+</span> <span class="mi">320</span><span class="p">,</span>
                             <span class="n">datetime64</span><span class="p">(</span><span class="s1">&#39;2003-01-01T00:00:00.000000&#39;</span><span class="p">),</span>
                             <span class="n">datetime64</span><span class="p">(</span><span class="s1">&#39;2007-12-31T00:00:00.000000&#39;</span><span class="p">)])</span>

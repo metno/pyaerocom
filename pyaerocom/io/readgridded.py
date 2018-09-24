@@ -75,9 +75,9 @@ class ReadGridded(object):
         imported data object 
     data_dir : str
         directory containing result files for this model
-    start_time : pandas.Timestamp
+    start : pandas.Timestamp
         start time for data import
-    stop_time : pandas.Timestamp
+    stop : pandas.Timestamp
         stop time for data import
     file_convention : FileConventionRead
         class specifying details of the file naming convention for the model
@@ -101,10 +101,10 @@ class ReadGridded(object):
     ----------
     name : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
-    start_time : :obj:`pandas.Timestamp` or :obj:`str`, optional
+    start : :obj:`pandas.Timestamp` or :obj:`str`, optional
         desired start time of dataset (note, that strings are passed to 
         :class:`pandas.Timestamp` without further checking)
-    stop_time : :obj:`pandas.Timestamp` or :obj:`str`, optional
+    stop : :obj:`pandas.Timestamp` or :obj:`str`, optional
         desired stop time of dataset (note, that strings are passed to 
         :class:`pandas.Timestamp` without further checking)
     file_convention : str
@@ -135,10 +135,10 @@ class ReadGridded(object):
     
     #: Directory containing model data for this species
     _data_dir = ""
-    _start_time = None
-    _stop_time = None
+    _start = None
+    _stop = None
     #VALID_DIM_STANDARD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
-    def __init__(self, name="", start_time=None, stop_time=None,
+    def __init__(self, name="", start=None, stop=None,
                  file_convention="aerocom3", init=True):
         # model ID
         if not isinstance(name, str):
@@ -155,13 +155,13 @@ class ReadGridded(object):
         
         self.logger = logging.getLogger(__name__)
         # only overwrite if there is input, note that the attributes
-        # start_time and stop_time are defined below as @property getter and
+        # start and stop are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
         # pandas.Timestamp
-        if start_time is not None:
-            self._start_time = to_pandas_timestamp(start_time)
-        if stop_time is not None:
-            self._stop_time = to_pandas_timestamp(stop_time)
+        if start is not None:
+            self._start = to_pandas_timestamp(start)
+        if stop is not None:
+            self._stop = to_pandas_timestamp(stop)
         
         #: Dictionary containing loaded results for different variables
         self.data = od()
@@ -254,7 +254,7 @@ class ReadGridded(object):
         return CONST.GRID_IO.TS_TYPES
     
     @property
-    def start_time(self):
+    def start(self):
         """First available year in the dataset (inferred from filenames)
         
         Note
@@ -269,7 +269,7 @@ class ReadGridded(object):
         return to_pandas_timestamp(sorted(self.years)[0])
             
     @property
-    def stop_time(self): 
+    def stop(self):
         """Last available year in the dataset (inferred from filenames)
         
         Note
@@ -292,13 +292,13 @@ class ReadGridded(object):
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
     
 # =============================================================================
-#     @stop_time.setter
-#     def stop_time(self, value):
+#     @stop.setter
+#     def stop(self, value):
 #         value = to_pandas_timestamp(value)
-#         self._stop_time = value
+#         self._stop = value
 #     
 # =============================================================================
-    def get_years_to_load(self, start_time=None, stop_time=None):
+    def get_years_to_load(self, start=None, stop=None):
         """Array containing year numbers that are supposed to be loaded
         
         Returns
@@ -307,27 +307,27 @@ class ReadGridded(object):
             all years to be loaded
         """
         load_only_year = False
-        if start_time is None:
-            if self._start_time is None:
-                start_time = self.start_time
+        if start is None:
+            if self._start is None:
+                start = self.start
             else:
-                start_time = self._start_time
+                start = self._start
         else:
-            start_time = to_pandas_timestamp(start_time)
+            start = to_pandas_timestamp(start)
             #take only this year
-            if stop_time is None:
+            if stop is None:
                 load_only_year = True
-                stop_time = start_time #same year
-        if stop_time is None:
-            if self._stop_time is None:
-                stop_time = self.stop_time
+                stop = start #same year
+        if stop is None:
+            if self._stop is None:
+                stop = self.stop
             else:
-                stop_time = self._stop_time
+                stop = self._stop
         elif not load_only_year: #stop time was input
-            stop_time = to_pandas_timestamp(stop_time)
+            stop = to_pandas_timestamp(stop)
             
-        if start_time and stop_time:
-            return np.arange(start_time.year, stop_time.year + 1, 1)
+        if start and stop:
+            return np.arange(start.year, stop.year + 1, 1)
         if not self.years:
             raise AttributeError("No information available for available "
                                  "years. Please run method "
@@ -512,7 +512,7 @@ class ReadGridded(object):
                 self.logger.info("Ignoring key %s in ModelImportResult.update()" %k)
     
     def find_var_files_flex_ts_type(self, var_name, ts_type_init,
-                                    start_time=None, stop_time=None):
+                                    start=None, stop=None):
         """Find available files for a variable in a time period 
         
         Like :func:`find_var_files_in_timeperiod` but this method also checks
@@ -525,12 +525,12 @@ class ReadGridded(object):
             variable name
         ts_type_init : str
             desired temporal resolution of data
-        start_time : :obj:`Timestamp` or :obj:`str`, optional
+        start : :obj:`Timestamp` or :obj:`str`, optional
             start time of data. If None, then the first available time stamp 
-            in this data object is used (i.e. :attr:`start_time`)
-        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            in this data object is used (i.e. :attr:`start`)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data. If None, then the last available time stamp 
-            in this data object is used (i.e. :attr:`stop_time`)
+            in this data object is used (i.e. :attr:`stop`)
             
         Returns
         --------
@@ -548,7 +548,7 @@ class ReadGridded(object):
         """
         try:
             files = self.find_var_files_in_timeperiod(var_name, ts_type_init,
-                                                      start_time, stop_time)
+                                                      start, stop)
             return (files, ts_type_init)
         except DataCoverageError as e:
             self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
@@ -559,8 +559,8 @@ class ReadGridded(object):
                     try:
                         files = self.find_var_files_in_timeperiod(var_name, 
                                                                   ts_type,
-                                                                  start_time,
-                                                                  stop_time)
+                                                                  start,
+                                                                  stop)
                         return (files, ts_type)
                     
                     except DataCoverageError as e:
@@ -572,7 +572,7 @@ class ReadGridded(object):
                                                                   self.ts_types))
                         
     def find_var_files_in_timeperiod(self, var_name, ts_type,
-                                     start_time=None, stop_time=None):
+                                     start=None, stop=None):
         """Find all files that match variable, time period and temporal res.
         
         Parameters
@@ -581,12 +581,12 @@ class ReadGridded(object):
             variable name
         ts_type : str
             temporal resolution of data
-        start_time : :obj:`Timestamp` or :obj:`str`, optional
+        start : :obj:`Timestamp` or :obj:`str`, optional
             start time of data. If None, then the first available time stamp 
-            in this data object is used (i.e. :attr:`start_time`)
-        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            in this data object is used (i.e. :attr:`start`)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data. If None, then the last available time stamp 
-            in this data object is used (i.e. :attr:`stop_time`)
+            in this data object is used (i.e. :attr:`stop`)
             
         Returns
         --------
@@ -602,7 +602,7 @@ class ReadGridded(object):
         
         match_files = []
     
-        years_to_load = self.get_years_to_load(start_time, stop_time)
+        years_to_load = self.get_years_to_load(start, stop)
         for year in years_to_load:
             if CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
                 # search for filename in self.files using ts_type as default ts size
@@ -748,7 +748,7 @@ class ReadGridded(object):
                                                    var))
         return vars_to_read
                 
-    def compute_var(self, var_name, start_time=None, stop_time=None, 
+    def compute_var(self, var_name, start=None, stop=None,
                  ts_type=None, flex_ts_type=True):
         """Compute auxiliary variable
         
@@ -759,18 +759,18 @@ class ReadGridded(object):
         ----------
         var_name : str
             variable that are supposed to be read
-        start_time : :obj:`Timestamp` or :obj:`str`, optional
+        start : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
-        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            :attr:`start` will be overwritten)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
+            :attr:`start` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
         flex_ts_type : bool
-            if True and if applicable,start_time=None, stop_time=None, 
+            if True and if applicable,start=None, stop=None,
                  ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
             
@@ -790,8 +790,8 @@ class ReadGridded(object):
         vars_to_read = self._get_aux_vars(var_name)
         data = []
         for var in vars_to_read:
-            data.append(self._load_var(var, ts_type, start_time, 
-                                       stop_time, flex_ts_type))
+            data.append(self._load_var(var, ts_type, start,
+                                       stop, flex_ts_type))
         cube = self.AUX_FUNS[var_name](*data)
         cube.var_name = var_name
         
@@ -802,7 +802,7 @@ class ReadGridded(object):
             
         #raise NotImplementedError
             
-    def read_var(self, var_name, start_time=None, stop_time=None, 
+    def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, flex_ts_type=True):
         """Read model data for a specific variable
         
@@ -829,18 +829,18 @@ class ReadGridded(object):
         ----------
         var_name : str
             variable that are supposed to be read
-        start_time : :obj:`Timestamp` or :obj:`str`, optional
+        start : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
-        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            :attr:`start` will be overwritten)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
+            :attr:`start` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
         flex_ts_type : bool
-            if True and if applicable,start_time=None, stop_time=None, 
+            if True and if applicable,start=None, stop=None,
                  ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
             
@@ -869,10 +869,10 @@ class ReadGridded(object):
                         var_to_read = var
         
         if var_to_read is not None:
-            data = self._load_var(var_to_read, ts_type, start_time, stop_time,
+            data = self._load_var(var_to_read, ts_type, start, stop,
                                   flex_ts_type)
         elif var_name in self.AUX_REQUIRES:
-            data = self.compute_var(var_name, start_time, stop_time, 
+            data = self.compute_var(var_name, start, stop,
                                     ts_type, flex_ts_type)
         else:
             raise VarNotAvailableError("Error: variable {} not available in "
@@ -887,7 +887,7 @@ class ReadGridded(object):
         return data
         
                 
-    def read(self, var_names=None, start_time=None, stop_time=None, 
+    def read(self, var_names=None, start=None, stop=None,
              ts_type=None, flex_ts_type=True, 
              require_all_vars_avail=False):
         """Read all variables that could be found 
@@ -898,12 +898,12 @@ class ReadGridded(object):
         ----------
         var_names : :obj:`list` or :obj:`str`
             variables that are supposed to be read
-        start_time : :obj:`Timestamp` or :obj:`str`, optional
+        start : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
-        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            :attr:`start` will be overwritten)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
+            :attr:`start` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
@@ -954,7 +954,7 @@ class ReadGridded(object):
         data = []
         for var in var_names:
             try:
-                data.append(self.read_var(var, start_time, stop_time, ts_type,
+                data.append(self.read_var(var, start, stop, ts_type,
                                           flex_ts_type))
             except (VarNotAvailableError, DataCoverageError) as e:
                 self.logger.warning(repr(e))
@@ -1112,7 +1112,7 @@ class ReadGridded(object):
         self.loaded_files[var_name] = loaded_files
         return cubes
     
-    def _load_var(self, var_name, ts_type, start_time=None, stop_time=None,
+    def _load_var(self, var_name, ts_type, start=None, stop=None,
                   flex_ts_type=True):
         """Find files corresponding to input specs and load into GriddedData
         
@@ -1125,13 +1125,13 @@ class ReadGridded(object):
         if flex_ts_type:
             match_files, ts_type = self.find_var_files_flex_ts_type(var_name, 
                                                                     ts_type,
-                                                                    start_time,
-                                                                    stop_time)
+                                                                    start,
+                                                                    stop)
         else:
             match_files = self.find_var_files_in_timeperiod(var_name, 
                                                             ts_type, 
-                                                            start_time,
-                                                            stop_time)
+                                                            start,
+                                                            stop)
         
         cube_list = self._load_files(match_files, var_name)
     
@@ -1151,24 +1151,24 @@ class ReadGridded(object):
                            ts_type=ts_type)
         
         # crop cube in time (if applicable)
-        data = self._check_crop_time(data, start_time, stop_time)
+        data = self._check_crop_time(data, start, stop)
         return data
     
-    def _check_crop_time(self, data, start_time, stop_time):
+    def _check_crop_time(self, data, start, stop):
         crop_time = False
-        crop_time_range = [self.start_time, self.stop_time]
-        if start_time is not None:
+        crop_time_range = [self.start, self.stop]
+        if start is not None:
             crop_time = True
-            crop_time_range[0] = to_pandas_timestamp(start_time)
-        elif self._start_time is not None:
+            crop_time_range[0] = to_pandas_timestamp(start)
+        elif self._start is not None:
             crop_time = True
-            crop_time_range[0] = self._start_time
-        if stop_time is not None:
+            crop_time_range[0] = self._start
+        if stop is not None:
             crop_time = True
-            crop_time_range[1] = to_pandas_timestamp(stop_time)
-        elif self._stop_time is not None:
+            crop_time_range[1] = to_pandas_timestamp(stop)
+        elif self._stop is not None:
             crop_time = True
-            crop_time_range[1] = self._stop_time
+            crop_time_range[1] = self._stop
             
         if crop_time:
             self.logger.info("Applying temporal cropping of result cube")
@@ -1303,10 +1303,10 @@ class ReadGriddedMulti(object):
     """
     # "private attributes (defined with one underscore). These may be 
     # controlled using getter and setter methods (@property operator, see 
-    # e.g. definition of def start_time below)
-    _start_time = None
-    _stop_time = None
-    def __init__(self, names, start_time=None, stop_time=None):
+    # e.g. definition of def start below)
+    _start = None
+    _stop = None
+    def __init__(self, names, start=None, stop=None):
         
         if isinstance(names, str):
             names = [names]
@@ -1321,18 +1321,18 @@ class ReadGriddedMulti(object):
         self.init_failed = od()
         
         # only overwrite if there is input, note that the attributes
-        # start_time and stop_time are defined below as @property getter and
+        # start and stop are defined below as @property getter and
         # setter methods, that ensure that the input is convertible to 
         # pandas.Timestamp
-        if start_time:
-            self.start_time = start_time
-        if stop_time:
-            self.stop_time = stop_time
+        if start:
+            self.start = start
+        if stop:
+            self.stop = stop
         
         self.init_results()
         
     @property
-    def start_time(self):
+    def start(self):
         """Start time for the data import
         
         Note      
@@ -1340,10 +1340,10 @@ class ReadGriddedMulti(object):
         If input is not :class:`pandas.Timestamp`, it must be convertible 
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         """
-        return self._start_time
+        return self._start
     
-    @start_time.setter
-    def start_time(self, value):
+    @start.setter
+    def start(self, value):
         if not isinstance(value, str):
             try:
                 value = str(value)
@@ -1356,10 +1356,10 @@ class ReadGriddedMulti(object):
             except:
                 raise ValueError("Failed to convert input value to pandas "
                                   "Timestamp: %s" %value)
-        self._start_time = value
+        self._start = value
             
     @property
-    def stop_time(self):
+    def stop(self):
         """Stop time for the data import
         
         Note      
@@ -1368,10 +1368,10 @@ class ReadGriddedMulti(object):
         into :class:`pandas.Timestamp` (e.g. "2012-1-1")
         
         """
-        return self._stop_time
+        return self._stop
 
-    @stop_time.setter
-    def stop_time(self, value):
+    @stop.setter
+    def stop(self, value):
         if not isinstance(value, str):
             try:
                 value = str(value)
@@ -1384,7 +1384,7 @@ class ReadGriddedMulti(object):
             except:
                 raise ValueError("Failed to convert input value to pandas "
                                   "Timestamp: %s" %value)
-        self._stop_time = value
+        self._stop = value
     
     def init_results(self):
         """Initiate the reading classes for each dataset
@@ -1402,13 +1402,13 @@ class ReadGriddedMulti(object):
         for name in self.names:
             try:
                 self.results[name] = ReadGridded(name, 
-                                                 self.start_time, 
-                                                 self.stop_time)
+                                                 self.start,
+                                                 self.stop)
             except Exception as e:
                 self.init_failed[name] = repr(e)
     
         
-    def read(self, var_names, start_time=None, stop_time=None,
+    def read(self, var_names, start=None, stop=None,
              ts_type=None, flex_ts_type=True):
         """High level method to import data for multiple variables and models
         
@@ -1416,12 +1416,12 @@ class ReadGriddedMulti(object):
         ----------
         var_names : :obj:`str` or :obj:`list`
             string IDs of all variables that are supposed to be imported
-        start_time : :obj:`Timestamp` or :obj:`str`, optional
+        start : :obj:`Timestamp` or :obj:`str`, optional
             start time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
-        stop_time : :obj:`Timestamp` or :obj:`str`, optional
+            :attr:`start` will be overwritten)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data import (if valid input, then the current 
-            :attr:`start_time` will be overwritten)
+            :attr:`start` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly").If None, prioritised 
@@ -1443,14 +1443,14 @@ class ReadGriddedMulti(object):
             >>> read.read(["od550aer", "od550so4", "od550bc"])
             
         """
-        if start_time:
-            self.start_time = start_time
-        if stop_time:
-            self.stop_time = stop_time
+        if start:
+            self.start = start
+        if stop:
+            self.stop = stop
     
         for name, reader in self.results.items():
             try:
-                reader.read(var_names, start_time, stop_time, ts_type,
+                reader.read(var_names, start, stop, ts_type,
                             flex_ts_type=flex_ts_type)
             except Exception as e:
                 reader.logger.exception('Failed to read data of {}\n'

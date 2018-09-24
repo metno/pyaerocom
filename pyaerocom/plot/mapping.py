@@ -273,7 +273,7 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
                           facecolor='none',
                           edgecolor='black'))
     ax.set_title("{} {} mean {:.3f}".format(data.var_name.upper(), 
-                 to_datetime(data.start_time).strftime("%Y%m%d"),
+                 to_datetime(data.start).strftime("%Y%m%d"),
                  data.area_weighted_mean()))
     return fig
     
@@ -295,8 +295,8 @@ if __name__ == "__main__":
     
     run_old=True
     if run_old:
-        read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start_time="2010",
-                                          stop_time="2019")
+        read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start="2010",
+                                          stop="2019")
         
         data = read.read_var("od550aer")
         fig0 = data.quickplot_map(fix_aspect=False)
