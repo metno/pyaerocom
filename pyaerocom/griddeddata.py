@@ -126,6 +126,8 @@ class GriddedData(object):
                     self.convert_unit(var.unit)
             except VariableDefinitionError:
                 pass
+            except:
+                print('Please debug')
     
     @property
     def unit(self):

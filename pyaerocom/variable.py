@@ -333,7 +333,8 @@ class Variable(BrowseDict):
                             val = None
                     except:
                         pass
-                
+                if val == 'None':
+                    val = None
                 self[key] = val
         
     def __repr__(self):

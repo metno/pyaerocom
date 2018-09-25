@@ -128,6 +128,7 @@ class AnalysisSetup(BrowseDict):
         
         self.ts_type_setup = ts_type_setup
         self.years = years
+        self.filter_name = filter_name
         
         self.out_basedir = out_basedir
         self._output_dirs = {}
@@ -336,18 +337,19 @@ class Analyser(AnalysisSetup):
             start, stop = start_stop_from_year(year)
             for ts_type in ts_type_matches:
                 ts_types_ana = ts_type_setup[ts_type]
-                model_reader.read(var_matches, 
-                                  start=year,
-                                  ts_type=ts_type,
-                                  flex_ts_type=False)
+                model_data_vars = model_reader.read(var_matches, 
+                                                    start=year,
+                                                    ts_type=ts_type,
+                                                    flex_ts_type=False)
                             
-                if len(model_reader.data) == 0:
+                if len(model_data_vars) == 0:
                     if self._log:    
                         self._log.write('No model data available ({}, {})\n'
                                         .format(year, ts_type))
                     continue
                 
-                for var, model_data in model_reader.data.items():
+                for model_data in model_data_vars:
+                    var = model_data.var_name
                     if not var in obs_reader.data:
                         if self._log:    
                             self._log.write('No obs data available ({}, {})\n'
@@ -427,35 +429,48 @@ class Analyser(AnalysisSetup):
             for ts_type in ts_type_matches:
                 ts_types_ana = ts_type_setup[ts_type]
                 # reads only year if starttime is provided but not stop time
-                model_reader.read(var_matches, 
-                                  start=year,
-                                  ts_type=ts_type,
-                                  flex_ts_type=False)
+                model_data_vars = model_reader.read(var_matches, 
+                                                    start=year,
+                                                    ts_type=ts_type,
+                                                    flex_ts_type=False)
                 
-                obs_reader.read(var_matches, start=year,
-                                ts_type = ts_type,
-                                flex_ts_type=True)
-                
-                if len(model_reader.data) == 0:
+                if len(model_data_vars) == 0:
                     if self._log:    
                         self._log.write('No model data available ({}, {})\n'.format(year, 
                                       ts_type))
                     continue
                 
-                for var, model_data in model_reader.data.items():
-                    if not var in obs_reader.data:
+                obs_data_vars = obs_reader.read(var_matches, start=year,
+                                                ts_type=ts_type,
+                                                flex_ts_type=True)
+                if len(obs_data_vars) == 0:
+                    if self._log:    
+                        self._log.write('No obs data available ({}, {})\n'
+                                        .format(year, ts_type))
+                    continue
+                
+                for model_data in model_data_vars:
+                    var = model_data.var_name
+                    obs_data = None
+                    for _obs in obs_data_vars:
+                        if _obs.var_name == var:
+                            obs_data = _obs
+                            break
+                    if obs_data is None:
                         if self._log:    
-                            self._log.write('No obs data available ({}, {})\n'
-                                            .format(year, ts_type))
+                            self._log.write('No obs data available for var {}'
+                                            '({}, {})\n'
+                                            .format(var, year, ts_type))
                         continue
                     for ts_type_ana in ts_types_ana:
+                        # model resolution (ts_type) must be equal or higher 
+                        # than the current analysis setting (since )
                         if ts_types.index(ts_type_ana) >= ts_types.index(ts_type):
-                            obs_data = obs_reader.data[var]
                             out_dir = self.output_dir('colocate')
                             savename = self._coldata_save_name(model_data,
-                                                                ts_type_ana, 
-                                                                start,
-                                                                stop)
+                                                               ts_type_ana, 
+                                                               start,
+                                                               stop)
                             
                             file_exists = self._check_coldata_exists(self.model_id,
                                                                       savename)
