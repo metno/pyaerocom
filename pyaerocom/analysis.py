@@ -11,6 +11,7 @@ colocation.
 """
 import os
 import numpy as np
+import traceback
 from functools import reduce
 import matplotlib.pyplot as plt
 
@@ -169,14 +170,15 @@ class Analyser(AnalysisSetup):
     - write docstring
     """
     def __init__(self, *args, **kwargs):
-        super(self, Analyser).__init__(*args, **kwargs)
+        super(Analyser, self).__init__(*args, **kwargs)
         self._log = None
        
     def _init_log(self):
-        self._log = log = open('output/result_log_{}.csv'
-                               .format(self.obs_id), 'w+')
+        self._log = log = open('{}result_log_{}.csv'
+                               .format(self.out_basedir,
+                                       self.obs_id), 'w+')
         log.write('Analysis configuration\n')
-        for k, v in stp.items():
+        for k, v in self.items():
             if k == 'model_id':
                 continue
             elif k == 'ts_type_setup':
@@ -279,13 +281,20 @@ class Analyser(AnalysisSetup):
             
         self._init_log()
         for model_id in model_ids:
+            self._log.write('\n\nModel: {}\n'.format(model_id))
             self.model_id = model_id
             try:
-                ReadUngridded(self.obs_id)
-                self._run_gridded_ungridded()
-                
-            except NetworkNotSupported:
-                self._run_gridded_gridded()
+                try:
+                    ReadUngridded(self.obs_id)
+                    self._run_gridded_ungridded()
+                    
+                except NetworkNotSupported:
+                    self._run_gridded_gridded()
+            except:
+                self._log.write('Failed to perform analysis: {}\n'
+                                .format(traceback.format_exc()))
+                if self.options.RAISE_EXCEPTIONS:
+                    raise Exception(traceback.format_exc())
         self._close_log()
         
     def _run_gridded_ungridded(self):
@@ -467,18 +476,14 @@ class Analyser(AnalysisSetup):
                             if data_coll.save_name_aerocom + '.nc' != savename:
                                 raise Exception
                             data_coll.to_netcdf(out_dir)
-                            save_name_fig = data_coll.save_name_aerocom + '_SCAT.png'
                             if self._log:
                                 self._log.write('WRITE: {}\n'.format(savename))
-                                
-                            data_coll.plot_scatter(savefig=True, 
-                                               save_dir=dirs['scatter_plots'],
-                                               save_name=save_name_fig)
-                            plt.close('all')
                             
     def __call__(self, **kwargs):
+        raise NotImplementedError
         self.update(**kwargs)
         self.run()
+        
 if __name__ == '__main__':
     
     stp = AnalysisSetup(['od550aer', 'ec550aer'], 

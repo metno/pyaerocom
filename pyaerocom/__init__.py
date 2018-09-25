@@ -105,9 +105,11 @@ from .ungriddeddata import UngriddedData
 from .filter import Filter
 from .colocateddata import ColocatedData
 from . import colocation
+from . import analysis
 
 from . import io
 from . import plot
+
 
 #from .ungriddeddata import UngriddedData
 from .io.helpers import search_data_dir_aerocom

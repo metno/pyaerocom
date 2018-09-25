@@ -44,7 +44,7 @@ from datetime import datetime
 import iris
 
 from pyaerocom import const as CONST
-from pyaerocom import Variable
+from pyaerocom.variable import Variable, is_3d
 from pyaerocom.mathutils import compute_angstrom_coeff_cubes
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (IllegalArgumentError, 
@@ -352,8 +352,7 @@ class ReadGridded(object):
         _dir = self.browser.find_data_dir(self.name)
         self.data_dir = _dir
         return _dir
-    
-    # get the model directory (note that the folder "renamed" is used)
+                
     def search_all_files(self, update_file_convention=True):
         """Search all valid model files for this model
         
@@ -406,13 +405,11 @@ class ReadGridded(object):
         for _file in nc_files:
             try:
                 info = self.file_convention.get_info_from_file(_file)
-                var = Variable(info['var_name'])
-                if info['var_name'] is None:
-                    raise Exception
-                if var.is_3d:
-                    _vars_temp_3d.append(var._var_name)
+                var_name = info['var_name']
+                if is_3d(var_name):
+                    _vars_temp_3d.append(var_name)
                 else:
-                    _vars_temp.append(var._var_name)
+                    _vars_temp.append(var_name)
                 
                 _years_temp.append(info["year"])
                 _ts_types_temp.append(info["ts_type"])

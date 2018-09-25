@@ -15,6 +15,8 @@ from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import BrowseDict, list_to_shortstr, dict_to_str
 
+is_3d =  lambda var_name: True if '3d' in var_name.lower() else False
+
 class VarNameInfo(object):
     _VALID_WVL_RANGE = [100, 2000]
     _VALID_WVL_IDS = ['od', 'abs', 'ec', 'scatc', 'absc', 'bscatc', 'ssa']
@@ -26,7 +28,7 @@ class VarNameInfo(object):
             self._nums = self._numbers_in_string(var_name)
         except:
             pass
-        
+     
     @staticmethod
     def _numbers_in_string(s):
         return [int(x) for x in re.findall(r'\d+', s)]
@@ -104,6 +106,7 @@ def _read_alias_ini():
         var_name = items[alias]
         aliases[alias] = var_name
     return aliases
+
 class Variable(BrowseDict):
     """Interface that specifies default settings for a variable
     
