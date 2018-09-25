@@ -27,8 +27,8 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 - cartopy >= 0.16.0
 - numpy >= 1.14
 - matplotlib >= 2.1.2
-- Optional
-
+- **Optional**:
+	- seaborn >= 0.8.1
 	- geonum (for SRTM access and basic atmospheric calculations, e.g. conversion of pressure to altitude)
 	- geopy (for reading Aeolus data)
 
