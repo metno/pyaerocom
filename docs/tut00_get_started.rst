@@ -49,9 +49,9 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    2018-09-24 17:17:08,586:WARNING:
+    2018-09-25 10:52:11,554:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-24 17:17:09,253:WARNING:
+    2018-09-25 10:52:12,307:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -2891,27 +2891,6 @@ data import since we know the model and run ID from the previous cell
 
     read = pya.io.ReadGridded("CAM5.3-Oslo_CTRL2016")
 
-
-.. parsed-literal::
-
-    2018-09-24 17:17:09,978:WARNING:
-    No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 17:17:10,245:WARNING:
-    No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 17:17:10,490:WARNING:
-    No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 17:17:10,605:WARNING:
-    No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 17:17:10,994:WARNING:
-    No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 17:17:11,308:WARNING:
-    No default configuration available for variable od550dryaer. Using DEFAULT settings
-    2018-09-24 17:17:11,533:WARNING:
-    No default configuration available for variable deltaz. Using DEFAULT settings
-    2018-09-24 17:17:11,676:WARNING:
-    No default configuration available for variable humidity. Using DEFAULT settings
-
-
 Okay, let’s see what is in there.
 
 .. code:: ipython3
@@ -2945,15 +2924,15 @@ data object has to be accessed using the first index of the tuple.
 
 .. parsed-literal::
 
-    2018-09-24 17:17:19,041:WARNING:
+    2018-09-25 10:52:21,670:WARNING:
     File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
     1: gauss weights / (1)                 (latitude: 192)
-    2018-09-24 17:17:19,045:WARNING:
+    2018-09-25 10:52:21,674:WARNING:
     Invalid time dimension.
     Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
-    2018-09-24 17:17:19,046:WARNING:
+    2018-09-25 10:52:21,674:WARNING:
     Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. 
-    2018-09-24 17:17:19,047:WARNING:
+    2018-09-25 10:52:21,675:WARNING:
     Attempting to correct time coordinate using information in file name
 
 
@@ -3196,7 +3175,7 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f0adf9eea90>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7ff760408e10>
 
 
 

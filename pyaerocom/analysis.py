@@ -358,7 +358,8 @@ class Analyser(AnalysisSetup):
                     for ts_type_ana in ts_types_ana:
                         if ts_types.index(ts_type_ana) >= ts_types.index(ts_type):
                         
-                            out_dir = self.output_dir('colocate')
+                            out_dir = chk_make_subdir(self.output_dir('colocate'),
+                                                      self.model_id)
                             savename = self._coldata_save_name(model_data,
                                                                 ts_type_ana, 
                                                                 start,
@@ -380,7 +381,7 @@ class Analyser(AnalysisSetup):
                                                     ts_type=ts_type_ana, 
                                                     start=start, stop=stop,
                                                     filter_name=self.filter_name)
-                                
+                            
                             data_coll.to_netcdf(out_dir)
                             if self._log:
                                 self._log.write('WRITE: {}\n'.format(savename))
@@ -466,7 +467,9 @@ class Analyser(AnalysisSetup):
                         # model resolution (ts_type) must be equal or higher 
                         # than the current analysis setting (since )
                         if ts_types.index(ts_type_ana) >= ts_types.index(ts_type):
-                            out_dir = self.output_dir('colocate')
+                            out_dir = chk_make_subdir(self.output_dir('colocate'),
+                                                      self.model_id)
+                                                      
                             savename = self._coldata_save_name(model_data,
                                                                ts_type_ana, 
                                                                start,
