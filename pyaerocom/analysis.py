@@ -196,7 +196,7 @@ class Analyser(AnalysisSetup):
                 log.write('{}: {}\n'.format(k, v))
         
     def _close_log(self):
-        if self.log is not None:
+        if self._log is not None:
             self._log.close()
             self._log = None
             

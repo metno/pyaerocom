@@ -301,6 +301,11 @@ class Config(object):
     def BASEDIR(self):
         """Base directory of data"""
         return self.MODELBASEDIR
+    
+    @property
+    def OUT_BASEDIR_PPI(self):
+        """Output base directory PPI servers"""
+        return '/lustre/storeA/project/aerocom/aerocom2/pyaerocom/'
             
     @property
     def READY(self):
@@ -315,6 +320,7 @@ class Config(object):
         if not self.check_dir(self.OBSDATACACHEDIR):
             warn("Observations cache directory %s does not exist")
         return ok 
+    
     
     @property
     def EBASMC_SQL_DATABASE(self):
