@@ -14,6 +14,7 @@ import numpy as np
 import traceback
 from functools import reduce
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import Filter, const
@@ -37,7 +38,7 @@ class _AnalysisTasks(BrowseDict):
     
     """
     _TASKS_AVAIL = ['colocate']
-    _NAMES_OUTPUT_DIRS = {'colocate'           :   'colocated_data',
+    _NAMES_OUTPUT_DIRS = {'colocate'            :   'colocated_data',
                           'plot_maps'           :   'maps',
                           'plot_scatter'        :   'scatter',
                           'plot_stat_tseries'   :   'stat_tseries'}
@@ -175,9 +176,10 @@ class Analyser(AnalysisSetup):
         self._log = None
        
     def _init_log(self):
-        self._log = log = open('{}result_log_{}.csv'
-                               .format(self.out_basedir,
-                                       self.obs_id), 'w+')
+        logbase = chk_make_subdir(self.out_basedir, 'log_files_analysis')
+        logdir = chk_make_subdir(logbase, datetime.today().strftime('%Y%m%d'))
+        fname = 'result_log_{}.csv'.format(self.obs_id)
+        self._log = log = open(os.path.join(logdir, fname), 'w+')
         log.write('Analysis configuration\n')
         for k, v in self.items():
             if k == 'model_id':
@@ -295,6 +297,7 @@ class Analyser(AnalysisSetup):
                 self._log.write('Failed to perform analysis: {}\n'
                                 .format(traceback.format_exc()))
                 if self.options.RAISE_EXCEPTIONS:
+                    self._close_log()
                     raise Exception(traceback.format_exc())
         self._close_log()
         
