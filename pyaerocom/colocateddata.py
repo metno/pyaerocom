@@ -238,7 +238,6 @@ class ColocatedData(object):
                             filter_name=meta['filter_name'], 
                             **kwargs)
     
-    
     def _load_fake_data(self, num_stations=1000, num_tstamps=365):
     
         data = np.empty((2, num_tstamps, num_stations))
