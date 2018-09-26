@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap
 
-def df_to_heatmap(df, cmap="bwr", center=0, low=0.3, high=0.3, vmin=None,
+def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
                   vmax=None, color_rowwise=True,
                   normalise_rows=False, normalise_rows_col=None,
                   annot=True, table_name="", num_digits=2, ax=None, 
@@ -105,7 +105,12 @@ def df_to_heatmap(df, cmap="bwr", center=0, low=0.3, high=0.3, vmin=None,
     elif vmax is None:
         vmax = df_hm.max().max() * (1+high)
     #print(vmin, vmax)
-    ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, 
+    if center:
+        ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, 
+                     fmt=num_fmt,
+                     cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
+    else:
+        ax = heatmap(df_hm, cmap=cmap, annot=annot, ax=ax, 
                  fmt=num_fmt,
                  cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
     ax.set_title(table_name, fontsize=16)
