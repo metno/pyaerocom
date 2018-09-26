@@ -305,7 +305,7 @@ class Config(object):
     @property
     def OUT_BASEDIR_PPI(self):
         """Output base directory PPI servers"""
-        return '/lustre/storeA/project/aerocom/aerocom2/pyaerocom/'
+        return '/lustre/storeA/project/aerocom/aerocom2/pyaerocom-synthesis/output/'
             
     @property
     def READY(self):
