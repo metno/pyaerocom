@@ -64,8 +64,8 @@ class ReadEarlinet(ReadUngriddedBase):
     TS_TYPE = 'undefined'
     
     #: dictionary specifying the file search patterns for each variable
-    VAR_PATTERNS_FILE = {'ec5503daer'       : '*/f*/*.e5*', 
-                         'ec5503daer_err'   : '*/f*/*.e5*',
+    VAR_PATTERNS_FILE = {#'ec5503daer'       : '*/f*/*.e5*', 
+                         #'ec5503daer_err'   : '*/f*/*.e5*',
                          'ec5323daer'       : '*/f*/*.e5*', 
                          'ec5323daer_err'   : '*/f*/*.e5*', 
                          'ec3553daer'       : '*/f*/*.e3*', 
@@ -74,8 +74,8 @@ class ReadEarlinet(ReadUngriddedBase):
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
-    VAR_NAMES_FILE = {'ec5503daer'      : 'Extinction', 
-                      'ec5503daer_err'  : 'ErrorExtinction', 
+    VAR_NAMES_FILE = {#'ec5503daer'      : 'Extinction', 
+                      #'ec5503daer_err'  : 'ErrorExtinction', 
                       'ec5323daer'      : 'Extinction', 
                       'ec5323daer_err'  : 'ErrorExtinction', 
                       'ec3553daer'      : 'Extinction', 
@@ -84,8 +84,8 @@ class ReadEarlinet(ReadUngriddedBase):
         
     META_NAMES_FILE = od(location           = 'Location',
                          start_date         = 'StartDate',
-                         start_utc     = 'StartTime_UT',
-                         stop_utc      = 'StopTime_UT',
+                         start_utc          = 'StartTime_UT',
+                         stop_utc           = 'StopTime_UT',
                          stat_lon           = 'Longitude_degrees_east',
                          stat_lat           = 'Latitude_degrees_north',
                          wavelength_emis    = 'EmissionWavelength_nm',
@@ -101,7 +101,7 @@ class ReadEarlinet(ReadUngriddedBase):
                          stat_alt           = 'Altitude_meter_asl',
                          eval_method        = 'EvaluationMethod')
 
-    PROVIDES_VARIABLES = ['ec5503daer', 'ec5503daer_err',
+    PROVIDES_VARIABLES = [#'ec5503daer', 'ec5503daer_err',
                           'ec5323daer', 'ec5323daer_err',
                           'ec3553daer', 'ec3553daer_err',
                           'zdust']
@@ -417,10 +417,14 @@ if __name__=="__main__":
     read = ReadEarlinet()
     read.verbosity_level = 'info'
     
+    data = read.read('ec5323daer')
+    
     data = xarray.open_dataset(F150)
     print(data)
     dat = read.read_file(F150, vars_to_retrieve=read.PROVIDES_VARIABLES)
     print(dat)
+    
+    
     
     from time import time
     t0=time()
