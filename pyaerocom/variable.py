@@ -198,7 +198,7 @@ class Variable(BrowseDict):
             self.is_3d = True
         self.var_name = var_name
         self.standard_name = None
-        self.unit = None
+        self.unit = 1
         self.aliases = []
         self.wavelength_nm = None
         self.dimensions = None
@@ -235,6 +235,11 @@ class Variable(BrowseDict):
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
+    
+    @property
+    def has_unit(self):
+        """Boolean specifying whether variable has unit"""
+        return True if not self.unit in (1, None) else False
     
     @property
     def lower_limit(self):
@@ -328,11 +333,8 @@ class Variable(BrowseDict):
                     except:
                         pass
                 elif key == 'unit':
-                    try:
-                        if int(val) == 1:
-                            val = None
-                    except:
-                        pass
+                    if val == 'None' or val=='1':
+                        val=1
                 if val == 'None':
                     val = None
                 self[key] = val

@@ -93,6 +93,16 @@ class EbasColDef(dict):
         return s
     
 class NasaAmesHeader(object):
+    """Header class for Ebas NASA Ames file
+    
+    Note
+    ----
+    Is used in :class:`EbasNasaAmesFile` and should not be used directly.
+    
+    Attributes
+    -----------
+    
+    """
     _NUM_FIXLINES = 13
     _HEAD_ROWS_MANDATORY = [0,5,8,9,10,11]
     
@@ -156,14 +166,21 @@ class NasaAmesHeader(object):
         
     @property
     def head_fix(self):
+        """Dictionary containing fixed header info (that is always available)"""
         return self._head_fix
     
     @property
     def var_defs(self):
+        """List containing column variable definitions
+        
+        List index is column index in file and value is instance of 
+        :class:`EbasColDef`
+        """
         return self._var_defs
         
     @property
     def meta(self):
+        """Meta data dictionary (specific for this file)"""
         return self._meta
         
     def update(self, **kwargs):
@@ -181,7 +198,10 @@ class NasaAmesHeader(object):
             return self._meta[key]
         else:
             raise AttributeError("Invalid attribute: {}".format(key))
-            
+     
+    def __getitem__(self, key):
+        return self.__getattr__(key)
+    
     def __setitem__(self, key, val):
         if key in self._head_fix:
             self._head_fix[key] = val

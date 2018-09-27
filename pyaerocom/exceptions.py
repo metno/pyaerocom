@@ -38,6 +38,9 @@ class DataCoverageError(ValueError):
 class DataDimensionError(ValueError):
     pass
 
+class DataUnitError(ValueError):
+    pass
+
 class DimensionOrderError(DataDimensionError):
     pass
 

@@ -6,9 +6,10 @@ from datetime import datetime
 from collections import OrderedDict as od
 import pandas as pd
 from pyaerocom import logger
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
-                                  MetaDataError)
+                                  MetaDataError, DataUnitError)
 from pyaerocom import StationData
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
@@ -91,6 +92,7 @@ class UngriddedData(object):
             num_points = self._ROWNO
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([num_points, self._COLNO]) * np.nan
+        self.unit = BrowseDict()
         self.metadata = od()
         self.meta_idx = od()
         self.var_idx = od()
@@ -391,22 +393,22 @@ class UngriddedData(object):
         if freq in TS_TYPE_TO_PANDAS_FREQ:
             freq = TS_TYPE_TO_PANDAS_FREQ[freq]
         
-        temp_dict = StationData()
+        stat_data = StationData()
         val = self.metadata[meta_idx]
         
         # do not return anything for stations without data
         # TODO: consider writing stat_lon, stat_lat and stat_alt
-        temp_dict['station_name'] = val['station_name']
-        temp_dict['latitude'] = val['stat_lat']
-        temp_dict['longitude'] = val['stat_lon']
-        temp_dict['altitude'] = val['stat_alt']
-        temp_dict['PI'] = val['PI']
-        temp_dict['dataset_name'] = val['dataset_name']
+        stat_data['station_name'] = val['station_name']
+        stat_data['latitude'] = val['stat_lat']
+        stat_data['longitude'] = val['stat_lon']
+        stat_data['altitude'] = val['stat_alt']
+        stat_data['PI'] = val['PI']
+        stat_data['dataset_name'] = val['dataset_name']
         if 'instrument_name' in val:
-            temp_dict['instrument_name'] = val['instrument_name']
+            stat_data['instrument_name'] = val['instrument_name']
         
         if 'files' in val:
-            temp_dict['files'] = val['files']
+            stat_data['files'] = val['files']
         
         if vars_to_convert is None:
             vars_to_convert = val['variables']
@@ -417,12 +419,12 @@ class UngriddedData(object):
         first_var = vars_to_convert[0]
         indices_first = self.meta_idx[meta_idx][first_var]
         dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
-        temp_dict['dtime'] = dtime
+        stat_data['dtime'] = dtime
         if not any([start <= t <= stop for t in dtime]):
             raise TimeMatchError('No data available for station {} ({}) in '
                                  'time interval {} - {}'
-                                 .format(temp_dict['station_name'],
-                                         temp_dict['dataset_name'],
+                                 .format(stat_data['station_name'],
+                                         stat_data['dataset_name'],
                                          start, stop))
         for var in vars_to_convert:
             indices = self.meta_idx[meta_idx][var]
@@ -443,14 +445,14 @@ class UngriddedData(object):
                                                 'too many invalid measurements '
                                                 'for interpolation.'
                                                 .format(var,
-                                                        temp_dict['station_name'],
-                                                        temp_dict['dataset_name'],
+                                                        stat_data['station_name'],
+                                                        stat_data['dataset_name'],
                                                         start, stop))
                     data = data.interpolate().dropna()
                 if freq is not None:
                     data = data.resample(freq).mean()     
-            temp_dict[var] = data
-        return temp_dict
+            stat_data[var] = data
+        return stat_data
     
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
                             freq=None, interp_nans=False, 
@@ -848,6 +850,7 @@ class UngriddedData(object):
             new.meta_idx[i] = _meta_idx_new
             new.metadata[i] = _meta_check
         new.var_idx.update(self.var_idx)
+        new.unit = self.unit
         new.filter_hist.update(self.filter_hist)
         return new
         
@@ -884,12 +887,22 @@ class UngriddedData(object):
         if obj.is_empty:
             obj._data = other._data
             obj.metadata = other.metadata
+            obj.unit = other.unit
             obj.meta_idx = other.meta_idx
             obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
             data_offset = obj.shape[0]
+            for var, unit in other.unit:
+                if var in obj.unit.items():
+                    if not unit == obj.unit[var]:
+                        raise DataUnitError('Cannot merge other instance of '
+                                        'UngriddedData since units for variable '
+                                        '{} do not match.'.format(var))
+                else:
+                    obj.unit[var]=unit
+                    
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other

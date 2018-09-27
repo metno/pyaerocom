@@ -43,7 +43,7 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex
 from pyaerocom.io import EbasNasaAmesFile
 from pyaerocom.exceptions import (VariableDefinitionError, NotInFileError,
-                                  EbasFileError)
+                                  EbasFileError, DataUnitError)
 
 class ReadEbas(ReadUngriddedBase):
     """Interface for reading EBAS data
@@ -60,7 +60,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.05_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.06_" + ReadUngriddedBase.__baseversion__
     
     #: preferred order of data statistics. Some files may contain multiple 
     #: columns for one variable, where each column corresponds to one of the
@@ -519,7 +519,6 @@ class ReadEbas(ReadUngriddedBase):
         data_out.dataset_name = self.DATASET_NAME
         
         
-        
         meta = file.meta
         # write meta information
         tres_code = meta['resolution_code']
@@ -562,6 +561,10 @@ class ReadEbas(ReadUngriddedBase):
                 continue
             data_out[var] = data
             data_out['var_info'][var] = file.var_defs[colnum]
+            if 'unit' in file.var_defs[colnum]:
+                data_out.unit[var] = file.var_defs[colnum]['unit']
+            else:
+                data_out.unit[var]= file.unit
             contains_vars.append(var)
         
         if len(contains_vars) == 0:
@@ -678,6 +681,10 @@ class ReadEbas(ReadUngriddedBase):
                 
             vars_avail = station_data.contains_vars
             for var_idx, var in enumerate(vars_avail):
+                if not var in data_obj.unit:
+                    data_obj.unit[var] = station_data.unit[var]
+                elif station_data.unit[var] != data_obj.unit[var]:
+                    raise DataUnitError("Unit mismatch")
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times

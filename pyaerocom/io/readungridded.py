@@ -238,7 +238,7 @@ class ReadUngridded(object):
         else:
             self.logger.info('No Cache match found for {}. Reading from files (this '
                         'may take a while)'.format(dataset_to_read))
-            data = reader.read(vars_available)
+            data = reader.read(vars_available, **kwargs)
         
         self.revision[dataset_to_read] = reader.data_revision
         self.data_version[dataset_to_read] = reader.__version__
@@ -250,7 +250,8 @@ class ReadUngridded(object):
     
         return data
     
-    def read(self, datasets_to_read=None, vars_to_retrieve=None):
+    def read(self, datasets_to_read=None, vars_to_retrieve=None,
+             **kwargs):
         """Read observations
 
         Iter over all datasets in :attr:`datasets_to_read`, call 
@@ -273,7 +274,7 @@ class ReadUngridded(object):
         data = UngriddedData()
         for ds in self.datasets_to_read:
             self.logger.info('Reading {} data'.format(ds))
-            data.append(self.read_dataset(ds, vars_to_retrieve))
+            data.append(self.read_dataset(ds, vars_to_retrieve, **kwargs))
             self.logger.info('Successfully imported {} data'.format(ds))
         self.data = data
         return data
@@ -287,10 +288,15 @@ class ReadUngridded(object):
         
     
 if __name__=="__main__":
-
+    read = ReadUngridded()
+    ebas = read.read('EBASMC', ('absc550aer', 'scatc550aer'), 
+                     last_file=10)
+    raise Exception
     read = ReadUngridded(const.AERONET_INV_V2L2_DAILY_NAME)
     read.read()
     
     read = ReadUngridded(const.AERONET_INV_V3L2_DAILY_NAME)
     read.read()
+    
+    
     

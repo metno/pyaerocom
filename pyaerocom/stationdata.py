@@ -36,6 +36,7 @@ class StationData(Station):
         
         self.dtime = []
         self.instrument_name=None
+        self.unit = BrowseDict()
         super(StationData, self).__init__(*args, **kwargs)
         
     @property
