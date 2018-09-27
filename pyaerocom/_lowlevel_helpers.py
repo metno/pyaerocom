@@ -22,6 +22,9 @@ class BrowseDict(OrderedDict):
     def __setattr__(self, key, val):
         self[key] = val
         
+    def __dir__(self):
+        return self.keys()
+    
     def __str__(self):
         return dict_to_str(self)
    
