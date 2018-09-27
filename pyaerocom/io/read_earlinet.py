@@ -48,7 +48,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.e*'
     
     #: version log of this class (for caching)
-    __version__ = "0.08_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.09_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.EARLINET_NAME
