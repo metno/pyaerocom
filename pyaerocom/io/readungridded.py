@@ -82,10 +82,6 @@ class ReadUngridded(object):
         # None, all variables provided by the corresponding network are loaded
         self.vars_to_retrieve = vars_to_retrieve
         
-        if os.path.exists(self._DONOTCACHEFILE):
-            ignore_cache = True
-        self.ignore_cache = ignore_cache
-        
         self.revision = {}
         self.data_version = {}
     
@@ -93,7 +89,16 @@ class ReadUngridded(object):
         
         # initiate a logger for this class
         self.logger = logging.getLogger(__name__)
-                                      
+        
+        if ignore_cache:
+            self.logger.info('Deactivating caching')
+            const.CACHING = False
+    @property
+    def ignore_cache(self):
+        if os.path.exists(self._DONOTCACHEFILE) or not const.CACHING:
+            return True
+        return False
+    
     @property
     def datasets_to_read(self):
         """List of datasets supposed to be read"""

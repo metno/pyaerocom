@@ -35,7 +35,7 @@ class CacheHandlerUngridded(object):
         numpy.datetime64 or pandas.Timestamp. Will be converted to string 
         with format YYYYMMDD
     """
-    __version__ = '0.02'
+    __version__ = '0.03'
     #: Directory of cache files
     CACHE_DIR = const.OBSDATACACHEDIR
     

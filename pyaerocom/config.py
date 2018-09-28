@@ -37,10 +37,11 @@ Provides access to pyaerocom specific configuration values
 
 import numpy as np
 import os
-from warnings import warn
+import getpass
 from collections import OrderedDict as od
 import pyaerocom.obs_io as obs_io
-from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
+from pyaerocom._lowlevel_helpers import (list_to_shortstr, dict_to_str,
+                                         chk_make_subdir)
 from pyaerocom.variable import AllVariables
 try:
     from ConfigParser import ConfigParser
@@ -54,152 +55,173 @@ class Config(object):
     TODO: write docstring
     """
     
+    # NAMES
+    # default names of the different obs networks
+    # might get overwritten from paths.ini see func read_config
+    
+    #: Aeronet V2 access names
+    AERONET_SUN_V2L15_AOD_DAILY_NAME = 'AeronetSunV2Lev1.5.daily'
+    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = 'AeronetSun_2.0_NRT'
+    AERONET_SUN_V2L2_AOD_DAILY_NAME = 'AeronetSunV2Lev2.daily'
+    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME = 'AeronetSunV2Lev2.AP'
+    AERONET_SUN_V2L2_SDA_DAILY_NAME = 'AeronetSDAV2Lev2.daily'
+    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV2Lev2.AP'
+    
+    #Aeronet V3 access names
+    AERONET_SUN_V3L15_AOD_DAILY_NAME = 'AeronetSunV3Lev1.5.daily'
+    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev1.5.AP'
+    AERONET_SUN_V3L2_AOD_DAILY_NAME = 'AeronetSunV3Lev2.daily'
+    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev2.AP'
+    AERONET_SUN_V3L15_SDA_DAILY_NAME = 'AeronetSDAV3Lev1.5.daily'
+    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev1.5.AP'
+    AERONET_SUN_V3L2_SDA_DAILY_NAME = 'AeronetSDAV3Lev2.daily'
+    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev2.AP'
+
+    # inversions
+    AERONET_INV_V2L15_DAILY_NAME = 'AeronetInvV2Lev1.5.daily'
+    AERONET_INV_V2L15_ALL_POINTS_NAME = 'AeronetInvV2Lev1.5.AP'
+    AERONET_INV_V2L2_DAILY_NAME = 'AeronetInvV2Lev2.daily'
+    AERONET_INV_V2L2_ALL_POINTS_NAME = 'AeronetInvV2Lev2.AP'
+    #
+    EBAS_MULTICOLUMN_NAME = 'EBASMC'
+    EEA_NAME = 'EEAAQeRep'
+
+    #: Earlinet access name;
+    EARLINET_NAME = 'EARLINET'
+    
+    #: Lowest possible year in data
+    MIN_YEAR = 0
+    #: Highest possible year in data
+    MAX_YEAR = 20000
+    
+    #: This boolean can be used to enable / disable the former (i.e. use
+    #: available wavelengths of variable in a certain range around variable
+    #: wavelength).
+    OBS_ALLOW_ALT_WAVELENGTHS = obs_io.OBS_ALLOW_ALT_WAVELENGTHS
+    
+    #: Wavelength tolerance for observations imports
+    OBS_WAVELENGTH_TOL_NM = obs_io.OBS_WAVELENGTH_TOL_NM
+    
+    #: not used at the moment
+    GCOSPERCENTCRIT =   np.float(0.1)
+    GCOSABSCRIT     =   np.float(0.04)
+    
+    #names of the different obs networks
+    OBSNET_NONE = 'NONE'
+    NOMODELNAME = 'OBSERVATIONS-ONLY'
+
+    #: Name of the file containing the revision string of an obs data network
+    REVISION_FILE = 'Revision.txt'
+    
+    _config_ini = os.path.join('.', 'data', 'paths.ini')
+    _outhomename = 'pyaerocom'
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
-                 out_base_dir=None, config_file=None, 
-                 obs_cache_dir=None, write_fileio_err_log=True):
+                 output_dir=None, config_file=None, 
+                 cache_dir=None, write_fileio_err_log=True, 
+                 activate_caching=True):
         
-        #: Lowest possible year in data
-        self.MIN_YEAR = 0
-        #: Highest possible year in data
-        self.MAX_YEAR = 20000
+        if isinstance(config_file, str) and os.path.exists(config_file):
+            self._config_ini = config_file
         
+        # Directories
+        self._modelbasedir = model_base_dir
+        self._obsbasedir = obs_base_dir
+        self._cachedir = cache_dir
+        self._outputdir = output_dir
+        self._caching_active = activate_caching
+        
+        self._var_param = None
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
-        
-        #: Wavelength tolerance for observations if data for required wavelength
-        #: is not available
-        self.OBS_WAVELENGTH_TOL_NM = obs_io.OBS_WAVELENGTH_TOL_NM
-        
-        #: This boolean can be used to enable / disable the former (i.e. use
-        #: available wavelengths of variable in a certain range around variable
-        #: wavelength).
-        self.OBS_ALLOW_ALT_WAVELENGTHS = obs_io.OBS_ALLOW_ALT_WAVELENGTHS
-        
-        self.GCOSPERCENTCRIT =   np.float(0.1)
-        self.GCOSABSCRIT     =   np.float(0.04)
-        
-        #names of the different obs networks
-        self.OBSNET_NONE = 'NONE'
-        self.NOMODELNAME = 'OBSERVATIONS-ONLY'
-
-        # Name of the file containing the revision string of an obs data network
-        self.REVISION_FILE = 'Revision.txt'
-        
-        ### NAMES
-        #default names of the different obs networks
-        #might get overwritten from paths.ini see func read_config
-        #Aeronet V2
-        self.AERONET_SUN_V2L15_AOD_DAILY_NAME = 'AeronetSunV2Lev1.5.daily'
-        self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = 'AeronetSun_2.0_NRT'
-        self.AERONET_SUN_V2L2_AOD_DAILY_NAME = 'AeronetSunV2Lev2.daily'
-        self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME = 'AeronetSunV2Lev2.AP'
-        self.AERONET_SUN_V2L2_SDA_DAILY_NAME = 'AeronetSDAV2Lev2.daily'
-        self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV2Lev2.AP'
-        
-        #Aeronet V3
-        self.AERONET_SUN_V3L15_AOD_DAILY_NAME = 'AeronetSunV3Lev1.5.daily'
-        self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev1.5.AP'
-        self.AERONET_SUN_V3L2_AOD_DAILY_NAME = 'AeronetSunV3Lev2.daily'
-        self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev2.AP'
-        self.AERONET_SUN_V3L15_SDA_DAILY_NAME = 'AeronetSDAV3Lev1.5.daily'
-        self.AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev1.5.AP'
-        self.AERONET_SUN_V3L2_SDA_DAILY_NAME = 'AeronetSDAV3Lev2.daily'
-        self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev2.AP'
-
-        # inversions
-        self.AERONET_INV_V2L15_DAILY_NAME = 'AeronetInvV2Lev1.5.daily'
-        self.AERONET_INV_V2L15_ALL_POINTS_NAME = 'AeronetInvV2Lev1.5.AP'
-        self.AERONET_INV_V2L2_DAILY_NAME = 'AeronetInvV2Lev2.daily'
-        self.AERONET_INV_V2L2_ALL_POINTS_NAME = 'AeronetInvV2Lev2.AP'
-        #
-        self.EBAS_MULTICOLUMN_NAME = 'EBASMC'
-        self.EEA_NAME = 'EEAAQeRep'
-
-        # Earlinet;
-        self.EARLINET_NAME = 'EARLINET'
         
         # Attributes that are used to store import results
         self.OBSCONFIG = od()
         self.MODELDIRS = []
         
-        # Directories
-        self._MODELBASEDIR = None
-        self._OBSBASEDIR = None
-        
-        self.OBSDATACACHEDIR = None
-        self.LOGFILESDIR = None
-        self.OUT_BASEDIR = None
-        
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
-        if isinstance(config_file, str) and os.path.exists(config_file):
-            self._config_ini = config_file
-        else:
-            from pyaerocom import __dir__
-            self._config_ini = os.path.join(__dir__, 'data', 'paths.ini')
-        
-        if self.check_dir(model_base_dir):
-            self._MODELBASEDIR = model_base_dir
-        if self.check_dir(obs_base_dir):
-            self._OBSBASEDIR = obs_base_dir
-        if self.check_dir(out_base_dir):
-            self.OUT_BASEDIR = out_base_dir
-        if self.check_dir(obs_cache_dir):
-            self.OBSDATACACHEDIR = obs_cache_dir
-         
+                 
         try:
+            # only overwrites above defined directories if they do not exist
+            # (which is the default case, since they are None on default input)
             self.read_config(config_file)
         except Exception as e:
             print("Failed to read config file. Error: %s" %repr(e))
         
-        if not self.check_dir(self.OUT_BASEDIR):
-            self.OUT_BASEDIR = os.path.join(os.path.expanduser("~"), "pyaerocom")
-            if not os.path.exists(self.OUT_BASEDIR):
-                os.mkdir(self.OUT_BASEDIR)
-        if not self.check_dir(self.OBSDATACACHEDIR):
-            self.OBSDATACACHEDIR = os.path.join(self.OUT_BASEDIR, "_cache")
-            if not os.path.exists(self.OBSDATACACHEDIR):
-                os.mkdir(self.OBSDATACACHEDIR)
-        if not self.check_dir(self.LOGFILESDIR):
-            self.LOGFILESDIR = os.path.join(self.OUT_BASEDIR, "_log")
-            if not os.path.exists(self.LOGFILESDIR):
-                os.mkdir(self.LOGFILESDIR)
+        self.check_output_dirs()
+        self.check_data_dirs()
         
         # if this file exists no cache file is read
         # used to ease debugging
         self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 'DONOTCACHE')
-        self.PLOT_DIR = os.path.join(self.OUT_BASEDIR, "plots")
-        if not self.check_dir(self.PLOT_DIR):
-            os.mkdir(self.PLOT_DIR)
+        if os.path.exists(self.DONOTCACHEFILE):
+            self._caching_active=False
+    
+    @property
+    def HOMEDIR(self):
+        """Home directory of user"""
+        return os.path.expanduser("~")
+    
+    @property
+    def OUTPUTDIR(self):
+        return self._outputdir
+    
+    @property
+    def CACHING(self):
+        """Activate writing of and reading from cache files"""
+        return self._caching_active
+    
+    @CACHING.setter
+    def CACHING(self, val):
+        self._caching_active = bool(val)
         
-        self.VAR_PARAM = AllVariables()
-        self.READY
-        
+    @property
+    def OBSDATACACHEDIR(self):
+        from warnings import warn
+        warn(DeprecationWarning('Attr. was renamed (but still works). '
+                                'Please us CACHEDIR instead'))
+        return self.CACHEDIR
+    
+    @property
+    def CACHEDIR(self):
+        """Cache directory"""
+        return chk_make_subdir(self._cachedir, getpass.getuser())
+    
+    @property
+    def VAR_PARAM(self):
+        if self._var_param is None: #has not been accessed before
+            self._var_param = AllVariables()
+        return self._var_param
+    
+    @property
+    def LOGFILESDIR(self):
+        return os.path.join(self.OUTPUTDIR, '_log')
+       
     @property
     def MODELBASEDIR(self):
         """Base directory of model data
         
         If changed, all relevant subdirectories are updated as well.
         """
-        return self._MODELBASEDIR
+        return self._modelbasedir
     
     @MODELBASEDIR.setter
     def MODELBASEDIR(self, value):
         if not os.path.exists(value):
             raise IOError('Input directory does not exist')
-        self._MODELBASEDIR = value
+        self._modelbasedir = value
         self.reload()
         self.check_data_dirs()
     
     @property
     def OBSBASEDIR(self):
         """Base directory of model data"""
-        return self._OBSBASEDIR
+        return self._obsbasedir
     
     @OBSBASEDIR.setter
     def OBSBASEDIR(self, value):
         if not os.path.exists(value):
             raise IOError('Input directory does not exist')
-        self._OBSBASEDIR = value
+        self._obsbasedir = value
         self.reload()    
         self.check_data_dirs()
     
@@ -212,27 +234,22 @@ class Config(object):
         If this attribute is changed it changes both, :attr:`MODELBASEDIR` and
         :attr:`OBSBASEDIR`.
         """
-        return self._MODELBASEDIR
+        return self._modelbasedir
     
     @BASEDIR.setter
     def BASEDIR(self, value):
         if not os.path.exists(value):
             raise IOError('Cannot change data base directory. Input directory '
                           'does not exist')
-        self._OBSBASEDIR = value
-        self._MODELBASEDIR = value
+        self._obsbasedir = value
+        self._modelbasedir = value
         self.reload()    
         self.check_data_dirs()
-    
-    @property
-    def OUT_BASEDIR_PPI(self):
-        """Output base directory PPI servers"""
-        return '/lustre/storeA/project/aerocom/aerocom2/pyaerocom-synthesis/output/'
             
     @property
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""
-        return self.check_data_dirs()
+        return bool(self.check_data_dirs() * self.check_output_dirs())
     
     @property
     def EBASMC_SQL_DATABASE(self):
@@ -260,19 +277,36 @@ class Config(object):
         """List of all IDs of observations"""
         return [x for x in self.OBSCONFIG.keys()]
     
-    @property
-    def CACHEDIR(self):
-        """Directory for storing cached files"""
-        return self.OBSDATACACHEDIR
-    
-    def check_dir(self, path):
+    def dir_exists(self, path):
         """Checks if directory exists"""
         if isinstance(path, str) and os.path.isdir(path):
             return True
         return False
     
+    @staticmethod
+    def _write_access(path):
+        return os.access(path, os.W_OK)
+    
+    def check_output_dirs(self):
+        """Checks if output directories are available and have write-access"""
+        
+        if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
+            self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
+        if not self._write_access(self._outputdir):
+            print('Cannot establish write access to output directory {}'
+                  .format(self._outputdir))
+            return False
+        if not self.dir_exists(self._cachedir) or not self._write_access(self._cachedir):
+            self._cachedir = chk_make_subdir(self._outputdir, '_cache')
+        if not self._write_access(self._cachedir):
+            print('Cannot establish write access to cache directory {}.'
+                  'Deactivating caching of files'.format(self._cachedir))
+            self._caching_active = False
+            return False
+        return True
+    
     def check_data_dirs(self):
-        """Checks all predefined directories for availability
+        """Checks all predefined data directories for availability
         
         Prints each directory that is not available
         """
@@ -280,23 +314,34 @@ class Config(object):
         logger = getLogger()
         logger.info('Checking data directories')
         ok =True
-        if not self.check_dir(self._MODELBASEDIR):
+        model_dirs = []
+        if not self.dir_exists(self._modelbasedir):
             logger.warning("Model base directory %s does not exist")
             ok=False
-        if not self.check_dir(self._OBSBASEDIR):
+        if not self.dir_exists(self._obsbasedir):
             logger.warning("Observations base directory %s does not exist")
             ok=False
-        if not self.check_dir(self.OBSDATACACHEDIR):
-            logger.warning("Observations cache directory %s does not exist")
+        if not self.dir_exists(self._cachedir):
+            logger.warning("Observations cache directory %s does not exist. "
+                           "Turning off caching")
+            self.CACHING = False            
         for subdir in self.MODELDIRS:
             if not os.path.exists(subdir):
-                logger.warning('Model directory base path does not exist: {}'.format(subdir))
+                logger.warning('Model directory base path does not exist and '
+                               'will be removed from search tree: {}'.format(subdir))
+            else:
+                model_dirs.append(subdir)
         for subdir in self.OBSDIRS:
             if not os.path.exists(subdir):
-                logger.warning('OBS directory base path does not exist: {}'.format(subdir))
-                
+                logger.warning('OBS directory path {} does not exist'.format(subdir))
+     
+        self.MODELDIRS = model_dirs
         return ok
     
+    def add_model_dir(self, dirname):
+        """Add new model directory"""
+        self.MODELDIRS.append(os.path.join(self.MODELBASEDIR, 'dirname'))
+        
     def reload(self, keep_basedirs=True):
         """Reload file"""
         self.read_config(self._config_ini, keep_basedirs)
@@ -310,12 +355,17 @@ class Config(object):
                           %_config_ini)
         cr = ConfigParser()
         cr.read(_config_ini)
+        if cr.has_section('outputfolders'):
+            if not keep_basedirs or not self.dir_exists(self._cachedir):
+                self._cachedir = cr['outputfolders']['CACHEDIR']
+            if not keep_basedirs or not self.dir_exists(self._outputdir):
+                self._outputdir = cr['outputfolders']['OUTPUTDIR']
         #init base directories for Model data
-        if not keep_basedirs or not self.check_dir(self._MODELBASEDIR):
-            self._MODELBASEDIR = cr['modelfolders']['BASEDIR']
+        if not keep_basedirs or not self.dir_exists(self._modelbasedir):
+            self._modelbasedir = cr['modelfolders']['BASEDIR']
         
         self.MODELDIRS = (cr['modelfolders']['dir'].
-                          replace('${BASEDIR}', self._MODELBASEDIR).
+                          replace('${BASEDIR}', self._modelbasedir).
                           replace('\n','').split(','))
 
         # read obs network names from ini file
@@ -350,14 +400,14 @@ class Config(object):
     
     
         #Read directories for observation location
-        if not keep_basedirs or not self.check_dir(self._OBSBASEDIR):
-            self._OBSBASEDIR = cr['obsfolders']['BASEDIR']
+        if not keep_basedirs or not self.dir_exists(self._obsbasedir):
+            self._obsbasedir = cr['obsfolders']['BASEDIR']
             
         OBSCONFIG = self.OBSCONFIG
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME]['PATH'] =\
         cr['obsfolders']['AERONET_SUN_V2L15_AOD_DAILY'].\
-        replace('${BASEDIR}', self._OBSBASEDIR)
+        replace('${BASEDIR}', self._obsbasedir)
         
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L15_AOD_DAILY']
@@ -365,109 +415,115 @@ class Config(object):
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L15_AOD_ALL_POINTS'].\
-            replace('${BASEDIR}', self._OBSBASEDIR)
+            replace('${BASEDIR}', self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L15_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_DAILY_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_AOD_DAILY'].\
-            replace('${BASEDIR}', self._OBSBASEDIR)
+            replace('${BASEDIR}', self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_DAILY_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L2_AOD_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_AOD_ALL_POINTS'].\
-            replace('${BASEDIR}',self._OBSBASEDIR)
+            replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L2_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_DAILY_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_SDA_DAILY'].\
-            replace('${BASEDIR}',self._OBSBASEDIR)
+            replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_DAILY_NAME]['START_YEAR'] =\
             cr['obsstartyears']['AERONET_SUN_V2L2_SDA_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['PATH'] =\
             cr['obsfolders']['AERONET_SUN_V2L2_SDA_ALL_POINTS'].\
-            replace('${BASEDIR}',self._OBSBASEDIR)
+            replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V2L2_SDA_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L15_AOD_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L15_AOD_ALL_POINTS'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L15_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_AOD_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_AOD_ALL_POINTS'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_AOD_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_SUN_V3L15_SDA_DAILY_NAME] = {}
         OBSCONFIG[self.AERONET_SUN_V3L15_SDA_DAILY_NAME]['PATH'] = \
-            cr['obsfolders']['AERONET_SUN_V3L15_SDA_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+            cr['obsfolders']['AERONET_SUN_V3L15_SDA_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L15_SDA_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L15_SDA_DAILY']
     
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_SDA_DAILY']
 
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_SUN_V3L2_SDA_ALL_POINTS'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_SUN_V3L2_SDA_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_INV_V2L15_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_DAILY']
     
         OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L15_ALL_POINTS'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_INV_V2L15_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_ALL_POINTS']
     
         OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_INV_V2L2_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L2_DAILY']
     
         OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V2L2_ALL_POINTS'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_INV_V2L2_ALL_POINTS_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L2_ALL_POINTS']
     
         # Aeronet v3 inversions
         OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V3L15_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V3L15_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_INV_V3L15_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_DAILY']
         
         OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME] = {}
-        OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V3L2_DAILY'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME]['PATH'] = cr['obsfolders']['AERONET_INV_V3L2_DAILY'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.AERONET_INV_V3L2_DAILY_NAME]['START_YEAR'] = cr['obsstartyears']['AERONET_INV_V2L15_DAILY']
         
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME] = {}
-        OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['PATH'] = cr['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['PATH'] = cr['obsfolders']['EBAS_MULTICOLUMN'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.EBAS_MULTICOLUMN_NAME]['START_YEAR'] = cr['obsstartyears']['EBAS_MULTICOLUMN']
     
         OBSCONFIG[self.EEA_NAME] = {}
-        OBSCONFIG[self.EEA_NAME]['PATH'] = cr['obsfolders']['EEA'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.EEA_NAME]['PATH'] = cr['obsfolders']['EEA'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.EEA_NAME]['START_YEAR'] = cr['obsstartyears']['EEA']
 
         OBSCONFIG[self.EARLINET_NAME] = {}
-        OBSCONFIG[self.EARLINET_NAME]['PATH'] = cr['obsfolders']['EARLINET'].replace('${BASEDIR}',self._OBSBASEDIR)
+        OBSCONFIG[self.EARLINET_NAME]['PATH'] = cr['obsfolders']['EARLINET'].replace('${BASEDIR}',self._obsbasedir)
         OBSCONFIG[self.EARLINET_NAME]['START_YEAR'] = cr['obsstartyears']['EARLINET']
         
         cr.clear()
     
     def short_str(self):
+        """Deprecated method"""
+        return self.__str__()    
+    
+    def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}\n".format(head, len(head)*"-")
         for k, v in self.__dict__.items():
+            if k.startswith('_'):
+                pass
             if k=='VAR_PARAM':
                 s += '\n{}\n{}'.format(k, list_to_shortstr(v.all_vars))
             elif isinstance(v, dict):
@@ -477,21 +533,6 @@ class Config(object):
                 s += list_to_shortstr(v)
             else:
                 s += "\n%s: %s" %(k, v)
-        return s
-    
-    def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}\n".format(head, len(head)*"-")
-        for k, v in self.__dict__.items():
-            if k=='VAR_PARAM':
-                s += '\n{}\n{}'.format(k, list_to_shortstr(v.all_vars))
-            elif isinstance(v, list):
-                s += '\n{}\n{}'.format(k, list_to_shortstr(v.all_vars))
-            elif isinstance(v, dict):
-                s += "\n%s (dict)" %k
-                s = dict_to_str(v, s)
-            else:
-                s += "\n%s: %s" %(k,v)
         return s
 
 class GridIO(object):
@@ -624,7 +665,5 @@ if __name__=="__main__":
     
     print(config.short_str())
     
-    config.check_data_dirs()
-    
-    config.BASEDIR = '/home/'
+    #config.BASEDIR = '/home/'
     print(config.short_str())
