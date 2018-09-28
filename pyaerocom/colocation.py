@@ -51,12 +51,14 @@ class Colocator(object):
         
 def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                               start=None, stop=None, filter_name=None, 
-                              regrid_scheme='areaweighted', **kwargs):
+                              regrid_scheme='areaweighted',
+                              vert_scheme=None, **kwargs):
     """Colocate 2 gridded data objects
     
     Todo
     ----
-    Complete docstring
+    - Complete docstring
+    - think about vertical dimension (vert_scheme input not used at the moment)
     """
     if ts_type is None:
         ts_type = 'yearly'
@@ -127,7 +129,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'ts_type_src'       :   grid_ts_type,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'unit'              :   gridded_data.unit,
+            'unit'              :   str(gridded_data.unit),
             'data_level'        :   'colocated'}
 
     
@@ -365,7 +367,7 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
             'ts_type_src'   :   grid_ts_type,
             'start_str'     :   to_datestring_YYYYMMDD(start),
             'stop_str'      :   to_datestring_YYYYMMDD(stop),
-            'unit'          :   gridded_data.unit,
+            'unit'          :   str(gridded_data.unit),
             'data_level'    :   'colocated'}
 
     
