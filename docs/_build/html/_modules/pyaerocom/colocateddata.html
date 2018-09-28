@@ -207,7 +207,7 @@
 <span class="sd">    IOError</span>
 <span class="sd">        if init fails</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.04&#39;</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.05&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -316,6 +316,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span>
     
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unit of data&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;unit&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Failed to access unit ColocatedData class (may be an &#39;</span>
+                        <span class="s1">&#39;old version of data)&#39;</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Meta data&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span>
@@ -337,7 +346,7 @@
             <span class="c1"># get all grid points that contain at least one valid data point </span>
             <span class="c1"># along time dimension</span>
             <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
         
 <div class="viewcode-block" id="ColocatedData.check_dimensions"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.check_dimensions">[docs]</a>    <span class="k">def</span> <span class="nf">check_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -394,11 +403,11 @@
                             <span class="n">y_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data_source&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> 
                             <span class="n">start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> 
                             <span class="n">stop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> 
+                            <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span>
                             <span class="n">ts_type</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">],</span> 
                             <span class="n">stations_ok</span><span class="o">=</span><span class="n">num_points</span><span class="p">,</span>
                             <span class="n">filter_name</span><span class="o">=</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;filter_name&#39;</span><span class="p">],</span> 
                             <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-    
     
     <span class="k">def</span> <span class="nf">_load_fake_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_stations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">num_tstamps</span><span class="o">=</span><span class="mi">365</span><span class="p">):</span>
     

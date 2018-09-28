@@ -204,7 +204,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.io.ebas_file_index</span> <span class="k">import</span> <span class="n">EbasFileIndex</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">EbasNasaAmesFile</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">VariableDefinitionError</span><span class="p">,</span> <span class="n">NotInFileError</span><span class="p">,</span>
-                                  <span class="n">EbasFileError</span><span class="p">)</span>
+                                  <span class="n">EbasFileError</span><span class="p">,</span> <span class="n">DataUnitError</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ReadEbas"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.read_ebas.ReadEbas">[docs]</a><span class="k">class</span> <span class="nc">ReadEbas</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface for reading EBAS data</span>
@@ -221,7 +221,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="c1">#: version log of this class (for caching)</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.05_&quot;</span> <span class="o">+</span> <span class="n">ReadUngriddedBase</span><span class="o">.</span><span class="n">__baseversion__</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.06_&quot;</span> <span class="o">+</span> <span class="n">ReadUngriddedBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: preferred order of data statistics. Some files may contain multiple </span>
     <span class="c1">#: columns for one variable, where each column corresponds to one of the</span>
@@ -680,7 +680,6 @@
         <span class="n">data_out</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span>
         
         
-        
         <span class="n">meta</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">meta</span>
         <span class="c1"># write meta information</span>
         <span class="n">tres_code</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;resolution_code&#39;</span><span class="p">]</span>
@@ -723,6 +722,10 @@
                 <span class="k">continue</span>
             <span class="n">data_out</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="n">data_out</span><span class="p">[</span><span class="s1">&#39;var_info&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">var_defs</span><span class="p">[</span><span class="n">colnum</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;unit&#39;</span> <span class="ow">in</span> <span class="n">file</span><span class="o">.</span><span class="n">var_defs</span><span class="p">[</span><span class="n">colnum</span><span class="p">]:</span>
+                <span class="n">data_out</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">var_defs</span><span class="p">[</span><span class="n">colnum</span><span class="p">][</span><span class="s1">&#39;unit&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data_out</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">unit</span>
             <span class="n">contains_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">contains_vars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -839,6 +842,10 @@
                 
             <span class="n">vars_avail</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">contains_vars</span>
             <span class="k">for</span> <span class="n">var_idx</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vars_avail</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+                    <span class="n">data_obj</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">station_data</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">station_data</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">!=</span> <span class="n">data_obj</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="n">DataUnitError</span><span class="p">(</span><span class="s2">&quot;Unit mismatch&quot;</span><span class="p">)</span>
                 <span class="n">values</span> <span class="o">=</span> <span class="n">station_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">var_idx</span> <span class="o">*</span> <span class="n">num_times</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">num_times</span>

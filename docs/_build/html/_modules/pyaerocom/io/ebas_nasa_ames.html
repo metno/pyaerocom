@@ -254,6 +254,16 @@
         <span class="k">return</span> <span class="n">s</span></div>
     
 <div class="viewcode-block" id="NasaAmesHeader"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader">[docs]</a><span class="k">class</span> <span class="nc">NasaAmesHeader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Header class for Ebas NASA Ames file</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Is used in :class:`EbasNasaAmesFile` and should not be used directly.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_NUM_FIXLINES</span> <span class="o">=</span> <span class="mi">13</span>
     <span class="n">_HEAD_ROWS_MANDATORY</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">]</span>
     
@@ -317,14 +327,21 @@
         
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">head_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Dictionary containing fixed header info (that is always available)&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">var_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List containing column variable definitions</span>
+<span class="sd">        </span>
+<span class="sd">        List index is column index in file and value is instance of </span>
+<span class="sd">        :class:`EbasColDef`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_defs</span>
         
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Meta data dictionary (specific for this file)&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span>
         
 <div class="viewcode-block" id="NasaAmesHeader.update"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -342,7 +359,10 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Invalid attribute: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
-            
+     
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    
     <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_head_fix</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>

@@ -168,7 +168,8 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">VarNotAvailableError</span><span class="p">,</span> <span class="n">TimeMatchError</span><span class="p">,</span>
-                                  <span class="n">ColocationError</span><span class="p">,</span> <span class="n">DataDimensionError</span><span class="p">)</span>
+                                  <span class="n">ColocationError</span><span class="p">,</span> <span class="n">DataDimensionError</span><span class="p">,</span>
+                                  <span class="n">DataUnitError</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">to_pandas_timestamp</span><span class="p">,</span> 
                                <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">,</span>
                                <span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">,</span>
@@ -211,20 +212,34 @@
         
 <div class="viewcode-block" id="colocate_gridded_gridded"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_gridded">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_gridded</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">gridded_data_ref</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                               <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                              <span class="n">regrid_scheme</span><span class="o">=</span><span class="s1">&#39;areaweighted&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                              <span class="n">regrid_scheme</span><span class="o">=</span><span class="s1">&#39;areaweighted&#39;</span><span class="p">,</span>
+                              <span class="n">vert_scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Colocate 2 gridded data objects</span>
 <span class="sd">    </span>
 <span class="sd">    Todo</span>
 <span class="sd">    ----</span>
-<span class="sd">    Complete docstring</span>
+<span class="sd">    - Complete docstring</span>
+<span class="sd">    - think about vertical dimension (vert_scheme input not used at the moment)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">ts_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ts_type</span> <span class="o">=</span> <span class="s1">&#39;yearly&#39;</span>
     <span class="k">if</span> <span class="n">filter_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">filter_name</span> <span class="o">=</span> <span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span>
+    <span class="k">if</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_info</span><span class="o">.</span><span class="n">has_unit</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DataUnitError</span><span class="p">(</span><span class="s1">&#39;Failed to merge data unit of reference &#39;</span>
+                                    <span class="s1">&#39;gridded data object (</span><span class="si">{}</span><span class="s1">) to data unit &#39;</span>
+                                    <span class="s1">&#39;of gridded data object (</span><span class="si">{}</span><span class="s1">)&#39;</span>
+                                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span> 
+                                            <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">unit</span><span class="p">))</span>
     <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
     <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
     <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+    
+    
     
     <span class="n">grid_ts_type</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">ts_type</span>
     
@@ -275,6 +290,7 @@
             <span class="s1">&#39;ts_type_src&#39;</span>       <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
             <span class="s1">&#39;start_str&#39;</span>         <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
             <span class="s1">&#39;stop_str&#39;</span>          <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;unit&#39;</span>              <span class="p">:</span>   <span class="nb">str</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span>
             <span class="s1">&#39;data_level&#39;</span>        <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">}</span>
 
     
@@ -369,9 +385,21 @@
 <span class="sd">        if none of the data points in input :class:`UngriddedData` matches </span>
 <span class="sd">        the input colocation constraints</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">var</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_info</span><span class="o">.</span><span class="n">var_name</span>
     <span class="k">if</span> <span class="n">var_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">var_ref</span> <span class="o">=</span> <span class="n">var</span>
+    
+    <span class="k">if</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">var_info</span><span class="o">.</span><span class="n">has_unit</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var_ref</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">gridded_data</span><span class="o">.</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">ungridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var_ref</span><span class="p">])</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DataUnitError</span><span class="p">(</span><span class="s1">&#39;Failed to merge data unit of &#39;</span>
+                                    <span class="s1">&#39;gridded data object (</span><span class="si">{}</span><span class="s1">) to data unit &#39;</span>
+                                    <span class="s1">&#39;of ungridded data object (</span><span class="si">{}</span><span class="s1">)&#39;</span>
+                                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span> 
+                                            <span class="n">ungridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var_ref</span><span class="p">]))</span>
+                
     <span class="k">if</span> <span class="ow">not</span> <span class="n">var_ref</span> <span class="ow">in</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_vars</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s1">&#39;Variable </span><span class="si">{}</span><span class="s1"> is not available in ungridded &#39;</span>
                                    <span class="s1">&#39;data (which contains </span><span class="si">{}</span><span class="s1">)&#39;</span>
@@ -500,6 +528,7 @@
             <span class="s1">&#39;ts_type_src&#39;</span>   <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
             <span class="s1">&#39;start_str&#39;</span>     <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
             <span class="s1">&#39;stop_str&#39;</span>      <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;unit&#39;</span>          <span class="p">:</span>   <span class="nb">str</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span>
             <span class="s1">&#39;data_level&#39;</span>    <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">}</span>
 
     

@@ -223,6 +223,35 @@
 <span class="n">NUM_KEYS_META</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;stat_lon&#39;</span><span class="p">,</span> <span class="s1">&#39;stat_lat&#39;</span><span class="p">,</span> <span class="s1">&#39;stat_alt&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;altitude&#39;</span><span class="p">]</span>
 
+<div class="viewcode-block" id="unit_conversion_fac"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.unit_conversion_fac">[docs]</a><span class="k">def</span> <span class="nf">unit_conversion_fac</span><span class="p">(</span><span class="n">from_unit</span><span class="p">,</span> <span class="n">to_unit</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns multiplicative unit conversion factor for input units</span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Input must be either instances of :class:`cf_units.Unit` class or string.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    from_unit : :obj:`cf_units.Unit`, or :obj:`str`</span>
+<span class="sd">        unit to be converted</span>
+<span class="sd">    to_unit : :obj:`cf_units.Unit`, or :obj:`str`</span>
+<span class="sd">        final unit</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    float</span>
+<span class="sd">        multiplicative conversion factor</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if units cannot be converted into each other using cf_units package</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">from_unit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">from_unit</span> <span class="o">=</span> <span class="n">Unit</span><span class="p">(</span><span class="n">from_unit</span><span class="p">)</span>
+   
+    <span class="k">return</span> <span class="n">from_unit</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">to_unit</span><span class="p">)</span></div>
+    
 <div class="viewcode-block" id="same_meta_dict"><a class="viewcode-back" href="../../api.html#pyaerocom.helpers.same_meta_dict">[docs]</a><span class="k">def</span> <span class="nf">same_meta_dict</span><span class="p">(</span><span class="n">meta1</span><span class="p">,</span> <span class="n">meta2</span><span class="p">,</span> <span class="n">ignore_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">],</span> 
                    <span class="n">num_keys</span><span class="o">=</span><span class="n">NUM_KEYS_META</span><span class="p">,</span> <span class="n">num_rtol</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compare meta dictionaries</span>

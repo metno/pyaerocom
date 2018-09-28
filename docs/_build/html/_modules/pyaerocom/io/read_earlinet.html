@@ -209,7 +209,7 @@
     <span class="n">_FILEMASK</span> <span class="o">=</span> <span class="s1">&#39;*.e*&#39;</span>
     
     <span class="c1">#: version log of this class (for caching)</span>
-    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.08_&quot;</span> <span class="o">+</span> <span class="n">ReadUngriddedBase</span><span class="o">.</span><span class="n">__baseversion__</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.09_&quot;</span> <span class="o">+</span> <span class="n">ReadUngriddedBase</span><span class="o">.</span><span class="n">__baseversion__</span>
     
     <span class="c1">#: Name of dataset (OBS_ID)</span>
     <span class="n">DATASET_NAME</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">EARLINET_NAME</span>
@@ -225,8 +225,8 @@
     <span class="n">TS_TYPE</span> <span class="o">=</span> <span class="s1">&#39;undefined&#39;</span>
     
     <span class="c1">#: dictionary specifying the file search patterns for each variable</span>
-    <span class="n">VAR_PATTERNS_FILE</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ec5503daer&#39;</span>       <span class="p">:</span> <span class="s1">&#39;*/f*/*.e5*&#39;</span><span class="p">,</span> 
-                         <span class="s1">&#39;ec5503daer_err&#39;</span>   <span class="p">:</span> <span class="s1">&#39;*/f*/*.e5*&#39;</span><span class="p">,</span>
+    <span class="n">VAR_PATTERNS_FILE</span> <span class="o">=</span> <span class="p">{</span><span class="c1">#&#39;ec5503daer&#39;       : &#39;*/f*/*.e5*&#39;, </span>
+                         <span class="c1">#&#39;ec5503daer_err&#39;   : &#39;*/f*/*.e5*&#39;,</span>
                          <span class="s1">&#39;ec5323daer&#39;</span>       <span class="p">:</span> <span class="s1">&#39;*/f*/*.e5*&#39;</span><span class="p">,</span> 
                          <span class="s1">&#39;ec5323daer_err&#39;</span>   <span class="p">:</span> <span class="s1">&#39;*/f*/*.e5*&#39;</span><span class="p">,</span> 
                          <span class="s1">&#39;ec3553daer&#39;</span>       <span class="p">:</span> <span class="s1">&#39;*/f*/*.e3*&#39;</span><span class="p">,</span> 
@@ -235,8 +235,8 @@
     
     <span class="c1">#: dictionary specifying the file column names (values) for each Aerocom </span>
     <span class="c1">#: variable (keys)</span>
-    <span class="n">VAR_NAMES_FILE</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ec5503daer&#39;</span>      <span class="p">:</span> <span class="s1">&#39;Extinction&#39;</span><span class="p">,</span> 
-                      <span class="s1">&#39;ec5503daer_err&#39;</span>  <span class="p">:</span> <span class="s1">&#39;ErrorExtinction&#39;</span><span class="p">,</span> 
+    <span class="n">VAR_NAMES_FILE</span> <span class="o">=</span> <span class="p">{</span><span class="c1">#&#39;ec5503daer&#39;      : &#39;Extinction&#39;, </span>
+                      <span class="c1">#&#39;ec5503daer_err&#39;  : &#39;ErrorExtinction&#39;, </span>
                       <span class="s1">&#39;ec5323daer&#39;</span>      <span class="p">:</span> <span class="s1">&#39;Extinction&#39;</span><span class="p">,</span> 
                       <span class="s1">&#39;ec5323daer_err&#39;</span>  <span class="p">:</span> <span class="s1">&#39;ErrorExtinction&#39;</span><span class="p">,</span> 
                       <span class="s1">&#39;ec3553daer&#39;</span>      <span class="p">:</span> <span class="s1">&#39;Extinction&#39;</span><span class="p">,</span> 
@@ -245,8 +245,8 @@
         
     <span class="n">META_NAMES_FILE</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">location</span>           <span class="o">=</span> <span class="s1">&#39;Location&#39;</span><span class="p">,</span>
                          <span class="n">start_date</span>         <span class="o">=</span> <span class="s1">&#39;StartDate&#39;</span><span class="p">,</span>
-                         <span class="n">start_utc</span>     <span class="o">=</span> <span class="s1">&#39;StartTime_UT&#39;</span><span class="p">,</span>
-                         <span class="n">stop_utc</span>      <span class="o">=</span> <span class="s1">&#39;StopTime_UT&#39;</span><span class="p">,</span>
+                         <span class="n">start_utc</span>          <span class="o">=</span> <span class="s1">&#39;StartTime_UT&#39;</span><span class="p">,</span>
+                         <span class="n">stop_utc</span>           <span class="o">=</span> <span class="s1">&#39;StopTime_UT&#39;</span><span class="p">,</span>
                          <span class="n">stat_lon</span>           <span class="o">=</span> <span class="s1">&#39;Longitude_degrees_east&#39;</span><span class="p">,</span>
                          <span class="n">stat_lat</span>           <span class="o">=</span> <span class="s1">&#39;Latitude_degrees_north&#39;</span><span class="p">,</span>
                          <span class="n">wavelength_emis</span>    <span class="o">=</span> <span class="s1">&#39;EmissionWavelength_nm&#39;</span><span class="p">,</span>
@@ -262,7 +262,7 @@
                          <span class="n">stat_alt</span>           <span class="o">=</span> <span class="s1">&#39;Altitude_meter_asl&#39;</span><span class="p">,</span>
                          <span class="n">eval_method</span>        <span class="o">=</span> <span class="s1">&#39;EvaluationMethod&#39;</span><span class="p">)</span>
 
-    <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ec5503daer&#39;</span><span class="p">,</span> <span class="s1">&#39;ec5503daer_err&#39;</span><span class="p">,</span>
+    <span class="n">PROVIDES_VARIABLES</span> <span class="o">=</span> <span class="p">[</span><span class="c1">#&#39;ec5503daer&#39;, &#39;ec5503daer_err&#39;,</span>
                           <span class="s1">&#39;ec5323daer&#39;</span><span class="p">,</span> <span class="s1">&#39;ec5323daer_err&#39;</span><span class="p">,</span>
                           <span class="s1">&#39;ec3553daer&#39;</span><span class="p">,</span> <span class="s1">&#39;ec3553daer_err&#39;</span><span class="p">,</span>
                           <span class="s1">&#39;zdust&#39;</span><span class="p">]</span>
@@ -578,10 +578,14 @@
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadEarlinet</span><span class="p">()</span>
     <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;info&#39;</span>
     
+    <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;ec5323daer&#39;</span><span class="p">)</span>
+    
     <span class="n">data</span> <span class="o">=</span> <span class="n">xarray</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">F150</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="n">dat</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">F150</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">read</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+    
+    
     
     <span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
     <span class="n">t0</span><span class="o">=</span><span class="n">time</span><span class="p">()</span>

@@ -38,9 +38,13 @@ E.g.:
 
 .. parsed-literal::
 
-    2018-09-25 10:54:47,447:WARNING:
+    2018-09-28 18:29:51,808:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-25 10:54:48,203:WARNING:
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    2018-09-28 18:29:52,653:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -278,37 +282,37 @@ Let’s read the files:
 
 .. parsed-literal::
 
-    2018-09-25 10:54:52,947:WARNING:
+    2018-09-28 18:29:57,258:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 09
     
     Error msg: IndexError('list index out of range',)
-    2018-09-25 10:54:53,606:WARNING:
+    2018-09-28 18:29:57,578:WARNING:
     Failed to read header row 6.
     2010 01 01 2017 05 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-25 10:54:53,892:WARNING:
+    2018-09-28 18:29:57,701:WARNING:
     Failed to read header row 6.
     2010 01 01 2012 10 04
     
     Error msg: IndexError('list index out of range',)
-    2018-09-25 10:54:54,226:WARNING:
+    2018-09-28 18:29:57,797:WARNING:
     Failed to read header row 6.
     2010 01 01 2016 07 05
     
     Error msg: IndexError('list index out of range',)
-    2018-09-25 10:54:54,476:WARNING:
+    2018-09-28 18:29:57,855:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 02 16
     
     Error msg: IndexError('list index out of range',)
-    2018-09-25 10:54:55,316:WARNING:
+    2018-09-28 18:29:57,968:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     
     Error msg: IndexError('list index out of range',)
-    2018-09-25 10:54:55,923:WARNING:
+    2018-09-28 18:29:58,228:WARNING:
     Failed to read header row 6.
     2010 01 01 2015 08 19
     

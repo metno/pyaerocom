@@ -298,7 +298,7 @@ comments_and_purpose = For comparison with AERONET and model diagnostics
 [ec550aer]
 description = Aerosol Extinction at 550nm
 wavelength_nm = 550
-unit = m-1
+unit = 1/Mm
 var_name = ec550aer
 standard_name = volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles
 var_type = radiative properties
@@ -310,7 +310,7 @@ comments_and_purpose = Evaluation of the model Aerosol extinction profiles from 
 [ec532aer]
 description = Aerosol Extinction at 532nm 
 wavelength_nm = 532
-unit = m-1
+unit = 1/Mm
 var_name = ec532aer
 standard_name = volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles
 var_type = radiative properties
@@ -5314,6 +5314,11 @@ and observations.</p>
 #ini file with paths
 #
 #created 20170824 by Jan Griesfeller for Met Norway
+
+
+[outputfolders]
+CACHEDIR=/lustre/storeA/project/aerocom/user_data/pyaerocom_cache/
+OUTPUTDIR=/lustre/storeA/project/aerocom/aerocom2/pyaerocom_out/
 
 # NOTE JGLISS 20180801: model directory for ECMWF was twice in modelfolders
 # removed one

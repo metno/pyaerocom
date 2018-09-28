@@ -33,11 +33,15 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
-    2018-09-25 10:54:43,372:WARNING:
+    2018-09-28 18:29:48,246:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-25 10:54:44,434:WARNING:
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    2018-09-28 18:29:49,112:WARNING:
     geopy library is not available. Aeolus data read not enabled
-    2018-09-25 10:54:44,551:WARNING:
+    2018-09-28 18:29:49,121:WARNING:
     Failed to read header row 6.
     2008 01 01 2016 07 08
     
@@ -299,7 +303,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f7df810f860>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f5703050898>)])
 
 
 

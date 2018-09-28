@@ -49,9 +49,13 @@ pyaerocom from within a Python3 console.
 
 .. parsed-literal::
 
-    2018-09-25 10:52:11,554:WARNING:
+    2018-09-28 18:27:13,977:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-25 10:52:12,307:WARNING:
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    2018-09-28 18:27:14,789:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -61,25 +65,31 @@ pyaerocom from within a Python3 console.
     Version: 0.3.0
 
 
-Setting global environment variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Setting-up the paths for data import and output
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The import of data from the AEROCOM database in pyaerocom is controlled
-via an instance of the ``Config`` class.
+via an instance of the ``Config`` class. The attribute ``const`` of
+pyaerocom returns the current configuration.
 
 .. code:: ipython3
 
-    print("Current config: %s" %pya.const.short_str())
+    print(pya.const)
 
 
 .. parsed-literal::
 
-    Current config: 
+    
     Pyaerocom Config
     ----------------
     
-    MIN_YEAR: 0
-    MAX_YEAR: 20000
+    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    _modelbasedir: /lustre/storeA/project/aerocom/
+    _obsbasedir: /lustre/storeA/project/aerocom/
+    _cachedir: /home/jonasg/pyaerocom/_cache
+    _outputdir: /home/jonasg/pyaerocom
+    _caching_active: True
+    _var_param: None
     GRID_IO: 
     Pyaerocom GridIO
     ----------------
@@ -100,34 +110,6 @@ via an instance of the ``Config`` class.
        EQUALISE_METADATA: True
        USE_RENAMED_DIR: True
        INCLUDE_SUBDIRS: False
-    OBS_WAVELENGTH_TOL_NM: 10.0
-    OBS_ALLOW_ALT_WAVELENGTHS: True
-    GCOSPERCENTCRIT: 0.1
-    GCOSABSCRIT: 0.04
-    OBSNET_NONE: NONE
-    NOMODELNAME: OBSERVATIONS-ONLY
-    REVISION_FILE: Revision.txt
-    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
-    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
-    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
-    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
-    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
-    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
-    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
-    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
-    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
-    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
-    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
-    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
-    EBAS_MULTICOLUMN_NAME: EBASMC
-    EEA_NAME: EEAAQeRep
-    EARLINET_NAME: EARLINET
     OBSCONFIG (dict)
     MODELDIRS (list)
        ['/lustre/storeA/project/aerocom/aerocom1/'
@@ -136,476 +118,29 @@ via an instance of the ``Config`` class.
         '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
         '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
     
-    MODELBASEDIR: /lustre/storeA/project/aerocom/
-    OBSBASEDIR: /lustre/storeA/project/aerocom/
-    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
-    LOGFILESDIR: /home/jonasg/pyaerocom/_log
-    OUT_BASEDIR: /home/jonasg/pyaerocom
     WRITE_FILEIO_ERR_LOG: True
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
+    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
+    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
+    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
+    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
+    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
+    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
+    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
+    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
+    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
+    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
+    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
+    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
+    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
+    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
+    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
+    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
     AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
     AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
-    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
-    PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM: 
-    ----------------------
-    Pyaerocom AllVariables
-    ----------------------
-    DEFAULT
-    od550aer
-    od550lt1aer
-    od550gt1aer
-    abs550aer
-    od440aer
-    abs440aer
-    ec550aer
-    ec532aer
-    scatc550aer
-    scatc550lt1aer
-    bscatc550aer
-    absc550aer
-    absc550lt1aer
-    ssa440aer
-    ssa675aer
-    ssa870aer
-    ssa1020aer
-    ang4487aer
-    angabs4487aer
-    zdust
-    time
-    time_bnds
-    lon
-    lon_bnds
-    lat
-    lat_bnds
-    growvegbnds
-    areacella
-    landf
-    orog
-    landcBF
-    landcNF
-    landcCP
-    landcSa
-    landcGS
-    landcST
-    landcBS
-    landcW
-    landcO
-    landcCPC3
-    landcCPC4
-    landcSaC3
-    landcSaC4
-    landcGSC3
-    landcGSC4
-    lai
-    mrso
-    snd
-    uas
-    vas
-    was
-    uapbl
-    vapbl
-    ts
-    ps
-    tasmin
-    tasmax
-    tas
-    prc
-    pr
-    airmass
-    zmlay
-    eminox
-    emino
-    emino2
-    eminosoil
-    emico
-    emivoc
-    emivoct
-    emic2h6
-    emic3h8
-    emic2h2
-    emic2h4
-    emic3h6
-    emialkanes
-    emialkenes
-    emihcho
-    emich3cho
-    emiacetone
-    emimethanol
-    emitolu
-    emiaro
-    emiisop
-    emimntp
-    emisestp
-    emibvoc
-    eminh3
-    emiso2
-    emidms
-    emiso4
-    emioa
-    emioc
-    emisoa
-    emibc
-    emiss
-    emidust
-    emipm10
-    emipm2p5
-    emipm10ss
-    emipm10dust
-    emipm2p5ss
-    emipm2p5dust
-    emipm1ss
-    emipm1dust
-    emipcb153
-    emiahch
-    reemipcb153
-    reemiahch
-    emihg0
-    emihg2
-    emihgp
-    emiahg0
-    emiahg2
-    emiahgp
-    reemihg0
-    dryhno3
-    dryno3
-    dryno2
-    dryn2o5
-    drypan
-    dryorgn
-    dryhono
-    dryhno4
-    drynoy
-    drynh3
-    drynh4
-    dryso2
-    dryso4
-    drymsa
-    drydms
-    dryss
-    drydust
-    drypm1no3
-    drypm2p5no3
-    drypm10no3
-    dryo3
-    stoo3
-    dryhcho
-    drych3cho
-    dryalde
-    dryhcooh
-    drych3cooh
-    dryh2o2
-    dryroor
-    excnh3
-    drybc
-    drypm10
-    drypm10ss
-    drypm10dust
-    drypm2p5
-    drypm2p5ss
-    drypm2p5dust
-    dryoc
-    dryoa
-    drysoa
-    drypcb153
-    dryahch
-    dryhg0
-    dryhg2
-    dryhgp
-    wethno3
-    wetn2o5
-    wetorgn
-    wetno3
-    wethono
-    wethno4
-    wetnoy
-    wetnh3
-    wetnh4
-    wetso2
-    wetso4
-    wetmsa
-    wetdms
-    wetbc
-    wetss
-    wetdust
-    wetpm1no3
-    wetpm2p5no3
-    wetpm10no3
-    wethcho
-    wetch3cho
-    wetalde
-    wethcooh
-    wetch3cooh
-    weth2o2
-    wetroor
-    wetpm10
-    wetpm10ss
-    wetpm10dust
-    wetpm2p5
-    wetpm2p5ss
-    wetpm2p5dust
-    wetoa
-    wetoc
-    wetsoa
-    wetpcb153
-    wetahch
-    wethg
-    wethg0
-    wethg2
-    wethgp
-    vmro3
-    vmrno
-    vmrno2
-    vmro32m
-    rc
-    ra
-    vmrco
-    vmrhno3
-    vmrn2o5
-    vmrpan
-    vmrhono
-    vmrhno4
-    vmrorgnit
-    vmrnoy
-    vmrvoc
-    vmrc2h6
-    vmrc3h8
-    vmrc2h4
-    vmrc3h6
-    vmralkanes
-    vmralkenes
-    vmrhcho
-    vmrch3cho
-    vmracetone
-    vmrglyoxal
-    vmrmethanol
-    vmrtolu
-    vmraro
-    vmrisop
-    vmrc10h16
-    vmrtp
-    vmrnh3
-    vmrso2
-    vmrdms
-    mmrpm10
-    mmrpm2p5
-    mmrpm1
-    mmrno3
-    mmrso4
-    mmrbc
-    mmroc
-    mmroa
-    mmrss
-    mmrdust
-    mmrmsa
-    mmrnh4
-    ncpm2p5
-    mmrpm1no3
-    mmrpm1ss
-    mmrpm1dust
-    mmrpm2p5no3
-    mmrpm2p5so4
-    mmrpm2p5bc
-    mmrpm2p5oc
-    mmrpm2p5oa
-    mmrpm2p5ss
-    mmrpm2p5dust
-    mmrpm2p5nh4
-    ncpm10
-    mmrpm10no3
-    mmrpm10so4
-    mmrpm10bc
-    mmrpm10oc
-    mmrpm10oa
-    mmrpm10ss
-    mmrpm10dust
-    mmrpm10nh4
-    vmrhg0
-    vmrhg2
-    vmrpcb153
-    vmrahch
-    mmrhgp
-    jno2
-    jo3o1d
-    rsdt
-    rsut
-    rsutcs
-    rsds
-    rsus
-    rsdsdir
-    rsdsdif
-    rsdscs
-    rsdscsdir
-    rsdscsdif
-    rlut
-    rlutcs
-    rlds
-    rlus
-    rsut0
-    rsuscs0
-    rsds0
-    rsus0
-    rsdsdir0
-    rsdsdif0
-    rsdscs0
-    rsdscsdir0
-    rsdscsdif0
-    rlut0
-    rlutcs0
-    rlds0
-    rlus0
-    rsutpm1no3
-    rsutpm10no3
-    rsutcspm1no3
-    rsutcsnpm10no3
-    longitude
-    latitude
-    abs388aer
-    abs388bc
-    abs388dust
-    abs388oa
-    abs550bc
-    abs550dust
-    abs550pm1
-    abs550pm10
-    abs550pm2p5
-    abs870aer
-    od388aer
-    od388bc
-    od388dust
-    od388oa
-    od500aer
-    od500pm10
-    od500pm2p5
-    od550aerh2o
-    od550bc
-    od550dust
-    od550nh4
-    od550no3
-    od550oa
-    od550pm1
-    od550pm1no3
-    od550pm10
-    od550pm10no3
-    od550pm2p5
-    od550pm2p5no3
-    od550so4
-    od550ss
-    od865aer
-    od870aer
-    cldf
-    abs550aerh2o
-    abs550nh4
-    abs550no3
-    abs550oa
-    abs550so4
-    abs550ss
-    loadno3
-    loadso4
-    loadbc
-    loadoc
-    loadoa
-    loadsoa
-    loadss
-    loaddust
-    loadmsa
-    loadnh4
-    loadno
-    loadno2
-    loadn2o5
-    loadpan
-    loadhono
-    loadhno3
-    loadhno4
-    loadorgnit
-    loadnoy
-    loadnh3
-    loaddms
-    loadso2
-    loadpm1no3
-    loadpm2p5no3
-    loadpm10no3
-    loadpm1ss
-    loadpm2p5ss
-    loadpm10ss
-    loadpm1dust
-    loadpm2p5dust
-    loadpm10dust
-    loadpm1
-    loadpm2p5
-    loadpm10
-    lev
-    lev_bnds
-    ptop
-    a
-    b
-    a_bnds
-    b_bnds
-    p0
-    ap
-    ap_bnds
-    ta
-    rho
-    dh
-    hus
-    mcu
-    hur
-    emilnox
-    eminoaircraft
-    vmroh
-    vmrh2o2
-    vmrho2
-    vmrcl
-    vmrbr
-    vmrbro
-    prodo3
-    losso3
-    lossch4
-    lossco
-    reacvoc
-    chepsoa
-    chepmsa
-    chegpso4
-    cheaqpso4
-    chegphno3
-    cheglhno3
-    cheaphno3
-    chealhno3
-    chepno3
-    chedustpno3
-    chesspno3
-    cheppm10no3
-    cheppm2p5no3
-    cheppm1no3
-    chegpnh3
-    chealnh3
-    chepnh4
-    mmrsoa
-    mmraerh2o
-    mmrpm10h2o
-    mmrpm2p5h2o
-    rh
-    vmrcodirect50d
-    vmrcodirect25d
-    station
-    network_stationid
-    networkid
-    stationid
-    station_elevation
-    td
-    hurs
-    huss
-    mmrpm10poa
-    mmrpm2p5poa
-    vmr5mo3
-    vmr10mo3
-    tcwv
-    tcno2
-    pres
-    ua
-    va
-    wa
-    ec550dryaer
+    EBAS_MULTICOLUMN_NAME: EBASMC
+    EEA_NAME: EEAAQeRep
+    EARLINET_NAME: EARLINET
+    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/jonasg/DONOTCACHE
 
 
 You can check if the relevant base directories ``MODELBASEDIR`` and
@@ -613,2269 +148,245 @@ You can check if the relevant base directories ``MODELBASEDIR`` and
 
 .. code:: ipython3
 
-    print("All paths valid? %s" %pya.const.READY)
+    print("Base paths valid? %s" %pya.const.READY)
 
 
 .. parsed-literal::
 
-    All paths valid? True
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
 
 
-If you work on your local machine and use the external AEROCOM user
-server, you might need to change the path settings. Now you have several
-options to do this:
+.. parsed-literal::
 
-1. Change all relevant paths directly in the
-   `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaeroco%20/data/paths.ini>`__
-   file of your installation.
-2. Create a new config file <myconfig.ini> and iniate your configuration
-   in your Python console by calling
-   ``pyaerocom.config = pyaerocom.Config(config_file=<myconfig.ini>)``
-3. Change the settings directly within the instance of the ``Config``
-   class, as follows:
+    Base paths valid? True
+
+
+The base directory for the databse search is:
 
 .. code:: ipython3
 
-    cfg = pya.const
-    cfg.MODELBASEDIR="path/that/does/not/exist"
-    cfg.OBSBASEDIR="path/that/does/not/exist"
-    print("All paths valid? %s" %cfg.READY)
+    pya.const.BASEDIR
+
+
 
 
 .. parsed-literal::
 
-    All paths valid? False
+    '/lustre/storeA/project/aerocom/'
 
 
-.. parsed-literal::
 
-    /home/jonasg/github/pyaerocom/pyaerocom/config.py:310: UserWarning: Model base directory %s does not exist
-      warn("Model base directory %s does not exist")
-    /home/jonasg/github/pyaerocom/pyaerocom/config.py:313: UserWarning: Observations base directory %s does not exist
-      warn("Observations base directory %s does not exist")
-
-
-See what’s currently in there.
+And the search directories for model and obs data are relative to the
+base directory. They can be accessed via:
 
 .. code:: ipython3
 
-    print("Current config: {}".format(pya.const.short_str()))
+    pya.const.MODELDIRS
+
+
 
 
 .. parsed-literal::
 
-    Current config: 
-    Pyaerocom Config
-    ----------------
-    
-    MIN_YEAR: 0
-    MAX_YEAR: 20000
-    GRID_IO: 
-    Pyaerocom GridIO
-    ----------------
-    
-       FILE_TYPE: .nc
-       TS_TYPES (list, 5 items)
-       ['hourly'
-        '3hourly'
-        ...
-        'monthly'
-        'yearly']
-    
-       DEL_TIME_BOUNDS: True
-       SHIFT_LONS: True
-       CHECK_TIME_FILENAME: True
-       CORRECT_TIME_FILENAME: True
-       CHECK_DIM_COORDS: False
-       EQUALISE_METADATA: True
-       USE_RENAMED_DIR: True
-       INCLUDE_SUBDIRS: False
-    OBS_WAVELENGTH_TOL_NM: 10.0
-    OBS_ALLOW_ALT_WAVELENGTHS: True
-    GCOSPERCENTCRIT: 0.1
-    GCOSABSCRIT: 0.04
-    OBSNET_NONE: NONE
-    NOMODELNAME: OBSERVATIONS-ONLY
-    REVISION_FILE: Revision.txt
-    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
-    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
-    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
-    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
-    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
-    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
-    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
-    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
-    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
-    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
-    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
-    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
-    EBAS_MULTICOLUMN_NAME: EBASMC
-    EEA_NAME: EEAAQeRep
-    EARLINET_NAME: EARLINET
-    OBSCONFIG (dict)
-    MODELDIRS (list)
-       ['/lustre/storeA/project/aerocom/aerocom1/'
-        '/lustre/storeA/project/aerocom/aerocom2/'
-        ...
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
-    
-    MODELBASEDIR: path/that/does/not/exist
-    OBSBASEDIR: path/that/does/not/exist
-    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
-    LOGFILESDIR: /home/jonasg/pyaerocom/_log
-    OUT_BASEDIR: /home/jonasg/pyaerocom
-    WRITE_FILEIO_ERR_LOG: True
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
-    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
-    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
-    PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM: 
-    ----------------------
-    Pyaerocom AllVariables
-    ----------------------
-    DEFAULT
-    od550aer
-    od550lt1aer
-    od550gt1aer
-    abs550aer
-    od440aer
-    abs440aer
-    ec550aer
-    ec532aer
-    scatc550aer
-    scatc550lt1aer
-    bscatc550aer
-    absc550aer
-    absc550lt1aer
-    ssa440aer
-    ssa675aer
-    ssa870aer
-    ssa1020aer
-    ang4487aer
-    angabs4487aer
-    zdust
-    time
-    time_bnds
-    lon
-    lon_bnds
-    lat
-    lat_bnds
-    growvegbnds
-    areacella
-    landf
-    orog
-    landcBF
-    landcNF
-    landcCP
-    landcSa
-    landcGS
-    landcST
-    landcBS
-    landcW
-    landcO
-    landcCPC3
-    landcCPC4
-    landcSaC3
-    landcSaC4
-    landcGSC3
-    landcGSC4
-    lai
-    mrso
-    snd
-    uas
-    vas
-    was
-    uapbl
-    vapbl
-    ts
-    ps
-    tasmin
-    tasmax
-    tas
-    prc
-    pr
-    airmass
-    zmlay
-    eminox
-    emino
-    emino2
-    eminosoil
-    emico
-    emivoc
-    emivoct
-    emic2h6
-    emic3h8
-    emic2h2
-    emic2h4
-    emic3h6
-    emialkanes
-    emialkenes
-    emihcho
-    emich3cho
-    emiacetone
-    emimethanol
-    emitolu
-    emiaro
-    emiisop
-    emimntp
-    emisestp
-    emibvoc
-    eminh3
-    emiso2
-    emidms
-    emiso4
-    emioa
-    emioc
-    emisoa
-    emibc
-    emiss
-    emidust
-    emipm10
-    emipm2p5
-    emipm10ss
-    emipm10dust
-    emipm2p5ss
-    emipm2p5dust
-    emipm1ss
-    emipm1dust
-    emipcb153
-    emiahch
-    reemipcb153
-    reemiahch
-    emihg0
-    emihg2
-    emihgp
-    emiahg0
-    emiahg2
-    emiahgp
-    reemihg0
-    dryhno3
-    dryno3
-    dryno2
-    dryn2o5
-    drypan
-    dryorgn
-    dryhono
-    dryhno4
-    drynoy
-    drynh3
-    drynh4
-    dryso2
-    dryso4
-    drymsa
-    drydms
-    dryss
-    drydust
-    drypm1no3
-    drypm2p5no3
-    drypm10no3
-    dryo3
-    stoo3
-    dryhcho
-    drych3cho
-    dryalde
-    dryhcooh
-    drych3cooh
-    dryh2o2
-    dryroor
-    excnh3
-    drybc
-    drypm10
-    drypm10ss
-    drypm10dust
-    drypm2p5
-    drypm2p5ss
-    drypm2p5dust
-    dryoc
-    dryoa
-    drysoa
-    drypcb153
-    dryahch
-    dryhg0
-    dryhg2
-    dryhgp
-    wethno3
-    wetn2o5
-    wetorgn
-    wetno3
-    wethono
-    wethno4
-    wetnoy
-    wetnh3
-    wetnh4
-    wetso2
-    wetso4
-    wetmsa
-    wetdms
-    wetbc
-    wetss
-    wetdust
-    wetpm1no3
-    wetpm2p5no3
-    wetpm10no3
-    wethcho
-    wetch3cho
-    wetalde
-    wethcooh
-    wetch3cooh
-    weth2o2
-    wetroor
-    wetpm10
-    wetpm10ss
-    wetpm10dust
-    wetpm2p5
-    wetpm2p5ss
-    wetpm2p5dust
-    wetoa
-    wetoc
-    wetsoa
-    wetpcb153
-    wetahch
-    wethg
-    wethg0
-    wethg2
-    wethgp
-    vmro3
-    vmrno
-    vmrno2
-    vmro32m
-    rc
-    ra
-    vmrco
-    vmrhno3
-    vmrn2o5
-    vmrpan
-    vmrhono
-    vmrhno4
-    vmrorgnit
-    vmrnoy
-    vmrvoc
-    vmrc2h6
-    vmrc3h8
-    vmrc2h4
-    vmrc3h6
-    vmralkanes
-    vmralkenes
-    vmrhcho
-    vmrch3cho
-    vmracetone
-    vmrglyoxal
-    vmrmethanol
-    vmrtolu
-    vmraro
-    vmrisop
-    vmrc10h16
-    vmrtp
-    vmrnh3
-    vmrso2
-    vmrdms
-    mmrpm10
-    mmrpm2p5
-    mmrpm1
-    mmrno3
-    mmrso4
-    mmrbc
-    mmroc
-    mmroa
-    mmrss
-    mmrdust
-    mmrmsa
-    mmrnh4
-    ncpm2p5
-    mmrpm1no3
-    mmrpm1ss
-    mmrpm1dust
-    mmrpm2p5no3
-    mmrpm2p5so4
-    mmrpm2p5bc
-    mmrpm2p5oc
-    mmrpm2p5oa
-    mmrpm2p5ss
-    mmrpm2p5dust
-    mmrpm2p5nh4
-    ncpm10
-    mmrpm10no3
-    mmrpm10so4
-    mmrpm10bc
-    mmrpm10oc
-    mmrpm10oa
-    mmrpm10ss
-    mmrpm10dust
-    mmrpm10nh4
-    vmrhg0
-    vmrhg2
-    vmrpcb153
-    vmrahch
-    mmrhgp
-    jno2
-    jo3o1d
-    rsdt
-    rsut
-    rsutcs
-    rsds
-    rsus
-    rsdsdir
-    rsdsdif
-    rsdscs
-    rsdscsdir
-    rsdscsdif
-    rlut
-    rlutcs
-    rlds
-    rlus
-    rsut0
-    rsuscs0
-    rsds0
-    rsus0
-    rsdsdir0
-    rsdsdif0
-    rsdscs0
-    rsdscsdir0
-    rsdscsdif0
-    rlut0
-    rlutcs0
-    rlds0
-    rlus0
-    rsutpm1no3
-    rsutpm10no3
-    rsutcspm1no3
-    rsutcsnpm10no3
-    longitude
-    latitude
-    abs388aer
-    abs388bc
-    abs388dust
-    abs388oa
-    abs550bc
-    abs550dust
-    abs550pm1
-    abs550pm10
-    abs550pm2p5
-    abs870aer
-    od388aer
-    od388bc
-    od388dust
-    od388oa
-    od500aer
-    od500pm10
-    od500pm2p5
-    od550aerh2o
-    od550bc
-    od550dust
-    od550nh4
-    od550no3
-    od550oa
-    od550pm1
-    od550pm1no3
-    od550pm10
-    od550pm10no3
-    od550pm2p5
-    od550pm2p5no3
-    od550so4
-    od550ss
-    od865aer
-    od870aer
-    cldf
-    abs550aerh2o
-    abs550nh4
-    abs550no3
-    abs550oa
-    abs550so4
-    abs550ss
-    loadno3
-    loadso4
-    loadbc
-    loadoc
-    loadoa
-    loadsoa
-    loadss
-    loaddust
-    loadmsa
-    loadnh4
-    loadno
-    loadno2
-    loadn2o5
-    loadpan
-    loadhono
-    loadhno3
-    loadhno4
-    loadorgnit
-    loadnoy
-    loadnh3
-    loaddms
-    loadso2
-    loadpm1no3
-    loadpm2p5no3
-    loadpm10no3
-    loadpm1ss
-    loadpm2p5ss
-    loadpm10ss
-    loadpm1dust
-    loadpm2p5dust
-    loadpm10dust
-    loadpm1
-    loadpm2p5
-    loadpm10
-    lev
-    lev_bnds
-    ptop
-    a
-    b
-    a_bnds
-    b_bnds
-    p0
-    ap
-    ap_bnds
-    ta
-    rho
-    dh
-    hus
-    mcu
-    hur
-    emilnox
-    eminoaircraft
-    vmroh
-    vmrh2o2
-    vmrho2
-    vmrcl
-    vmrbr
-    vmrbro
-    prodo3
-    losso3
-    lossch4
-    lossco
-    reacvoc
-    chepsoa
-    chepmsa
-    chegpso4
-    cheaqpso4
-    chegphno3
-    cheglhno3
-    cheaphno3
-    chealhno3
-    chepno3
-    chedustpno3
-    chesspno3
-    cheppm10no3
-    cheppm2p5no3
-    cheppm1no3
-    chegpnh3
-    chealnh3
-    chepnh4
-    mmrsoa
-    mmraerh2o
-    mmrpm10h2o
-    mmrpm2p5h2o
-    rh
-    vmrcodirect50d
-    vmrcodirect25d
-    station
-    network_stationid
-    networkid
-    stationid
-    station_elevation
-    td
-    hurs
-    huss
-    mmrpm10poa
-    mmrpm2p5poa
-    vmr5mo3
-    vmr10mo3
-    tcwv
-    tcno2
-    pres
-    ua
-    va
-    wa
-    ec550dryaer
+    ['/lustre/storeA/project/aerocom/aerocom1/',
+     '/lustre/storeA/project/aerocom/aerocom2/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/C3S-Aerosol',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/ECLIPSE',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/ACCMIP/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/',
+     '/lustre/storeA/project/aerocom/aerocom2/EMEP_COPERNICUS/',
+     '/lustre/storeA/project/aerocom/aerocom2/EMEP/',
+     '/lustre/storeA/project/aerocom/aerocom2/EMEP_GLOBAL/',
+     '/lustre/storeA/project/aerocom/aerocom2/EMEP_SVN_TEST/',
+     '/lustre/storeA/project/aerocom/aerocom2/NorESM_SVN_TEST/',
+     '/lustre/storeA/project/aerocom/aerocom2/INCA/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/HTAP-PHASE-I/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/HTAP-PHASE-II/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-I/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III-Trend/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase1/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/',
+     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
 
 
-As you can see, ``MODELBASEDIR`` and ``OBSBASEDIR`` contain the invalid
-paths, but e.g. the list containing model directories (``MODELDIRS``)
-still has the original settings. This is because, these are written in
-the method ``load_config(config_file)`` or the wrapper method
-``reload()`` which does the same. Now reload the config_file and print.
+
+And:
 
 .. code:: ipython3
 
-    cfg.reload()
-    print("Current config: {}".format(pya.const.short_str()))
+    pya.const.OBSDIRS
+
+
 
 
 .. parsed-literal::
 
-    Current config: 
-    Pyaerocom Config
-    ----------------
-    
-    MIN_YEAR: 0
-    MAX_YEAR: 20000
-    GRID_IO: 
-    Pyaerocom GridIO
-    ----------------
-    
-       FILE_TYPE: .nc
-       TS_TYPES (list, 5 items)
-       ['hourly'
-        '3hourly'
-        ...
-        'monthly'
-        'yearly']
-    
-       DEL_TIME_BOUNDS: True
-       SHIFT_LONS: True
-       CHECK_TIME_FILENAME: True
-       CORRECT_TIME_FILENAME: True
-       CHECK_DIM_COORDS: False
-       EQUALISE_METADATA: True
-       USE_RENAMED_DIR: True
-       INCLUDE_SUBDIRS: False
-    OBS_WAVELENGTH_TOL_NM: 10.0
-    OBS_ALLOW_ALT_WAVELENGTHS: True
-    GCOSPERCENTCRIT: 0.1
-    GCOSABSCRIT: 0.04
-    OBSNET_NONE: NONE
-    NOMODELNAME: OBSERVATIONS-ONLY
-    REVISION_FILE: Revision.txt
-    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
-    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
-    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
-    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
-    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
-    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
-    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
-    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
-    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
-    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
-    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
-    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
-    EBAS_MULTICOLUMN_NAME: EBASMC
-    EEA_NAME: EEAAQeRep
-    EARLINET_NAME: EARLINET
-    OBSCONFIG (dict)
-    MODELDIRS (list)
-       ['/lustre/storeA/project/aerocom/aerocom1/'
-        '/lustre/storeA/project/aerocom/aerocom2/'
-        ...
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
-    
-    MODELBASEDIR: /lustre/storeA/project/aerocom/
-    OBSBASEDIR: /lustre/storeA/project/aerocom/
-    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
-    LOGFILESDIR: /home/jonasg/pyaerocom/_log
-    OUT_BASEDIR: /home/jonasg/pyaerocom
-    WRITE_FILEIO_ERR_LOG: True
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
-    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
-    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
-    PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM: 
-    ----------------------
-    Pyaerocom AllVariables
-    ----------------------
-    DEFAULT
-    od550aer
-    od550lt1aer
-    od550gt1aer
-    abs550aer
-    od440aer
-    abs440aer
-    ec550aer
-    ec532aer
-    scatc550aer
-    scatc550lt1aer
-    bscatc550aer
-    absc550aer
-    absc550lt1aer
-    ssa440aer
-    ssa675aer
-    ssa870aer
-    ssa1020aer
-    ang4487aer
-    angabs4487aer
-    zdust
-    time
-    time_bnds
-    lon
-    lon_bnds
-    lat
-    lat_bnds
-    growvegbnds
-    areacella
-    landf
-    orog
-    landcBF
-    landcNF
-    landcCP
-    landcSa
-    landcGS
-    landcST
-    landcBS
-    landcW
-    landcO
-    landcCPC3
-    landcCPC4
-    landcSaC3
-    landcSaC4
-    landcGSC3
-    landcGSC4
-    lai
-    mrso
-    snd
-    uas
-    vas
-    was
-    uapbl
-    vapbl
-    ts
-    ps
-    tasmin
-    tasmax
-    tas
-    prc
-    pr
-    airmass
-    zmlay
-    eminox
-    emino
-    emino2
-    eminosoil
-    emico
-    emivoc
-    emivoct
-    emic2h6
-    emic3h8
-    emic2h2
-    emic2h4
-    emic3h6
-    emialkanes
-    emialkenes
-    emihcho
-    emich3cho
-    emiacetone
-    emimethanol
-    emitolu
-    emiaro
-    emiisop
-    emimntp
-    emisestp
-    emibvoc
-    eminh3
-    emiso2
-    emidms
-    emiso4
-    emioa
-    emioc
-    emisoa
-    emibc
-    emiss
-    emidust
-    emipm10
-    emipm2p5
-    emipm10ss
-    emipm10dust
-    emipm2p5ss
-    emipm2p5dust
-    emipm1ss
-    emipm1dust
-    emipcb153
-    emiahch
-    reemipcb153
-    reemiahch
-    emihg0
-    emihg2
-    emihgp
-    emiahg0
-    emiahg2
-    emiahgp
-    reemihg0
-    dryhno3
-    dryno3
-    dryno2
-    dryn2o5
-    drypan
-    dryorgn
-    dryhono
-    dryhno4
-    drynoy
-    drynh3
-    drynh4
-    dryso2
-    dryso4
-    drymsa
-    drydms
-    dryss
-    drydust
-    drypm1no3
-    drypm2p5no3
-    drypm10no3
-    dryo3
-    stoo3
-    dryhcho
-    drych3cho
-    dryalde
-    dryhcooh
-    drych3cooh
-    dryh2o2
-    dryroor
-    excnh3
-    drybc
-    drypm10
-    drypm10ss
-    drypm10dust
-    drypm2p5
-    drypm2p5ss
-    drypm2p5dust
-    dryoc
-    dryoa
-    drysoa
-    drypcb153
-    dryahch
-    dryhg0
-    dryhg2
-    dryhgp
-    wethno3
-    wetn2o5
-    wetorgn
-    wetno3
-    wethono
-    wethno4
-    wetnoy
-    wetnh3
-    wetnh4
-    wetso2
-    wetso4
-    wetmsa
-    wetdms
-    wetbc
-    wetss
-    wetdust
-    wetpm1no3
-    wetpm2p5no3
-    wetpm10no3
-    wethcho
-    wetch3cho
-    wetalde
-    wethcooh
-    wetch3cooh
-    weth2o2
-    wetroor
-    wetpm10
-    wetpm10ss
-    wetpm10dust
-    wetpm2p5
-    wetpm2p5ss
-    wetpm2p5dust
-    wetoa
-    wetoc
-    wetsoa
-    wetpcb153
-    wetahch
-    wethg
-    wethg0
-    wethg2
-    wethgp
-    vmro3
-    vmrno
-    vmrno2
-    vmro32m
-    rc
-    ra
-    vmrco
-    vmrhno3
-    vmrn2o5
-    vmrpan
-    vmrhono
-    vmrhno4
-    vmrorgnit
-    vmrnoy
-    vmrvoc
-    vmrc2h6
-    vmrc3h8
-    vmrc2h4
-    vmrc3h6
-    vmralkanes
-    vmralkenes
-    vmrhcho
-    vmrch3cho
-    vmracetone
-    vmrglyoxal
-    vmrmethanol
-    vmrtolu
-    vmraro
-    vmrisop
-    vmrc10h16
-    vmrtp
-    vmrnh3
-    vmrso2
-    vmrdms
-    mmrpm10
-    mmrpm2p5
-    mmrpm1
-    mmrno3
-    mmrso4
-    mmrbc
-    mmroc
-    mmroa
-    mmrss
-    mmrdust
-    mmrmsa
-    mmrnh4
-    ncpm2p5
-    mmrpm1no3
-    mmrpm1ss
-    mmrpm1dust
-    mmrpm2p5no3
-    mmrpm2p5so4
-    mmrpm2p5bc
-    mmrpm2p5oc
-    mmrpm2p5oa
-    mmrpm2p5ss
-    mmrpm2p5dust
-    mmrpm2p5nh4
-    ncpm10
-    mmrpm10no3
-    mmrpm10so4
-    mmrpm10bc
-    mmrpm10oc
-    mmrpm10oa
-    mmrpm10ss
-    mmrpm10dust
-    mmrpm10nh4
-    vmrhg0
-    vmrhg2
-    vmrpcb153
-    vmrahch
-    mmrhgp
-    jno2
-    jo3o1d
-    rsdt
-    rsut
-    rsutcs
-    rsds
-    rsus
-    rsdsdir
-    rsdsdif
-    rsdscs
-    rsdscsdir
-    rsdscsdif
-    rlut
-    rlutcs
-    rlds
-    rlus
-    rsut0
-    rsuscs0
-    rsds0
-    rsus0
-    rsdsdir0
-    rsdsdif0
-    rsdscs0
-    rsdscsdir0
-    rsdscsdif0
-    rlut0
-    rlutcs0
-    rlds0
-    rlus0
-    rsutpm1no3
-    rsutpm10no3
-    rsutcspm1no3
-    rsutcsnpm10no3
-    longitude
-    latitude
-    abs388aer
-    abs388bc
-    abs388dust
-    abs388oa
-    abs550bc
-    abs550dust
-    abs550pm1
-    abs550pm10
-    abs550pm2p5
-    abs870aer
-    od388aer
-    od388bc
-    od388dust
-    od388oa
-    od500aer
-    od500pm10
-    od500pm2p5
-    od550aerh2o
-    od550bc
-    od550dust
-    od550nh4
-    od550no3
-    od550oa
-    od550pm1
-    od550pm1no3
-    od550pm10
-    od550pm10no3
-    od550pm2p5
-    od550pm2p5no3
-    od550so4
-    od550ss
-    od865aer
-    od870aer
-    cldf
-    abs550aerh2o
-    abs550nh4
-    abs550no3
-    abs550oa
-    abs550so4
-    abs550ss
-    loadno3
-    loadso4
-    loadbc
-    loadoc
-    loadoa
-    loadsoa
-    loadss
-    loaddust
-    loadmsa
-    loadnh4
-    loadno
-    loadno2
-    loadn2o5
-    loadpan
-    loadhono
-    loadhno3
-    loadhno4
-    loadorgnit
-    loadnoy
-    loadnh3
-    loaddms
-    loadso2
-    loadpm1no3
-    loadpm2p5no3
-    loadpm10no3
-    loadpm1ss
-    loadpm2p5ss
-    loadpm10ss
-    loadpm1dust
-    loadpm2p5dust
-    loadpm10dust
-    loadpm1
-    loadpm2p5
-    loadpm10
-    lev
-    lev_bnds
-    ptop
-    a
-    b
-    a_bnds
-    b_bnds
-    p0
-    ap
-    ap_bnds
-    ta
-    rho
-    dh
-    hus
-    mcu
-    hur
-    emilnox
-    eminoaircraft
-    vmroh
-    vmrh2o2
-    vmrho2
-    vmrcl
-    vmrbr
-    vmrbro
-    prodo3
-    losso3
-    lossch4
-    lossco
-    reacvoc
-    chepsoa
-    chepmsa
-    chegpso4
-    cheaqpso4
-    chegphno3
-    cheglhno3
-    cheaphno3
-    chealhno3
-    chepno3
-    chedustpno3
-    chesspno3
-    cheppm10no3
-    cheppm2p5no3
-    cheppm1no3
-    chegpnh3
-    chealnh3
-    chepnh4
-    mmrsoa
-    mmraerh2o
-    mmrpm10h2o
-    mmrpm2p5h2o
-    rh
-    vmrcodirect50d
-    vmrcodirect25d
-    station
-    network_stationid
-    networkid
-    stationid
-    station_elevation
-    td
-    hurs
-    huss
-    mmrpm10poa
-    mmrpm2p5poa
-    vmr5mo3
-    vmr10mo3
-    tcwv
-    tcno2
-    pres
-    ua
-    va
-    wa
-    ec550dryaer
+    ['/lustre/storeA/project/aerocom/',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunNRT',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0AllPoints/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L2.0.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L1.5.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L1.5.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L2.0.daily/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep/renamed',
+     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data']
 
 
-The ``reload`` (and ``load_config``) method actually checks if the
-currently defined base directories exist, and if not, it uses the ones
-that are defined in the
-`paths.ini <http://aerocom.met.no/pyaerocom/config_files.html#paths-and-directories>`__
-file. This is the why the above configuration is the intial one. If you
-choose valid paths, this should work.
+
+On init, these are set to default directories (assuming to have access
+to the Aerocom database). All subdirectories (relative to ``BASEDIR``)
+that are not available are removed. So, what is returned when calling
+the previous commands, is the directories that are accessible. If you
+work locally and do not resemble this database structure, these 2 lists
+will be likely empty. See below for instructions on how to set up
+pyaerocom when working locally.
+
+Browsing the database
+^^^^^^^^^^^^^^^^^^^^^
+
+Based on the defined paths, pyaerocom searches for data. Now, assuming
+there is access to the database, you can use the ``browse_database``
+method to search for available model or observational data using
+`wildcard search <https://en.wikipedia.org/wiki/Wildcard_character>`__.
+For instance, if you are interseted in data from MET Oslo, you can
+e.g. search:
 
 .. code:: ipython3
 
-    cfg = pya.const
-    cfg.MODELBASEDIR="."
-    cfg.OBSBASEDIR="."
-    print("All paths valid? %s" %cfg.READY)
-    cfg.reload()
-    print("Current config: %s" %cfg.short_str())
+    pya.browse_database('CAM5*Oslo*')
 
 
 .. parsed-literal::
 
-    All paths valid? True
-    Current config: 
-    Pyaerocom Config
-    ----------------
+    Found more than 20 matches for based on input string CAM5*Oslo*:
     
-    MIN_YEAR: 0
-    MAX_YEAR: 20000
-    GRID_IO: 
-    Pyaerocom GridIO
-    ----------------
+    Matches: ['CAM53-Oslo_cdaeb5e_MG15CLM45_7oct2016IHK_2006-2014', 'CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PI_UNTUNED', 'CAM5-Oslo_TEST-emi2000', 'CAM53-Oslo_re9f8_MG15CLM45_4feb2016AK_PD_MG15MegVadSOA', 'CAM53-Oslo_r470Nudge_150315AG_BF1NudgePD2000', 'CAM53-Oslo_7310_MG15CLM45_5feb2017AG_7310Nudge2000', 'CAM53-Oslo_r610Nudge_011015AK_SOA_r610_PD', 'CAM53-Oslo_6b76dca_MG15CLM45_22aug2016AK_PDaug16UVPSndg', 'CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED', 'CAM53-Oslo_r34afMG15CLM45_160120AG_34af_megan_2000_NDG', 'CAM53-Oslo_r773bNudge_151215AG_PD_DMS_733b', 'CAM53-Oslo_r512Nudge_150315AK_PD2000nudged', 'CAM53-Oslo_r670Nudge_011115AG_R670_PD', 'CAM53-Oslo_7310_MG15CLM45_5feb2017AG_7310AMIP1850V', 'CAM53-Oslo_cdaeb5e_MG15CLM45_7oct2016IHK_ERA_2001-2015', 'CAM53-Oslo_20161109AK_ERAndg', 'CAM5.3-Oslo_MG15CLM45_10jun2017_AK_2005-2010', 'CAM53-Oslo_7310_MG15CLM45_5feb2017AG_7310AMIP20002', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM5.3-Oslo_INSITU', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']
     
-       FILE_TYPE: .nc
-       TS_TYPES (list, 5 items)
-       ['hourly'
-        '3hourly'
-        ...
-        'monthly'
-        'yearly']
-    
-       DEL_TIME_BOUNDS: True
-       SHIFT_LONS: True
-       CHECK_TIME_FILENAME: True
-       CORRECT_TIME_FILENAME: True
-       CHECK_DIM_COORDS: False
-       EQUALISE_METADATA: True
-       USE_RENAMED_DIR: True
-       INCLUDE_SUBDIRS: False
-    OBS_WAVELENGTH_TOL_NM: 10.0
-    OBS_ALLOW_ALT_WAVELENGTHS: True
-    GCOSPERCENTCRIT: 0.1
-    GCOSABSCRIT: 0.04
-    OBSNET_NONE: NONE
-    NOMODELNAME: OBSERVATIONS-ONLY
-    REVISION_FILE: Revision.txt
-    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
-    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
-    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
-    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
-    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
-    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
-    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
-    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
-    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
-    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
-    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
-    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
-    EBAS_MULTICOLUMN_NAME: EBASMC
-    EEA_NAME: EEAAQeRep
-    EARLINET_NAME: EARLINET
-    OBSCONFIG (dict)
-    MODELDIRS (list)
-       ['.aerocom1/'
-        '.aerocom2/'
-        ...
-        '.aerocom-users-database/AEROCOM-PHASE-II-IND3/'
-        '.aerocom-users-database/AEROCOM-PHASE-II-IND2/']
-    
-    MODELBASEDIR: .
-    OBSBASEDIR: .
-    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
-    LOGFILESDIR: /home/jonasg/pyaerocom/_log
-    OUT_BASEDIR: /home/jonasg/pyaerocom
-    WRITE_FILEIO_ERR_LOG: True
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
-    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
-    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
-    PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM: 
-    ----------------------
-    Pyaerocom AllVariables
-    ----------------------
-    DEFAULT
-    od550aer
-    od550lt1aer
-    od550gt1aer
-    abs550aer
-    od440aer
-    abs440aer
-    ec550aer
-    ec532aer
-    scatc550aer
-    scatc550lt1aer
-    bscatc550aer
-    absc550aer
-    absc550lt1aer
-    ssa440aer
-    ssa675aer
-    ssa870aer
-    ssa1020aer
-    ang4487aer
-    angabs4487aer
-    zdust
-    time
-    time_bnds
-    lon
-    lon_bnds
-    lat
-    lat_bnds
-    growvegbnds
-    areacella
-    landf
-    orog
-    landcBF
-    landcNF
-    landcCP
-    landcSa
-    landcGS
-    landcST
-    landcBS
-    landcW
-    landcO
-    landcCPC3
-    landcCPC4
-    landcSaC3
-    landcSaC4
-    landcGSC3
-    landcGSC4
-    lai
-    mrso
-    snd
-    uas
-    vas
-    was
-    uapbl
-    vapbl
-    ts
-    ps
-    tasmin
-    tasmax
-    tas
-    prc
-    pr
-    airmass
-    zmlay
-    eminox
-    emino
-    emino2
-    eminosoil
-    emico
-    emivoc
-    emivoct
-    emic2h6
-    emic3h8
-    emic2h2
-    emic2h4
-    emic3h6
-    emialkanes
-    emialkenes
-    emihcho
-    emich3cho
-    emiacetone
-    emimethanol
-    emitolu
-    emiaro
-    emiisop
-    emimntp
-    emisestp
-    emibvoc
-    eminh3
-    emiso2
-    emidms
-    emiso4
-    emioa
-    emioc
-    emisoa
-    emibc
-    emiss
-    emidust
-    emipm10
-    emipm2p5
-    emipm10ss
-    emipm10dust
-    emipm2p5ss
-    emipm2p5dust
-    emipm1ss
-    emipm1dust
-    emipcb153
-    emiahch
-    reemipcb153
-    reemiahch
-    emihg0
-    emihg2
-    emihgp
-    emiahg0
-    emiahg2
-    emiahgp
-    reemihg0
-    dryhno3
-    dryno3
-    dryno2
-    dryn2o5
-    drypan
-    dryorgn
-    dryhono
-    dryhno4
-    drynoy
-    drynh3
-    drynh4
-    dryso2
-    dryso4
-    drymsa
-    drydms
-    dryss
-    drydust
-    drypm1no3
-    drypm2p5no3
-    drypm10no3
-    dryo3
-    stoo3
-    dryhcho
-    drych3cho
-    dryalde
-    dryhcooh
-    drych3cooh
-    dryh2o2
-    dryroor
-    excnh3
-    drybc
-    drypm10
-    drypm10ss
-    drypm10dust
-    drypm2p5
-    drypm2p5ss
-    drypm2p5dust
-    dryoc
-    dryoa
-    drysoa
-    drypcb153
-    dryahch
-    dryhg0
-    dryhg2
-    dryhgp
-    wethno3
-    wetn2o5
-    wetorgn
-    wetno3
-    wethono
-    wethno4
-    wetnoy
-    wetnh3
-    wetnh4
-    wetso2
-    wetso4
-    wetmsa
-    wetdms
-    wetbc
-    wetss
-    wetdust
-    wetpm1no3
-    wetpm2p5no3
-    wetpm10no3
-    wethcho
-    wetch3cho
-    wetalde
-    wethcooh
-    wetch3cooh
-    weth2o2
-    wetroor
-    wetpm10
-    wetpm10ss
-    wetpm10dust
-    wetpm2p5
-    wetpm2p5ss
-    wetpm2p5dust
-    wetoa
-    wetoc
-    wetsoa
-    wetpcb153
-    wetahch
-    wethg
-    wethg0
-    wethg2
-    wethgp
-    vmro3
-    vmrno
-    vmrno2
-    vmro32m
-    rc
-    ra
-    vmrco
-    vmrhno3
-    vmrn2o5
-    vmrpan
-    vmrhono
-    vmrhno4
-    vmrorgnit
-    vmrnoy
-    vmrvoc
-    vmrc2h6
-    vmrc3h8
-    vmrc2h4
-    vmrc3h6
-    vmralkanes
-    vmralkenes
-    vmrhcho
-    vmrch3cho
-    vmracetone
-    vmrglyoxal
-    vmrmethanol
-    vmrtolu
-    vmraro
-    vmrisop
-    vmrc10h16
-    vmrtp
-    vmrnh3
-    vmrso2
-    vmrdms
-    mmrpm10
-    mmrpm2p5
-    mmrpm1
-    mmrno3
-    mmrso4
-    mmrbc
-    mmroc
-    mmroa
-    mmrss
-    mmrdust
-    mmrmsa
-    mmrnh4
-    ncpm2p5
-    mmrpm1no3
-    mmrpm1ss
-    mmrpm1dust
-    mmrpm2p5no3
-    mmrpm2p5so4
-    mmrpm2p5bc
-    mmrpm2p5oc
-    mmrpm2p5oa
-    mmrpm2p5ss
-    mmrpm2p5dust
-    mmrpm2p5nh4
-    ncpm10
-    mmrpm10no3
-    mmrpm10so4
-    mmrpm10bc
-    mmrpm10oc
-    mmrpm10oa
-    mmrpm10ss
-    mmrpm10dust
-    mmrpm10nh4
-    vmrhg0
-    vmrhg2
-    vmrpcb153
-    vmrahch
-    mmrhgp
-    jno2
-    jo3o1d
-    rsdt
-    rsut
-    rsutcs
-    rsds
-    rsus
-    rsdsdir
-    rsdsdif
-    rsdscs
-    rsdscsdir
-    rsdscsdif
-    rlut
-    rlutcs
-    rlds
-    rlus
-    rsut0
-    rsuscs0
-    rsds0
-    rsus0
-    rsdsdir0
-    rsdsdif0
-    rsdscs0
-    rsdscsdir0
-    rsdscsdif0
-    rlut0
-    rlutcs0
-    rlds0
-    rlus0
-    rsutpm1no3
-    rsutpm10no3
-    rsutcspm1no3
-    rsutcsnpm10no3
-    longitude
-    latitude
-    abs388aer
-    abs388bc
-    abs388dust
-    abs388oa
-    abs550bc
-    abs550dust
-    abs550pm1
-    abs550pm10
-    abs550pm2p5
-    abs870aer
-    od388aer
-    od388bc
-    od388dust
-    od388oa
-    od500aer
-    od500pm10
-    od500pm2p5
-    od550aerh2o
-    od550bc
-    od550dust
-    od550nh4
-    od550no3
-    od550oa
-    od550pm1
-    od550pm1no3
-    od550pm10
-    od550pm10no3
-    od550pm2p5
-    od550pm2p5no3
-    od550so4
-    od550ss
-    od865aer
-    od870aer
-    cldf
-    abs550aerh2o
-    abs550nh4
-    abs550no3
-    abs550oa
-    abs550so4
-    abs550ss
-    loadno3
-    loadso4
-    loadbc
-    loadoc
-    loadoa
-    loadsoa
-    loadss
-    loaddust
-    loadmsa
-    loadnh4
-    loadno
-    loadno2
-    loadn2o5
-    loadpan
-    loadhono
-    loadhno3
-    loadhno4
-    loadorgnit
-    loadnoy
-    loadnh3
-    loaddms
-    loadso2
-    loadpm1no3
-    loadpm2p5no3
-    loadpm10no3
-    loadpm1ss
-    loadpm2p5ss
-    loadpm10ss
-    loadpm1dust
-    loadpm2p5dust
-    loadpm10dust
-    loadpm1
-    loadpm2p5
-    loadpm10
-    lev
-    lev_bnds
-    ptop
-    a
-    b
-    a_bnds
-    b_bnds
-    p0
-    ap
-    ap_bnds
-    ta
-    rho
-    dh
-    hus
-    mcu
-    hur
-    emilnox
-    eminoaircraft
-    vmroh
-    vmrh2o2
-    vmrho2
-    vmrcl
-    vmrbr
-    vmrbro
-    prodo3
-    losso3
-    lossch4
-    lossco
-    reacvoc
-    chepsoa
-    chepmsa
-    chegpso4
-    cheaqpso4
-    chegphno3
-    cheglhno3
-    cheaphno3
-    chealhno3
-    chepno3
-    chedustpno3
-    chesspno3
-    cheppm10no3
-    cheppm2p5no3
-    cheppm1no3
-    chegpnh3
-    chealnh3
-    chepnh4
-    mmrsoa
-    mmraerh2o
-    mmrpm10h2o
-    mmrpm2p5h2o
-    rh
-    vmrcodirect50d
-    vmrcodirect25d
-    station
-    network_stationid
-    networkid
-    stationid
-    station_elevation
-    td
-    hurs
-    huss
-    mmrpm10poa
-    mmrpm2p5poa
-    vmr5mo3
-    vmr10mo3
-    tcwv
-    tcno2
-    pres
-    ua
-    va
-    wa
-    ec550dryaer
+    To receive more detailed information, please specify search ID more accurately
 
 
-This is it! Note, however, that we just inserted the current directory
-which is not where the data actually is. Thus, before continuing, we
-have to reload the config as it was at the beginning:
+Then, if you find something you are interested in, you can read the data
+using the ``pyaerocom.ReadGridded`` class (which will be introduced in
+more detail later). For instance:
 
 .. code:: ipython3
 
-    cfg.reload(keep_basedirs=False)
-    print(cfg.short_str())
+    reader = pya.io.ReadGridded('CAM5.3-Oslo_CTRL2016')
 
-
-.. parsed-literal::
-
-    
-    Pyaerocom Config
-    ----------------
-    
-    MIN_YEAR: 0
-    MAX_YEAR: 20000
-    GRID_IO: 
-    Pyaerocom GridIO
-    ----------------
-    
-       FILE_TYPE: .nc
-       TS_TYPES (list, 5 items)
-       ['hourly'
-        '3hourly'
-        ...
-        'monthly'
-        'yearly']
-    
-       DEL_TIME_BOUNDS: True
-       SHIFT_LONS: True
-       CHECK_TIME_FILENAME: True
-       CORRECT_TIME_FILENAME: True
-       CHECK_DIM_COORDS: False
-       EQUALISE_METADATA: True
-       USE_RENAMED_DIR: True
-       INCLUDE_SUBDIRS: False
-    OBS_WAVELENGTH_TOL_NM: 10.0
-    OBS_ALLOW_ALT_WAVELENGTHS: True
-    GCOSPERCENTCRIT: 0.1
-    GCOSABSCRIT: 0.04
-    OBSNET_NONE: NONE
-    NOMODELNAME: OBSERVATIONS-ONLY
-    REVISION_FILE: Revision.txt
-    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
-    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
-    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
-    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
-    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
-    AERONET_SUN_V3L15_SDA_DAILY_NAME: AeronetSDAV3Lev1.5.daily
-    AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev1.5.AP
-    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
-    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
-    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
-    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
-    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
-    EBAS_MULTICOLUMN_NAME: EBASMC
-    EEA_NAME: EEAAQeRep
-    EARLINET_NAME: EARLINET
-    OBSCONFIG (dict)
-    MODELDIRS (list)
-       ['/lustre/storeA/project/aerocom/aerocom1/'
-        '/lustre/storeA/project/aerocom/aerocom2/'
-        ...
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
-    
-    MODELBASEDIR: /lustre/storeA/project/aerocom/
-    OBSBASEDIR: /lustre/storeA/project/aerocom/
-    OBSDATACACHEDIR: /home/jonasg/pyaerocom/_cache
-    LOGFILESDIR: /home/jonasg/pyaerocom/_log
-    OUT_BASEDIR: /home/jonasg/pyaerocom
-    WRITE_FILEIO_ERR_LOG: True
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
-    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
-    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/DONOTCACHE
-    PLOT_DIR: /home/jonasg/pyaerocom/plots
-    VAR_PARAM: 
-    ----------------------
-    Pyaerocom AllVariables
-    ----------------------
-    DEFAULT
-    od550aer
-    od550lt1aer
-    od550gt1aer
-    abs550aer
-    od440aer
-    abs440aer
-    ec550aer
-    ec532aer
-    scatc550aer
-    scatc550lt1aer
-    bscatc550aer
-    absc550aer
-    absc550lt1aer
-    ssa440aer
-    ssa675aer
-    ssa870aer
-    ssa1020aer
-    ang4487aer
-    angabs4487aer
-    zdust
-    time
-    time_bnds
-    lon
-    lon_bnds
-    lat
-    lat_bnds
-    growvegbnds
-    areacella
-    landf
-    orog
-    landcBF
-    landcNF
-    landcCP
-    landcSa
-    landcGS
-    landcST
-    landcBS
-    landcW
-    landcO
-    landcCPC3
-    landcCPC4
-    landcSaC3
-    landcSaC4
-    landcGSC3
-    landcGSC4
-    lai
-    mrso
-    snd
-    uas
-    vas
-    was
-    uapbl
-    vapbl
-    ts
-    ps
-    tasmin
-    tasmax
-    tas
-    prc
-    pr
-    airmass
-    zmlay
-    eminox
-    emino
-    emino2
-    eminosoil
-    emico
-    emivoc
-    emivoct
-    emic2h6
-    emic3h8
-    emic2h2
-    emic2h4
-    emic3h6
-    emialkanes
-    emialkenes
-    emihcho
-    emich3cho
-    emiacetone
-    emimethanol
-    emitolu
-    emiaro
-    emiisop
-    emimntp
-    emisestp
-    emibvoc
-    eminh3
-    emiso2
-    emidms
-    emiso4
-    emioa
-    emioc
-    emisoa
-    emibc
-    emiss
-    emidust
-    emipm10
-    emipm2p5
-    emipm10ss
-    emipm10dust
-    emipm2p5ss
-    emipm2p5dust
-    emipm1ss
-    emipm1dust
-    emipcb153
-    emiahch
-    reemipcb153
-    reemiahch
-    emihg0
-    emihg2
-    emihgp
-    emiahg0
-    emiahg2
-    emiahgp
-    reemihg0
-    dryhno3
-    dryno3
-    dryno2
-    dryn2o5
-    drypan
-    dryorgn
-    dryhono
-    dryhno4
-    drynoy
-    drynh3
-    drynh4
-    dryso2
-    dryso4
-    drymsa
-    drydms
-    dryss
-    drydust
-    drypm1no3
-    drypm2p5no3
-    drypm10no3
-    dryo3
-    stoo3
-    dryhcho
-    drych3cho
-    dryalde
-    dryhcooh
-    drych3cooh
-    dryh2o2
-    dryroor
-    excnh3
-    drybc
-    drypm10
-    drypm10ss
-    drypm10dust
-    drypm2p5
-    drypm2p5ss
-    drypm2p5dust
-    dryoc
-    dryoa
-    drysoa
-    drypcb153
-    dryahch
-    dryhg0
-    dryhg2
-    dryhgp
-    wethno3
-    wetn2o5
-    wetorgn
-    wetno3
-    wethono
-    wethno4
-    wetnoy
-    wetnh3
-    wetnh4
-    wetso2
-    wetso4
-    wetmsa
-    wetdms
-    wetbc
-    wetss
-    wetdust
-    wetpm1no3
-    wetpm2p5no3
-    wetpm10no3
-    wethcho
-    wetch3cho
-    wetalde
-    wethcooh
-    wetch3cooh
-    weth2o2
-    wetroor
-    wetpm10
-    wetpm10ss
-    wetpm10dust
-    wetpm2p5
-    wetpm2p5ss
-    wetpm2p5dust
-    wetoa
-    wetoc
-    wetsoa
-    wetpcb153
-    wetahch
-    wethg
-    wethg0
-    wethg2
-    wethgp
-    vmro3
-    vmrno
-    vmrno2
-    vmro32m
-    rc
-    ra
-    vmrco
-    vmrhno3
-    vmrn2o5
-    vmrpan
-    vmrhono
-    vmrhno4
-    vmrorgnit
-    vmrnoy
-    vmrvoc
-    vmrc2h6
-    vmrc3h8
-    vmrc2h4
-    vmrc3h6
-    vmralkanes
-    vmralkenes
-    vmrhcho
-    vmrch3cho
-    vmracetone
-    vmrglyoxal
-    vmrmethanol
-    vmrtolu
-    vmraro
-    vmrisop
-    vmrc10h16
-    vmrtp
-    vmrnh3
-    vmrso2
-    vmrdms
-    mmrpm10
-    mmrpm2p5
-    mmrpm1
-    mmrno3
-    mmrso4
-    mmrbc
-    mmroc
-    mmroa
-    mmrss
-    mmrdust
-    mmrmsa
-    mmrnh4
-    ncpm2p5
-    mmrpm1no3
-    mmrpm1ss
-    mmrpm1dust
-    mmrpm2p5no3
-    mmrpm2p5so4
-    mmrpm2p5bc
-    mmrpm2p5oc
-    mmrpm2p5oa
-    mmrpm2p5ss
-    mmrpm2p5dust
-    mmrpm2p5nh4
-    ncpm10
-    mmrpm10no3
-    mmrpm10so4
-    mmrpm10bc
-    mmrpm10oc
-    mmrpm10oa
-    mmrpm10ss
-    mmrpm10dust
-    mmrpm10nh4
-    vmrhg0
-    vmrhg2
-    vmrpcb153
-    vmrahch
-    mmrhgp
-    jno2
-    jo3o1d
-    rsdt
-    rsut
-    rsutcs
-    rsds
-    rsus
-    rsdsdir
-    rsdsdif
-    rsdscs
-    rsdscsdir
-    rsdscsdif
-    rlut
-    rlutcs
-    rlds
-    rlus
-    rsut0
-    rsuscs0
-    rsds0
-    rsus0
-    rsdsdir0
-    rsdsdif0
-    rsdscs0
-    rsdscsdir0
-    rsdscsdif0
-    rlut0
-    rlutcs0
-    rlds0
-    rlus0
-    rsutpm1no3
-    rsutpm10no3
-    rsutcspm1no3
-    rsutcsnpm10no3
-    longitude
-    latitude
-    abs388aer
-    abs388bc
-    abs388dust
-    abs388oa
-    abs550bc
-    abs550dust
-    abs550pm1
-    abs550pm10
-    abs550pm2p5
-    abs870aer
-    od388aer
-    od388bc
-    od388dust
-    od388oa
-    od500aer
-    od500pm10
-    od500pm2p5
-    od550aerh2o
-    od550bc
-    od550dust
-    od550nh4
-    od550no3
-    od550oa
-    od550pm1
-    od550pm1no3
-    od550pm10
-    od550pm10no3
-    od550pm2p5
-    od550pm2p5no3
-    od550so4
-    od550ss
-    od865aer
-    od870aer
-    cldf
-    abs550aerh2o
-    abs550nh4
-    abs550no3
-    abs550oa
-    abs550so4
-    abs550ss
-    loadno3
-    loadso4
-    loadbc
-    loadoc
-    loadoa
-    loadsoa
-    loadss
-    loaddust
-    loadmsa
-    loadnh4
-    loadno
-    loadno2
-    loadn2o5
-    loadpan
-    loadhono
-    loadhno3
-    loadhno4
-    loadorgnit
-    loadnoy
-    loadnh3
-    loaddms
-    loadso2
-    loadpm1no3
-    loadpm2p5no3
-    loadpm10no3
-    loadpm1ss
-    loadpm2p5ss
-    loadpm10ss
-    loadpm1dust
-    loadpm2p5dust
-    loadpm10dust
-    loadpm1
-    loadpm2p5
-    loadpm10
-    lev
-    lev_bnds
-    ptop
-    a
-    b
-    a_bnds
-    b_bnds
-    p0
-    ap
-    ap_bnds
-    ta
-    rho
-    dh
-    hus
-    mcu
-    hur
-    emilnox
-    eminoaircraft
-    vmroh
-    vmrh2o2
-    vmrho2
-    vmrcl
-    vmrbr
-    vmrbro
-    prodo3
-    losso3
-    lossch4
-    lossco
-    reacvoc
-    chepsoa
-    chepmsa
-    chegpso4
-    cheaqpso4
-    chegphno3
-    cheglhno3
-    cheaphno3
-    chealhno3
-    chepno3
-    chedustpno3
-    chesspno3
-    cheppm10no3
-    cheppm2p5no3
-    cheppm1no3
-    chegpnh3
-    chealnh3
-    chepnh4
-    mmrsoa
-    mmraerh2o
-    mmrpm10h2o
-    mmrpm2p5h2o
-    rh
-    vmrcodirect50d
-    vmrcodirect25d
-    station
-    network_stationid
-    networkid
-    stationid
-    station_elevation
-    td
-    hurs
-    huss
-    mmrpm10poa
-    mmrpm2p5poa
-    vmr5mo3
-    vmr10mo3
-    tcwv
-    tcno2
-    pres
-    ua
-    va
-    wa
-    ec550dryaer
-
-
-Now with everything being set up correctly, we can start analysing the
-data. The following tutorials focus on the reading, plotting and
-analysis of model data. Tutorials for observational data will follow
-soon, as well as tutorials that show how to merge and compare model with
-observational data. Before you can work with the data, you may want to
-find out what data is available. The following section shows how to do
-this.
-
-Finding data directories of model or observation data
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Let’s presume you want to access data from a certain model or
-observation and you want to check if it is available. Let’s assume you
-are interested in data from a control run (*CTRL*) of the CAM Oslo model
-but you do not know the exact model version or run ID. Then, you can
-browse existing data directories using a wildcard search, simply by (we
-put it in a try/except block, since with wildcard browse it will not
-find a unique ID and thus raise an Exception):
+The print() method get’s you some more info about what is in there, that
+is, available variables, years and temporal resolutions:
 
 .. code:: ipython3
 
-    try:
-        pya.search_data_dir_aerocom("CAM*CTRL*")
-    except OSError as e:
-        print(repr(e))
+    print(reader)
 
 
 .. parsed-literal::
 
-    OSError("Found multiple matches for search pattern CAM*CTRL*. Please choose from ['CAMS_REANCTRL', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM4-Oslo_Vprelim.A2.CTRL', 'CAM5-MAM3-PNNL.A2.CTRL', 'CAM4-Oslo-Vcmip5online.A2.CTRL', 'CAM4-Oslo-Vcmip5.A2.CTRL', 'CAM4-Oslo-Vcmip5emi2000.A2.CTRL', 'CAM5.1-MAM3-PNNL.A2.CTRL', 'CAM3.A2.CTRL', 'CAM4-Oslo.A2.CTRL', 'BCC_AGCM2.0.1_CAM.A2.CTRL', 'ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD', 'ECMWF-IFS-CY43R1-CAMS-NITRATE-DEV_AP3-CTRL2016-PD', 'CAM5.4_CTRL2016', 'CAM5_CTRL2016', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']",)
+    
+    Pyaerocom ReadGridded
+    ---------------------
+    Model ID: CAM5.3-Oslo_CTRL2016
+    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
+    Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
+    Available years: [2006, 2008, 2010]
+    Available time resolutions ['3hourly', 'daily']
+
+
+Working locally (Changing the paths)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you work on your local machine and you use the external AEROCOM user
+server, you might need to change the path settings. The easiest way to
+do this is to update the base directory where pyaerocom searches for
+models.
+
+.. code:: ipython3
+
+    pya.const.BASEDIR = '/home/'
+
+
+.. parsed-literal::
+
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom1/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/C3S-Aerosol
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/ECLIPSE
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/SATELLITE-DATA/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/ACCMIP/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/ECMWF/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP_COPERNICUS/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP_GLOBAL/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP_SVN_TEST/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/NorESM_SVN_TEST/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/INCA/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/HTAP-PHASE-I/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/HTAP-PHASE-II/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-I/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-II/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-III/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-III-Trend/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase1/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-II-IND3/
+    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-II-IND2/
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunNRT does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0AllPoints/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L2.0.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/ does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L1.5.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/ does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/ does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L1.5.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L2.0.daily/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep/renamed does not exist
+    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Earlinet/data does not exist
+
+
+Now, since there is actually nothing below this base directory that
+matches the predefined search patterns, the list specifying search
+directories is empty.
+
+.. code:: ipython3
+
+    pya.const.MODELDIRS
+
+
+
+
+.. parsed-literal::
+
+    []
+
 
 
 Reading the aerosol optical detph at 550nm using a specified model ID
@@ -2885,7 +396,30 @@ The resulting list shows possible options that were found in the
 database. Let’s choose the *CAM5.3-Oslo_CTRL2016* run and import the
 data. In the following cell, we directly instantiate a read class for
 data import since we know the model and run ID from the previous cell
-(the read class basically includes the above used search method.
+(the read class basically includes the above used search method).
+
+Before we can read from the database, we have to reset the paths in the
+configuration.
+
+.. code:: ipython3
+
+    pya.const.reload(keep_basedirs=False)
+    pya.const.READY
+
+
+.. parsed-literal::
+
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+
+
+
+
+.. parsed-literal::
+
+    True
+
+
 
 .. code:: ipython3
 
@@ -2920,21 +454,6 @@ data object has to be accessed using the first index of the tuple.
 .. code:: ipython3
 
     data = read.read("od550aer", start="1 march 2010", stop="31 march 2010")[0]
-
-
-.. parsed-literal::
-
-    2018-09-25 10:52:21,670:WARNING:
-    File /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed/aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc contains more than one data field: 0: Aerosol optical depth at 550nm / (1) (time: 2920; latitude: 192; longitude: 288)
-    1: gauss weights / (1)                 (latitude: 192)
-    2018-09-25 10:52:21,674:WARNING:
-    Invalid time dimension.
-    Error message: ValueError("Time match error, nominal dates for test array[0 1 2 7] (unit=days since 2004-01-01 00:00:00): ['2010-01-01T00' '2010-01-01T03' '2010-01-01T06' '2010-01-01T21']\nReceived values after conversion: ['2010-01-01T00' '2010-01-01T00' '2010-01-01T00' '2010-01-01T00']",)
-    2018-09-25 10:52:21,674:WARNING:
-    Invalid time dimension coordinate in file aerocom3_CAM5.3-Oslo_CTRL2016_od550aer_Column_2010_3hourly.nc. 
-    2018-09-25 10:52:21,675:WARNING:
-    Attempting to correct time coordinate using information in file name
-
 
 Accessing the data and plotting a map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2984,7 +503,7 @@ the dataset.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_28_0.png
+.. image:: tut00_get_started/tut00_get_started_33_0.png
 
 
 We might also be interested in the weighted area average for the month
@@ -3175,12 +694,12 @@ that we extracted.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ff760408e10>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f2d7825dda0>
 
 
 
 
-.. image:: tut00_get_started/tut00_get_started_31_1.png
+.. image:: tut00_get_started/tut00_get_started_36_1.png
 
 
 The following notebook introduces in more detail how pyaerocom handles

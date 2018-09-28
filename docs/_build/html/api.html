@@ -269,7 +269,7 @@ CF conventions and may not work for files that do not follow this standard.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>input</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str:</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Cube</span></code>) – data input. Can be a single .nc file or a preloaded iris Cube.</li>
-<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path . Irrelevant
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – variable name that is extracted if <cite>input</cite> is a file path. Irrelevant
 if <cite>input</cite> is preloaded Cube</li>
 </ul>
 </td>
@@ -1724,6 +1724,12 @@ in case input <a href="#id9"><span class="problematic" id="id10">:arg:`data`</sp
 </dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.colocateddata.ColocatedData.unit">
+<code class="descname">unit</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unit of data</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.colocateddata.ColocatedData.meta">
 <code class="descname">meta</code><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.meta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Meta data</p>
@@ -2201,11 +2207,14 @@ must be list or array and must have the same length as attribute
 
 <dl class="function">
 <dt id="pyaerocom.colocation.colocate_gridded_gridded">
-<code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>regrid_scheme='areaweighted'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>regrid_scheme='areaweighted'</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colocate 2 gridded data objects</p>
 <div class="admonition-todo admonition" id="index-9">
 <p class="first admonition-title">Todo</p>
-<p class="last">Complete docstring</p>
+<ul class="last simple">
+<li>Complete docstring</li>
+<li>think about vertical dimension (vert_scheme input not used at the moment)</li>
+</ul>
 </div>
 </dd></dl>
 
@@ -2403,7 +2412,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f9c3c586730&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f987d2e2158&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3086,6 +3095,11 @@ variables is available in this object</li>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.io.readungridded.ReadUngridded.ignore_cache">
+<code class="descname">ignore_cache</code><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.ignore_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.io.readungridded.ReadUngridded.datasets_to_read">
 <code class="descname">datasets_to_read</code><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.datasets_to_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of datasets supposed to be read</p>
@@ -3188,7 +3202,7 @@ variables of each reading routine are imported</li>
 
 <dl class="method">
 <dt id="pyaerocom.io.readungridded.ReadUngridded.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>datasets_to_read=None</em>, <em>vars_to_retrieve=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungridded.html#ReadUngridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>datasets_to_read=None</em>, <em>vars_to_retrieve=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungridded.html#ReadUngridded.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read observations</p>
 <p>Iter over all datasets in <a class="reference internal" href="#pyaerocom.io.readungridded.ReadUngridded.datasets_to_read" title="pyaerocom.io.readungridded.ReadUngridded.datasets_to_read"><code class="xref py py-attr docutils literal notranslate"><span class="pre">datasets_to_read</span></code></a>, call
 <a class="reference internal" href="#pyaerocom.io.readungridded.ReadUngridded.read_dataset" title="pyaerocom.io.readungridded.ReadUngridded.read_dataset"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_dataset()</span></code></a> and append to data object</p>
@@ -3693,7 +3707,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f9c3c586400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f9c3c586488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f987d2e1d90&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f987d2e1e18&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4094,7 +4108,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f9c3c586400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f9c3c586488&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f9c3c586598&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f9c3c586620&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f987d2e1d90&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f987d2e1e18&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f987d2e1f28&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f987d2e2048&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4500,7 +4514,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f9c3c586510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f9c3c586488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f987d2e1ea0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f987d2e1e18&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4924,7 +4938,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f9c3c586400&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f9c3c586488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f987d2e1d90&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f987d2e1e18&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5322,7 +5336,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f9c3c586488&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f9c3c586598&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f9c3c586620&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f987d2e1e18&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f987d2e1f28&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f987d2e2048&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5716,7 +5730,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f9c3c586510&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f9c3c586488&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f987d2e1ea0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f987d2e1e18&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -6123,13 +6137,13 @@ to read all files from this station into data object.</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.VAR_PATTERNS_FILE">
-<code class="descname">VAR_PATTERNS_FILE</code><em class="property"> = {'ec3553daer': '*/f*/*.e3*', 'ec3553daer_err': '*/f*/*.e3*', 'ec5323daer': '*/f*/*.e5*', 'ec5323daer_err': '*/f*/*.e5*', 'ec5503daer': '*/f*/*.e5*', 'ec5503daer_err': '*/f*/*.e5*', 'zdust': '*/f*/*.e*'}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_PATTERNS_FILE" title="Permalink to this definition">¶</a></dt>
+<code class="descname">VAR_PATTERNS_FILE</code><em class="property"> = {'ec3553daer': '*/f*/*.e3*', 'ec3553daer_err': '*/f*/*.e3*', 'ec5323daer': '*/f*/*.e5*', 'ec5323daer_err': '*/f*/*.e5*', 'zdust': '*/f*/*.e*'}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_PATTERNS_FILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>dictionary specifying the file search patterns for each variable</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.VAR_NAMES_FILE">
-<code class="descname">VAR_NAMES_FILE</code><em class="property"> = {'ec3553daer': 'Extinction', 'ec3553daer_err': 'ErrorExtinction', 'ec5323daer': 'Extinction', 'ec5323daer_err': 'ErrorExtinction', 'ec5503daer': 'Extinction', 'ec5503daer_err': 'ErrorExtinction', 'zdust': 'DustLayerHeight'}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_NAMES_FILE" title="Permalink to this definition">¶</a></dt>
+<code class="descname">VAR_NAMES_FILE</code><em class="property"> = {'ec3553daer': 'Extinction', 'ec3553daer_err': 'ErrorExtinction', 'ec5323daer': 'Extinction', 'ec5323daer_err': 'ErrorExtinction', 'zdust': 'DustLayerHeight'}</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.VAR_NAMES_FILE" title="Permalink to this definition">¶</a></dt>
 <dd><p>dictionary specifying the file column names (values) for each Aerocom
 variable (keys)</p>
 </dd></dl>
@@ -6141,7 +6155,7 @@ variable (keys)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_earlinet.ReadEarlinet.PROVIDES_VARIABLES">
-<code class="descname">PROVIDES_VARIABLES</code><em class="property"> = ['ec5503daer', 'ec5503daer_err', 'ec5323daer', 'ec5323daer_err', 'ec3553daer', 'ec3553daer_err', 'zdust']</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.PROVIDES_VARIABLES" title="Permalink to this definition">¶</a></dt>
+<code class="descname">PROVIDES_VARIABLES</code><em class="property"> = ['ec5323daer', 'ec5323daer_err', 'ec3553daer', 'ec3553daer_err', 'zdust']</em><a class="headerlink" href="#pyaerocom.io.read_earlinet.ReadEarlinet.PROVIDES_VARIABLES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -7207,7 +7221,12 @@ relevant if <a class="reference internal" href="#pyaerocom.io.ebas_nasa_ames.Eba
 <dl class="class">
 <dt id="pyaerocom.io.ebas_nasa_ames.NasaAmesHeader">
 <em class="property">class </em><code class="descclassname">pyaerocom.io.ebas_nasa_ames.</code><code class="descname">NasaAmesHeader</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#NasaAmesHeader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Header class for Ebas NASA Ames file</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Is used in <a class="reference internal" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile" title="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">EbasNasaAmesFile</span></code></a> and should not be used directly.</p>
+</div>
+<dl class="method">
 <dt id="pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.CONV_STR">
 <code class="descname">CONV_STR</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.CONV_STR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -7235,17 +7254,22 @@ relevant if <a class="reference internal" href="#pyaerocom.io.ebas_nasa_ames.Eba
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.head_fix">
 <code class="descname">head_fix</code><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.head_fix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Dictionary containing fixed header info (that is always available)</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.var_defs">
 <code class="descname">var_defs</code><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.var_defs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>List containing column variable definitions</p>
+<p>List index is column index in file and value is instance of
+<a class="reference internal" href="#pyaerocom.io.ebas_nasa_ames.EbasColDef" title="pyaerocom.io.ebas_nasa_ames.EbasColDef"><code class="xref py py-class docutils literal notranslate"><span class="pre">EbasColDef</span></code></a></p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.meta">
 <code class="descname">meta</code><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.meta" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Meta data dictionary (specific for this file)</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyaerocom.io.ebas_nasa_ames.NasaAmesHeader.update">
@@ -9111,7 +9135,7 @@ station</li>
 <p>Heatmap plotting functionality</p>
 <dl class="function">
 <dt id="pyaerocom.plot.heatmaps.df_to_heatmap">
-<code class="descclassname">pyaerocom.plot.heatmaps.</code><code class="descname">df_to_heatmap</code><span class="sig-paren">(</span><em>df</em>, <em>cmap='bwr'</em>, <em>center=0</em>, <em>low=0.3</em>, <em>high=0.3</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>color_rowwise=True</em>, <em>normalise_rows=False</em>, <em>normalise_rows_col=None</em>, <em>annot=True</em>, <em>table_name=''</em>, <em>num_digits=2</em>, <em>ax=None</em>, <em>figsize=(12</em>, <em>12)</em>, <em>cbar=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/heatmaps.html#df_to_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.heatmaps.df_to_heatmap" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.plot.heatmaps.</code><code class="descname">df_to_heatmap</code><span class="sig-paren">(</span><em>df</em>, <em>cmap='bwr'</em>, <em>center=None</em>, <em>low=0.3</em>, <em>high=0.3</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>color_rowwise=True</em>, <em>normalise_rows=False</em>, <em>normalise_rows_col=None</em>, <em>annot=True</em>, <em>table_name=''</em>, <em>num_digits=2</em>, <em>ax=None</em>, <em>figsize=(12</em>, <em>12)</em>, <em>cbar=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/heatmaps.html#df_to_heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.heatmaps.df_to_heatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot a pandas dataframe as heatmap</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -9343,6 +9367,37 @@ tabular format or to be displayed in a jupyter notebook)</p>
 <div class="section" id="module-pyaerocom.helpers">
 <span id="helpers"></span><h2>Helpers<a class="headerlink" href="#module-pyaerocom.helpers" title="Permalink to this headline">¶</a></h2>
 <p>General helper methods for the pyaerocom library.</p>
+<dl class="function">
+<dt id="pyaerocom.helpers.unit_conversion_fac">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">unit_conversion_fac</code><span class="sig-paren">(</span><em>from_unit</em>, <em>to_unit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#unit_conversion_fac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.unit_conversion_fac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns multiplicative unit conversion factor for input units</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Input must be either instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">cf_units.Unit</span></code> class or string.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>from_unit</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">cf_units.Unit</span></code>, or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – unit to be converted</li>
+<li><strong>to_unit</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">cf_units.Unit</span></code>, or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>) – final unit</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">multiplicative conversion factor</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> – if units cannot be converted into each other using cf_units package</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="function">
 <dt id="pyaerocom.helpers.same_meta_dict">
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">same_meta_dict</code><span class="sig-paren">(</span><em>meta1, meta2, ignore_keys=['PI'], num_keys=['stat_lon', 'stat_lat', 'stat_alt', 'longitude', 'latitude', 'altitude'], num_rtol=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#same_meta_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.same_meta_dict" title="Permalink to this definition">¶</a></dt>

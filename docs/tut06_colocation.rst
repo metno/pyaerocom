@@ -33,9 +33,13 @@ Import setup and imports
 
 .. parsed-literal::
 
-    2018-09-25 10:54:12,141:WARNING:
+    2018-09-28 18:29:24,565:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-25 10:54:12,896:WARNING:
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    2018-09-28 18:29:25,416:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 
@@ -122,7 +126,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20180925105419
+     Filter time log: 20180928182930
     	stat_alt: [0, 1000]
 
 
@@ -177,6 +181,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
         ts_type_src:  daily
         start_str:    20100101
         stop_str:     20101231
+        unit:         1
         data_level:   colocated
         region:       WORLD
         lon_range:    [-180, 180]
@@ -194,7 +199,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f02b9c99748>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fdbb0a9e160>
 
 
 
@@ -250,6 +255,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
         ts_type_src:  daily
         start_str:    20100101
         stop_str:     20101231
+        unit:         1
         data_level:   colocated
         region:       EUROPE
         lon_range:    [-20, 70]
@@ -267,7 +273,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f02b9c99320>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fdbb0b13c50>
 
 
 

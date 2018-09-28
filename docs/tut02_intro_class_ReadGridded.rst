@@ -39,9 +39,13 @@ information about what is in there.
 
 .. parsed-literal::
 
-    2018-09-25 10:52:34,776:WARNING:
+    2018-09-28 18:27:34,357:WARNING:
     basemap extension library is not installed (or cannot be imported. Some features will not be available
-    2018-09-25 10:52:35,591:WARNING:
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
+    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
+    2018-09-28 18:27:35,233:WARNING:
     geopy library is not available. Aeolus data read not enabled
 
 

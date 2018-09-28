@@ -205,7 +205,7 @@
 <span class="kn">import</span> <span class="nn">iris</span>
 
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span> <span class="k">as</span> <span class="n">CONST</span>
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">Variable</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.variable</span> <span class="k">import</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">is_3d</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">compute_angstrom_coeff_cubes</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">to_pandas_timestamp</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="p">(</span><span class="n">IllegalArgumentError</span><span class="p">,</span> 
@@ -380,6 +380,11 @@
         <span class="n">v</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">v</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
         <span class="n">v</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AUX_REQUIRES</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1">#also add standard names of 3D variables if not already in list</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_3d</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;3d&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">v</span>
     
     <span class="nd">@property</span>
@@ -513,8 +518,7 @@
         <span class="n">_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">browser</span><span class="o">.</span><span class="n">find_data_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">_dir</span>
         <span class="k">return</span> <span class="n">_dir</span></div>
-    
-    <span class="c1"># get the model directory (note that the folder &quot;renamed&quot; is used)</span>
+                
 <div class="viewcode-block" id="ReadGridded.search_all_files"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readgridded.ReadGridded.search_all_files">[docs]</a>    <span class="k">def</span> <span class="nf">search_all_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_file_convention</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Search all valid model files for this model</span>
 <span class="sd">        </span>
@@ -567,13 +571,11 @@
         <span class="k">for</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">nc_files</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_convention</span><span class="o">.</span><span class="n">get_info_from_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
-                <span class="n">var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span>
-                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">is_3d</span><span class="p">:</span>
-                    <span class="n">_vars_temp_3d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">_var_name</span><span class="p">)</span>
+                <span class="n">var_name</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">is_3d</span><span class="p">(</span><span class="n">var_name</span><span class="p">):</span>
+                    <span class="n">_vars_temp_3d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">_var_name</span><span class="p">)</span>
+                    <span class="n">_vars_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
                 
                 <span class="n">_years_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
                 <span class="n">_ts_types_temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;ts_type&quot;</span><span class="p">])</span>
