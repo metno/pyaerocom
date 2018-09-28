@@ -46,7 +46,7 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.04'
+    __version__ = '0.05'
     def __init__(self, data=None, **kwargs):
         self._data = None
         if data is not None:
@@ -155,6 +155,15 @@ class ColocatedData(object):
         return self.meta['ts_type']
     
     @property
+    def unit(self):
+        """Unit of data"""
+        try:
+            return self.data.attrs['unit']
+        except KeyError:
+            logger.warn('Failed to access unit ColocatedData class (may be an '
+                        'old version of data)')
+    
+    @property
     def meta(self):
         """Meta data"""
         return self.data.attrs
@@ -176,7 +185,7 @@ class ColocatedData(object):
             # get all grid points that contain at least one valid data point 
             # along time dimension
             vals = np.nanmean(self.data.data[0], axis=0)
-            valid = ~ np.isnan(vals)
+            valid = ~np.isnan(vals)
             return np.sum(valid)
         
     def check_dimensions(self):
@@ -233,6 +242,7 @@ class ColocatedData(object):
                             y_name=meta['data_source'][1], 
                             start=self.start, 
                             stop=self.stop, 
+                            unit=self.unit,
                             ts_type=meta['ts_type'], 
                             stations_ok=num_points,
                             filter_name=meta['filter_name'], 

@@ -80,7 +80,33 @@ class _TS_TYPESetup(BrowseDict):
             for key, val in self['read_alt'].items():
                 s+='   {}:{}\n'.format(key, val)
            
-            
+   
+class VarSetup(BrowseDict):
+    """Variable setup for analysis (dictionary)
+    
+    Attributes
+    -----------
+    var_name : str
+        variable name
+    obs_id : str
+        ID of observation network
+    var_name_obs : :obj:`str`, optional
+        variable name of observation data. If None, ``var_name`` is used for
+        observation network
+    vert_scheme : :obj:`str`, optional
+        vertical scheme for time-series retrieval in case of 4D data (cf.
+        :func:`pyaerocom.GriddedData.to_time_series`)
+        
+    Parameters
+    ----------
+    see attributes
+    """
+    def __init__(self, var_name, obs_id, var_name_obs=None, vert_scheme=None):
+        self.var_name = var_name
+        self.obs_id = obs_id
+        self.var_name_obs = var_name_obs
+        self.vert_scheme = vert_scheme
+        
 class AnalysisSetup(BrowseDict):
     """Setup class for model / obs intercomparison
     
@@ -103,8 +129,8 @@ class AnalysisSetup(BrowseDict):
     """
     def __init__(self, vars_to_analyse=None, model_id=None, obs_id=None, 
                  years=None, filter_name='WORLD-noMOUNTAINS',
-                 ts_type_setup=None, out_basedir=None, 
-                 init_dirs=True, **tasks_or_opts):
+                 ts_type_setup=None, vert_scheme=None, alt_vars=None, 
+                 out_basedir=None, init_dirs=True, **tasks_or_opts):
         
         if ts_type_setup is None:
             ts_type_setup = dict(monthly=['monthly', 'yearly'],
@@ -115,8 +141,13 @@ class AnalysisSetup(BrowseDict):
             raise ValueError('Invalid input for filter_name')
         if out_basedir is None:
             out_basedir = const.OUT_BASEDIR
+        if isinstance(vars_to_analyse, str):
+            vars_to_analyse = [vars_to_analyse]
             
         self.vars_to_analyse = vars_to_analyse
+        if alt_vars is None: 
+            alt_vars = {}
+        self.alt_vars = alt_vars
         
         self.model_id = model_id
         self.obs_id = obs_id
@@ -130,6 +161,7 @@ class AnalysisSetup(BrowseDict):
         self.ts_type_setup = ts_type_setup
         self.years = years
         self.filter_name = filter_name
+        self.vert_scheme = vert_scheme
         
         self.out_basedir = out_basedir
         self._output_dirs = {}
@@ -278,7 +310,7 @@ class Analyser(AnalysisSetup):
         if model_ids is None:
             if self.model_id is None:
                 raise AttributeError('Model ID is not set')
-            model_ids = [model_ids]
+            model_ids = [self.model_id]
         elif not isinstance(model_ids, (list, tuple, np.ndarray)):
             model_ids = list(model_ids)
             
@@ -310,10 +342,21 @@ class Analyser(AnalysisSetup):
         
             
         model_reader = ReadGridded(self.model_id)
-        
-        var_matches = list(reduce(np.intersect1d, (self.vars_to_analyse, 
-                                                   model_reader.vars_provided,
-                                                   obs_data.contains_vars)))
+        #model_reader.read_var('ec550aer')
+        var_matches = {}
+        for var in self.vars_to_analyse:
+            if var in model_reader.vars_provided: #candidate
+                if var in obs_data.contains_vars:
+                    var_matches[var] = var
+                else:
+                    if var in self.alt_vars and self.alt_vars[var] in obs_data.contains_vars:
+                        var_matches[var] = self.alt_vars[var]
+                        
+# =============================================================================
+#         var_matches = list(reduce(np.intersect1d, (self.vars_to_analyse, 
+#                                                    model_reader.vars_provided,
+#                                                    obs_data.contains_vars)))
+# =============================================================================
         
         if len(var_matches) == 0:
             raise DataCoverageError('No variable matches between '
@@ -335,12 +378,12 @@ class Analyser(AnalysisSetup):
                                                             self.obs_id, 
                                                             self.vars_to_analyse))
         
-                    
+        vars_model = list(var_matches.keys())
         for year in year_matches:
             start, stop = start_stop_from_year(year)
             for ts_type in ts_type_matches:
                 ts_types_ana = ts_type_setup[ts_type]
-                model_data_vars = model_reader.read(var_matches, 
+                model_data_vars = model_reader.read(vars_model, 
                                                     start=year,
                                                     ts_type=ts_type,
                                                     flex_ts_type=False)
@@ -352,8 +395,9 @@ class Analyser(AnalysisSetup):
                     continue
                 
                 for model_data in model_data_vars:
-                    var = model_data.var_name
-                    if not var in obs_reader.data:
+                    var = model_data.var_info.var_name
+                    obs_var = var_matches[var]
+                    if not obs_var in obs_reader.data:
                         if self._log:    
                             self._log.write('No obs data available ({}, {})\n'
                                             .format(year, ts_type))
@@ -364,9 +408,9 @@ class Analyser(AnalysisSetup):
                             out_dir = chk_make_subdir(self.output_dir('colocate'),
                                                       self.model_id)
                             savename = self._coldata_save_name(model_data,
-                                                                ts_type_ana, 
-                                                                start,
-                                                                stop)
+                                                               ts_type_ana, 
+                                                               start,
+                                                               stop)
                             file_exists = self._check_coldata_exists(
                                                                 self.model_id, 
                                                                 savename)
@@ -383,6 +427,7 @@ class Analyser(AnalysisSetup):
                                                     model_data, obs_data, 
                                                     ts_type=ts_type_ana, 
                                                     start=start, stop=stop,
+                                                    var_ref=obs_var,
                                                     filter_name=self.filter_name)
                             
                             data_coll.to_netcdf(out_dir)
@@ -390,7 +435,7 @@ class Analyser(AnalysisSetup):
                                 self._log.write('WRITE: {}\n'.format(savename))
                             
                             plt.close('all')
-                        
+                    
     def _run_gridded_gridded(self):
     
         ts_types = const.GRID_IO.TS_TYPES
@@ -398,9 +443,19 @@ class Analyser(AnalysisSetup):
         model_reader = ReadGridded(self.model_id)
         obs_reader = ReadGridded(self.obs_id)
     
-        var_matches = list(reduce(np.intersect1d, (self.vars_to_analyse, 
-                                                   model_reader.vars_provided,
-                                                   obs_reader.vars)))
+        var_matches = {}
+        for var in self.vars_to_analyse:
+            if var in model_reader.vars_provided: #candidate
+                if var in obs_reader.vars_provided:
+                    var_matches[var] = var
+                else:
+                    if var in self.alt_vars and self.alt_vars[var] in obs_reader.vars_provided:
+                        var_matches[var] = self.alt_vars[var]
+# =============================================================================
+#         var_matches = list(reduce(np.intersect1d, (self.vars_to_analyse, 
+#                                                    model_reader.vars_provided,
+#                                                    obs_reader.vars)))
+# =============================================================================
         
         if len(var_matches) == 0:
             raise DataCoverageError('No variable matches between {} and {} for '
@@ -427,13 +482,14 @@ class Analyser(AnalysisSetup):
                                                            self.obs_id, 
                                                            self.vars_to_analyse))
         
-                    
+        vars_model = list(var_matches.keys())
+        vars_obs = list(var_matches.values())
         for year in year_matches:
             start, stop = start_stop_from_year(year)
             for ts_type in ts_type_matches:
                 ts_types_ana = ts_type_setup[ts_type]
                 # reads only year if starttime is provided but not stop time
-                model_data_vars = model_reader.read(var_matches, 
+                model_data_vars = model_reader.read(vars_model, 
                                                     start=year,
                                                     ts_type=ts_type,
                                                     flex_ts_type=False)
@@ -444,7 +500,7 @@ class Analyser(AnalysisSetup):
                                       ts_type))
                     continue
                 
-                obs_data_vars = obs_reader.read(var_matches, start=year,
+                obs_data_vars = obs_reader.read(vars_obs, start=year,
                                                 ts_type=ts_type,
                                                 flex_ts_type=True)
                 if len(obs_data_vars) == 0:
@@ -457,7 +513,7 @@ class Analyser(AnalysisSetup):
                     var = model_data.var_name
                     obs_data = None
                     for _obs in obs_data_vars:
-                        if _obs.var_name == var:
+                        if _obs.var_name == var_matches[var]:
                             obs_data = _obs
                             break
                     if obs_data is None:
@@ -506,9 +562,15 @@ class Analyser(AnalysisSetup):
         self.run()
         
 if __name__ == '__main__':
-    
-    stp = AnalysisSetup(['od550aer', 'ec550aer'], 
-                        model_id='bla', obs_id='blub',
-                        years=[2010, 2016, 2017],
-                        filter_name='europe')
+    stp = Analyser(['absc550aer', 'scatc550aer', 'ec550aer'], 
+                   alt_vars={'ec550aer':'scatc550aer'}, 
+                   model_id='CAM5.3-Oslo_AP3-CTRL2016-PD', 
+                   obs_id='EBASMC'  ,
+                   years=[2010])
+    stp.run()
+    raise Exception
+    stp = Analyser('od550aer', 
+                   model_id='INCA_CTRL2016-PD', obs_id='MODIS6.terra'  ,
+                   years=[2010])
+    stp.run()
                 

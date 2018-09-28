@@ -57,7 +57,7 @@ class GriddedData(object):
     input : :obj:`str:` or :obj:`Cube`
         data input. Can be a single .nc file or a preloaded iris Cube.
     var_name : :obj:`str`, optional
-        variable name that is extracted if `input` is a file path . Irrelevant
+        variable name that is extracted if `input` is a file path. Irrelevant
         if `input` is preloaded Cube
 
     Example
@@ -121,13 +121,11 @@ class GriddedData(object):
         if convert_unit_on_init:
             try:
                 var = self.var_info
-                if var.unit is not None:
+                if var.has_unit and var.unit != self.unit:
                     logger.info('Converting unit of data')
                     self.convert_unit(var.unit)
-            except VariableDefinitionError:
+            except (VariableDefinitionError, MemoryError):
                 pass
-            except:
-                print('Please debug')
     
     @property
     def unit(self):
@@ -381,9 +379,17 @@ class GriddedData(object):
             
         else:
             raise IOError('Failed to load input: {}'.format(input))
+        try:
+            self.grid.var_name = self.var_info.var_name
+        except:
+            logger.warn('Failed to convert variable name {}'.format(self.var_name))
+        
      
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
+        if self._size_GB > self._MAX_SIZE_GB:
+            raise MemoryError('Cannot convert unit in {} since data is too '
+                              'large ({} GB)'.format(self.name, self._size_GB))
         self.grid.convert_units(new_unit)
         
     def time_stamps(self):
@@ -1253,6 +1259,7 @@ class GriddedData(object):
     def __repr__(self):
         """For now, use representation of underlying data"""
         return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
+    
     #sorted out
     def _to_timeseries_iter_coords_2D(self, sample_points, scheme, 
                                       collapse_scalar):
@@ -1331,29 +1338,16 @@ class GriddedData(object):
                            'name'       :   self.name, 
                             var         :   data})
         return result
-             
-    def _to_timeseries_iter_coords_3D(self, sample_points, scheme, 
-                                      collapse_scalar):
-        """Extract time-series for provided input coordinates (lat, lon, alt)
-        """
-        raise NotImplementedError
-        self.check_dimcoords_tseries()
-        if not scheme=="nearest":
-            raise NotImplementedError
-        lats, lons, alts = None, None, None
-        for val in enumerate(sample_points):
-            name, vals = val[0], val[1]
-            if name == 'latitude':
-                lats = vals
-            elif name == 'longitude':
-                lons = vals
-            elif name == 'altitude':
-                alts = vals
+
                 
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
+    
     plt.close("all")
+    
+    r = pya.io.ReadGridded('SPRINTARS-T213_AP3-CTRL2016-PD')
+    d = r.read_var('ec550aer')
     RUN_OLD_STUFF = False
     
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')

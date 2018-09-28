@@ -12,8 +12,8 @@ from pyaerocom.helpers import to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ
 from pyaerocom.mathutils import calc_statistics
 
 def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None, 
-                 x_name=None, y_name=None,
-                 start=None, stop=None, ts_type=None, stations_ok=None, 
+                 x_name=None, y_name=None, start=None, stop=None, ts_type=None, 
+                 unit=None,stations_ok=None, 
                  filter_name=None, lowlim_stats=None, highlim_stats=None, 
                  loglog=True, savefig=False, save_dir=None, save_name=None, 
                  ax=None, figsize=None):
@@ -112,6 +112,9 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
                'filter_name'    :   (0.8, 0.06)}
     
     var_str = var_name# + VAR_PARAM.unit_str
+
+    if unit is not None and unit != 1:
+        var_str += ' [{}]'.format(unit)
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
                         statistics['success'], stations_ok),

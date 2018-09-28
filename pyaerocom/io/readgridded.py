@@ -219,6 +219,11 @@ class ReadGridded(object):
         v = []
         v.extend(self.vars)
         v.extend(self.AUX_REQUIRES.keys())
+        #also add standard names of 3D variables if not already in list
+        for var in self._vars_3d:
+            var = var.lower().replace('3d','')
+            if not var in v:
+                v.append(var)
         return v
     
     @property

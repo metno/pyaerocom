@@ -7,7 +7,8 @@ import pandas as pd
 import numpy as np
 
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
-                                  ColocationError, DataDimensionError)
+                                  ColocationError, DataDimensionError,
+                                  DataUnitError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
                                TS_TYPE_TO_NUMPY_FREQ,
@@ -61,9 +62,21 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         ts_type = 'yearly'
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
+    if gridded_data.var_info.has_unit:
+        if not gridded_data.unit == gridded_data_ref.unit:
+            try:
+                gridded_data_ref.convert_unit(gridded_data.unit)
+            except:
+                raise DataUnitError('Failed to merge data unit of reference '
+                                    'gridded data object ({}) to data unit '
+                                    'of gridded data object ({})'
+                                    .format(gridded_data.unit, 
+                                            gridded_data_ref.unit))
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
+    
+    
     
     grid_ts_type = gridded_data.ts_type
     
@@ -114,6 +127,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'ts_type_src'       :   grid_ts_type,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
+            'unit'              :   gridded_data.unit,
             'data_level'        :   'colocated'}
 
     
@@ -208,9 +222,21 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
         if none of the data points in input :class:`UngriddedData` matches 
         the input colocation constraints
     """
-    var = gridded_data.var_name
+    var = gridded_data.var_info.var_name
     if var_ref is None:
         var_ref = var
+    
+    if gridded_data.var_info.has_unit:
+        if not gridded_data.unit == ungridded_data.unit[var_ref]:
+            try:
+                gridded_data.convert_unit(ungridded_data.unit[var_ref])
+            except:
+                raise DataUnitError('Failed to merge data unit of '
+                                    'gridded data object ({}) to data unit '
+                                    'of ungridded data object ({})'
+                                    .format(gridded_data.unit, 
+                                            ungridded_data.unit[var_ref]))
+                
     if not var_ref in ungridded_data.contains_vars:
         raise VarNotAvailableError('Variable {} is not available in ungridded '
                                    'data (which contains {})'
@@ -339,6 +365,7 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
             'ts_type_src'   :   grid_ts_type,
             'start_str'     :   to_datestring_YYYYMMDD(start),
             'stop_str'      :   to_datestring_YYYYMMDD(stop),
+            'unit'          :   gridded_data.unit,
             'data_level'    :   'colocated'}
 
     

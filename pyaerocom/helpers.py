@@ -91,8 +91,6 @@ def unit_conversion_fac(from_unit, to_unit):
    
     return from_unit.convert(1, to_unit)
     
-    
-    
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):
     """Compare meta dictionaries
