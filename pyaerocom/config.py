@@ -195,13 +195,16 @@ class Config(object):
     
     @property
     def VAR_PARAM(self):
+        """Instance of class AllVariables (for default variable information)"""
         if self._var_param is None: #has not been accessed before
             self._var_param = AllVariables()
         return self._var_param
     
     @property
     def LOGFILESDIR(self):
-        return os.path.join(self.OUTPUTDIR, '_log')
+        """Directory where logfiles are stored"""
+        logdir=chk_make_subdir(self.OUTPUTDIR, '_log')
+        return logdir
        
     @property
     def MODELBASEDIR(self):
