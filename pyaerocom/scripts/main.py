@@ -106,7 +106,7 @@ def cli():
     from pyaerocom import const
     import pyaerocom.io as pio
     import pyaerocom as pa
-    supported_obs_networks = ", ".join(pio.ReadUngridded.SUPPORTED_DATASETS)
+    supported_obs_networks = ", ".join(pio.ReadUngridded().SUPPORTED_DATASETS)
     import pyaerocom.plot
 
     # command line interface using argparse
@@ -117,12 +117,17 @@ def cli():
                         help="model names to use; can be a comma separated "
                               "list; use " + const.NOMODELNAME +
                              " for observations only",nargs="+")
-    parser.add_argument("-v", "--verbose", help="switch on verbosity", action='store_true')
+    parser.add_argument("-v", "--verbose", help="switch on verbosity", 
+                        action='store_true')
     parser.add_argument("--variable", help="list of variables; comma seperated.")
     parser.add_argument("--modelyear",
-                        help="model years to run; use 9999 for climatology, leave out for all years; comma separated list; Use this to limit the plotting of the OBSERVATION-ONLY model to certain years.")
+                        help='model years to run; use 9999 for climatology, '
+                             'leave out for all years; comma separated list; '
+                             'Use this to limit the plotting of the '
+                             'OBSERVATION-ONLY model to certain years.')
     parser.add_argument("--obsyear",
-                        help="observation years to run; use 9999 for climatology, leave out for same as model year")
+                        help='observation years to run; use 9999 for '
+                             'climatology, leave out for same as model year')
     parser.add_argument("--startdate", help="startdate as YYYY-MM-DD e.g. 2012-01-01", default='2007-01-01')
     parser.add_argument("--enddate", help="enddate  as YYYY-MM-DD e.g. 2012-12-31", default='2015-12-31')
 
