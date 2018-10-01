@@ -38,6 +38,7 @@ Provides access to pyaerocom specific configuration values
 import numpy as np
 import os
 import getpass
+from warnings import warn
 from collections import OrderedDict as od
 import pyaerocom.obs_io as obs_io
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, dict_to_str,
@@ -164,6 +165,12 @@ class Config(object):
     @property
     def OUTPUTDIR(self):
         return self._outputdir
+    
+    @property
+    def OUT_BASEDIR(self):
+        warn(DeprecationWarning('Attribute OUT_BASEDIR is deprecated. Please '
+                                'use OUTPUTDIR instead'))
+        return self.OUTPUTDIR
     
     @property
     def CACHING(self):
