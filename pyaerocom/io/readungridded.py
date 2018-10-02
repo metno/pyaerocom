@@ -115,14 +115,6 @@ class ReadUngridded(object):
             
         self._datasets_to_read = datasets    
     
-    @property
-    def SUPPORTED_DATASETS(self):
-        """Returns list of strings containing all supported dataset names"""
-        l = []
-        for r in self.SUPPORTED:
-            l.extend(r.SUPPORTED_DATASETS)
-        return l
-    
     def dataset_provides_variables(self, dataset_to_read):
         """List of variables provided by a certain dataset"""
         if dataset_to_read in self._readers:
@@ -293,12 +285,16 @@ class ReadUngridded(object):
         return data
     
     @property
+    def SUPPORTED_DATASETS(self):
+        """Returns list of strings containing all supported dataset names"""
+        l = []
+        for r in self.SUPPORTED:
+            l.extend(r.SUPPORTED_DATASETS)
+        return l 
+    
+    @property
     def supported_datasets(self):
-        supported = []
-        for reader in self.SUPPORTED:
-            supported.extend(reader.SUPPORTED_DATASETS)
-        return supported
-        
+        return self.SUPPORTED_DATASETS
     
 if __name__=="__main__":
     read = ReadUngridded()
