@@ -481,6 +481,7 @@ class GriddedData(object):
         self.grid.transpose(new_order)
         
     def _check_altitude_access(self):
+        raise NotImplementedError
         coord_name = self.coord_names[-1]
         if coord_name == 'altitude':
             return True

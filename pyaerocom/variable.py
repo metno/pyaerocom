@@ -453,6 +453,19 @@ def get_variable(var_name):
     from pyaerocom import const
     return const.VAR_PARAM[var_name]
 
+def all_vars_to_dataframe():
+    """Make an overview table for all variables"""
+    import pandas as pd
+    head = ['Name', 'Standard name', 'unit', 'Wavelength [nm]', 'Dimensions',
+            'Comments and purpose'] 
+    res = []
+    for varname in all_var_names():
+        var = Variable(varname)
+        res.append([varname, var.standard_name, var.unit, var.wavelength_nm,
+                    var.dimensions, var.comments_and_purpose])
+    df = pd.DataFrame(res, columns=head)
+    return df
+
 def all_var_names():
     """Helper method that returns all currently defined variable names"""
     return [k for k in Variable.read_config().keys()]
