@@ -321,7 +321,7 @@ class Config(object):
         Prints each directory that is not available
         """
         from logging import getLogger
-        logger = getLogger()
+        logger = getLogger('pyaerocom')
         logger.info('Checking data directories')
         ok =True
         model_dirs = []

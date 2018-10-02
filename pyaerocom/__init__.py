@@ -14,7 +14,7 @@ def _init_logger():
     
     logger.addHandler(console_handler)
     
-    logger.setLevel(logging.WARN)
+    logger.setLevel(logging.CRITICAL)
     
     print_log = logging.getLogger('pyaerocom_print')
     
