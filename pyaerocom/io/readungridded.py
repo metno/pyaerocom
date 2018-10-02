@@ -193,11 +193,11 @@ class ReadUngridded(object):
                                     "{}".format(dataset_to_read))
         
     def __str__(self):
-        raise NotImplementedError("Requires review after API changes")
-        stat_names = []
-        for key in self.metadata:
-            stat_names.append(self.metadata[key]['station_name'])
-        return ','.join(stat_names)
+        #raise NotImplementedError("Requires review after API changes")
+        s=''
+        for ds in self.datasets_to_read:
+            s += '\n{}'.format(self.get_reader(ds))
+        return s
         
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None, **kwargs):
         """Read single dataset into instance of :class:`ReadUngridded`

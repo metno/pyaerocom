@@ -97,8 +97,10 @@ ENV/
 # Output from test / development directory
 test_dev/out
 
-# Private folder in folder test_dev
+# Private and development folders
 test_dev/private
+notebooks/dev
+
 
 # Private and output folders
 private

@@ -42,6 +42,13 @@ class ReadUngriddedBase(abc.ABC):
     #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {}
     
+    def __str__(self):
+        return ("Dataset name: {}\n"
+                "Data directory: {}\n"
+                "Supported variables: {}\n"
+                "Last revision: {}"
+                .format(self.DATASET_NAME, self.DATASET_PATH,
+                        self.PROVIDES_VARIABLES, self.data_revision))
     
     @abc.abstractproperty
     def TS_TYPE(self):

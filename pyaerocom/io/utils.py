@@ -50,11 +50,15 @@ def browse_database(model_or_obs, verbose=False):
               'more accurately'.format(model_or_obs, matches))
         return
     for match in matches:
-        if match in const.OBS_IDS:
-            reader = ReadUngridded(match)
-        else:
-            reader = ReadGridded(match)
-        print(reader)
+        try:
+            if match in const.OBS_IDS:
+                reader = ReadUngridded(match)
+            else:
+                reader = ReadGridded(match)
+            print(reader)
+        except Exception as e:
+            print('Reading failed for {}. Error: {}'.format(match,
+                  repr(e)))
     
 
 if __name__=='__main__':
