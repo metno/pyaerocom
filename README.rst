@@ -42,3 +42,8 @@ Download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaer
 or in development mode using::
 
 	python setup.py develop
+	
+Getting started
+===============
+
+Please see [introduction notebook](https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb)
