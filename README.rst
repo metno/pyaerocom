@@ -46,4 +46,4 @@ or in development mode using::
 Getting started
 ===============
 
-Please see [introduction notebook](https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb)
+Please see `introduction notebook <https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb>`__
