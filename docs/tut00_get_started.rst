@@ -2,167 +2,60 @@
 Getting started
 ~~~~~~~~~~~~~~~
 
-This notebook gives an introduction on how to install pyaerocom and run
-it on your local machine.
+This notebook is meant to give a quick introduction into pyaerocom based
+and into some of the relevant features and workflows when using
+`pyaerocom <http://aerocom.met.no/pyaerocom/>`__.
 
-Requirements
-^^^^^^^^^^^^
+It ends with a colocation of CAM53-Oslo model AODs both all-sky and
+clear-sky with Aeronet Sun V3 level 2 data.
 
-Before installation please make sure you have all required dependencies
-installed (`see here for a list of
-dependencies <http://aerocom.met.no/pyaerocom/readme.html#requirements>`__).
+Pyaerocom API flowchart (minimal)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Installation
-^^^^^^^^^^^^
+The following flowchart illustrates the minimal workflow to create
+standard output in pyaerocom based on a user query (that typically
+comprises a model ID and observation ID as well as one (or more)
+variable(s) of interest (products indicated in red are not available
+yet, date of latest update: 4-10-2018).
 
-Please download and unzip the `pyaerocom GitHub
-repository <https://github.com/metno/pyaerocom>`__ or clone it using
+.. code:: ipython3
 
-``$ git clone https://github.com/metno/pyaerocom.git``
+    from IPython.display import Image
+    flowchart = Image(filename=('../suppl/api_minimal_v0.png'))
+    flowchart
 
-into a local directory of your choice. Then, navigate into the pyaerocom
-root directory where the setup.py file is located. Use
 
-``$ python setup.py install``
 
-to install the package normally or use
 
-``$ python setup.py develop``
+.. image:: tut00_get_started/tut00_get_started_2_0.png
 
-to install the package in development mode. The latter leaves the code
-editable and while ``install`` installs and freezes the current version
-of the code in your Python environment (`see
-here <https://packaging.python.org/tutorials/distributing-packages/#working-in-development-mode>`__
-or
-`here <https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-install>`__
-for more info).
 
-If everything worked out as expected, you should be able to import
-pyaerocom from within a Python3 console.
+
+A user query typically comprises a model (+ experiment -> model run) and
+an observation network, which are supposed to be compared.
+
+**Note**: the flowchart depicts a situation, where the data from the
+observation network is *ungridded*, that is, the data is not available
+in a gridded format such as NetCDF, but, for instance, in the form of
+column seperated text files (as is the case for Aeronet data, which is
+used as an example here and included in the test dataset). For
+``gridded`` observations (e.g. satellite data), the flowchart is
+equivalent but with ``ReadGridded`` class and ``GriddedData`` for the
+observation branch (and without caching).
+
+This notebook illustrates and briefly discusses the individual aspects
+displayed in the flowchart.
 
 .. code:: ipython3
 
     import pyaerocom as pya
-    print("Installation base directory: %s" %pya.__dir__)
-    print("Version: %s" %pya.__version__)
 
+Check data directory
+''''''''''''''''''''
 
-.. parsed-literal::
-
-    2018-09-28 18:27:13,977:WARNING:
-    basemap extension library is not installed (or cannot be imported. Some features will not be available
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    2018-09-28 18:27:14,789:WARNING:
-    geopy library is not available. Aeolus data read not enabled
-
-
-.. parsed-literal::
-
-    Installation base directory: /home/jonasg/github/pyaerocom/pyaerocom
-    Version: 0.3.0
-
-
-Setting-up the paths for data import and output
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The import of data from the AEROCOM database in pyaerocom is controlled
-via an instance of the ``Config`` class. The attribute ``const`` of
-pyaerocom returns the current configuration.
-
-.. code:: ipython3
-
-    print(pya.const)
-
-
-.. parsed-literal::
-
-    
-    Pyaerocom Config
-    ----------------
-    
-    _config_ini: /home/jonasg/github/pyaerocom/pyaerocom/data/paths.ini
-    _modelbasedir: /lustre/storeA/project/aerocom/
-    _obsbasedir: /lustre/storeA/project/aerocom/
-    _cachedir: /home/jonasg/pyaerocom/_cache
-    _outputdir: /home/jonasg/pyaerocom
-    _caching_active: True
-    _var_param: None
-    GRID_IO: 
-    Pyaerocom GridIO
-    ----------------
-    
-       FILE_TYPE: .nc
-       TS_TYPES (list, 5 items)
-       ['hourly'
-        '3hourly'
-        ...
-        'monthly'
-        'yearly']
-    
-       DEL_TIME_BOUNDS: True
-       SHIFT_LONS: True
-       CHECK_TIME_FILENAME: True
-       CORRECT_TIME_FILENAME: True
-       CHECK_DIM_COORDS: False
-       EQUALISE_METADATA: True
-       USE_RENAMED_DIR: True
-       INCLUDE_SUBDIRS: False
-    OBSCONFIG (dict)
-    MODELDIRS (list)
-       ['/lustre/storeA/project/aerocom/aerocom1/'
-        '/lustre/storeA/project/aerocom/aerocom2/'
-        ...
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/'
-        '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
-    
-    WRITE_FILEIO_ERR_LOG: True
-    AERONET_SUN_V2L15_AOD_DAILY_NAME: AeronetSunV2Lev1.5.daily
-    AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME: AeronetSun_2.0_NRT
-    AERONET_SUN_V2L2_AOD_DAILY_NAME: AeronetSunV2Lev2.daily
-    AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME: AeronetSunV2Lev2.AP
-    AERONET_SUN_V2L2_SDA_DAILY_NAME: AeronetSDAV2Lev2.daily
-    AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME: AeronetSDAV2Lev2.AP
-    AERONET_INV_V2L15_DAILY_NAME: AeronetInvV2Lev1.5.daily
-    AERONET_INV_V2L15_ALL_POINTS_NAME: AeronetInvV2Lev1.5.AP
-    AERONET_INV_V2L2_DAILY_NAME: AeronetInvV2Lev2.daily
-    AERONET_INV_V2L2_ALL_POINTS_NAME: AeronetInvV2Lev2.AP
-    AERONET_SUN_V3L15_AOD_DAILY_NAME: AeronetSunV3Lev1.5.daily
-    AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME: AeronetSunV3Lev1.5.AP
-    AERONET_SUN_V3L2_AOD_DAILY_NAME: AeronetSunV3Lev2.daily
-    AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME: AeronetSunV3Lev2.AP
-    AERONET_SUN_V3L2_SDA_DAILY_NAME: AeronetSDAV3Lev2.daily
-    AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME: AeronetSDAV3Lev2.AP
-    AERONET_INV_V3L15_DAILY_NAME: AeronetInvV3Lev1.5.daily
-    AERONET_INV_V3L2_DAILY_NAME: AeronetInvV3Lev2.daily
-    EBAS_MULTICOLUMN_NAME: EBASMC
-    EEA_NAME: EEAAQeRep
-    EARLINET_NAME: EARLINET
-    DONOTCACHEFILE: /home/jonasg/pyaerocom/_cache/jonasg/DONOTCACHE
-
-
-You can check if the relevant base directories ``MODELBASEDIR`` and
-``OBSBASEDIR`` are valid.
-
-.. code:: ipython3
-
-    print("Base paths valid? %s" %pya.const.READY)
-
-
-.. parsed-literal::
-
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-
-
-.. parsed-literal::
-
-    Base paths valid? True
-
-
-The base directory for the databse search is:
+By default, pyaerocom assumes that the AEROCOM database can be accessed
+(cf. top of flowchart), that is, it initiates all data query paths
+relative to the database server path names.
 
 .. code:: ipython3
 
@@ -177,126 +70,29 @@ The base directory for the databse search is:
 
 
 
-And the search directories for model and obs data are relative to the
-base directory. They can be accessed via:
+**NOTE**: Execution of the following lines will only work if you are
+connected to the AEROCOM data server or if you have access to the
+pyaerocom testdataset. The latter can be retrieved upon request (please
+contact jonasg@met.no).
+
+Reading of and working with *gridded* model data (``ReadGridded`` and ``GriddedData`` classes)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This section illustrates the reading of gridded data as well as some
+features of the ``GriddedData`` class of *pyaerocom*. First, however, we
+have to find a valid model ID for the reading (cf. flow chart).
+
+Find model data
+'''''''''''''''
+
+The database contains data from the CAM53-Oslo model, which is used in
+the following. You can use the ``browse_database`` function of pyaerocom
+to find model ID’s (which can be quite cryptic sometimes) using wildcard
+pattern search.
 
 .. code:: ipython3
 
-    pya.const.MODELDIRS
-
-
-
-
-.. parsed-literal::
-
-    ['/lustre/storeA/project/aerocom/aerocom1/',
-     '/lustre/storeA/project/aerocom/aerocom2/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/C3S-Aerosol',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/ECLIPSE',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/ACCMIP/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/',
-     '/lustre/storeA/project/aerocom/aerocom2/EMEP_COPERNICUS/',
-     '/lustre/storeA/project/aerocom/aerocom2/EMEP/',
-     '/lustre/storeA/project/aerocom/aerocom2/EMEP_GLOBAL/',
-     '/lustre/storeA/project/aerocom/aerocom2/EMEP_SVN_TEST/',
-     '/lustre/storeA/project/aerocom/aerocom2/NorESM_SVN_TEST/',
-     '/lustre/storeA/project/aerocom/aerocom2/INCA/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/HTAP-PHASE-I/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/HTAP-PHASE-II/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-I/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III-Trend/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase1/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND3/',
-     '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-II-IND2/']
-
-
-
-And:
-
-.. code:: ipython3
-
-    pya.const.OBSDIRS
-
-
-
-
-.. parsed-literal::
-
-    ['/lustre/storeA/project/aerocom/',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunNRT',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0AllPoints/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L2.0.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L1.5.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L1.5.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L2.0.daily/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep/renamed',
-     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data']
-
-
-
-On init, these are set to default directories (assuming to have access
-to the Aerocom database). All subdirectories (relative to ``BASEDIR``)
-that are not available are removed. So, what is returned when calling
-the previous commands, is the directories that are accessible. If you
-work locally and do not resemble this database structure, these 2 lists
-will be likely empty. See below for instructions on how to set up
-pyaerocom when working locally.
-
-Browsing the database
-^^^^^^^^^^^^^^^^^^^^^
-
-Based on the defined paths, pyaerocom searches for data. Now, assuming
-there is access to the database, you can use the ``browse_database``
-method to search for available model or observational data using
-`wildcard search <https://en.wikipedia.org/wiki/Wildcard_character>`__.
-For instance, if you are interseted in data from MET Oslo, you can
-e.g. search:
-
-.. code:: ipython3
-
-    pya.browse_database('CAM5*Oslo*')
-
-
-.. parsed-literal::
-
-    Found more than 20 matches for based on input string CAM5*Oslo*:
-    
-    Matches: ['CAM53-Oslo_cdaeb5e_MG15CLM45_7oct2016IHK_2006-2014', 'CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PI_UNTUNED', 'CAM5-Oslo_TEST-emi2000', 'CAM53-Oslo_re9f8_MG15CLM45_4feb2016AK_PD_MG15MegVadSOA', 'CAM53-Oslo_r470Nudge_150315AG_BF1NudgePD2000', 'CAM53-Oslo_7310_MG15CLM45_5feb2017AG_7310Nudge2000', 'CAM53-Oslo_r610Nudge_011015AK_SOA_r610_PD', 'CAM53-Oslo_6b76dca_MG15CLM45_22aug2016AK_PDaug16UVPSndg', 'CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED', 'CAM53-Oslo_r34afMG15CLM45_160120AG_34af_megan_2000_NDG', 'CAM53-Oslo_r773bNudge_151215AG_PD_DMS_733b', 'CAM53-Oslo_r512Nudge_150315AK_PD2000nudged', 'CAM53-Oslo_r670Nudge_011115AG_R670_PD', 'CAM53-Oslo_7310_MG15CLM45_5feb2017AG_7310AMIP1850V', 'CAM53-Oslo_cdaeb5e_MG15CLM45_7oct2016IHK_ERA_2001-2015', 'CAM53-Oslo_20161109AK_ERAndg', 'CAM5.3-Oslo_MG15CLM45_10jun2017_AK_2005-2010', 'CAM53-Oslo_7310_MG15CLM45_5feb2017AG_7310AMIP20002', 'CAM5-Oslo_FAMIPWARMCnudge-emi2000.A2.CTRL', 'CAM5.3-Oslo_INSITU', 'CAM5.3-Oslo_CTRL2016', 'CAM5.3-Oslo_AP3-CTRL2016-PD', 'CAM5.3-Oslo_AP3-CTRL2016-PI']
-    
-    To receive more detailed information, please specify search ID more accurately
-
-
-Then, if you find something you are interested in, you can read the data
-using the ``pyaerocom.ReadGridded`` class (which will be introduced in
-more detail later). For instance:
-
-.. code:: ipython3
-
-    reader = pya.io.ReadGridded('CAM5.3-Oslo_CTRL2016')
-
-The print() method get’s you some more info about what is in there, that
-is, available variables, years and temporal resolutions:
-
-.. code:: ipython3
-
-    print(reader)
+    pya.browse_database('CAM53*-Oslo*UNTUNED*')
 
 
 .. parsed-literal::
@@ -304,408 +100,1876 @@ is, available variables, years and temporal resolutions:
     
     Pyaerocom ReadGridded
     ---------------------
-    Model ID: CAM5.3-Oslo_CTRL2016
-    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
-    Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
-    Available years: [2006, 2008, 2010]
-    Available time resolutions ['3hourly', 'daily']
-
-
-Working locally (Changing the paths)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you work on your local machine and you use the external AEROCOM user
-server, you might need to change the path settings. The easiest way to
-do this is to update the base directory where pyaerocom searches for
-models.
-
-.. code:: ipython3
-
-    pya.const.BASEDIR = '/home/'
-
-
-.. parsed-literal::
-
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom1/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/C3S-Aerosol
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/ECLIPSE
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/SATELLITE-DATA/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/ACCMIP/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/ECMWF/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP_COPERNICUS/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP_GLOBAL/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/EMEP_SVN_TEST/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/NorESM_SVN_TEST/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom2/INCA/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/HTAP-PHASE-I/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/HTAP-PHASE-II/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-I/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-II/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-III/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-III-Trend/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase1/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-II-IND3/
-    Model directory base path does not exist and will be removed from search tree: /home/aerocom-users-database/AEROCOM-PHASE-II-IND2/
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunNRT does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetRaw2.0/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0AllPoints/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L1.5.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L2.0.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/ does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L1.5.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/ does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V2L2.0.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/ does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L1.5.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L2.0.daily/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep/renamed does not exist
-    OBS directory path /home/aerocom1/AEROCOM_OBSDATA/Earlinet/data does not exist
-
-
-Now, since there is actually nothing below this base directory that
-matches the predefined search patterns, the list specifying search
-directories is empty.
-
-.. code:: ipython3
-
-    pya.const.MODELDIRS
-
-
-
-
-.. parsed-literal::
-
-    []
-
-
-
-Reading the aerosol optical detph at 550nm using a specified model ID
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The resulting list shows possible options that were found in the
-database. Let’s choose the *CAM5.3-Oslo_CTRL2016* run and import the
-data. In the following cell, we directly instantiate a read class for
-data import since we know the model and run ID from the previous cell
-(the read class basically includes the above used search method).
-
-Before we can read from the database, we have to reset the paths in the
-configuration.
-
-.. code:: ipython3
-
-    pya.const.reload(keep_basedirs=False)
-    pya.const.READY
-
-
-.. parsed-literal::
-
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-
-
-
-
-.. parsed-literal::
-
-    True
-
-
-
-.. code:: ipython3
-
-    read = pya.io.ReadGridded("CAM5.3-Oslo_CTRL2016")
-
-Okay, let’s see what is in there.
-
-.. code:: ipython3
-
-    print(read)
-
-
-.. parsed-literal::
-
+    Model ID: CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PI_UNTUNED
+    Data directory: /lustre/storeA/project/aerocom/aerocom2/NorESM_SVN_TEST/CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PI_UNTUNED/renamed
+    Available variables: ['abs440aer', 'abs440aercs', 'abs500aer', 'abs5503Daer', 'abs550aer', 'abs550bc', 'abs550dryaer', 'abs550dust', 'abs550oa', 'abs550so4', 'abs550ss', 'abs670aer', 'abs870aer', 'airmass', 'area', 'asy3Daer', 'bc5503Daer', 'cheaqpso4', 'chegpso4', 'chepso2', 'cl3D', 'clt', 'drybc', 'drydms', 'drydust', 'dryoa', 'dryso2', 'dryso4', 'dryss', 'ec5503Daer', 'ec550dryaer', 'emibc', 'emidms', 'emidust', 'emioa', 'emiso2', 'emiso4', 'emiss', 'hus', 'landf', 'loadbc', 'loaddms', 'loaddust', 'loadoa', 'loadso2', 'loadso4', 'loadss', 'mmraerh2o', 'mmrbc', 'mmrdu', 'mmroa', 'mmrso4', 'mmrss', 'od440aer', 'od440csaer', 'od550aer', 'od550aerh2o', 'od550bc', 'od550csaer', 'od550dust', 'od550lt1aer', 'od550lt1dust', 'od550oa', 'od550so4', 'od550ss', 'od670aer', 'od870aer', 'od870csaer', 'orog', 'precip', 'pressure', 'ps', 'rlds', 'rlus', 'rlut', 'rlutcs', 'rsds', 'rsdscs', 'rsdt', 'rsus', 'rsut', 'sconcbc', 'sconcdms', 'sconcdust', 'sconcoa', 'sconcso2', 'sconcso4', 'sconcss', 'temp', 'vmrdms', 'vmrso2', 'wetbc', 'wetdms', 'wetdust', 'wetoa', 'wetso2', 'wetso4', 'wetss']
+    Available years: [9999]
+    Available time resolutions ['monthly']
     
     Pyaerocom ReadGridded
     ---------------------
-    Model ID: CAM5.3-Oslo_CTRL2016
-    Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
-    Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
-    Available years: [2006, 2008, 2010]
-    Available time resolutions ['3hourly', 'daily']
+    Model ID: CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED
+    Data directory: /lustre/storeA/project/aerocom/aerocom2/NorESM_SVN_TEST/CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED/renamed
+    Available variables: ['abs440aer', 'abs440aercs', 'abs500aer', 'abs5503Daer', 'abs550aer', 'abs550aercs', 'abs550bc', 'abs550dryaer', 'abs550dust', 'abs550oa', 'abs550so4', 'abs550ss', 'abs670aer', 'abs870aer', 'airmass', 'ang4487aer', 'ang4487csaer', 'area', 'asy3Daer', 'bc5503Daer', 'cheaqpso4', 'chegpso4', 'chepso2', 'cl3D', 'clt', 'drybc', 'drydms', 'drydust', 'dryoa', 'dryso2', 'dryso4', 'dryss', 'ec5503Daer', 'ec550dryaer', 'emibc', 'emidms', 'emidust', 'emioa', 'emiso2', 'emiso4', 'emiss', 'hus', 'landf', 'loadbc', 'loaddms', 'loaddust', 'loadoa', 'loadso2', 'loadso4', 'loadss', 'mmraerh2o', 'mmrbc', 'mmrdu', 'mmroa', 'mmrso4', 'mmrss', 'od440aer', 'od440csaer', 'od550aer', 'od550aerh2o', 'od550bc', 'od550csaer', 'od550dust', 'od550lt1aer', 'od550lt1dust', 'od550oa', 'od550so4', 'od550ss', 'od670aer', 'od870aer', 'od870csaer', 'orog', 'precip', 'pressure', 'ps', 'rlds', 'rlus', 'rlut', 'rlutcs', 'rsds', 'rsdscs', 'rsdt', 'rsus', 'rsut', 'sconcbc', 'sconcdms', 'sconcdust', 'sconcoa', 'sconcso2', 'sconcso4', 'sconcss', 'temp', 'vmrdms', 'vmrso2', 'wetbc', 'wetdms', 'wetdust', 'wetoa', 'wetso2', 'wetso4', 'wetss']
+    Available years: [2004, 2005, 2006, 2007, 2008, 2009, 2010, 9999]
+    Available time resolutions ['monthly']
 
 
-Let’s load results for the aerosol optical depth (*od550aer*) for march
-2010. The read function take a string or a list of strings as input for
-specifying one or more variables that are supposed to be read. Thus, the
-return type of this method is **always a tuple, even if we only provide
-one variable** (as in the following example) and as a result, the loaded
-data object has to be accessed using the first index of the tuple.
+Read Aerosol optical depth at 550 nm
+''''''''''''''''''''''''''''''''''''
+
+Import both clear-sky (*cs* in variable name) and all-sky data.
 
 .. code:: ipython3
 
-    data = read.read("od550aer", start="1 march 2010", stop="31 march 2010")[0]
+    reader = pya.io.ReadGridded('CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED')
+    od550aer = reader.read_var('od550aer')
+    od550csaer = reader.read_var('od550csaer')
 
-Accessing the data and plotting a map
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Both data objects are instances of class
+`GriddedData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddeddata>`__
+which is based on the
+`Cube <https://scitools.org.uk/iris/docs/v1.9.0/html/iris/iris/cube.html#iris.cube.Cube>`__
+class (`iris
+library <https://scitools.org.uk/iris/docs/v1.9.0/html/index.html>`__)
+and features very similar functionality and more.
 
-The loaded data is of type *GriddedData* and can now be used for further
-analysis. It’s string representation contains a useful summary of what
-is in there.
+Some of these features are introduced below.
+
+Overview of what is in the data
+'''''''''''''''''''''''''''''''
+
+Simply print the object.
 
 .. code:: ipython3
 
-    print(data)
+    print(od550aer)
 
 
 .. parsed-literal::
 
-    pyaerocom.GriddedData: CAM5.3-Oslo_CTRL2016
-    Grid data: Aerosol optical depth at 550nm / (1) (time: 248; latitude: 192; longitude: 288)
+    pyaerocom.GriddedData: CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED
+    Grid data: Aerosol optical depth at 500nm / (1) (time: 84; latitude: 192; longitude: 288)
          Dimension coordinates:
-              time                            x              -               -
-              latitude                        -              x               -
-              longitude                       -              -               x
+              time                            x             -               -
+              latitude                        -             x               -
+              longitude                       -             -               x
          Attributes:
               Conventions: CF-1.0
               NCO: 4.3.7
               Version: $Name$
-              case: optINSITUnRemote
-              history: Wed Feb  8 11:55:24 2017: ncatted -O -a units,od550aer,o,c,1 TMPmnth_od550aer.2010-01.nc
-    Wed...
-              host: r10i0n0
+              case: 53OSLO_PD_UNTUNED
+              history: Thu Feb  9 11:05:21 2017: ncatted -O -a units,od550aer,o,c,1 /projects/NS2345K/CAM-Oslo/DO_AEROCOM/CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED/renamed/aerocom3_CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED_od550aer_Column_2004_monthly.nc
+    Thu...
+              host: hexagon-2
               initial_file: /work/shared/noresm/inputdata/atm/cam/inic/fv/cami-mam3_0000-01-01_0.9...
-              logname: kirkevag
+              logname: ihkarset
               nco_openmp_thread_number: 1
               revision_Id: $Id$
               source: CAM
               title: UNSET
               topography_file: /work/shared/noresm/inputdata/noresm-only/inputForNudging/ERA_f09f09_3...
+         Cell methods:
+              mean: time
 
-
-The data comprises 31 time stamps, as expected, since we picked one
-month and the dataset is daily. Now, for instance, we can crop the data
-using a predefined region (e.g. South America) and plot the first day of
-the dataset.
 
 .. code:: ipython3
 
-    fig = data.crop(region="SAMERICA").quickplot_map(time_idx=0)
-
-
-
-.. image:: tut00_get_started/tut00_get_started_33_0.png
-
-
-We might also be interested in the weighted area average for the month
-that we extracted.
-
-.. code:: ipython3
-
-    weighted_mean = data.area_weighted_mean()
-    weighted_mean
+    print(od550csaer)
 
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/analysis/cartography.py:377: UserWarning: Using DEFAULT_SPHERICAL_EARTH_RADIUS.
-      warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+    pyaerocom.GriddedData: CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED
+    Grid data: Clear air Aerosol optical depth at 550nm / (1) (time: 84; latitude: 192; longitude: 288)
+         Dimension coordinates:
+              time                                      x             -               -
+              latitude                                  -             x               -
+              longitude                                 -             -               x
+         Attributes:
+              Conventions: CF-1.0
+              NCO: 4.3.7
+              Version: $Name$
+              case: 53OSLO_PD_UNTUNED
+              history: Thu Feb  9 11:05:16 2017: ncatted -O -a units,od550csaer,o,c,1 /projects/NS2345K/CAM-Oslo/DO_AEROCOM/CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED/renamed/aerocom3_CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED_od550csaer_Column_2004_monthly.nc
+    Thu...
+              host: hexagon-2
+              initial_file: /work/shared/noresm/inputdata/atm/cam/inic/fv/cami-mam3_0000-01-01_0.9...
+              logname: ihkarset
+              nco_openmp_thread_number: 1
+              revision_Id: $Id$
+              source: CAM
+              title: UNSET
+              topography_file: /work/shared/noresm/inputdata/noresm-only/inputForNudging/ERA_f09f09_3...
+         Cell methods:
+              mean: time
 
 
+Access time stamps
+''''''''''''''''''
 
-
-.. parsed-literal::
-
-    masked_array(data=[0.13707124521646233, 0.1373723321458452,
-                       0.13640485953205256, 0.13661781887097216,
-                       0.13832752529888542, 0.13943940046228157,
-                       0.13906411166070964, 0.13903393246626614,
-                       0.1389572414826536, 0.1387749384645807,
-                       0.13859131867159108, 0.1392616918989809,
-                       0.14148057496888855, 0.14422837963496726,
-                       0.14485939091969455, 0.14382647033828228,
-                       0.1429247987684401, 0.14132091948668582,
-                       0.13963221183937138, 0.13899722350877253,
-                       0.1397316309699972, 0.140429463344697,
-                       0.13979820277861796, 0.13931129118926358,
-                       0.1382730558010573, 0.13705837683541341,
-                       0.13626943214697504, 0.13656861866930264,
-                       0.13828947462737487, 0.13862655803764867,
-                       0.13801004090860575, 0.13816556759043425,
-                       0.13891506072795737, 0.13885491398159325,
-                       0.13791297848698755, 0.13786872604208614,
-                       0.1383256634671104, 0.13802173506964452,
-                       0.13734295888393036, 0.13670887870882611,
-                       0.13583143441388867, 0.134603109796585,
-                       0.1333276946610027, 0.13244025688660607,
-                       0.13297618583370702, 0.13337864744931724,
-                       0.13325346476065494, 0.13273727817161787,
-                       0.13272747346724398, 0.1333092276404929,
-                       0.1333797519133725, 0.13433262445580588,
-                       0.13693531065433906, 0.13957995569444528,
-                       0.13962851699132414, 0.13859857966249953,
-                       0.13791145087797585, 0.13739929473269538,
-                       0.13723982261191392, 0.1380459466011261,
-                       0.13946419690290854, 0.14042819240907664,
-                       0.13931406757480316, 0.13866676878977408,
-                       0.13822170463985428, 0.13778772182438,
-                       0.13651838547716436, 0.13615014242990736,
-                       0.13744348000076528, 0.13995109480361492,
-                       0.1411970413507769, 0.14199804429653667,
-                       0.14258413847594195, 0.14220802982119984,
-                       0.14140121976767336, 0.14120394722823995,
-                       0.14162688135139243, 0.14188006322900268,
-                       0.1414684469806162, 0.14223318292711828,
-                       0.14334570700875637, 0.14337269717823287,
-                       0.1421074317050635, 0.14175130499968785,
-                       0.14035452134831083, 0.1388756394628699,
-                       0.13762539366487916, 0.13717837639346694,
-                       0.13737289737903915, 0.13747045610992034,
-                       0.13745494956066656, 0.1378100303636898,
-                       0.1382755441221473, 0.13892579338926514,
-                       0.13933988912083564, 0.14051427623407034,
-                       0.142736023510284, 0.14312065245179398,
-                       0.14234607987063616, 0.14275634737217646,
-                       0.1437991330395562, 0.14502984115661513,
-                       0.14599941360148747, 0.14601582462470347,
-                       0.14640728011839496, 0.14610034153933943,
-                       0.14537368722625044, 0.14578767727711434,
-                       0.14607726598563622, 0.14605008459289356,
-                       0.1460609898662843, 0.14703622375646566,
-                       0.1478730521106064, 0.14803795993760244,
-                       0.14711712713761174, 0.14729376248796983,
-                       0.14851956275002343, 0.14967160487601566,
-                       0.14983351441403536, 0.1495072510640238,
-                       0.14926850286432325, 0.14944789863237368,
-                       0.14876039934421642, 0.1488120453274109,
-                       0.1498588856911828, 0.15175075392107956,
-                       0.15258806488973015, 0.15286511152135315,
-                       0.15386619169423127, 0.15464113549871336,
-                       0.15379449982944376, 0.1543578549941653,
-                       0.15808873311045932, 0.16173720799971888,
-                       0.16307998367790294, 0.16233174812565518,
-                       0.1622602797752089, 0.16177535638150164,
-                       0.16164991550698743, 0.16343753440952663,
-                       0.16855594710934646, 0.1719380617102505,
-                       0.173537727285836, 0.17268164846620168,
-                       0.17202374731742412, 0.17073150361330935,
-                       0.1704552789189035, 0.17349453196470094,
-                       0.17750026098212954, 0.17998882407680658,
-                       0.18054660903180453, 0.17991221467411075,
-                       0.17879081786543402, 0.17698044738876634,
-                       0.17481216302184016, 0.1751095588835362,
-                       0.17730235300005773, 0.17828917633948513,
-                       0.17798693352549597, 0.1772903761042442,
-                       0.17719593452088098, 0.1767203402146187,
-                       0.17450815886422721, 0.17625358243592468,
-                       0.17887701620267582, 0.1808136330474918,
-                       0.1813785961957623, 0.18172509147369986,
-                       0.18184876453017618, 0.18271725245843057,
-                       0.18252036797692608, 0.183265249795722,
-                       0.1844909214607128, 0.18434110595951833,
-                       0.1836490864781075, 0.1819315626374836,
-                       0.18101720818481568, 0.17955118573504456,
-                       0.17735986473912252, 0.17627436278489908,
-                       0.17619709057120855, 0.17565989305918675,
-                       0.173237661796461, 0.17174118540853084,
-                       0.1715433743879658, 0.17103179349744851,
-                       0.17009143210388886, 0.17036903993748823,
-                       0.1701968332986933, 0.16931755448903732,
-                       0.16809969031904087, 0.16694191454539364,
-                       0.16614923082470998, 0.16574702124976093,
-                       0.16442009711927774, 0.163817742262745,
-                       0.16433976044469292, 0.16499539122759532,
-                       0.16405480998741243, 0.1628713751723746,
-                       0.16180210801804973, 0.16132300069909628,
-                       0.16076469208509833, 0.1619812080249729,
-                       0.16568802507402378, 0.16834462196868816,
-                       0.1688091207855011, 0.16874451605557048,
-                       0.16918274517630819, 0.16976238755144346,
-                       0.16853813844367546, 0.1689505218199379,
-                       0.17008794466862398, 0.1713995695153675,
-                       0.17160758485378236, 0.1719104396714293,
-                       0.17141519454588505, 0.17098573396603006,
-                       0.17014341748677245, 0.17124457916107655,
-                       0.17343997831072036, 0.17267167552123458,
-                       0.17119276567171318, 0.17110151528151052,
-                       0.17129777088602452, 0.1706512286992157,
-                       0.1697909385002585, 0.1701305419449026,
-                       0.17177346958794434, 0.17199251637814433,
-                       0.1717777280458928, 0.17140460031838234,
-                       0.1708872614290405, 0.16939067518025105,
-                       0.16730749171621387, 0.16687632033654826,
-                       0.16768823626524956, 0.16777431113498986,
-                       0.16696977975746236, 0.1663374313210154,
-                       0.16650691596502723, 0.16594519982156614,
-                       0.1651931704892058, 0.1651909843511451,
-                       0.16565543871393762, 0.1660138264006659,
-                       0.16468225292020627, 0.16419141107042712],
-                 mask=[False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False,
-                       False, False, False, False, False, False, False, False],
-           fill_value=1e+20)
-
-
+Time stamps are represented as numerical values with respect to a
+reference date and frequency, according to the CF conventions. They can
+be accessed via the ``time`` attribute of the data class.
 
 .. code:: ipython3
 
-    import pandas as pd
-    pd.Series(weighted_mean, data.time_stamps()).plot()
+    od550aer.time
 
 
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f2d7825dda0>
+    DimCoord(array([   0.,   31.,   60.,   91.,  121.,  152.,  182.,  213.,  244.,
+            274.,  305.,  335.,  366.,  397.,  425.,  456.,  486.,  517.,
+            547.,  578.,  609.,  639.,  670.,  700.,  731.,  762.,  790.,
+            821.,  851.,  882.,  912.,  943.,  974., 1004., 1035., 1065.,
+           1096., 1127., 1155., 1186., 1216., 1247., 1277., 1308., 1339.,
+           1369., 1400., 1430., 1461., 1492., 1521., 1552., 1582., 1613.,
+           1643., 1674., 1705., 1735., 1766., 1796., 1827., 1858., 1886.,
+           1917., 1947., 1978., 2008., 2039., 2070., 2100., 2131., 2161.,
+           2192., 2223., 2251., 2282., 2312., 2343., 2373., 2404., 2435.,
+           2465., 2496., 2526.]), standard_name='time', units=Unit('days since 2004-01-01 00:00:00', calendar='standard'))
+
+
+
+You may also want the time-stamps in the form of actual datetime-like
+objects. These can be computed using the ``time_stamps()`` method:
+
+.. code:: ipython3
+
+    od550aer.time_stamps()
 
 
 
 
-.. image:: tut00_get_started/tut00_get_started_36_1.png
+.. parsed-literal::
+
+    array(['2004-01-01T00:00:00.000000', '2004-02-01T00:00:00.000000',
+           '2004-03-01T00:00:00.000000', '2004-04-01T00:00:00.000000',
+           '2004-05-01T00:00:00.000000', '2004-06-01T00:00:00.000000',
+           '2004-07-01T00:00:00.000000', '2004-08-01T00:00:00.000000',
+           '2004-09-01T00:00:00.000000', '2004-10-01T00:00:00.000000',
+           '2004-11-01T00:00:00.000000', '2004-12-01T00:00:00.000000',
+           '2005-01-01T00:00:00.000000', '2005-02-01T00:00:00.000000',
+           '2005-03-01T00:00:00.000000', '2005-04-01T00:00:00.000000',
+           '2005-05-01T00:00:00.000000', '2005-06-01T00:00:00.000000',
+           '2005-07-01T00:00:00.000000', '2005-08-01T00:00:00.000000',
+           '2005-09-01T00:00:00.000000', '2005-10-01T00:00:00.000000',
+           '2005-11-01T00:00:00.000000', '2005-12-01T00:00:00.000000',
+           '2006-01-01T00:00:00.000000', '2006-02-01T00:00:00.000000',
+           '2006-03-01T00:00:00.000000', '2006-04-01T00:00:00.000000',
+           '2006-05-01T00:00:00.000000', '2006-06-01T00:00:00.000000',
+           '2006-07-01T00:00:00.000000', '2006-08-01T00:00:00.000000',
+           '2006-09-01T00:00:00.000000', '2006-10-01T00:00:00.000000',
+           '2006-11-01T00:00:00.000000', '2006-12-01T00:00:00.000000',
+           '2007-01-01T00:00:00.000000', '2007-02-01T00:00:00.000000',
+           '2007-03-01T00:00:00.000000', '2007-04-01T00:00:00.000000',
+           '2007-05-01T00:00:00.000000', '2007-06-01T00:00:00.000000',
+           '2007-07-01T00:00:00.000000', '2007-08-01T00:00:00.000000',
+           '2007-09-01T00:00:00.000000', '2007-10-01T00:00:00.000000',
+           '2007-11-01T00:00:00.000000', '2007-12-01T00:00:00.000000',
+           '2008-01-01T00:00:00.000000', '2008-02-01T00:00:00.000000',
+           '2008-03-01T00:00:00.000000', '2008-04-01T00:00:00.000000',
+           '2008-05-01T00:00:00.000000', '2008-06-01T00:00:00.000000',
+           '2008-07-01T00:00:00.000000', '2008-08-01T00:00:00.000000',
+           '2008-09-01T00:00:00.000000', '2008-10-01T00:00:00.000000',
+           '2008-11-01T00:00:00.000000', '2008-12-01T00:00:00.000000',
+           '2009-01-01T00:00:00.000000', '2009-02-01T00:00:00.000000',
+           '2009-03-01T00:00:00.000000', '2009-04-01T00:00:00.000000',
+           '2009-05-01T00:00:00.000000', '2009-06-01T00:00:00.000000',
+           '2009-07-01T00:00:00.000000', '2009-08-01T00:00:00.000000',
+           '2009-09-01T00:00:00.000000', '2009-10-01T00:00:00.000000',
+           '2009-11-01T00:00:00.000000', '2009-12-01T00:00:00.000000',
+           '2010-01-01T00:00:00.000000', '2010-02-01T00:00:00.000000',
+           '2010-03-01T00:00:00.000000', '2010-04-01T00:00:00.000000',
+           '2010-05-01T00:00:00.000000', '2010-06-01T00:00:00.000000',
+           '2010-07-01T00:00:00.000000', '2010-08-01T00:00:00.000000',
+           '2010-09-01T00:00:00.000000', '2010-10-01T00:00:00.000000',
+           '2010-11-01T00:00:00.000000', '2010-12-01T00:00:00.000000'],
+          dtype='datetime64[us]')
 
 
-The following notebook introduces in more detail how pyaerocom handles
-regions and where they can be defined. In the subsequent tutorial, the
-``ReadGridded`` class is introduced, that was usesed above to import
-model data in a flexible way based on variable name, time range and
-temporal resolution. The loaded data for each model and variable is then
-stored in the analysis class ``GriddedData`` which we use in the end of
-this notebook and which will be introduced in a later tutorial.
+
+Plotting maps
+'''''''''''''
+
+Maps of individual time stamps can be plotted using the quickplot_map
+method.
+
+.. code:: ipython3
+
+    ax1 = od550aer.quickplot_map('2009-3-15')
+    ax2 = od550csaer.quickplot_map('2009-3-15')
+
+
+
+.. image:: tut00_get_started/tut00_get_started_23_0.png
+
+
+
+.. image:: tut00_get_started/tut00_get_started_23_1.png
+
+
+Filtering
+'''''''''
+
+Regional filtering can be performed using the
+`Filter <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.filter>`__
+class (cf. flowchart above).
+
+An overview of available default regions can be accessed via:
+
+.. code:: ipython3
+
+    print(pya.region.get_all_default_region_ids())
+
+
+.. parsed-literal::
+
+    ['WORLD', 'EUROPE', 'ASIA', 'AUSTRALIA', 'CHINA', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
+
+
+Now let’s go for north Africa. Create instance of Filter class:
+
+.. code:: ipython3
+
+    f = pya.Filter('NAFRICA')
+    f
+
+
+
+
+.. parsed-literal::
+
+    Filter([('_name', 'NAFRICA-wMOUNTAINS'),
+            ('_region',
+             Region NAFRICA Region([('_name', 'NAFRICA'), ('lon_range', [-20, 50]), ('lat_range', [0, 40]), ('lon_range_plot', [-20, 50]), ('lat_range_plot', [0, 40]), ('lon_ticks', None), ('lat_ticks', None)])),
+            ('lon_range', [-20, 50]),
+            ('lat_range', [0, 40]),
+            ('alt_range', None)])
+
+
+
+… and apply to the two data objects (this can be done by calling the
+filter with the corresponding data class as input parameter):
+
+.. code:: ipython3
+
+    od550aer_nafrica = f(od550aer)
+    od550csaer_nafrica = f(od550csaer)
+
+Compare shapes:
+
+.. code:: ipython3
+
+    od550aer_nafrica
+
+
+
+
+.. parsed-literal::
+
+    pyaerocom.GriddedData
+    Grid data: <iris 'Cube' of Aerosol optical depth at 500nm / (1) (time: 84; latitude: 42; longitude: 57)>
+
+
+
+.. code:: ipython3
+
+    od550aer
+
+
+
+
+.. parsed-literal::
+
+    pyaerocom.GriddedData
+    Grid data: <iris 'Cube' of Aerosol optical depth at 500nm / (1) (time: 84; latitude: 192; longitude: 288)>
+
+
+
+As you can see, the filtered object is reduced in the longitude and
+latitude dimension. Let’s plot the two new objects:
+
+.. code:: ipython3
+
+    ax1 = od550aer_nafrica.quickplot_map('2009-3-15')
+    ax2 = od550csaer_nafrica.quickplot_map('2009-3-15')
+
+
+
+.. image:: tut00_get_started/tut00_get_started_34_0.png
+
+
+
+.. image:: tut00_get_started/tut00_get_started_34_1.png
+
+
+Filtering of time
+'''''''''''''''''
+
+Filtering of time is not yet included in the Filter class but can be
+easily performed from the ``GriddedData`` object directly. If you know
+the indices of the time stamps you want to crop, you can simply use
+numpy indexing syntax (remember that we have a 3D array containing time,
+latitude and lonfgitude).
+
+Let’s say we want to filter the **year 2009**.
+
+Since the time dimension corresponds the first index in the 3D data
+(time, lat, lon), and since we know, that we have monthly data from
+2008-2010 (see above), we may use
+
+.. code:: ipython3
+
+    od550aer_nafrica_2009 = od550aer_nafrica[12:24]
+    od550aer_nafrica_2009.time_stamps()
+
+
+
+
+.. parsed-literal::
+
+    array(['2005-01-01T00:00:00.000000', '2005-02-01T00:00:00.000000',
+           '2005-03-01T00:00:00.000000', '2005-04-01T00:00:00.000000',
+           '2005-05-01T00:00:00.000000', '2005-06-01T00:00:00.000000',
+           '2005-07-01T00:00:00.000000', '2005-08-01T00:00:00.000000',
+           '2005-09-01T00:00:00.000000', '2005-10-01T00:00:00.000000',
+           '2005-11-01T00:00:00.000000', '2005-12-01T00:00:00.000000'],
+          dtype='datetime64[us]')
+
+
+
+in order to extract the year 2009.
+
+However, this methodology might not always be handy (imagine you have a
+10 year dataset of ``3hourly`` sampled data and want to extract three
+months in the 6th year …). In that case, you can perform the cropping
+using the actual timestamps (for comparibility, let’s stick to 2009
+here):
+
+.. code:: ipython3
+
+    od550aer_nafrica_2009_alt = od550aer_nafrica.crop(time_range=('1-1-2009', '1-1-2010'))
+    od550aer_nafrica_2009.time_stamps()
+
+
+
+
+.. parsed-literal::
+
+    array(['2005-01-01T00:00:00.000000', '2005-02-01T00:00:00.000000',
+           '2005-03-01T00:00:00.000000', '2005-04-01T00:00:00.000000',
+           '2005-05-01T00:00:00.000000', '2005-06-01T00:00:00.000000',
+           '2005-07-01T00:00:00.000000', '2005-08-01T00:00:00.000000',
+           '2005-09-01T00:00:00.000000', '2005-10-01T00:00:00.000000',
+           '2005-11-01T00:00:00.000000', '2005-12-01T00:00:00.000000'],
+          dtype='datetime64[us]')
+
+
+
+Data aggregation
+''''''''''''''''
+
+Let’s say we want to compute yearly means for each of the 3 years. In
+this case we can simply call the ``downscale_time`` method:
+
+.. code:: ipython3
+
+    od550aer_nafrica.downscale_time('yearly')
+    od550aer_nafrica.quickplot_map('2009')
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_41_0.png
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_41_1.png
+
+
+**Note**: seasonal aggregation is not yet implemented in pyaerocom but
+will follow soon.
+
+In the following section the reading of ungridded data is illustrated
+based on the example of AERONET version 3 (level 2) data. The test
+dataset contains a randomly picked subset of 100 Aeronet stations.
+Aeronet provides different products,
+
+Reading of and working with ungridded data (``ReadUngridded`` and ``UngriddedData`` classes)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Ungridded data in pyaerocom refers to data that is available in the form
+of *files per station* and that is not sampled in a manner that it would
+make sense to translate into a rgular gridded format such as the
+previously introduced ``GriddedData`` class.
+
+Data from the AERONET network (that is introduced in the following), for
+instance, is provided in the form of column seperated text files per
+measurement station, where columns correspond to different variables and
+data rows to individual time stamps. Needless to say that the time
+stamps (or the covered periods) vary from station to station.
+
+The basic workflow for reading of ungridded data, such as Aeronet data,
+is very similar to the reading of gridded data (comprising a reading
+class that handles a query and returns a data class, here
+`UngriddedData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.ungriddeddata>`__
+(see also flow chart above).
+
+Before we can continue with the data import, some things need to be said
+related to the caching of ``UngriddedData`` objects.
+
+Caching of UngriddedData
+''''''''''''''''''''''''
+
+Reading of ungridded data is often rather time-consuming. Therefore,
+pyaerocom uses a caching strategy that stores loaded instances of the
+``UngriddedData`` class as pickle files in a cache directory
+(illustrated in the left hand side of the flowchart shown above). The
+loaction of the cache directory can be accessed via:
+
+.. code:: ipython3
+
+    pya.const.CACHEDIR
+
+
+
+
+.. parsed-literal::
+
+    '/home/jonasg/pyaerocom/_cache/jonasg'
+
+
+
+You may change this directory if required.
+
+.. code:: ipython3
+
+    print('Caching is active? {}'.format(pya.const.CACHING))
+
+
+.. parsed-literal::
+
+    Caching is active? True
+
+
+**Deactivate caching**
+
+.. code:: ipython3
+
+    pya.const.CACHING = False
+
+**Activate caching**
+
+.. code:: ipython3
+
+    pya.const.CACHING = True
+
+**Note**: if caching is active, make sure you have enough disk quota or
+change location where the files are stored.
+
+Read Aeronet Sun v3 level 2 data
+''''''''''''''''''''''''''''''''
+
+As illustrated in the flowchart above, ungridded observation data can be
+imported using the ``ReadUngridded`` class. The reading class requires
+an ID for the observation network that is supposed to be read. Let’s
+find the right ID for these data:
+
+.. code:: ipython3
+
+    pya.browse_database('Aeronet*V3*Lev2*')
+
+
+.. parsed-literal::
+
+    
+    Dataset name: AeronetSunV3Lev2.daily
+    Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed
+    Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
+    Last revision: 20180820
+    Reading failed for AeronetSunV3Lev2.AP. Error: OSError('Data directory /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed of observation network AeronetSunV3Lev2.AP does not exists',)
+    
+    Dataset name: AeronetSDAV3Lev2.daily
+    Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.SDA.V3L2.0.daily/renamed
+    Supported variables: ['od500gt1aer', 'od500lt1aer', 'od500aer', 'ang4487aer', 'od550aer', 'od550gt1aer', 'od550lt1aer']
+    Last revision: 20180928
+    Reading failed for AeronetSDAV3Lev2.AP. Error: NetworkNotImplemented('No reading class available yet for dataset AeronetSDAV3Lev2.AP',)
+    
+    Dataset name: AeronetInvV3Lev2.daily
+    Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Aeronet.Inv.V3L2.0.daily/renamed
+    Supported variables: ['abs440aer', 'angabs4487aer', 'od440aer', 'ang4487aer', 'abs550aer', 'od550aer']
+    Last revision: 20180728
+
+
+It found one match and the dataset ID is *AeronetSunV3Lev2.daily*. It
+also tells us what variables can be loaded via the interface.
+
+**Note**: You can safely ignore all the warnings in the output. These
+are due to the fact that the testdata set does not contain all
+observation networks that are available in the AEROCOM database.
+
+.. code:: ipython3
+
+    obs_reader = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
+    print(obs_reader)
+
+
+.. parsed-literal::
+
+    
+    Dataset name: AeronetSunV3Lev2.daily
+    Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed
+    Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
+    Last revision: 20180820
+
+
+Let’s read the data (you can read a single or multiple variables at the
+same time). For now, we only read the AOD at 550 nm:
+
+.. code:: ipython3
+
+    aeronet_data = obs_reader.read(vars_to_retrieve='od550aer')
+    type(aeronet_data) #displays data type
+
+
+
+
+.. parsed-literal::
+
+    pyaerocom.ungriddeddata.UngriddedData
+
+
+
+As you can see, the data object is of type ``UngriddedData``. Like the
+``GriddedData`` object, also the ``UngriddedData`` class has an
+informative string representation (that can be printed):
+
+.. code:: ipython3
+
+    print(aeronet_data)
+
+
+.. parsed-literal::
+
+    
+    Pyaerocom UngriddedData
+    -----------------------
+    Contains networks: ['AeronetSunV3Lev2.daily']
+    Contains variables: ['od550aer']
+    Contains instruments: ['sun_photometer']
+    Total no. of stations: 1165
+
+
+Access of individual stations
+'''''''''''''''''''''''''''''
+
+.. code:: ipython3
+
+    aeronet_data.station_name
+
+
+
+
+.. parsed-literal::
+
+    ['AOE_Baotou',
+     'ARM_Ascension_Is',
+     'ARM_Barnstable_MA',
+     'ARM_Darwin',
+     'ARM_Gan_Island',
+     'ARM_Graciosa',
+     'ARM_Highlands_MA',
+     'ARM_HyytialaFinland',
+     'ARM_Manacapuru',
+     'ARM_McMurdo',
+     'ARM_Nainital',
+     'ARM_Oliktok_AK',
+     'ARM_WAIS',
+     'ATHENS-NOA',
+     'Abisko',
+     'Abracos_Hill',
+     'Abu_Al_Bukhoosh',
+     'Abu_Dhabi',
+     'Adelaide_Site_7',
+     'AgiaMarina_Xyliatou',
+     'Agoufou',
+     'Agri_School',
+     'Aguas_Emendadas',
+     'Aguascalientes',
+     'Ahi_De_Cara',
+     'Ahmedabad',
+     'Aire_Adour',
+     'Al_Ain',
+     'Al_Dhafra',
+     'Al_Khaznah',
+     'Al_Qlaa',
+     'Albergue_UGR',
+     'Alboran',
+     'Albuquerque',
+     'Alishan',
+     'Alta_Floresta',
+     'Amazon_ATTO_Tower',
+     'American_Samoa',
+     'Ames',
+     'Amsterdam_Island',
+     'Andenes',
+     'Andros_Island',
+     'Angiola',
+     'Anmyon',
+     'AntarcticaDomeC',
+     'Appalachian_State',
+     'Appledore_Island',
+     'Apra_Harbor',
+     'Aras_de_los_Olmos',
+     'Arcachon',
+     'Arica',
+     'Ariquiums',
+     'Arizona',
+     'Armilla',
+     'Ascension_Island',
+     'Asia1',
+     'Aubiere_LAMP',
+     'Autilla',
+     'Avignon',
+     'Azores',
+     'BMKG_GAW_PALU',
+     'BONDVILLE',
+     'BORDEAUX',
+     'BSRN_BAO_Boulder',
+     'Bac_Giang',
+     'Bac_Lieu',
+     'Bach_Long_Vy',
+     'BackGarden_GZ',
+     'Badajoz',
+     'Baengnyeong',
+     'Bahrain',
+     'Bakersfield',
+     'Balbina',
+     'Bambey-ISRA',
+     'Bamboo',
+     'Bandung',
+     'Baneasa',
+     'Banizoumbou',
+     'Barbados',
+     'Barbados_SALTRACE',
+     'Barcelona',
+     'Bareilly',
+     'Bari_University',
+     'Barnaul',
+     'Barrow',
+     'Baskin',
+     'Bayfordbury',
+     'Beijing-CAMS',
+     'Beijing',
+     'Beijing_RADI',
+     'Belsk',
+     'Belterra',
+     'Ben_McDhui',
+     'Ben_Salem',
+     'Berlin_FUB',
+     'Bermuda',
+     'Bethlehem',
+     'Bhola',
+     'Biarritz',
+     'Bidi_Bahn',
+     'Big_Meadows',
+     'Billerica',
+     'Birdsville',
+     'Birkenes',
+     'Black_Forest_AMF',
+     'Blida',
+     'Blyth_NOAH',
+     'Bodele',
+     'Bolzano',
+     'Bonanza',
+     'Bonanza_Creek',
+     'Bondoukoui',
+     'Bordj_Badji_Mokhtar',
+     'Bordman',
+     'Bose_Institute',
+     'Boulder',
+     'Boyd_County_MS',
+     'Bozeman',
+     'Bragansa',
+     'Brasilia',
+     'Bratts_Lake',
+     'Brisbane-Uni_of_QLD',
+     'Brno_Airport',
+     'Brookhaven',
+     'Brussels',
+     'Bucarest',
+     'Bucharest_Inoe',
+     'Buena_Vista',
+     'Buesum',
+     'Bujumbura',
+     'Bure_OPE',
+     'Burjassot',
+     'Burtonsville',
+     'Bushland',
+     'CAMPO_VERDE',
+     'CANDLE_LAKE',
+     'CARTEL',
+     'CART_SITE',
+     'CASLEO',
+     'CATUC_Bamenda',
+     'CBBT',
+     'CCNY',
+     'CEILAP-BA',
+     'CEILAP-Bariloche',
+     'CEILAP-Comodoro',
+     'CEILAP-Neuquen',
+     'CEILAP-RG',
+     'CEILAP-UTN',
+     'CLUJ_UBB',
+     'COVE',
+     'COVE_SEAPRISM',
+     'CRPSM_Malindi',
+     'CRYSTAL_FACE',
+     'CUIABA-MIRANDA',
+     'CUT-TEPAK',
+     'Cabauw',
+     'Cabo_Raso',
+     'Cabo_da_Roca',
+     'Caceres',
+     'Cagliari',
+     'Cairo_EMA',
+     'Cairo_EMA_2',
+     'Cairo_University',
+     'CalTech',
+     'Caldwell_Parish_HS',
+     'Calern_OCA',
+     'Calhau',
+     'Calipso_Bowers_Rd',
+     'Calipso_Brookview',
+     'Calipso_Carthage',
+     'Calipso_Church_H_Rd',
+     'Calipso_Church_Hill',
+     'Calipso_Crouse_Mill',
+     'Calipso_Dean_Rd',
+     'Calipso_Flat_Iron',
+     'Calipso_Harrison_Rd',
+     'Calipso_Hillsboro',
+     'Calipso_Hillsboro_E',
+     'Calipso_Hurlock',
+     'Calipso_Kennedyvill',
+     'Calipso_Kinchaloe',
+     'Calipso_Loudon_Rd',
+     'Calipso_Mardela_Spr',
+     'Calipso_Morgnec_Rd',
+     'Calipso_NUFerry_Rd',
+     'Calipso_Ninetown_Rd',
+     'Calipso_Ormand_MS',
+     'Calipso_Peckman_Frm',
+     'Calipso_Perryville',
+     'Calipso_Pine_Cove',
+     'Calipso_Price',
+     'Calipso_Princess_An',
+     'Calipso_Prt_Deposit',
+     'Calipso_Ridgely',
+     'Calipso_Sabine_Frst',
+     'Calipso_Sanders_ES',
+     'Calipso_Sterling_PO',
+     'Calipso_Strasburg',
+     'Calipso_Tuckahoe',
+     'Calipso_Vienna',
+     'Calipso_W_Mardela',
+     'Calipso_W_Strasburg',
+     'Calipso_Washtn_High',
+     'Calipso_West_Denton',
+     'Calipso_Westfield_H',
+     'Calipso_White_Marsh',
+     'Calipso_WillistonLk',
+     'Calipso_WofDenton',
+     'Calipso_Zion',
+     'Camaguey',
+     'Camborne_MO',
+     'Campo_Grande',
+     'Campo_Grande_SONDA',
+     'Canberra',
+     'Cap_d_En_Font',
+     'Cape_Romain',
+     'Cape_San_Juan',
+     'Capo_Verde',
+     'Carloforte',
+     'Carlsbad',
+     'Carpentras',
+     'CART_SITE',
+     'Cat_Spring',
+     'Cerro_Poyos',
+     'Chao_Jou',
+     'Chapada',
+     'Chapais',
+     'Chebogue_Point',
+     'Chen-Kung_Univ',
+     'Chequamegon',
+     'Chiang_Mai',
+     'Chiang_Mai_Met_Sta',
+     'Chiayi',
+     'Chiba_University',
+     'Chilbolton',
+     'China_Lake',
+     'Chinhae',
+     'Chulalongkorn',
+     'Churchill',
+     'City_GZ',
+     'Clermont_Ferrand',
+     'Coconut_Island',
+     'Cold_Lake',
+     'Coleambally',
+     'Columbia_SC',
+     'Concepcion',
+     'Corcoran',
+     'Cordoba-CETT',
+     'Cork_UCC',
+     'Coruna',
+     'Creteil',
+     'Crozet_Island',
+     'Cuiaba',
+     'DMN_Maine_Soroa',
+     'DRAGON_ABERD',
+     'DRAGON_ANNEA',
+     'DRAGON_ARNCC',
+     'DRAGON_ARNLS',
+     'DRAGON_Aldine',
+     'DRAGON_Aldino',
+     'DRAGON_Anmyeon',
+     'DRAGON_Arvin',
+     'DRAGON_Aurora_East',
+     'DRAGON_BATMR',
+     'DRAGON_BLDND',
+     'DRAGON_BLLRT',
+     'DRAGON_BLTCC',
+     'DRAGON_BLTIM',
+     'DRAGON_BLTNR',
+     'DRAGON_BOWEM',
+     'DRAGON_BTMDL',
+     'DRAGON_Bainbridge',
+     'DRAGON_Bakersfield',
+     'DRAGON_BelAir',
+     'DRAGON_Beltsville',
+     'DRAGON_Bokjeong',
+     'DRAGON_Boulder',
+     'DRAGON_CHASE',
+     'DRAGON_CLLGP',
+     'DRAGON_CLRST',
+     'DRAGON_CPSDN',
+     'DRAGON_CTNVL',
+     'DRAGON_Channel_View',
+     'DRAGON_Chatfield_Pk',
+     'DRAGON_Clinton',
+     'DRAGON_Clovis',
+     'DRAGON_Conroe',
+     'DRAGON_Corcoran',
+     'DRAGON_Deer_Park',
+     'DRAGON_DenverLaCasa',
+     'DRAGON_Drummond',
+     'DRAGON_EDCMS',
+     'DRAGON_ELLCT',
+     'DRAGON_EaglePoint',
+     'DRAGON_Edgewood',
+     'DRAGON_Essex',
+     'DRAGON_FLLST',
+     'DRAGON_FairHill',
+     'DRAGON_Fort_Collins',
+     'DRAGON_Fukue',
+     'DRAGON_Fukue_2',
+     'DRAGON_Fukue_3',
+     'DRAGON_Fukuoka',
+     'DRAGON_Galveston',
+     'DRAGON_Galveston_DP',
+     'DRAGON_GangneungWNU',
+     'DRAGON_Garland',
+     'DRAGON_Guwol',
+     'DRAGON_Gwangju_GIST',
+     'DRAGON_Hanford',
+     'DRAGON_Hankuk_UFS',
+     'DRAGON_Henties_1',
+     'DRAGON_Henties_2',
+     'DRAGON_Henties_3',
+     'DRAGON_Henties_4',
+     'DRAGON_Henties_5',
+     'DRAGON_Henties_6',
+     'DRAGON_Huron',
+     'DRAGON_Jalan_ChainF',
+     'DRAGON_KampungBharu',
+     'DRAGON_KentIsland',
+     'DRAGON_Kobe',
+     'DRAGON_Kohriyama',
+     'DRAGON_Kongju_NU',
+     'DRAGON_Konkuk_Univ',
+     'DRAGON_Korea_Univ',
+     'DRAGON_Kunsan_NU',
+     'DRAGON_Kyoto',
+     'DRAGON_Kyungil_Univ',
+     'DRAGON_LAREL',
+     'DRAGON_LAUMD',
+     'DRAGON_MNKTN',
+     'DRAGON_Madera_City',
+     'DRAGON_ManvelCroix',
+     'DRAGON_Matsue',
+     'DRAGON_Mokpo_NU',
+     'DRAGON_Mt_Ikoma',
+     'DRAGON_Mt_Rokko',
+     'DRAGON_NIER',
+     'DRAGON_NREL-Golden',
+     'DRAGON_NW_Harris_CO',
+     'DRAGON_Nara',
+     'DRAGON_Nishiharima',
+     'DRAGON_Niwot_Ridge',
+     'DRAGON_OLNES',
+     'DRAGON_ONNGS',
+     'DRAGON_Osaka-North',
+     'DRAGON_Osaka-South',
+     'DRAGON_Osaka_Center',
+     'DRAGON_PATUX',
+     'DRAGON_Padonia',
+     'DRAGON_Pandan_Resrv',
+     'DRAGON_Parlier',
+     'DRAGON_Pasadena',
+     'DRAGON_PayaTerubong',
+     'DRAGON_Permatang_DL',
+     'DRAGON_PineyOrchard',
+     'DRAGON_Platteville',
+     'DRAGON_Pondok_Upeh',
+     'DRAGON_Porterville',
+     'DRAGON_Pusan_NU',
+     'DRAGON_Pylesville',
+     'DRAGON_RCKMD',
+     'DRAGON_Rocky_Flats',
+     'DRAGON_SHADY',
+     'DRAGON_SPBRK',
+     'DRAGON_Sanggye',
+     'DRAGON_SeabrookPark',
+     'DRAGON_Shafter',
+     'DRAGON_Sinjeong',
+     'DRAGON_Smith_Point',
+     'DRAGON_Soha',
+     'DRAGON_St_Johns_Is',
+     'DRAGON_TKMPR',
+     'DRAGON_Temasek_Poly',
+     'DRAGON_Tranquility',
+     'DRAGON_Tsukuba',
+     'DRAGON_UH_Sugarland',
+     'DRAGON_UH_W_Liberty',
+     'DRAGON_UMRLB',
+     'DRAGON_UiTM',
+     'DRAGON_Visalia',
+     'DRAGON_WSTFD',
+     'DRAGON_Welch',
+     'DRAGON_Weld_Co_Twr',
+     'DRAGON_West_Houston',
+     'DRAGON_WileyFord',
+     'DRAGON_Worton',
+     'DRAGON_Yishun_ITE',
+     'Dahkla',
+     'Dakar',
+     'Dalanzadgad',
+     'Dalma',
+     'Darwin',
+     'Davos',
+     'Dayton',
+     'Dead_Sea',
+     'Denver_LaCasa',
+     'Dhabi',
+     'Dhadnah',
+     'Dhaka_University',
+     'DigitalGlobe_Cal',
+     'Dilar',
+     'Djougou',
+     'Doi_Ang_Khang',
+     'Dolly_Sods',
+     'Donetsk',
+     'Dongsha_Island',
+     'Douliu',
+     'Dry_Tortugas',
+     'Dunedin',
+     'Dunhuang',
+     'Dunhuang_LZU',
+     'Dunkerque',
+     'Durban_UKZN',
+     'Dushanbe',
+     'EOPACE1',
+     'EOPACE2',
+     'EPA-NCU',
+     'EPA-Res_Triangle_Pk',
+     'ETNA',
+     'EVK2-CNR',
+     'EastMalling_MO',
+     'Easton-MDE',
+     'Easton_Airport',
+     'Edinburgh',
+     'Eforie',
+     'Egbert',
+     'Egbert_X',
+     'Eilat',
+     'El_Arenosillo',
+     'El_Farafra',
+     'El_Nido_Airport',
+     'El_Segundo',
+     'Elandsfontein',
+     'Ellington_Field',
+     'Epanomi',
+     'Ersa',
+     'Etosha_Pan',
+     'Evora',
+     'Exeter_MO',
+     'FLIN_FLON',
+     'FORTH_CRETE',
+     'FZJ-JOYCE',
+     'Farmington_RSVP',
+     'Finokalia-FKL',
+     'Fontainebleau',
+     'Fort_McKay',
+     'Fort_McMurray',
+     'Fowlers_Gap',
+     'Frenchman_Flat',
+     'Fresno',
+     'Fresno_2',
+     'Fresno_X',
+     'Frioul',
+     'Fuguei_Cape',
+     'Fukue',
+     'Fukuoka',
+     'GISS',
+     'GORDO_rest',
+     'GOT_Seaprism',
+     'GSFC',
+     'Gageocho_Station',
+     'Gainesville_Airport',
+     'Gaithersburg',
+     'Galata_Platform',
+     'Gandhi_College',
+     'Gangneung_WNU',
+     'Georgia_Tech',
+     'Glasgow_MO',
+     'Gloria',
+     'Gobabeb',
+     'Goldstone',
+     'Gorongosa',
+     'Gosan_SNU',
+     'Gotland',
+     'Gozo',
+     'Graciosa',
+     'Granada',
+     'Grand_Forks',
+     'Guadeloup',
+     'Gual_Pahari',
+     'Guam',
+     'Gustav_Dalen_Tower',
+     'Gwangju_GIST',
+     'HESS',
+     'HJAndrews',
+     'HOPE-Hambach',
+     'HOPE-Inselhombroich',
+     'HOPE-Krauthausen',
+     'HOPE-Melpitz',
+     'HOPE-RWTH-Aachen',
+     'Hada_El-Sham',
+     'Hagerstown',
+     'Halifax',
+     'Hamburg',
+     'Hamim',
+     'Hampton_Roads',
+     'Hampton_University',
+     'Hangzhou-ZFU',
+     'Hangzhou_City',
+     'Hankuk_UFS',
+     'Harvard_Forest',
+     'Hefei',
+     'Helgoland',
+     'Helsinki',
+     'Helsinki_Lighthouse',
+     'Heng-Chun',
+     'Henties_Bay',
+     'Hermosillo',
+     'Hetauda',
+     'HohenpeissenbergDWD',
+     'Hokkaido_University',
+     'Homburi',
+     'Hong_Kong_Hok_Tsui',
+     'Hong_Kong_PolyU',
+     'Hong_Kong_Sheung',
+     'Honolulu',
+     'Hornsund',
+     'Howland',
+     'Hua_Hin',
+     'Huancayo-IGP',
+     'Huelva',
+     'Hyytiala',
+     'IAOCA-KRSU',
+     'IASBS',
+     'ICIPE-Mbita',
+     'IER_Cinzana',
+     'IHOP-Homestead',
+     'IIT_KGP_EXT_Kolkata',
+     'IMAA_Potenza',
+     'IMC_Oristano',
+     'IMPROVE-MammothCave',
+     'IMS-METU-ERDEMLI',
+     'ISDGM_CNR',
+     'Iasi_LOASL',
+     'Ieodo_Station',
+     'Ilorin',
+     'Inhaca',
+     'Inner_Mongolia',
+     'Iqaluit',
+     'Irkutsk',
+     'Ispra',
+     'Issyk-Kul',
+     'Itajuba',
+     'Ittoqqortoormiit',
+     'Izana',
+     'Jabal_Hafeet',
+     'Jabiru',
+     'Jaipur',
+     'JamTown',
+     'Jambi',
+     'James_Res_Center',
+     'Jaru_Reserve',
+     'Ji_Parana',
+     'Ji_Parana_SE',
+     'Ji_Parana_UNIR',
+     'Jingtai',
+     'Joberg',
+     'Jomsom',
+     'JonesERC',
+     'Jug_Bay',
+     'KAUST_Campus',
+     'KIOST_Ansan',
+     'KITcube_Masada',
+     'KITcube_Save',
+     'KONZA_EDC',
+     'KORUS_Baeksa',
+     'KORUS_Daegwallyeong',
+     'KORUS_Iksan',
+     'KORUS_Kyungpook_NU',
+     'KORUS_Mokpo_NU',
+     'KORUS_NIER',
+     'KORUS_Olympic_Park',
+     'KORUS_Songchon',
+     'KORUS_Taehwa',
+     'KORUS_UNIST_Ulsan',
+     'Kaashidhoo',
+     'Kaiping',
+     'Kandahar',
+     'Kangerlussuaq',
+     'Kanpur',
+     'Kanzelhohe_Obs',
+     'Kaoma',
+     'Kapoho',
+     'Karachi',
+     'Karlsruhe',
+     'Karunya_University',
+     'Kathmandu-Bode',
+     'Kathmandu_Univ',
+     'Katibougou',
+     'Kejimkujik',
+     'Kellogg_LTER',
+     'Kelowna_UAS',
+     'Key_Biscayne',
+     'Key_Biscayne2',
+     'Kibale',
+     'Kirtland_AFB',
+     'Kitt-Peak_MP',
+     'Kobe',
+     'Koforidua_ANUC',
+     'Kolimbari',
+     'Konza',
+     'Korea_University',
+     'Krasnoyarsk',
+     'Kuching',
+     'Kuopio',
+     'Kuujjuarapik',
+     'Kuwait_Airport',
+     'Kuwait_Inst_Sci_Res',
+     'Kuwait_University',
+     'Kyiv-AO',
+     'Kyiv',
+     'Kyungil_University',
+     'LAMTO-STATION',
+     'LAQUILA_Coppito',
+     'LISCO',
+     'LMOS_Zion_Site',
+     'LOS_FIEROS_98',
+     'LSU',
+     'LW-SCAN',
+     'La_Crau',
+     'La_Jolla',
+     'La_Laguna',
+     'La_Parguera',
+     'La_Paz',
+     'Laegeren',
+     'Lahore',
+     'Lake_Argyle',
+     'Lake_Erie',
+     'Lake_Lefroy',
+     'Lamezia_Terme',
+     'Lampedusa',
+     'Lan_Yu_Island',
+     'Lanai',
+     'Langtang',
+     'Lannion',
+     'Lanzhou_City',
+     'Las_Galletas',
+     'Le_Fauga',
+     'Lecce_University',
+     'Leicester',
+     'Leipzig',
+     'Leland_HS',
+     'Lerwick_MO',
+     'Liangning',
+     'Lille',
+     'Lingshan_Mountain',
+     'Litang',
+     'Lochiel',
+     'Loftus_MO',
+     'London-UCL-UAO',
+     'Longyearbyen',
+     'Los_Alamos',
+     'Los_Fieros',
+     'Loskop_Dam',
+     'Luang_Namtha',
+     'Lubango',
+     'Lucinda',
+     'Lugansk',
+     'Lulin',
+     'Lumbini',
+     'Lunar_Lake',
+     'MAARCO',
+     'MALE',
+     'MCO-Hanimaadhoo',
+     'MD_Science_Center',
+     'MISR-JPL',
+     'MPI_Mainz',
+     'MVCO',
+     'Mace_Head',
+     'Madison',
+     'Madrid',
+     'Maeson',
+     'Maggie_Valley',
+     'Magurele_Inoe',
+     'Mainz',
+     'Makassar',
+     'Malaga',
+     'Mammoth_Lake',
+     'Manaus',
+     'Manaus_EMBRAPA',
+     'Manila_Observatory',
+     'Manus',
+     'Marambio',
+     'Marbella_San_Pedro',
+     'Maricopa',
+     'Marina',
+     'Marseille',
+     'Martova',
+     'Masdar_Institute',
+     'Maun_Tower',
+     'Mauna_Loa',
+     'McClellan_AFB',
+     'McMurdo',
+     'Medellin',
+     'Medenine-IRA',
+     'Melpitz',
+     'Merredin',
+     'Mesa_Lakes',
+     'Messina',
+     'MetObs_Lindenberg',
+     'Mexico_City',
+     'Mezaira',
+     'Miami',
+     'Midway_Island',
+     'Milyering',
+     'Mingo',
+     'Minqin',
+     'Minsk',
+     'Misamfu',
+     'Missoula',
+     'Mobile_C_050608',
+     'Mobile_C_060708',
+     'Mobile_DDun_051308W',
+     'Mobile_Kanpur_East',
+     'Mobile_Kanpur_SE',
+     'Mobile_Kanpur_South',
+     'Mobile_Kanpur_W2',
+     'Mobile_Kanpur_West',
+     'Mobile_N_050608',
+     'Mobile_N_051308W',
+     'Mobile_N_051508E',
+     'Mobile_N_052908W',
+     'Mobile_N_053108E',
+     'Mobile_N_060708',
+     'Mobile_N_061408W',
+     'Mobile_S_011509_ND',
+     'Mobile_S_050608',
+     'Mobile_S_051308W',
+     'Mobile_S_051508E',
+     'Mobile_S_052908W',
+     'Mobile_S_060708',
+     'Mobile_S_062308',
+     'Modena',
+     'Modesto',
+     'Moldova',
+     'Monclova',
+     'Mongu',
+     'Mongu_Inn',
+     'Mont_Joli',
+     'Monterey',
+     'Montesoro_Bastia',
+     'Montsec',
+     'Moscow_MSU_MO',
+     'Moss_Landing',
+     'Mount_Chacaltaya',
+     'Mount_Wilson',
+     'Mukdahan',
+     'Munich_Maisach',
+     'Munich_University',
+     'Murcia',
+     'Muscat',
+     'Mussafa',
+     'Muztagh_Ata',
+     'Mwinilunga',
+     'Myanmar',
+     'NAM_CO',
+     'NASA_Ames',
+     'NASA_KSC',
+     'NASA_LaRC',
+     'NCU_Taiwan',
+     'ND_Marbel_Univ',
+     'NEON-Boulder',
+     'NEON-CPER',
+     'NEON-Disney',
+     'NEON-HQ',
+     'NEON-SoaprootSaddle',
+     'NEON17-SJER',
+     'NEON_Bartlett',
+     'NEON_CLBJ',
+     'NEON_CVALLA',
+     'NEON_DEJU',
+     'NEON_GRSM',
+     'NEON_GUAN',
+     'NEON_GrandJunction',
+     'NEON_HEAL',
+     'NEON_Harvard',
+     'NEON_HarvardForest',
+     'NEON_HighParkFire',
+     'NEON_Ivanpah',
+     'NEON_KONZ',
+     'NEON_LENO',
+     'NEON_MLBS',
+     'NEON_MOAB',
+     'NEON_OAES',
+     'NEON_ONAQ',
+     'NEON_ORNL',
+     'NEON_OSBS',
+     'NEON_RMNP',
+     'NEON_SCBI',
+     'NEON_SERC',
+     'NEON_Sterling',
+     'NEON_TALL',
+     'NEON_TOOL',
+     'NEON_UKFS',
+     'NEON_UNDE',
+     'NEON_WOOD',
+     'NEW_YORK',
+     'NGHIA_DO',
+     'NSA_YJP_BOREAS',
+     'NUIST',
+     'NW_Chapel_Hill',
+     'Nainital',
+     'Nairobi',
+     'Namibe',
+     'Napoli_CeSMA',
+     'Nara',
+     'Narsarsuaq',
+     'Natal',
+     'Nauru',
+     'Ndola',
+     'Nes_Ziona',
+     'New_Delhi',
+     'New_Hampshire_Univ',
+     'NhaTrang',
+     'Niabrara',
+     'Niamey',
+     'Nicelli_Airport',
+     'Nicosia',
+     'Niigata',
+     'Nong_Khai',
+     'Norfolk_State_Univ',
+     'North_Pole',
+     'Noto',
+     'Noumea',
+     'Nouragues',
+     'Ny_Alesund',
+     'OBERNAI',
+     'OBS-SSA',
+     'OHP_OBSERVATOIRE',
+     'OK_St_Univ',
+     'OPAL',
+     'ORS_Hermosillo',
+     'ORS_UNAM_ISNP',
+     'OkefenokeeNWR',
+     'Okinawa',
+     'Omkoi',
+     'Oostende',
+     'Ordway-Swisher',
+     'Orizaba',
+     'Orlean_Bricy',
+     'Osaka-North',
+     'Osaka',
+     'Ouagadougou',
+     'Ouarzazate',
+     'Oujda',
+     'Oukaimeden',
+     'Owens_Lake',
+     'Oxford',
+     'Oyster',
+     'PEARL',
+     'PKU_PEK',
+     'PNNL',
+     'POLWET_Rzecin',
+     'PRINCE_ALBERT',
+     'Paardefontein',
+     'Paddockwood',
+     'Pafos',
+     'Pagosa_Springs',
+     'Palaiseau',
+     'Palangkaraya',
+     'Palencia',
+     'Palgrunden',
+     'Palma_de_Mallorca',
+     'Panama_BCI',
+     'Pantanal',
+     'Pantnagar',
+     'Paposo',
+     'Paracou',
+     'Paris',
+     'Park_Brasilia',
+     'Penn_State_Univ',
+     'Perth',
+     'Peterhof',
+     'Petrolina_SONDA',
+     'Philadelphia',
+     'Pic_du_midi',
+     'Pickle_Lake',
+     'Pietersburg',
+     'Pimai',
+     'Pitres',
+     'Pokhara',
+     'Pontianak',
+     'Poprad-Ganovce',
+     'Porquerolles',
+     'Portglenone_MO',
+     'Porto_Nacional',
+     'Porto_Velho',
+     'Porto_Velho_UNIR',
+     'Possession_Island',
+     'Potchefstroom',
+     'Potosi_Mine',
+     'Praia',
+     'Pretoria_CSIR-DPSS',
+     'Progress',
+     'Prospect_Hill',
+     'Puerto_Madryn',
+     'Puli',
+     'Pullman',
+     'Pune',
+     'Pusan_NU',
+     'Puspiptek',
+     'QOMS_CAS',
+     'Qiandaohu',
+     'Quarzazate',
+     'Quito_USFQ',
+     'REUNION_ST_DENIS',
+     'Raciborz',
+     'Ragged_Point',
+     'Railroad_Valley',
+     'Rame_Head',
+     'Ras_El_Ain',
+     'Realtor',
+     'Red_Bluff',
+     'Red_Mountain_Pass',
+     'Red_River_Delta',
+     'Resolute_Bay',
+     'Rexburg_Idaho',
+     'Rhyl_MO',
+     'Richland',
+     'Rimrock',
+     'Rio_Branco',
+     'Rio_Piedras',
+     'Rio_de_Janeiro_UFRJ',
+     'Rogers_Dry_Lake',
+     'Rome_ESA_ESRIN',
+     'Rome_La_Sapienza',
+     'Rome_Tor_Vergata',
+     'Roosevelt_Roads',
+     'Rossfeld',
+     'Rottnest_Island',
+     'SACOL',
+     'SAGRES',
+     'SANTA_CRUZ',
+     'SANTA_CRUZ_UTEPSA',
+     'SDU1',
+     'SDU2',
+     'SDU3',
+     'SDU4',
+     'SEARCH-Centreville',
+     'SEARCH-Centreville2',
+     'SEARCH-OLF',
+     'SEARCH-Yorkville',
+     'SEDE_BOKER',
+     'SEGC_Lope_Gabon',
+     'SERC',
+     'SKUKUZA_AEROPORT',
+     'SMART',
+     'SMART_POL',
+     'SMEX',
+     'SMHI',
+     'SP-EACH',
+     'SP_Bayboro',
+     'SSA_YJP_BOREAS',
+     'SS_OJP_BOREAS',
+     'Saada',
+     'Sable_Island',
+     'Saih_Salam',
+     'Saint_Mandrier',
+     'Salon_de_Provence',
+     'San_Giuliano',
+     'San_Nicolas',
+     'San_Nicolas_Vandal',
+     'San_Pietro_Capo',
+     'Sandia_NM_PSEL',
+     'Santa_Cruz_Tenerife',
+     'Santa_Monica_Colg',
+     'Santarem',
+     'Santiago',
+     'Santiago_Beauchef',
+     'Sao_Martinho_SONDA',
+     'Sao_Paulo',
+     'Saturn_Island',
+     'Senanga',
+     'Seoul_SNU',
+     'Sesheke',
+     'Sevastopol',
+     'Sevilleta',
+     'Seysses',
+     'Shagaya_Park',
+     'Shelton',
+     'Shirahama',
+     'Shouxian',
+     'Sigma_Space_Corp',
+     'Silpakorn_Univ',
+     'Simonstown_IMT',
+     'Singapore',
+     'Sinhgad',
+     'Sioux_Falls',
+     'Sioux_Falls_X',
+     'Sir_Bu_Nuair',
+     'Sirmione_Museo_GC',
+     'Skukuza',
+     'Smith_Island_CBF',
+     'Socheongcho',
+     'Sodankyla',
+     'Solar_Village',
+     'Solwezi',
+     'Son_La',
+     ...]
+
+
+
+Let’s say you are interested in the city of Leipzig, Germany.
+
+.. code:: ipython3
+
+    station_data = aeronet_data['Leipzig']
+    type(station_data)
+
+
+
+
+.. parsed-literal::
+
+    pyaerocom.stationdata.StationData
+
+
+
+As you can see, the returned object is of type ``StationData``, which is
+one further data format that is not displayed in the flowchart above.
+``StationData`` may be useful for individual stations and is an extended
+Python dictionary (if you are familiar with Python).
+
+You may print it to see what is in there:
+
+.. code:: ipython3
+
+    print(station_data)
+
+
+.. parsed-literal::
+
+    
+    Pyaerocom StationData
+    ---------------------
+    instrument_name: sun_photometer
+    unit (<class 'pyaerocom._lowlevel_helpers.BrowseDict'>)
+    dataset_name: AeronetSunV3Lev2.daily
+    station_name: Leipzig
+    PI: Brent_Holben
+    stat_lat: nan
+    stat_lon: nan
+    stat_alt: nan
+    od550aer: 2001-05-20 12:00:00    0.190538
+    2001-05-21 12:00:00    0.165246
+    2001-05-22 12:00:00    0.117999
+    2001-05-23 12:00:00    0.067452
+    2001-05-24 12:00:00    0.077793
+    2001-05-30 12:00:00    0.119798
+    2001-06-03 12:00:00    0.121039
+    2001-06-06 12:00:00    0.312110
+    2001-06-07 12:00:00    0.192976
+    2001-06-09 12:00:00    0.558903
+    2001-06-11 12:00:00    0.206287
+    2001-06-12 12:00:00    0.294526
+    2001-06-13 12:00:00    0.333145
+    2001-06-14 12:00:00    0.346363
+    2001-06-15 12:00:00    0.332472
+    2001-06-16 12:00:00    0.220668
+    2001-06-17 12:00:00    0.103815
+    2001-06-19 12:00:00    0.146963
+    2001-06-20 12:00:00    0.149631
+    2001-06-21 12:00:00    0.322529
+    2001-06-23 12:00:00    0.266764
+    2001-06-24 12:00:00    0.148060
+    2001-06-25 12:00:00    0.468637
+    2001-06-26 12:00:00    0.168430
+    2001-06-27 12:00:00    0.224706
+    2001-06-28 12:00:00    0.837737
+    2001-06-29 12:00:00    0.472877
+    2001-06-30 12:00:00    0.421142
+    2001-07-01 12:00:00    0.285850
+    2001-07-02 12:00:00    0.149566
+                             ...   
+    2017-09-20 12:00:00    0.098478
+    2017-09-21 12:00:00    0.285237
+    2017-09-22 12:00:00    0.296735
+    2017-09-23 12:00:00    0.350108
+    2017-09-27 12:00:00    0.336902
+    2017-09-28 12:00:00    0.253596
+    2017-09-29 12:00:00    0.172088
+    2017-09-30 12:00:00    0.173876
+    2017-10-12 12:00:00    0.076930
+    2017-10-14 12:00:00    0.067515
+    2017-10-15 12:00:00    0.039083
+    2017-10-16 12:00:00    0.174384
+    2017-10-17 12:00:00    0.087807
+    2017-10-18 12:00:00    0.178155
+    2017-10-19 12:00:00    0.116929
+    2017-10-22 12:00:00    0.065865
+    2017-10-29 12:00:00    0.124535
+    2017-10-30 12:00:00    0.041524
+    2017-11-02 12:00:00    0.143081
+    2017-11-03 12:00:00    0.158916
+    2017-11-06 12:00:00    0.110552
+    2017-11-17 12:00:00    0.081437
+    2017-11-24 12:00:00    0.055906
+    2017-11-26 12:00:00    0.101109
+    2017-11-27 12:00:00    0.073161
+    2017-11-29 12:00:00    0.063464
+    2017-11-30 12:00:00    0.135819
+    2017-12-01 12:00:00    0.160344
+    2017-12-03 12:00:00    0.109541
+    2017-12-07 12:00:00    0.087100
+    Length: 2713, dtype: float64
+    dtime (array, 2713 items)
+       [numpy.datetime64('2001-05-20T12:00:00')
+        numpy.datetime64('2001-05-21T12:00:00')
+        ...
+        numpy.datetime64('2017-12-03T12:00:00')
+        numpy.datetime64('2017-12-07T12:00:00')]
+    
+    Data coordinates
+    .................
+    latitude: 51.352500000000006
+    longitude: 12.435278
+    altitude: 125.0
+
+
+As you can see, this station contains a time-series of the AOD at 550
+nm. If you like, you can plot this time-series:
+
+.. code:: ipython3
+
+    station_data.plot_variable('od550aer')
+
+
+
+
+.. parsed-literal::
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc2689a8e48>
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_70_1.png
+
+
+Colocation of model and obsdata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Now that we have different data objects loaded we can continue with
+colocation. In the following, both the all-sky and the clear-sky data
+from CAM53-Oslo will be colocated with the subset of Aeronet stations
+that we just loaded.
+
+The colocation will be performed for the year of 2010 and two scatter
+plots will be created.
+
+You have also the option to apply a certain filter when colocating using
+a valid filter name. Here, we use global data and exclude mountain
+sides.
+
+.. code:: ipython3
+
+    col_all_sky_glob = pya.colocation.colocate_gridded_ungridded_2D(od550aer, aeronet_data, 
+                                                                    ts_type='monthly',
+                                                                    start=2010,
+                                                                    filter_name='WORLD-noMOUNTAINS')
+    type(col_all_sky_glob)
+
+
+.. parsed-literal::
+
+    Interpolating data of shape (12, 192, 288). This may take a while.
+    Successfully interpolated cube
+
+
+
+
+.. parsed-literal::
+
+    pyaerocom.colocateddata.ColocatedData
+
+
+
+Let’s do the same for the clear-sky data.
+
+.. code:: ipython3
+
+    col_clear_sky_glob = pya.colocation.colocate_gridded_ungridded_2D(od550csaer, aeronet_data, 
+                                                                      ts_type='monthly',
+                                                                      start=2010,
+                                                                      filter_name='WORLD-noMOUNTAINS')
+    type(col_clear_sky_glob)
+
+
+.. parsed-literal::
+
+    Interpolating data of shape (12, 192, 288). This may take a while.
+    Successfully interpolated cube
+
+
+
+
+.. parsed-literal::
+
+    pyaerocom.colocateddata.ColocatedData
+
+
+
+.. code:: ipython3
+
+    ax1 = col_all_sky_glob.plot_scatter()
+    ax1.set_title('All sky (2010, monthly)')
+
+
+
+
+.. parsed-literal::
+
+    Text(0.5,1,'All sky (2010, monthly)')
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_76_1.png
+
+
+.. code:: ipython3
+
+    ax2 = col_clear_sky_glob.plot_scatter()
+    ax2.set_title('Clear sky (2010, monthly)')
+
+
+
+
+.. parsed-literal::
+
+    Text(0.5,1,'Clear sky (2010, monthly)')
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_77_1.png
+
+
+… or for EUROPE:
+
+.. code:: ipython3
+
+    pya.colocation.colocate_gridded_ungridded_2D(od550aer, aeronet_data,
+                                                ts_type='monthly',
+                                                                    start=2010,
+                                                                    filter_name='WORLD-noMOUNTAINS')
+
+
+.. parsed-literal::
+
+    Interpolating data of shape (12, 192, 288). This may take a while.
+    Successfully interpolated cube
+
+
+
+
+.. parsed-literal::
+
+    <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 274)>
+    array([[[     nan, 0.117588, ...,      nan,      nan],
+            [     nan, 0.132128, ...,      nan,      nan],
+            ...,
+            [0.132236, 0.195057, ...,      nan,      nan],
+            [     nan,      nan, ...,      nan,      nan]],
+    
+           [[0.060114, 0.248935, ..., 0.066554, 0.335475],
+            [0.099408, 0.370893, ..., 0.0616  , 0.468845],
+            ...,
+            [0.178814, 0.302825, ..., 0.07004 , 0.666344],
+            [0.069544, 0.277792, ..., 0.039258, 0.469875]]])
+    Coordinates:
+      * data_source   (data_source) <U55 'AeronetSunV3Lev2.daily' ...
+        var_name      (data_source) <U8 'od550aer' 'od550aer'
+      * time          (time) datetime64[ns] 2010-01-01 2010-02-01 2010-03-01 ...
+      * station_name  (station_name) <U19 'ARM_Darwin' 'ATHENS-NOA' 'Agoufou' ...
+        latitude      (station_name) float64 -12.43 37.97 15.35 -9.871 42.02 ...
+        longitude     (station_name) float64 130.9 23.72 -1.479 -56.1 -93.77 ...
+        altitude      (station_name) float64 29.9 130.0 305.0 277.0 338.0 49.0 ...
+    Attributes:
+        data_source:  ['AeronetSunV3Lev2.daily', 'CAM53-Oslo_7310_MG15CLM45_5feb2...
+        var_name:     ['od550aer', 'od550aer']
+        ts_type:      monthly
+        filter_name:  WORLD-noMOUNTAINS
+        ts_type_src:  monthly
+        start_str:    20100101
+        stop_str:     20101201
+        unit:         1
+        data_level:   colocated
+        region:       WORLD
+        lon_range:    [-180, 180]
+        lat_range:    [-90, 90]
+        alt_range:    [-1000000.0, 1000.0]
+
+

@@ -30,19 +30,6 @@ Import setup and imports
     MODEL_ID = "ECMWF_CAMS_REAN"
     OBS_ID = 'AeronetSunV3Lev2.daily'
 
-
-.. parsed-literal::
-
-    2018-09-28 18:29:24,565:WARNING:
-    basemap extension library is not installed (or cannot be imported. Some features will not be available
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    2018-09-28 18:29:25,416:WARNING:
-    geopy library is not available. Aeolus data read not enabled
-
-
 Import of model data
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -126,7 +113,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20180928182930
+     Filter time log: 20181004171306
     	stat_alt: [0, 1000]
 
 
@@ -199,7 +186,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fdbb0a9e160>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc8483c7128>
 
 
 
@@ -273,7 +260,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fdbb0b13c50>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fc86004df28>
 
 
 

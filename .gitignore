@@ -115,3 +115,6 @@ pyaerocom.egg-info
 
 # development modules
 pyaerocom/helpers_DEV.py
+
+# development notebooks
+notebooks/_*.ipynb

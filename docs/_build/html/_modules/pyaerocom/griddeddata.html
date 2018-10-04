@@ -642,6 +642,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">new_order</span><span class="p">)</span></div>
         
     <span class="k">def</span> <span class="nf">_check_altitude_access</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">coord_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_names</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">coord_name</span> <span class="o">==</span> <span class="s1">&#39;altitude&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -958,7 +959,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_cube</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This feature is only available if the&quot;</span>
                                       <span class="s2">&quot;underlying data is of type iris.Cube&quot;</span><span class="p">)</span>
-        <span class="n">suppl</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
+        <span class="n">suppl</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">suppl</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -1287,6 +1289,7 @@
         
         <span class="k">return</span> <span class="n">GriddedData</span><span class="p">(</span><span class="n">data_crop</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span></div>
     
+    
 <div class="viewcode-block" id="GriddedData.quickplot_map"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.quickplot_map">[docs]</a>    <span class="k">def</span> <span class="nf">quickplot_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
                       <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make a quick plot onto a map</span>
@@ -1308,6 +1311,12 @@
 <span class="sd">        fig</span>
 <span class="sd">            matplotlib figure instance containing plot</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">time_idx</span><span class="p">)</span><span class="o">.</span><span class="n">to_datetime64</span><span class="p">()</span>
+                <span class="n">time_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to interpret input time stamp&#39;</span><span class="p">)</span>
         <span class="kn">from</span> <span class="nn">pyaerocom.plot.mapping</span> <span class="k">import</span> <span class="n">plot_map</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_map</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">time_idx</span><span class="p">],</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Model: </span><span class="si">%s</span><span class="s2">, var=</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> 

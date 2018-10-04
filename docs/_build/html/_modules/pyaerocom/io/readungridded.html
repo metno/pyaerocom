@@ -346,11 +346,11 @@
                                     <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span></div>
         
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Requires review after API changes&quot;</span><span class="p">)</span>
-        <span class="n">stat_names</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
-            <span class="n">stat_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;station_name&#39;</span><span class="p">])</span>
-        <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stat_names</span><span class="p">)</span>
+        <span class="c1">#raise NotImplementedError(&quot;Requires review after API changes&quot;)</span>
+        <span class="n">s</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_reader</span><span class="p">(</span><span class="n">ds</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
         
 <div class="viewcode-block" id="ReadUngridded.read_dataset"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">read_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read single dataset into instance of :class:`ReadUngridded`</span>
@@ -446,12 +446,16 @@
         <span class="k">return</span> <span class="n">data</span></div>
     
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">SUPPORTED_DATASETS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns list of strings containing all supported dataset names&quot;&quot;&quot;</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">:</span>
+            <span class="n">l</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">l</span> 
+    
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">supported_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">supported</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">reader</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED</span><span class="p">:</span>
-            <span class="n">supported</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">reader</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">supported</span></div>
-        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span></div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadUngridded</span><span class="p">()</span>

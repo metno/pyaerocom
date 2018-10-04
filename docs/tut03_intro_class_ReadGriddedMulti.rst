@@ -14,19 +14,6 @@ an interface for importing results from a single dataset.
     import pyaerocom as pya
     pya.change_verbosity('critical')
 
-
-.. parsed-literal::
-
-    2018-09-28 18:27:56,897:WARNING:
-    basemap extension library is not installed (or cannot be imported. Some features will not be available
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    2018-09-28 18:27:58,437:WARNING:
-    geopy library is not available. Aeolus data read not enabled
-
-
 Define two models (this list can contain as many models as you like)
 
 .. code:: ipython3

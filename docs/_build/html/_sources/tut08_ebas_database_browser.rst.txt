@@ -38,18 +38,6 @@ E.g.:
 
 .. parsed-literal::
 
-    2018-09-28 18:29:51,808:WARNING:
-    basemap extension library is not installed (or cannot be imported. Some features will not be available
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSun2.0.SDA.AP/renamed does not exist
-    OBS directory path /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed does not exist
-    2018-09-28 18:29:52,653:WARNING:
-    geopy library is not available. Aeolus data read not enabled
-
-
-.. parsed-literal::
-
     
     Pyaerocom EbasSQLRequest
     ------------------------
@@ -278,46 +266,6 @@ Let’s read the files:
     data_dir = os.path.join(pya.const.OBSCONFIG["EBASMC"]["PATH"], 'data')
     for f in files:
         data.append(pya.io.EbasNasaAmesFile(os.path.join(data_dir, f[0])))
-
-
-.. parsed-literal::
-
-    2018-09-28 18:29:57,258:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2015 02 09
-    
-    Error msg: IndexError('list index out of range',)
-    2018-09-28 18:29:57,578:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2017 05 16
-    
-    Error msg: IndexError('list index out of range',)
-    2018-09-28 18:29:57,701:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2012 10 04
-    
-    Error msg: IndexError('list index out of range',)
-    2018-09-28 18:29:57,797:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2016 07 05
-    
-    Error msg: IndexError('list index out of range',)
-    2018-09-28 18:29:57,855:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2015 02 16
-    
-    Error msg: IndexError('list index out of range',)
-    2018-09-28 18:29:57,968:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2015 08 19
-    
-    Error msg: IndexError('list index out of range',)
-    2018-09-28 18:29:58,228:WARNING:
-    Failed to read header row 6.
-    2010 01 01 2015 08 19
-    
-    Error msg: IndexError('list index out of range',)
-
 
 .. code:: ipython3
 
