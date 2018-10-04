@@ -114,7 +114,9 @@ class Config(object):
     #: Name of the file containing the revision string of an obs data network
     REVISION_FILE = 'Revision.txt'
     
-    _config_ini = os.path.join('.', 'data', 'paths.ini')
+    from pyaerocom import __dir__
+    _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
+    _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     _outhomename = 'pyaerocom'
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  output_dir=None, config_file=None, 
@@ -251,9 +253,16 @@ class Config(object):
         if not os.path.exists(value):
             raise IOError('Cannot change data base directory. Input directory '
                           'does not exist')
+            
         self._obsbasedir = value
         self._modelbasedir = value
-        self.reload()    
+        if 'obsdata' in os.listdir(value): #test dataset
+            from logging import getLogger
+            logger = getLogger('pyaerocom')
+            logger.info('Activating test-mode')
+            self.read_config(self._config_ini_testdata, keep_basedirs=True)
+        else:
+            self.reload()    
         self.check_data_dirs()
             
     @property
@@ -356,15 +365,17 @@ class Config(object):
         """Reload file"""
         self.read_config(self._config_ini, keep_basedirs)
         
-    def read_config(self, config_file, keep_basedirs=True):
+    def read_config(self, config_file=None, keep_basedirs=True):
         """Read and import form paths.ini"""
-        _config_ini = self._config_ini
-        if not os.path.isfile(_config_ini):
+        if config_file is None:
+            config_file = self._config_ini
+
+        if not os.path.isfile(config_file):
             raise IOError("Configuration file paths.ini at %s does not exist "
                           "or is not a file"
-                          %_config_ini)
+                          %config_file)
         cr = ConfigParser()
-        cr.read(_config_ini)
+        cr.read(config_file)
         if cr.has_section('outputfolders'):
             if not keep_basedirs or not self.dir_exists(self._cachedir):
                 self._cachedir = cr['outputfolders']['CACHEDIR']
