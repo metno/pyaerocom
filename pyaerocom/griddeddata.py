@@ -798,7 +798,8 @@ class GriddedData(object):
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
-        suppl = deepcopy(self.suppl_info)
+        suppl = {}
+        suppl.update(self.suppl_info)
         if region is not None:
             if isinstance(region, str):
                 try:
@@ -1127,6 +1128,7 @@ class GriddedData(object):
         
         return GriddedData(data_crop, **self.suppl_info)
     
+    
     def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90),
                       **kwargs):
         """Make a quick plot onto a map
@@ -1148,6 +1150,12 @@ class GriddedData(object):
         fig
             matplotlib figure instance containing plot
         """
+        if not isinstance(time_idx, int):
+            try:
+                t = to_pandas_timestamp(time_idx).to_datetime64()
+                time_idx = np.argmin(abs(self.time_stamps() - t))
+            except:
+                raise ValueError('Failed to interpret input time stamp')
         from pyaerocom.plot.mapping import plot_map
         fig = plot_map(self[time_idx], xlim, ylim, **kwargs)
         fig.axes[0].set_title("Model: %s, var=%s (%s)" 

@@ -195,6 +195,15 @@ class Config(object):
         """Cache directory"""
         return chk_make_subdir(self._cachedir, getpass.getuser())
     
+    @CACHEDIR.setter
+    def CACHEDIR(self, val):
+        """Cache directory"""
+        if not os.path.exists(val):
+            raise ValueError('Input directory does not exist {}'.format(val))
+        elif not self._write_access(val):
+            raise ValueError('Cannot write to {}'.format(val))
+        self._cachedir = val
+        
     @property
     def VAR_PARAM(self):
         """Instance of class AllVariables (for default variable information)"""
@@ -261,10 +270,11 @@ class Config(object):
             logger = getLogger('pyaerocom')
             logger.info('Activating test-mode')
             self.read_config(self._config_ini_testdata, keep_basedirs=True)
+            self._cachedir = os.path.join('..', '_cache')
         else:
             self.reload()    
         self.check_data_dirs()
-            
+         
     @property
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""

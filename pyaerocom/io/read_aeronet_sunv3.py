@@ -55,7 +55,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     __version__ = '0.06_' + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_SUN_V3L15_AOD_DAILY_NAME
+    DATASET_NAME = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
