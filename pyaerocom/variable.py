@@ -102,9 +102,10 @@ def _read_alias_ini():
         raise IOError('aliases ini file does not contain section aliases')
     aliases = {}
     items = parser['aliases']
-    for alias in items:
-        var_name = items[alias]
-        aliases[alias] = var_name
+    for var_name in items:
+        _aliases = [x for x in items[var_name].strip().split(',')]
+        for alias in _aliases:
+            aliases[alias] = var_name
     return aliases
 
 class Variable(BrowseDict):
@@ -269,6 +270,7 @@ class Variable(BrowseDict):
         cfg = ConfigParser()
         cfg.read(fpath)
         return cfg
+    
     
     @property
     def var_name_info(self):
