@@ -127,6 +127,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   grid_ts_type,
+            'ts_type_src_ref'   :   gridded_data_ref.ts_type,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'unit'              :   str(gridded_data.unit),
@@ -361,14 +362,15 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
         
     meta = {'data_source'  :   [ungridded_data.contains_datasets[0],
                                     gridded_data.name],
-            'var_name'      :   [var, var_ref],
-            'ts_type'       :   ts_type,
-            'filter_name'   :   filter_name,
-            'ts_type_src'   :   grid_ts_type,
-            'start_str'     :   to_datestring_YYYYMMDD(start),
-            'stop_str'      :   to_datestring_YYYYMMDD(stop),
-            'unit'          :   str(gridded_data.unit),
-            'data_level'    :   'colocated'}
+            'var_name'          :   [var, var_ref],
+            'ts_type'           :   ts_type,
+            'filter_name'       :   filter_name,
+            'ts_type_src'       :   grid_ts_type,
+            'ts_type_src_ref'   :  ungridded_data.TS_TYPE,
+            'start_str'         :   to_datestring_YYYYMMDD(start),
+            'stop_str'          :   to_datestring_YYYYMMDD(stop),
+            'unit'              :   str(gridded_data.unit),
+            'data_level'        :   'colocated'}
 
     
     meta.update(regfilter.to_dict())
