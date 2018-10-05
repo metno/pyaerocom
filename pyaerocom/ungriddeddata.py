@@ -404,6 +404,7 @@ class UngriddedData(object):
         stat_data['altitude'] = val['stat_alt']
         stat_data['PI'] = val['PI']
         stat_data['dataset_name'] = val['dataset_name']
+        stat_data['ts_type_src'] = val['ts_type']
         if 'instrument_name' in val:
             stat_data['instrument_name'] = val['instrument_name']
         

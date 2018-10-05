@@ -321,8 +321,14 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
     
     TIME_IDX = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
 
+    ts_type_src_ref = None
     for i, obs_data in enumerate(obs_stat_data):
         if obs_data is not None:
+            if ts_type_src_ref is None:
+                ts_type_src_ref = obs_data['ts_type_src']
+            elif not obs_data['ts_type_src'] == ts_type_src_ref:
+                raise ValueError('Cannot perform colocation. Ungridded data '
+                                 'object contains different source frequencies')
             # get observations (Note: the index of the observation time series
             # is already in the specified frequency format, and thus, does not
             # need to be updated, for details (or if errors occur), cf. 
@@ -366,7 +372,7 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   grid_ts_type,
-            'ts_type_src_ref'   :  ungridded_data.TS_TYPE,
+            'ts_type_src_ref'   :   ts_type_src_ref,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'unit'              :   str(gridded_data.unit),
