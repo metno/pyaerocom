@@ -25,7 +25,8 @@ from pyaerocom.helpers import (get_time_constraint,
                                cftime_to_datetime64,
                                str_to_iris,
                                IRIS_AGGREGATORS,
-                               to_pandas_timestamp)
+                               to_pandas_timestamp,
+                               TS_TYPE_TO_NUMPY_FREQ)
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
@@ -172,7 +173,16 @@ class GriddedData(object):
         if not self.is_cube:
             logger.warning("Start time could not be accessed in GriddedData")
             return np.nan
-        return cftime_to_datetime64(self.time[0])[0]
+        t = cftime_to_datetime64(self.time[0])[0]
+        
+        try:
+            dtype_appr = 'datetime64[{}]'.format(TS_TYPE_TO_NUMPY_FREQ[self.ts_type])
+            t=t.astype(dtype_appr)
+        except:
+            logger.exception('Failed to round start time {} to beggining of '
+                             'frequency {}'.format(t, self.ts_type))
+        return t.astype('datetime64[us]')
+
     
     @property
     def stop(self):
@@ -180,7 +190,18 @@ class GriddedData(object):
         if not self.is_cube:
             logger.warning("Stop time could not be accessed in GriddedData")
             return np.nan
-        return cftime_to_datetime64(self.time[-1])[0]
+        t = cftime_to_datetime64(self.time[-1])[0]
+        try:
+            freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+            dtype_appr = 'datetime64[{}]'.format(freq)
+            
+            t = t.astype(dtype_appr) + np.timedelta64(1, unit=freq)
+            t = t.astype('datetime64[us]') - np.timedelta64(1,unit='us')
+            return t
+        except:
+            logger.exception('Failed to round start time {} to beggining of '
+                             'frequency {}'.format(t, self.ts_type))
+            return t.astype('datetime64[us]')
     
 # =============================================================================
 #     @property
