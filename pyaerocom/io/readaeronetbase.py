@@ -361,6 +361,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
+        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         return data_obj
     
