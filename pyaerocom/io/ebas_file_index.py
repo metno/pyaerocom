@@ -5,6 +5,7 @@ import sqlite3
 import sys
 import os
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.exceptions import DataCoverageError
 
 class EbasSQLRequest(BrowseDict):
     """Low level dictionary like object for EBAS sqlite queries
@@ -383,7 +384,8 @@ class EbasFileIndex(object):
         try:
             names = [f[0] for f in self.execute_request(request)]
             if not len(names) > 0:
-                raise IOError('No files could be found for request')
+                raise DataCoverageError('No files could be found for request {}'
+                              .format(request))
         except Exception as e:
             raise e
             
