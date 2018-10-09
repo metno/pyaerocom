@@ -8,6 +8,7 @@ import numpy as np
 from pyaerocom import const, logger
 from pyaerocom.variable import VarNameInfo
 import iris
+from cf_units import Unit
 from scipy.stats import pearsonr, spearmanr, kendalltau
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
@@ -316,7 +317,9 @@ def compute_angstrom_coeff_cubes(od1, od2, lambda1=None, lambda2=None):
     logr = iris.analysis.maths.log(od1 / od2)
     
     wvl_r = np.log(lambda1 / lambda2)
-    return -1*iris.analysis.maths.divide(logr, wvl_r)
+    ang = -1*iris.analysis.maths.divide(logr, wvl_r)
+    ang.units = Unit(1)
+    return ang
 
 def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref, 
                                  angstrom_coeff):

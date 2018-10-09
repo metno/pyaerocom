@@ -11,7 +11,7 @@ from seaborn import heatmap
 def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
                   vmax=None, color_rowwise=True,
                   normalise_rows=False, normalise_rows_col=None,
-                  annot=True, table_name="", num_digits=2, ax=None, 
+                  annot=True, table_name="", num_digits=0, ax=None, 
                   figsize=(12,12), cbar=False, **kwargs):
     """Plot a pandas dataframe as heatmap
     

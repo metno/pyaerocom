@@ -13,7 +13,7 @@ from pyaerocom.mathutils import calc_statistics
 
 def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None, 
                  x_name=None, y_name=None, start=None, stop=None, ts_type=None, 
-                 unit=None,stations_ok=None, 
+                 unit=None, stations_ok=None, 
                  filter_name=None, lowlim_stats=None, highlim_stats=None, 
                  loglog=True, savefig=False, save_dir=None, save_name=None, 
                  ax=None, figsize=None):
