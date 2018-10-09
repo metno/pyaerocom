@@ -50,17 +50,6 @@ displayed in the flowchart.
 
     import pyaerocom as pya
 
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:32: UserWarning: Neither LatLon23 nor LatLon are available. Many basic features will not be available (e.g. objects GeoPoint or GeoVector 
-      warn('Neither LatLon23 nor LatLon are available. Many basic features '
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:42: UserWarning: Plotting of maps etc. is deactivated, please install Basemap
-      warn('Plotting of maps etc. is deactivated, please install Basemap')
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: The mpl_toolkits.axes_grid module was deprecated in version 2.1. Use mpl_toolkits.axes_grid1 and mpl_toolkits.axisartist provies the same functionality instead.
-      warnings.warn(message, mplDeprecation, stacklevel=1)
-
-
 Check data directory
 ''''''''''''''''''''
 
@@ -136,69 +125,6 @@ Import both clear-sky (*cs* in variable name) and all-sky data.
     reader = pya.io.ReadGridded('CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED')
     od550aer = reader.read_var('od550aer')
     od550csaer = reader.read_var('od550csaer')
-
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-
 
 Both data objects are instances of class
 `GriddedData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddeddata>`__
@@ -615,7 +541,7 @@ loaction of the cache directory can be accessed via:
 
 .. parsed-literal::
 
-    '/lustre/storeA/project/aerocom/user_data/pyaerocom_cache/jonasg'
+    '/home/jonasg/pyaerocom/_cache/jonasg'
 
 
 
@@ -709,12 +635,6 @@ same time). For now, we only read the AOD at 550 nm:
 
     aeronet_data = obs_reader.read(vars_to_retrieve='od550aer')
     type(aeronet_data) #displays data type
-
-
-.. parsed-literal::
-
-    /home/jonasg/github/pyaerocom/pyaerocom/ungriddeddata.py:94: RuntimeWarning: invalid value encountered in multiply
-      self._data = np.empty([num_points, self._COLNO]) * np.nan
 
 
 
@@ -978,7 +898,7 @@ Access of individual stations
      'Carloforte',
      'Carlsbad',
      'Carpentras',
-     'Cart_Site',
+     'CART_SITE',
      'Cat_Spring',
      'Cerro_Poyos',
      'Chao_Jou',
@@ -1891,7 +1811,7 @@ nm. If you like, you can plot this time-series:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f40ac39d518>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1270bb0940>
 
 
 
@@ -1925,8 +1845,6 @@ sides.
 
 .. parsed-literal::
 
-    /home/jonasg/github/pyaerocom/pyaerocom/ungriddeddata.py:94: RuntimeWarning: invalid value encountered in multiply
-      self._data = np.empty([num_points, self._COLNO]) * np.nan
     Interpolating data of shape (12, 192, 288). This may take a while.
     Successfully interpolated cube
 
@@ -1970,12 +1888,6 @@ Let’s do the same for the clear-sky data.
     ax1.set_title('All sky (2010, monthly)')
 
 
-.. parsed-literal::
-
-    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
-      if not 'time' in self.data:
-
-
 
 
 .. parsed-literal::
@@ -1985,19 +1897,13 @@ Let’s do the same for the clear-sky data.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_76_2.png
+.. image:: tut00_get_started/tut00_get_started_76_1.png
 
 
 .. code:: ipython3
 
     ax2 = col_clear_sky_glob.plot_scatter()
     ax2.set_title('Clear sky (2010, monthly)')
-
-
-.. parsed-literal::
-
-    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
-      if not 'time' in self.data:
 
 
 
@@ -2009,7 +1915,7 @@ Let’s do the same for the clear-sky data.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_77_2.png
+.. image:: tut00_get_started/tut00_get_started_77_1.png
 
 
 … or for EUROPE:
@@ -2024,19 +1930,15 @@ Let’s do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    /home/jonasg/github/pyaerocom/pyaerocom/ungriddeddata.py:94: RuntimeWarning: invalid value encountered in multiply
-      self._data = np.empty([num_points, self._COLNO]) * np.nan
     Interpolating data of shape (12, 192, 288). This may take a while.
     Successfully interpolated cube
-    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
-      if not 'time' in self.data:
 
 
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f40b832a518>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1270cdb898>
 
 
 

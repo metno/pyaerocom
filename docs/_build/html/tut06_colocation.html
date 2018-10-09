@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#getting-started">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
@@ -264,7 +265,7 @@ located at altitudes between 0 and 1000 m.</p>
 <span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">]</span>
 <span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">985</span>
 <span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
- <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181004171306</span>
+ <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181009135131</span>
     <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -303,25 +304,27 @@ located at altitudes between 0 and 1000 m.</p>
     <span class="n">longitude</span>     <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">130.9</span> <span class="mf">23.72</span> <span class="o">-</span><span class="mf">1.479</span> <span class="o">-</span><span class="mf">56.1</span> <span class="o">-</span><span class="mf">93.77</span> <span class="o">...</span>
     <span class="n">altitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">29.9</span> <span class="mf">130.0</span> <span class="mf">305.0</span> <span class="mf">277.0</span> <span class="mf">338.0</span> <span class="mf">49.0</span> <span class="o">...</span>
 <span class="n">Attributes</span><span class="p">:</span>
-    <span class="n">data_source</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
-    <span class="n">var_name</span><span class="p">:</span>     <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
-    <span class="n">ts_type</span><span class="p">:</span>      <span class="n">monthly</span>
-    <span class="n">filter_name</span><span class="p">:</span>  <span class="n">WORLD</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
-    <span class="n">ts_type_src</span><span class="p">:</span>  <span class="n">daily</span>
-    <span class="n">start_str</span><span class="p">:</span>    <span class="mi">20100101</span>
-    <span class="n">stop_str</span><span class="p">:</span>     <span class="mi">20101231</span>
-    <span class="n">unit</span><span class="p">:</span>         <span class="mi">1</span>
-    <span class="n">data_level</span><span class="p">:</span>   <span class="n">colocated</span>
-    <span class="n">region</span><span class="p">:</span>       <span class="n">WORLD</span>
-    <span class="n">lon_range</span><span class="p">:</span>    <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
-    <span class="n">lat_range</span><span class="p">:</span>    <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
-    <span class="n">alt_range</span><span class="p">:</span>    <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
+    <span class="n">data_source</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
+    <span class="n">var_name</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
+    <span class="n">ts_type</span><span class="p">:</span>          <span class="n">monthly</span>
+    <span class="n">filter_name</span><span class="p">:</span>      <span class="n">WORLD</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
+    <span class="n">ts_type_src</span><span class="p">:</span>      <span class="n">daily</span>
+    <span class="n">ts_type_src_ref</span><span class="p">:</span>  <span class="n">daily</span>
+    <span class="n">start_str</span><span class="p">:</span>        <span class="mi">20100101</span>
+    <span class="n">stop_str</span><span class="p">:</span>         <span class="mi">20101231</span>
+    <span class="n">unit</span><span class="p">:</span>             <span class="mi">1</span>
+    <span class="n">data_level</span><span class="p">:</span>       <span class="n">colocated</span>
+    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20180820</span>
+    <span class="n">region</span><span class="p">:</span>           <span class="n">WORLD</span>
+    <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
+    <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
+    <span class="n">alt_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fc8483c7128</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fa6289180f0</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_colocation_13_1.png" src="_images/tut06_colocation_13_1.png" />
@@ -358,25 +361,27 @@ located at altitudes between 0 and 1000 m.</p>
     <span class="n">longitude</span>     <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">23.72</span> <span class="mf">16.01</span> <span class="o">-</span><span class="mf">1.163</span> <span class="mf">3.111</span> <span class="o">-</span><span class="mf">4.603</span> <span class="o">...</span>
     <span class="n">altitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">130.0</span> <span class="mf">379.0</span> <span class="mf">11.0</span> <span class="mf">423.0</span> <span class="mf">873.0</span> <span class="mf">32.0</span> <span class="o">...</span>
 <span class="n">Attributes</span><span class="p">:</span>
-    <span class="n">data_source</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
-    <span class="n">var_name</span><span class="p">:</span>     <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
-    <span class="n">ts_type</span><span class="p">:</span>      <span class="n">daily</span>
-    <span class="n">filter_name</span><span class="p">:</span>  <span class="n">EUROPE</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
-    <span class="n">ts_type_src</span><span class="p">:</span>  <span class="n">daily</span>
-    <span class="n">start_str</span><span class="p">:</span>    <span class="mi">20100101</span>
-    <span class="n">stop_str</span><span class="p">:</span>     <span class="mi">20101231</span>
-    <span class="n">unit</span><span class="p">:</span>         <span class="mi">1</span>
-    <span class="n">data_level</span><span class="p">:</span>   <span class="n">colocated</span>
-    <span class="n">region</span><span class="p">:</span>       <span class="n">EUROPE</span>
-    <span class="n">lon_range</span><span class="p">:</span>    <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
-    <span class="n">lat_range</span><span class="p">:</span>    <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
-    <span class="n">alt_range</span><span class="p">:</span>    <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
+    <span class="n">data_source</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
+    <span class="n">var_name</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
+    <span class="n">ts_type</span><span class="p">:</span>          <span class="n">daily</span>
+    <span class="n">filter_name</span><span class="p">:</span>      <span class="n">EUROPE</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
+    <span class="n">ts_type_src</span><span class="p">:</span>      <span class="n">daily</span>
+    <span class="n">ts_type_src_ref</span><span class="p">:</span>  <span class="n">daily</span>
+    <span class="n">start_str</span><span class="p">:</span>        <span class="mi">20100101</span>
+    <span class="n">stop_str</span><span class="p">:</span>         <span class="mi">20101231</span>
+    <span class="n">unit</span><span class="p">:</span>             <span class="mi">1</span>
+    <span class="n">data_level</span><span class="p">:</span>       <span class="n">colocated</span>
+    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20180820</span>
+    <span class="n">region</span><span class="p">:</span>           <span class="n">EUROPE</span>
+    <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
+    <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
+    <span class="n">alt_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fc86004df28</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fa628b6a898</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_colocation_16_1.png" src="_images/tut06_colocation_16_1.png" />

@@ -33,16 +33,6 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:32: UserWarning: Neither LatLon23 nor LatLon are available. Many basic features will not be available (e.g. objects GeoPoint or GeoVector 
-      warn('Neither LatLon23 nor LatLon are available. Many basic features '
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:42: UserWarning: Plotting of maps etc. is deactivated, please install Basemap
-      warn('Plotting of maps etc. is deactivated, please install Basemap')
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: The mpl_toolkits.axes_grid module was deprecated in version 2.1. Use mpl_toolkits.axes_grid1 and mpl_toolkits.axisartist provies the same functionality instead.
-      warnings.warn(message, mplDeprecation, stacklevel=1)
-
-
-.. parsed-literal::
-
     Pyaerocom EbasNasaAmesFile
     --------------------------
     
@@ -296,7 +286,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7fc9ad589278>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f96dfeb3438>)])
 
 
 
