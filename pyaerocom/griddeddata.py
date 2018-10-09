@@ -5,7 +5,6 @@ Pyaerocom GriddedData class
 """
 
 import os
-from copy import deepcopy
 from collections import OrderedDict as od
 import iris
 from iris.analysis.cartography import area_weights
@@ -128,6 +127,21 @@ class GriddedData(object):
             except (VariableDefinitionError, MemoryError):
                 pass
     
+    @property
+    def data_revision(self):
+        """Revision string from file Revision.txt in the main data directory
+        """
+        if self.from_files:
+            data_dir = os.path.dirname(self.from_files[0])
+            revision_file = os.path.join(data_dir, const.REVISION_FILE)
+            if os.path.isfile(revision_file):
+                with open(revision_file, 'rt') as in_file:
+                    revision = in_file.readline().strip()
+                    in_file.close()
+    
+                return revision
+        return 'n/a'
+        
     @property
     def unit(self):
         """Unit of data"""
