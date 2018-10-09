@@ -67,7 +67,7 @@ class UngriddedData(object):
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
     """
-    __version__ = '0.12'
+    __version__ = '0.13'
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -94,6 +94,7 @@ class UngriddedData(object):
         self._data = np.empty([num_points, self._COLNO]) * np.nan
         self.unit = BrowseDict()
         self.metadata = od()
+        self.data_revision = od()
         self.meta_idx = od()
         self.var_idx = od()
         
@@ -691,6 +692,7 @@ class UngriddedData(object):
         new.filter_hist.update(self.filter_hist)
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
         new.filter_hist[int(time_str)] = filter_attributes
+        new.data_revision.update(self.data_revision)
         
         return new
     
@@ -744,6 +746,7 @@ class UngriddedData(object):
         new._data = new._data[:data_idx_new]
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
         new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
+        new.data_revision[dataset_name] = self.data_revision[dataset_name]
         return new
         
     def station_data_to_ascii(self, vars_to_convert=None, start=None, stop=None, 
@@ -889,6 +892,7 @@ class UngriddedData(object):
             obj._data = other._data
             obj.metadata = other.metadata
             obj.unit = other.unit
+            obj.data_revision = other.data_revision
             obj.meta_idx = other.meta_idx
             obj.var_idx = other.var_idx
         else:
@@ -935,6 +939,7 @@ class UngriddedData(object):
                     else:
                         obj.var_idx[var] = idx
             obj._data = np.vstack([obj._data, other._data])
+            obj.data_revision.update(other.data_revision)
         return obj
     
     def change_var_idx(self, var_name, new_idx):
