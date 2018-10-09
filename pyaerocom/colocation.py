@@ -131,7 +131,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'unit'              :   str(gridded_data.unit),
-            'data_level'        :   'colocated'}
+            'data_level'        :   'colocated',
+            'revision_ref'      :   gridded_data_ref.data_revision}
 
     
     meta.update(regfilter.to_dict())
@@ -155,11 +156,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                           name=gridded_data.var_name, attrs=meta)
 
 
-def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
-                                   start=None, stop=None, 
-                                   filter_name='WORLD-wMOUNTAINS',
-                                   var_ref=None, vert_scheme=None,
-                                   **kwargs):
+def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, 
+                                  ts_type='daily', start=None, stop=None, 
+                                  filter_name='WORLD-wMOUNTAINS',
+                                  var_ref=None, vert_scheme=None,
+                                  **kwargs):
     """Colocate gridded with ungridded data of 2D data
     
     2D means, that the vertical direction is only sampled at one altitude or
@@ -250,7 +251,9 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
                              'ungridded data objects that only contain a '
                              'single dataset. Use method `extract_dataset` of '
                              'UngriddedData object to extract single datasets')
-        
+    
+    dataset_ref = ungridded_data.contains_datasets[0]
+    
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
@@ -365,9 +368,12 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
     if len(obs_vals) == 0:
         raise ColocationError('No observations could be found that match '
                                'the colocation constraints')
-        
-    meta = {'data_source'  :   [ungridded_data.contains_datasets[0],
-                                    gridded_data.name],
+    try:
+        revision = ungridded_data.data_revision[dataset_ref]
+    except: 
+        revision = 'n/a'
+    meta = {'data_source'       :   [dataset_ref,
+                                     gridded_data.name],
             'var_name'          :   [var, var_ref],
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
@@ -376,7 +382,8 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, ts_type='daily',
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'unit'              :   str(gridded_data.unit),
-            'data_level'        :   'colocated'}
+            'data_level'        :   'colocated',
+            'revision_ref'      :   revision}
 
     
     meta.update(regfilter.to_dict())
