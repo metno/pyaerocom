@@ -30,17 +30,6 @@ Import setup and imports
     MODEL_ID = "ECMWF_CAMS_REAN"
     OBS_ID = 'AeronetSunV3Lev2.daily'
 
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:32: UserWarning: Neither LatLon23 nor LatLon are available. Many basic features will not be available (e.g. objects GeoPoint or GeoVector 
-      warn('Neither LatLon23 nor LatLon are available. Many basic features '
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:42: UserWarning: Plotting of maps etc. is deactivated, please install Basemap
-      warn('Plotting of maps etc. is deactivated, please install Basemap')
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: The mpl_toolkits.axes_grid module was deprecated in version 2.1. Use mpl_toolkits.axes_grid1 and mpl_toolkits.axisartist provies the same functionality instead.
-      warnings.warn(message, mplDeprecation, stacklevel=1)
-
-
 Import of model data
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -72,14 +61,6 @@ Since we are only interested in a single year we can use the method
     model_data = model_reader.read_var(VAR, start=YEAR)
     #model_data = read_result[VAR][YEAR]
     print(model_data)
-
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
 
 
 .. parsed-literal::
@@ -124,12 +105,6 @@ located at altitudes between 0 and 1000 m.
 
 .. parsed-literal::
 
-    /home/jonasg/github/pyaerocom/pyaerocom/ungriddeddata.py:94: RuntimeWarning: invalid value encountered in multiply
-      self._data = np.empty([num_points, self._COLNO]) * np.nan
-
-
-.. parsed-literal::
-
     
     Pyaerocom UngriddedData
     -----------------------
@@ -138,7 +113,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20181009112329
+     Filter time log: 20181009135131
     	stat_alt: [0, 1000]
 
 
@@ -165,7 +140,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 279)>
+    <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 278)>
     array([[[     nan, 0.117588, ...,      nan,      nan],
             [     nan, 0.132128, ...,      nan,      nan],
             ...,
@@ -209,22 +184,16 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_coloc.plot_scatter()
 
 
-.. parsed-literal::
-
-    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
-      if not 'time' in self.data:
-
-
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f64a410a438>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fa6289180f0>
 
 
 
 
-.. image:: tut06_colocation/tut06_colocation_13_2.png
+.. image:: tut06_colocation/tut06_colocation_13_1.png
 
 
 2010 daily Europe no mountains
@@ -291,20 +260,14 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_coloc.plot_scatter()
 
 
-.. parsed-literal::
-
-    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
-      if not 'time' in self.data:
-
-
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f64a4143828>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fa628b6a898>
 
 
 
 
-.. image:: tut06_colocation/tut06_colocation_16_2.png
+.. image:: tut06_colocation/tut06_colocation_16_1.png
 

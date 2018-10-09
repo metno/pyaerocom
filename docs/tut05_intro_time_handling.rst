@@ -45,17 +45,6 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
     fpath_ecmwf = files['models']['ecmwf_osuite']
     fpath_aatsr = files['models']['aatsr_su_v4.3']
 
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:32: UserWarning: Neither LatLon23 nor LatLon are available. Many basic features will not be available (e.g. objects GeoPoint or GeoVector 
-      warn('Neither LatLon23 nor LatLon are available. Many basic features '
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:42: UserWarning: Plotting of maps etc. is deactivated, please install Basemap
-      warn('Plotting of maps etc. is deactivated, please install Basemap')
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: The mpl_toolkits.axes_grid module was deprecated in version 2.1. Use mpl_toolkits.axes_grid1 and mpl_toolkits.axisartist provies the same functionality instead.
-      warnings.warn(message, mplDeprecation, stacklevel=1)
-
-
 .. code:: ipython3
 
     data_ecmwf = pya.GriddedData(fpath_ecmwf, var_name="od550aer", name="ECMWF_OSUITE")
@@ -64,30 +53,16 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
+      warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
-      if np.issubdtype(cf_var.dtype, np.str):
 
 
 Note that, if the longitudes are defined on a 0 -> 360 degree grid, they
@@ -255,7 +230,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    170 ms ± 1.46 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    130 ms ± 12.2 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -266,7 +241,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    149 ms ± 3.02 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    112 ms ± 6.68 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -282,7 +257,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    187 ms ± 15.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    118 ms ± 2.38 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -293,7 +268,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    181 ms ± 8.15 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    103 ms ± 897 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -318,7 +293,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    2.77 ms ± 59.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.34 ms ± 583 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -448,7 +423,7 @@ Now let’s see how this one performs.
 
 .. parsed-literal::
 
-    97.7 µs ± 1.82 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    53.7 µs ± 662 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How pya does it
@@ -471,7 +446,7 @@ here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. parsed-literal::
 
-    480 µs ± 6.32 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    327 µs ± 6.32 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -485,7 +460,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    3.3 ms ± 115 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.06 ms ± 26.6 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -505,7 +480,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    550 µs ± 7.1 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    376 µs ± 4.23 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -516,5 +491,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    4.94 ms ± 845 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.14 ms ± 29 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

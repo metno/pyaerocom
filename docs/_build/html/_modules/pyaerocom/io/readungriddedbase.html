@@ -91,6 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme.html#getting-started">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">Tests (for developers)</a></li>
@@ -192,7 +193,7 @@
     <span class="c1">#: code. This version is required for caching and needs to be considered</span>
     <span class="c1">#: in the definition of __version__ in all derived classes, so that</span>
     <span class="c1">#: caching can be done reliably</span>
-    <span class="n">__baseversion__</span> <span class="o">=</span> <span class="s1">&#39;0.02&#39;</span>
+    <span class="n">__baseversion__</span> <span class="o">=</span> <span class="s1">&#39;0.03&#39;</span>
     
     <span class="c1">#: dictionary containing information about additionally required variables</span>
     <span class="c1">#: for each auxiliary variable (i.e. each variable that is not provided</span>
@@ -411,12 +412,11 @@
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">revision_file</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
                     <span class="n">revision</span> <span class="o">=</span> <span class="n">in_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
                     <span class="n">in_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    
+                    
                 <span class="k">return</span> <span class="n">revision</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Failed to access revision info for dataset </span><span class="si">{}</span><span class="s2">. &quot;</span>
-                          <span class="s2">&quot;Error message: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DATASET_NAME</span><span class="p">,</span>
-                                          <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="s1">&#39;n/a&#39;</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">verbosity_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Current level of verbosity of logger&quot;&quot;&quot;</span>

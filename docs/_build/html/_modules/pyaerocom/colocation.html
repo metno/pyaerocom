@@ -91,6 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html#documentation">Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html#requirements">Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html#getting-started">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api_testsuite.html">Tests (for developers)</a></li>
@@ -288,10 +289,12 @@
             <span class="s1">&#39;ts_type&#39;</span>           <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
             <span class="s1">&#39;filter_name&#39;</span>       <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
             <span class="s1">&#39;ts_type_src&#39;</span>       <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src_ref&#39;</span>   <span class="p">:</span>   <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">ts_type</span><span class="p">,</span>
             <span class="s1">&#39;start_str&#39;</span>         <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
             <span class="s1">&#39;stop_str&#39;</span>          <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
             <span class="s1">&#39;unit&#39;</span>              <span class="p">:</span>   <span class="nb">str</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span>
-            <span class="s1">&#39;data_level&#39;</span>        <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">}</span>
+            <span class="s1">&#39;data_level&#39;</span>        <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;revision_ref&#39;</span>      <span class="p">:</span>   <span class="n">gridded_data_ref</span><span class="o">.</span><span class="n">data_revision</span><span class="p">}</span>
 
     
     <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">regfilter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>
@@ -315,11 +318,11 @@
                           <span class="n">name</span><span class="o">=</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="colocate_gridded_ungridded_2D"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_ungridded_2D">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">ungridded_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span>
-                                   <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                                   <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span>
-                                   <span class="n">var_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                   <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="colocate_gridded_ungridded_2D"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_ungridded_2D">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">ungridded_data</span><span class="p">,</span> 
+                                  <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                                  <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span>
+                                  <span class="n">var_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Colocate gridded with ungridded data of 2D data</span>
 <span class="sd">    </span>
 <span class="sd">    2D means, that the vertical direction is only sampled at one altitude or</span>
@@ -410,7 +413,9 @@
                              <span class="s1">&#39;ungridded data objects that only contain a &#39;</span>
                              <span class="s1">&#39;single dataset. Use method `extract_dataset` of &#39;</span>
                              <span class="s1">&#39;UngriddedData object to extract single datasets&#39;</span><span class="p">)</span>
-        
+    
+    <span class="n">dataset_ref</span> <span class="o">=</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
     <span class="c1"># get start / stop of gridded data as pandas.Timestamp</span>
     <span class="n">grid_start</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
     <span class="n">grid_stop</span> <span class="o">=</span> <span class="n">to_pandas_timestamp</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
@@ -481,8 +486,14 @@
     
     <span class="n">TIME_IDX</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="n">freq_pd</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">stop</span><span class="p">)</span>
 
+    <span class="n">ts_type_src_ref</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">obs_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obs_stat_data</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">obs_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ts_type_src_ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ts_type_src_ref</span> <span class="o">=</span> <span class="n">obs_data</span><span class="p">[</span><span class="s1">&#39;ts_type_src&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">obs_data</span><span class="p">[</span><span class="s1">&#39;ts_type_src&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ts_type_src_ref</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot perform colocation. Ungridded data &#39;</span>
+                                 <span class="s1">&#39;object contains different source frequencies&#39;</span><span class="p">)</span>
             <span class="c1"># get observations (Note: the index of the observation time series</span>
             <span class="c1"># is already in the specified frequency format, and thus, does not</span>
             <span class="c1"># need to be updated, for details (or if errors occur), cf. </span>
@@ -519,17 +530,22 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_vals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ColocationError</span><span class="p">(</span><span class="s1">&#39;No observations could be found that match &#39;</span>
                                <span class="s1">&#39;the colocation constraints&#39;</span><span class="p">)</span>
-        
-    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span>  <span class="p">:</span>   <span class="p">[</span><span class="n">ungridded_data</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                    <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
-            <span class="s1">&#39;var_name&#39;</span>      <span class="p">:</span>   <span class="p">[</span><span class="n">var</span><span class="p">,</span> <span class="n">var_ref</span><span class="p">],</span>
-            <span class="s1">&#39;ts_type&#39;</span>       <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
-            <span class="s1">&#39;filter_name&#39;</span>   <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
-            <span class="s1">&#39;ts_type_src&#39;</span>   <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
-            <span class="s1">&#39;start_str&#39;</span>     <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
-            <span class="s1">&#39;stop_str&#39;</span>      <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
-            <span class="s1">&#39;unit&#39;</span>          <span class="p">:</span>   <span class="nb">str</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span>
-            <span class="s1">&#39;data_level&#39;</span>    <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">revision</span> <span class="o">=</span> <span class="n">ungridded_data</span><span class="o">.</span><span class="n">data_revision</span><span class="p">[</span><span class="n">dataset_ref</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span> 
+        <span class="n">revision</span> <span class="o">=</span> <span class="s1">&#39;n/a&#39;</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data_source&#39;</span>       <span class="p">:</span>   <span class="p">[</span><span class="n">dataset_ref</span><span class="p">,</span>
+                                     <span class="n">gridded_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+            <span class="s1">&#39;var_name&#39;</span>          <span class="p">:</span>   <span class="p">[</span><span class="n">var</span><span class="p">,</span> <span class="n">var_ref</span><span class="p">],</span>
+            <span class="s1">&#39;ts_type&#39;</span>           <span class="p">:</span>   <span class="n">ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;filter_name&#39;</span>       <span class="p">:</span>   <span class="n">filter_name</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src&#39;</span>       <span class="p">:</span>   <span class="n">grid_ts_type</span><span class="p">,</span>
+            <span class="s1">&#39;ts_type_src_ref&#39;</span>   <span class="p">:</span>   <span class="n">ts_type_src_ref</span><span class="p">,</span>
+            <span class="s1">&#39;start_str&#39;</span>         <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
+            <span class="s1">&#39;stop_str&#39;</span>          <span class="p">:</span>   <span class="n">to_datestring_YYYYMMDD</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span>
+            <span class="s1">&#39;unit&#39;</span>              <span class="p">:</span>   <span class="nb">str</span><span class="p">(</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">unit</span><span class="p">),</span>
+            <span class="s1">&#39;data_level&#39;</span>        <span class="p">:</span>   <span class="s1">&#39;colocated&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;revision_ref&#39;</span>      <span class="p">:</span>   <span class="n">revision</span><span class="p">}</span>
 
     
     <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">regfilter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>

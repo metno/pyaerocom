@@ -1722,6 +1722,7 @@ You may print it to see what is in there:
     stat_lat: nan
     stat_lon: nan
     stat_alt: nan
+    ts_type_src: daily
     od550aer: 2001-05-20 12:00:00    0.190538
     2001-05-21 12:00:00    0.165246
     2001-05-22 12:00:00    0.117999
@@ -1810,7 +1811,7 @@ nm. If you like, you can plot this time-series:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fc2689a8e48>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1270bb0940>
 
 
 
@@ -1922,9 +1923,9 @@ Let’s do the same for the clear-sky data.
 .. code:: ipython3
 
     pya.colocation.colocate_gridded_ungridded_2D(od550aer, aeronet_data,
-                                                ts_type='monthly',
-                                                                    start=2010,
-                                                                    filter_name='WORLD-noMOUNTAINS')
+                                                 ts_type='monthly',
+                                                 start=2010,
+                                                 filter_name='EUROPE-noMOUNTAINS').plot_scatter()
 
 
 .. parsed-literal::
@@ -1937,39 +1938,10 @@ Let’s do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 274)>
-    array([[[     nan, 0.117588, ...,      nan,      nan],
-            [     nan, 0.132128, ...,      nan,      nan],
-            ...,
-            [0.132236, 0.195057, ...,      nan,      nan],
-            [     nan,      nan, ...,      nan,      nan]],
-    
-           [[0.060114, 0.248935, ..., 0.066554, 0.335475],
-            [0.099408, 0.370893, ..., 0.0616  , 0.468845],
-            ...,
-            [0.178814, 0.302825, ..., 0.07004 , 0.666344],
-            [0.069544, 0.277792, ..., 0.039258, 0.469875]]])
-    Coordinates:
-      * data_source   (data_source) <U55 'AeronetSunV3Lev2.daily' ...
-        var_name      (data_source) <U8 'od550aer' 'od550aer'
-      * time          (time) datetime64[ns] 2010-01-01 2010-02-01 2010-03-01 ...
-      * station_name  (station_name) <U19 'ARM_Darwin' 'ATHENS-NOA' 'Agoufou' ...
-        latitude      (station_name) float64 -12.43 37.97 15.35 -9.871 42.02 ...
-        longitude     (station_name) float64 130.9 23.72 -1.479 -56.1 -93.77 ...
-        altitude      (station_name) float64 29.9 130.0 305.0 277.0 338.0 49.0 ...
-    Attributes:
-        data_source:  ['AeronetSunV3Lev2.daily', 'CAM53-Oslo_7310_MG15CLM45_5feb2...
-        var_name:     ['od550aer', 'od550aer']
-        ts_type:      monthly
-        filter_name:  WORLD-noMOUNTAINS
-        ts_type_src:  monthly
-        start_str:    20100101
-        stop_str:     20101201
-        unit:         1
-        data_level:   colocated
-        region:       WORLD
-        lon_range:    [-180, 180]
-        lat_range:    [-90, 90]
-        alt_range:    [-1000000.0, 1000.0]
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1270cdb898>
 
+
+
+
+.. image:: tut00_get_started/tut00_get_started_79_2.png
 

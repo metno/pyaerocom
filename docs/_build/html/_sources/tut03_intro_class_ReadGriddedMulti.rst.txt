@@ -65,7 +65,7 @@ done in a later process.
     Model ID: AATSR_SU_v4.3
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
-    Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    Available years: [2010, 2011, 2012]
     Available time resolutions ['daily']
     
     Pyaerocom ReadGridded
@@ -73,7 +73,7 @@ done in a later process.
     Model ID: CAM5.3-Oslo_CTRL2016
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
-    Available years: [2006, 2008, 2010]
+    Available years: [2010]
     Available time resolutions ['3hourly', 'daily']
     
     Pyaerocom ReadGridded
@@ -188,7 +188,7 @@ string representation)
     Model ID: AATSR_SU_v4.3
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
-    Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    Available years: [2010, 2011, 2012]
     Available time resolutions ['daily']
     
     Loaded GriddedData objects:
@@ -197,20 +197,20 @@ string representation)
     ---------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T23:59:59.999999
     
     Pyaerocom GriddedData
     ---------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T23:59:59.999999
     
     Pyaerocom ReadGridded
     ---------------------
     Model ID: CAM5.3-Oslo_CTRL2016
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
-    Available years: [2006, 2008, 2010]
+    Available years: [2010]
     Available time resolutions ['3hourly', 'daily']
     
     Loaded GriddedData objects:
@@ -219,13 +219,13 @@ string representation)
     ---------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Pyaerocom GriddedData
     ---------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Pyaerocom ReadGridded
     ---------------------
@@ -241,13 +241,13 @@ string representation)
     ---------------------
     Variable: od550aer
     Temporal resolution: monthly
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Pyaerocom GriddedData
     ---------------------
     Variable: od550dust
     Temporal resolution: monthly
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
 
 
 Print some information about the different data objects
@@ -316,7 +316,7 @@ containing the od550aer values and draw a map.
 .. parsed-literal::
 
     
-    Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Start / stop after crop: 2010-03-15 10:30:00 - 2010-06-22 10:30:00
 
