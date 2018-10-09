@@ -60,7 +60,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.06_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.07_" + ReadUngriddedBase.__baseversion__
     
     #: preferred order of data statistics. Some files may contain multiple 
     #: columns for one variable, where each column corresponds to one of the
@@ -240,11 +240,9 @@ class ReadEbas(ReadUngriddedBase):
             if info.requires is not None:
                 raise NotImplementedError('Auxiliary variables can not yet '
                                           'be handled / retrieved')
-            try:
-                filenames = db.get_file_names(info.make_sql_request())
-            except Exception as e:
-                self.logger.warning('Failed to retrieve files for variable '
-                                    '{}. Error: {}'.format(var, repr(e)))
+            
+            filenames = db.get_file_names(info.make_sql_request())
+            
             paths = []
             for file in filenames:
                 paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
@@ -719,6 +717,7 @@ class ReadEbas(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         data_obj = data_obj.merge_common_meta()
+        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         return data_obj
     
