@@ -48,7 +48,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.e*'
     
     #: version log of this class (for caching)
-    __version__ = "0.09_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.10_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.EARLINET_NAME
@@ -57,7 +57,7 @@ class ReadEarlinet(ReadUngriddedBase):
     SUPPORTED_DATASETS = [const.EARLINET_NAME]
     
     #: default variables for read method
-    DEFAULT_VARS = ['zdust', 'ec5503daer', 'ec5503daer_err']
+    DEFAULT_VARS = ['zdust', 'ec5323daer', 'ec5323daer_err']
     
     Z3D_VARNAME = 'Altitude'
     
@@ -375,6 +375,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
+        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         return data_obj
         
@@ -417,13 +418,7 @@ if __name__=="__main__":
     read = ReadEarlinet()
     read.verbosity_level = 'info'
     
-    data = read.read('ec5323daer')
-    
-    data = xarray.open_dataset(F150)
-    print(data)
-    dat = read.read_file(F150, vars_to_retrieve=read.PROVIDES_VARIABLES)
-    print(dat)
-    
+    data = read.read('ec5323daer', last_file=10)
     
     
     from time import time
