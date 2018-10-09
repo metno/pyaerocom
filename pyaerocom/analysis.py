@@ -22,7 +22,7 @@ from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                start_stop_from_year)
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded_2D)
-from pyaerocom import ColocatedData
+from pyaerocom import ColocatedData, print_log
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.exceptions import NetworkNotSupported, DataCoverageError
 
@@ -427,6 +427,8 @@ class Analyser(object):
                                 if self._log:
                                     self._log.write('SKIP: {}\n'
                                                     .format(savename))
+                                    print_log.info('Skip {} (file already '
+                                                   'exists)'.format(savename))
                                 continue
                             else:
                                 os.remove(os.path.join(out_dir, savename))
@@ -441,6 +443,7 @@ class Analyser(object):
                         data_coll.to_netcdf(out_dir)
                         if self._log:
                             self._log.write('WRITE: {}\n'.format(savename))
+                            print_log.info('Writing {}'.format(savename))
                         
                         plt.close('all')
                     
@@ -542,6 +545,8 @@ class Analyser(object):
                             if not self.options.REANALYSE_EXISTING:
                                 if self._log:
                                     self._log.write('SKIP: {}\n'.format(savename))
+                                    print_log.info('Skip {} (file already '
+                                                   'exists)'.format(savename))
                                 continue
                             else:
                                 os.remove(os.path.join(out_dir, savename))
@@ -557,6 +562,7 @@ class Analyser(object):
                         data_coll.to_netcdf(out_dir)
                         if self._log:
                             self._log.write('WRITE: {}\n'.format(savename))
+                            print_log.info('Writing {}'.format(savename))
     
     def __getitem__(self, key):
         if key in self._setup:
