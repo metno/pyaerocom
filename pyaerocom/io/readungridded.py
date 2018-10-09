@@ -93,6 +93,7 @@ class ReadUngridded(object):
         if ignore_cache:
             self.logger.info('Deactivating caching')
             const.CACHING = False
+            
     @property
     def ignore_cache(self):
         if os.path.exists(self._DONOTCACHEFILE) or not const.CACHING:
@@ -233,26 +234,26 @@ class ReadUngridded(object):
         # read the data sets
         cache_hit_flag = False
         
-        # initate cache handler
-        cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
+        if not self.ignore_cache:
+            # initate cache handler
+            cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
+            if cache.check_and_load():
+                self.logger.info('Found Cache match for {}'.format(dataset_to_read))
+                cache_hit_flag = True
+                data = cache.loaded_data
         
-        if cache.check_and_load() and not self.ignore_cache:
-            self.logger.info('Found Cache match for {}'.format(dataset_to_read))
-            cache_hit_flag = True
-            data = cache.loaded_data
-        else:
+        if not cache_hit_flag:
             self.logger.info('No Cache match found for {}. Reading from files (this '
                         'may take a while)'.format(dataset_to_read))
             data = reader.read(vars_available, **kwargs)
         
         self.revision[dataset_to_read] = reader.data_revision
         self.data_version[dataset_to_read] = reader.__version__
-        self.cache_files[dataset_to_read] = cache.file_path
         
         # write the cache file
         if not cache_hit_flag and not self.ignore_cache:
             cache.write(data)
-    
+        
         return data
     
     def read(self, datasets_to_read=None, vars_to_retrieve=None,
@@ -297,15 +298,14 @@ class ReadUngridded(object):
         return self.SUPPORTED_DATASETS
     
 if __name__=="__main__":
-    read = ReadUngridded()
-    ebas = read.read('EBASMC', ('absc550aer', 'scatc550aer'), 
-                     last_file=10)
-    raise Exception
-    read = ReadUngridded(const.AERONET_INV_V2L2_DAILY_NAME)
-    read.read()
+
+    reader = ReadUngridded(ignore_cache=True)
     
-    read = ReadUngridded(const.AERONET_INV_V3L2_DAILY_NAME)
-    read.read()
+    data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
+                        const.AERONET_SUN_V3L2_AOD_DAILY_NAME], 
+                    vars_to_retrieve='od550aer', 
+                    last_file=10)
+    
     
     
     
