@@ -205,6 +205,8 @@ class ReadGridded(object):
         self.browser = AerocomBrowser()
         
         self.read_errors = {}
+        
+        self._aux_avail = None
         if init and name:
             self.search_data_dir()
             self.search_all_files()
@@ -218,7 +220,18 @@ class ReadGridded(object):
         """Variables provided by this interface"""
         v = []
         v.extend(self.vars)
-        v.extend(self.AUX_REQUIRES.keys())
+        if self._aux_avail is not None:
+            v.extend(self._aux_avail)
+        else:
+            self._aux_avail = []
+            for aux_var in self.AUX_REQUIRES.keys():
+                try:
+                    self._get_aux_vars(aux_var)
+                    v.append(aux_var)
+                    self._aux_avail.append(aux_var)
+                except: #this auxiliary variable cannot be computed
+                    pass
+        #v.extend(self.AUX_REQUIRES.keys())
         #also add standard names of 3D variables if not already in list
         for var in self._vars_3d:
             var = var.lower().replace('3d','')
@@ -407,19 +420,32 @@ class ReadGridded(object):
         _vars_temp_3d = []
         _years_temp = []
         _ts_types_temp = []
+        _start, _stop = -2000, 20000
+        if self._stop is not None:
+            _stop = self._stop.year + 1
+        if self._start is not None:
+            _start = self._start.year
+            if _stop == 20000:
+               _stop = _start + 1
+        
+        
+            
+            
+        
         for _file in nc_files:
             try:
                 info = self.file_convention.get_info_from_file(_file)
-                var_name = info['var_name']
-                if is_3d(var_name):
-                    _vars_temp_3d.append(var_name)
-                else:
-                    _vars_temp.append(var_name)
-                
-                _years_temp.append(info["year"])
-                _ts_types_temp.append(info["ts_type"])
-                self.files.append(_file)
-                self.logger.debug('Read file {}'.format(_file))
+                if _start <= info['year'] <= _stop:
+                    var_name = info['var_name']
+                    if is_3d(var_name):
+                        _vars_temp_3d.append(var_name)
+                    else:
+                        _vars_temp.append(var_name)
+                    
+                    _years_temp.append(info["year"])
+                    _ts_types_temp.append(info["ts_type"])
+                    self.files.append(_file)
+                    self.logger.debug('Read file {}'.format(_file))
             except Exception as e:
                 msg = ("Failed to import file {}\nModel: {}\n"
                       "Error: {}".format(basename(_file), 
@@ -427,9 +453,13 @@ class ReadGridded(object):
                 self.logger.warning(msg)
                 if CONST.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
-                    
+                  
+        if len(self.files) == 0:
+            raise DataCoverageError('No files could be found for data {} and '
+                                    'years range {}-{}'.format(self.name,
+                                                 _start, _stop))
         if len(_vars_temp + _vars_temp_3d) == 0:
-            raise IOError("Failed to extract information from filenames")
+            raise AttributeError("Failed to extract information from filenames")
         # make sorted list of unique vars
 
         self._vars_2d = sorted(od.fromkeys(_vars_temp))
@@ -625,9 +655,11 @@ class ReadGridded(object):
            
         if len(match_files) == 0:
             raise DataCoverageError("No files could be found for dataset {}, "
-                                    "variable {}, ts_type {} and years {}"
+                                    "variable {}, ts_type {} between {} - {}."
                                     .format(self.name, 
-                                            var_name, ts_type, years_to_load))
+                                            var_name, ts_type, 
+                                            min(years_to_load),
+                                            max(years_to_load)))
                 
         self.match_files = match_files
         return match_files
@@ -870,10 +902,10 @@ class ReadGridded(object):
                     if Variable(var).var_name == var_name:
                         var_to_read = var
         
-        if var_to_read is not None:
+        if var_to_read is not None: # variable can be read directly
             data = self._load_var(var_to_read, ts_type, start, stop,
                                   flex_ts_type)
-        elif var_name in self.AUX_REQUIRES:
+        elif var_name in self.AUX_REQUIRES: #variable can be computed 
             data = self.compute_var(var_name, start, stop,
                                     ts_type, flex_ts_type)
         else:
