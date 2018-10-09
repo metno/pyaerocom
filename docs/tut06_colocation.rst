@@ -30,6 +30,17 @@ Import setup and imports
     MODEL_ID = "ECMWF_CAMS_REAN"
     OBS_ID = 'AeronetSunV3Lev2.daily'
 
+
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:32: UserWarning: Neither LatLon23 nor LatLon are available. Many basic features will not be available (e.g. objects GeoPoint or GeoVector 
+      warn('Neither LatLon23 nor LatLon are available. Many basic features '
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:42: UserWarning: Plotting of maps etc. is deactivated, please install Basemap
+      warn('Plotting of maps etc. is deactivated, please install Basemap')
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: The mpl_toolkits.axes_grid module was deprecated in version 2.1. Use mpl_toolkits.axes_grid1 and mpl_toolkits.axisartist provies the same functionality instead.
+      warnings.warn(message, mplDeprecation, stacklevel=1)
+
+
 Import of model data
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -61,6 +72,14 @@ Since we are only interested in a single year we can use the method
     model_data = model_reader.read_var(VAR, start=YEAR)
     #model_data = read_result[VAR][YEAR]
     print(model_data)
+
+
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
 
 
 .. parsed-literal::
@@ -105,6 +124,12 @@ located at altitudes between 0 and 1000 m.
 
 .. parsed-literal::
 
+    /home/jonasg/github/pyaerocom/pyaerocom/ungriddeddata.py:94: RuntimeWarning: invalid value encountered in multiply
+      self._data = np.empty([num_points, self._COLNO]) * np.nan
+
+
+.. parsed-literal::
+
     
     Pyaerocom UngriddedData
     -----------------------
@@ -113,7 +138,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20181004171306
+     Filter time log: 20181009112329
     	stat_alt: [0, 1000]
 
 
@@ -140,7 +165,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 278)>
+    <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 279)>
     array([[[     nan, 0.117588, ...,      nan,      nan],
             [     nan, 0.132128, ...,      nan,      nan],
             ...,
@@ -161,19 +186,21 @@ Now perform collocation and plot corresponding scatter plots with statistical va
         longitude     (station_name) float64 130.9 23.72 -1.479 -56.1 -93.77 ...
         altitude      (station_name) float64 29.9 130.0 305.0 277.0 338.0 49.0 ...
     Attributes:
-        data_source:  ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
-        var_name:     ['od550aer', 'od550aer']
-        ts_type:      monthly
-        filter_name:  WORLD-noMOUNTAINS
-        ts_type_src:  daily
-        start_str:    20100101
-        stop_str:     20101231
-        unit:         1
-        data_level:   colocated
-        region:       WORLD
-        lon_range:    [-180, 180]
-        lat_range:    [-90, 90]
-        alt_range:    [-1000000.0, 1000.0]
+        data_source:      ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
+        var_name:         ['od550aer', 'od550aer']
+        ts_type:          monthly
+        filter_name:      WORLD-noMOUNTAINS
+        ts_type_src:      daily
+        ts_type_src_ref:  daily
+        start_str:        20100101
+        stop_str:         20101231
+        unit:             1
+        data_level:       colocated
+        revision_ref:     20180820
+        region:           WORLD
+        lon_range:        [-180, 180]
+        lat_range:        [-90, 90]
+        alt_range:        [-1000000.0, 1000.0]
 
 
 
@@ -182,16 +209,22 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_coloc.plot_scatter()
 
 
+.. parsed-literal::
+
+    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
+      if not 'time' in self.data:
+
+
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fc8483c7128>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f64a410a438>
 
 
 
 
-.. image:: tut06_colocation/tut06_colocation_13_1.png
+.. image:: tut06_colocation/tut06_colocation_13_2.png
 
 
 2010 daily Europe no mountains
@@ -235,19 +268,21 @@ Now perform collocation and plot corresponding scatter plots with statistical va
         longitude     (station_name) float64 23.72 16.01 -1.163 3.111 -4.603 ...
         altitude      (station_name) float64 130.0 379.0 11.0 423.0 873.0 32.0 ...
     Attributes:
-        data_source:  ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
-        var_name:     ['od550aer', 'od550aer']
-        ts_type:      daily
-        filter_name:  EUROPE-noMOUNTAINS
-        ts_type_src:  daily
-        start_str:    20100101
-        stop_str:     20101231
-        unit:         1
-        data_level:   colocated
-        region:       EUROPE
-        lon_range:    [-20, 70]
-        lat_range:    [30, 80]
-        alt_range:    [-1000000.0, 1000.0]
+        data_source:      ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
+        var_name:         ['od550aer', 'od550aer']
+        ts_type:          daily
+        filter_name:      EUROPE-noMOUNTAINS
+        ts_type_src:      daily
+        ts_type_src_ref:  daily
+        start_str:        20100101
+        stop_str:         20101231
+        unit:             1
+        data_level:       colocated
+        revision_ref:     20180820
+        region:           EUROPE
+        lon_range:        [-20, 70]
+        lat_range:        [30, 80]
+        alt_range:        [-1000000.0, 1000.0]
 
 
 
@@ -256,14 +291,20 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_coloc.plot_scatter()
 
 
+.. parsed-literal::
+
+    /home/jonasg/github/pyaerocom/pyaerocom/colocateddata.py:134: FutureWarning: xarray.DataArray.__contains__ currently checks membership in DataArray.coords, but in xarray v0.11 will change to check membership in array values.
+      if not 'time' in self.data:
+
+
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fc86004df28>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f64a4143828>
 
 
 
 
-.. image:: tut06_colocation/tut06_colocation_16_1.png
+.. image:: tut06_colocation/tut06_colocation_16_2.png
 

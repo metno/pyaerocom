@@ -14,6 +14,17 @@ an interface for importing results from a single dataset.
     import pyaerocom as pya
     pya.change_verbosity('critical')
 
+
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:32: UserWarning: Neither LatLon23 nor LatLon are available. Many basic features will not be available (e.g. objects GeoPoint or GeoVector 
+      warn('Neither LatLon23 nor LatLon are available. Many basic features '
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/geonum/__init__.py:42: UserWarning: Plotting of maps etc. is deactivated, please install Basemap
+      warn('Plotting of maps etc. is deactivated, please install Basemap')
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/matplotlib/cbook/deprecation.py:107: MatplotlibDeprecationWarning: The mpl_toolkits.axes_grid module was deprecated in version 2.1. Use mpl_toolkits.axes_grid1 and mpl_toolkits.axisartist provies the same functionality instead.
+      warnings.warn(message, mplDeprecation, stacklevel=1)
+
+
 Define two models (this list can contain as many models as you like)
 
 .. code:: ipython3
@@ -65,7 +76,7 @@ done in a later process.
     Model ID: AATSR_SU_v4.3
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
-    Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    Available years: [2010, 2011, 2012]
     Available time resolutions ['daily']
     
     Pyaerocom ReadGridded
@@ -73,7 +84,7 @@ done in a later process.
     Model ID: CAM5.3-Oslo_CTRL2016
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
-    Available years: [2006, 2008, 2010]
+    Available years: [2010]
     Available time resolutions ['3hourly', 'daily']
     
     Pyaerocom ReadGridded
@@ -102,6 +113,33 @@ Read all variables for all models
 .. code:: ipython3
 
     result_dict = read.read(test_vars, ts_type="daily")
+
+
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+
 
 As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
@@ -156,6 +194,14 @@ Now read the aerosol optical depth at 550 nm and in monthly resolution.
     r.read_var("od550aer", ts_type="monthly")
 
 
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1813: FutureWarning: Conversion of the second argument of issubdtype from `str` to `str` is deprecated. In future, it will be treated as `np.str_ == np.dtype(str).type`.
+      if np.issubdtype(cf_var.dtype, np.str):
+
+
 
 
 .. parsed-literal::
@@ -188,7 +234,7 @@ string representation)
     Model ID: AATSR_SU_v4.3
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/CCI-Aerosol/CCI_AEROSOL_Phase2/AATSR_SU_v4.3/renamed
     Available variables: ['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 'od550erraer', 'od550gt1aer', 'od550lt1aer']
-    Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    Available years: [2010, 2011, 2012]
     Available time resolutions ['daily']
     
     Loaded GriddedData objects:
@@ -197,20 +243,20 @@ string representation)
     ---------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T23:59:59.999999
     
     Pyaerocom GriddedData
     ---------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2011-01-01T23:59:59.999999
     
     Pyaerocom ReadGridded
     ---------------------
     Model ID: CAM5.3-Oslo_CTRL2016
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/CAM5.3-Oslo_CTRL2016/renamed
     Available variables: ['abs550aer', 'deltaz3d', 'humidity3d', 'od440aer', 'od550aer', 'od550aer3d', 'od550aerh2o', 'od550dryaer', 'od550dust', 'od550lt1aer', 'od870aer']
-    Available years: [2006, 2008, 2010]
+    Available years: [2010]
     Available time resolutions ['3hourly', 'daily']
     
     Loaded GriddedData objects:
@@ -219,13 +265,13 @@ string representation)
     ---------------------
     Variable: od550aer
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Pyaerocom GriddedData
     ---------------------
     Variable: od550dust
     Temporal resolution: daily
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Pyaerocom ReadGridded
     ---------------------
@@ -241,13 +287,13 @@ string representation)
     ---------------------
     Variable: od550aer
     Temporal resolution: monthly
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Pyaerocom GriddedData
     ---------------------
     Variable: od550dust
     Temporal resolution: monthly
-    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-01T00:00:00.000000
+    Start / Stop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
 
 
 Print some information about the different data objects
@@ -316,7 +362,7 @@ containing the od550aer values and draw a map.
 .. parsed-literal::
 
     
-    Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T00:00:00.000000
+    Start / stop before crop: 2010-01-01T00:00:00.000000 - 2010-12-31T23:59:59.999999
     
     Start / stop after crop: 2010-03-15 10:30:00 - 2010-06-22 10:30:00
 
