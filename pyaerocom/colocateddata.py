@@ -384,7 +384,9 @@ class ColocatedData(object):
             save_name = self.save_name_aerocom
         if not save_name.endswith('.nc'):
             save_name = '{}.nc'.format(save_name)
-            
+        for k, v in self.data.attrs.items():
+            if v is None:
+                self.data.attrs[k] = 'None'
         self.data.to_netcdf(path=os.path.join(out_dir, save_name), **kwargs)
       
     def read_netcdf(self, file_path):

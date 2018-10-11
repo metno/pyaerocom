@@ -415,6 +415,15 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data,
 if __name__=='__main__':
     import pyaerocom as pya
     
+    reader = pya.io.ReadGridded('ECMWF_OSUITE')
+    model_data = reader.read_var(var_name='od550aer', start=2010)
+    
+    obs_reader = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
+    obs_data = obs_reader.read(vars_to_retrieve='od550aer')
+    
+    colocated_data = pya.colocation.colocate_gridded_ungridded_2D(model_data, obs_data)
+    
+    
     r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
     model = r.read_var('od550aer', start=2010)
     
