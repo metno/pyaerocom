@@ -120,7 +120,8 @@ class Config(object):
     _outhomename = 'pyaerocom'
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  output_dir=None, config_file=None, 
-                 cache_dir=None, write_fileio_err_log=True, 
+                 cache_dir=None, colocateddata_dir=None,
+                 write_fileio_err_log=True, 
                  activate_caching=True):
         
         if isinstance(config_file, str) and os.path.exists(config_file):
@@ -131,6 +132,7 @@ class Config(object):
         self._obsbasedir = obs_base_dir
         self._cachedir = cache_dir
         self._outputdir = output_dir
+        self._colocateddatadir = colocateddata_dir
         self._caching_active = activate_caching
         
         self._var_param = None
@@ -167,6 +169,10 @@ class Config(object):
     @property
     def OUTPUTDIR(self):
         return self._outputdir
+    
+    @property
+    def COLOCATEDDATADIR(self):
+        return self._colocateddatadir
     
     @property
     def OUT_BASEDIR(self):
@@ -278,7 +284,7 @@ class Config(object):
     @property
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""
-        return bool(self.check_data_dirs() * self.check_output_dirs())
+        return bool(self.check_output_dirs() * self.check_data_dirs())
     
     @property
     def EBASMC_SQL_DATABASE(self):
@@ -315,6 +321,10 @@ class Config(object):
     @staticmethod
     def _write_access(path):
         return os.access(path, os.W_OK)
+    
+    @staticmethod
+    def _read_access(path):
+        return os.access(path, os.R_OK)
     
     def check_output_dirs(self):
         """Checks if output directories are available and have write-access"""
@@ -353,7 +363,10 @@ class Config(object):
         if not self.dir_exists(self._cachedir):
             logger.warning("Observations cache directory %s does not exist. "
                            "Turning off caching")
-            self.CACHING = False            
+            self.CACHING = False     
+        if not self.dir_exists(self._colocateddatadir) or not self._read_access(self._colocateddatadir):
+            self._colocateddatadir = os.path.join(self._outputdir,
+                                                  'colocated_data')
         for subdir in self.MODELDIRS:
             if not os.path.exists(subdir):
                 logger.warning('Model directory base path does not exist and '
@@ -390,7 +403,10 @@ class Config(object):
             if not keep_basedirs or not self.dir_exists(self._cachedir):
                 self._cachedir = cr['outputfolders']['CACHEDIR']
             if not keep_basedirs or not self.dir_exists(self._outputdir):
-                self._outputdir = cr['outputfolders']['OUTPUTDIR']
+                self._outputdir = outdir =cr['outputfolders']['OUTPUTDIR']
+                self._colocateddatadir = os.path.join(outdir, 'colocated_data')
+        
+        
         #init base directories for Model data
         if not keep_basedirs or not self.dir_exists(self._modelbasedir):
             self._modelbasedir = cr['modelfolders']['BASEDIR']
