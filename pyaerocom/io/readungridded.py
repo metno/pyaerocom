@@ -47,7 +47,7 @@ from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
 
-from pyaerocom import const
+from pyaerocom import const, print_log
 
 # TODO Note: Removed infiles (list of files from which datasets were read, since it 
 # was not used anywhere so far)
@@ -238,15 +238,23 @@ class ReadUngridded(object):
             # initate cache handler
             cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
             if cache.check_and_load():
-                self.logger.info('Found Cache match for {}'.format(dataset_to_read))
-                cache_hit_flag = True
-                data = cache.loaded_data
-        
+                all_avail = True
+                for var in vars_available:
+                    if not var in cache.loaded_data:
+                        all_avail = False
+                        break
+                if all_avail:
+                    self.logger.info('Found Cache match for {}'.format(dataset_to_read))
+                    cache_hit_flag = True
+                    data = cache.loaded_data
+            
         if not cache_hit_flag:
             self.logger.info('No Cache match found for {}. Reading from files (this '
                         'may take a while)'.format(dataset_to_read))
+            _loglevel = print_log.level
+            print_log.setLevel(logging.INFO)
             data = reader.read(vars_available, **kwargs)
-        
+            print_log.setLevel(_loglevel)
         self.revision[dataset_to_read] = reader.data_revision
         self.data_version[dataset_to_read] = reader.__version__
         
