@@ -113,7 +113,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of stations: 985
     Filters that were applied:
-     Filter time log: 20181009135131
+     Filter time log: 20181015180836
     	stat_alt: [0, 1000]
 
 
@@ -128,6 +128,11 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_coloc = pya.colocation.colocate_gridded_ungridded_2D(model_data, obs_data, ts_type='monthly',
                                                               filter_name='WORLD-noMOUNTAINS')
     data_coloc
+
+
+.. parsed-literal::
+
+    Old name of function colocate_gridded_ungridded(still works)
 
 
 .. parsed-literal::
@@ -188,7 +193,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fa6289180f0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f495056a470>
 
 
 
@@ -204,6 +209,11 @@ Now perform collocation and plot corresponding scatter plots with statistical va
     data_coloc = pya.colocation.colocate_gridded_ungridded_2D(model_data, obs_data, ts_type='daily',
                                                                  filter_name='EUROPE-noMOUNTAINS')
     data_coloc
+
+
+.. parsed-literal::
+
+    Old name of function colocate_gridded_ungridded(still works)
 
 
 .. parsed-literal::
@@ -264,7 +274,7 @@ Now perform collocation and plot corresponding scatter plots with statistical va
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fa628b6a898>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f495077feb8>
 
 
 

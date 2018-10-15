@@ -53,15 +53,15 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
+      warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
+      warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
+      warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
 
 
@@ -230,7 +230,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    130 ms ± 12.2 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    119 ms ± 2.01 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -241,7 +241,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    112 ms ± 6.68 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    103 ms ± 898 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -257,7 +257,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    118 ms ± 2.38 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    123 ms ± 3.92 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -268,7 +268,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    103 ms ± 897 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    110 ms ± 5.43 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -293,7 +293,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    2.34 ms ± 583 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.73 ms ± 78.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -423,7 +423,7 @@ Now let’s see how this one performs.
 
 .. parsed-literal::
 
-    53.7 µs ± 662 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+    56 µs ± 802 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 
 How pya does it
@@ -446,7 +446,7 @@ here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. parsed-literal::
 
-    327 µs ± 6.32 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    374 µs ± 46.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -460,7 +460,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    2.06 ms ± 26.6 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.18 ms ± 82.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -480,7 +480,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    376 µs ± 4.23 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    405 µs ± 37.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -491,5 +491,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.14 ms ± 29 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.12 ms ± 20.6 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
