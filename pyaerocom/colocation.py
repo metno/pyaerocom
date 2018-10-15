@@ -155,8 +155,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     return ColocatedData(data=arr, coords=coords, dims=dims,
                           name=gridded_data.var_name, attrs=meta)
 
-
-def colocate_gridded_ungridded_2D(gridded_data, ungridded_data, 
+def colocate_gridded_ungridded(gridded_data, ungridded_data, 
                                   ts_type='daily', start=None, stop=None, 
                                   filter_name='WORLD-wMOUNTAINS',
                                   var_ref=None, vert_scheme=None,
@@ -411,6 +410,10 @@ def colocate_gridded_ungridded_2D(gridded_data, ungridded_data,
     
     return data
 
+def colocate_gridded_ungridded_2D(*args, **kwargs):
+    print(DeprecationWarning('Old name of function colocate_gridded_ungridded'
+                             '(still works)'))
+    return colocate_gridded_ungridded(*args, **kwargs)
 
 if __name__=='__main__':
     import pyaerocom as pya
