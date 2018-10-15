@@ -5,6 +5,7 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import DataDimensionError, NetcdfError
 from pyaerocom.plot.plotscatter_new import plot_scatter
+from pyaerocom.variable import Variable
 import numpy as np
 import pandas as pd
 import os
@@ -187,7 +188,13 @@ class ColocatedData(object):
             vals = np.nanmean(self.data.data[0], axis=0)
             valid = ~np.isnan(vals)
             return np.sum(valid)
-        
+     
+    def min(self):
+        return self.data.min()
+    
+    def max(self):
+        return self.data.max()
+    
     def check_dimensions(self):
         """Checks if data source and time dimension are at the right index"""
         dims = self.data.dims
@@ -201,7 +208,7 @@ class ColocatedData(object):
         except:
             return False
         
-    def calc_statistics(self):
+    def calc_statistics(self, constrain_val_range=False, **kwargs):
         """Calculate statistics from data ensemble
         
         Wrapper for function :func:`pyaerocom.mathutils.calc_statistics` 
@@ -211,10 +218,18 @@ class ColocatedData(object):
         dict
             dictionary containing statistical parameters
         """
+        if constrain_val_range:
+            var = Variable(self.meta['var_name'][1])
+            kwargs['lowlim'] = var.lower_limit
+            kwargs['highlim'] = var.upper_limit
+            
+            
         return calc_statistics(self.data.values[1].flatten(),
-                               self.data.values[0].flatten())
+                               self.data.values[0].flatten(),
+                               **kwargs)
         
-    def plot_scatter(self, **kwargs):
+    
+    def plot_scatter(self, constrain_val_range=False,  **kwargs):
         """Create scatter plot of data
         
         Parameters
@@ -230,6 +245,12 @@ class ColocatedData(object):
         meta = self.meta
         num_points = self.num_grid_points
         vars_ = meta['var_name']
+        
+        if constrain_val_range:
+            var = Variable(self.meta['var_name'][1])
+            kwargs['lowlim_stats'] = var.lower_limit
+            kwargs['highlim_stats'] = var.upper_limit
+            
         if vars_[0] != vars_[1]:
             var_ref = vars_[0]
         else:
