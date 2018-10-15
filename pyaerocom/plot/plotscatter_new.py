@@ -15,7 +15,7 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
                  x_name=None, y_name=None, start=None, stop=None, ts_type=None, 
                  unit=None, stations_ok=None, 
                  filter_name=None, lowlim_stats=None, highlim_stats=None, 
-                 loglog=True, savefig=False, save_dir=None, save_name=None, 
+                 loglog=None, savefig=False, save_dir=None, save_name=None, 
                  ax=None, figsize=None):
     """Method that performs a scatter plot of data in AEROCOM format
     
@@ -49,6 +49,9 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
         VAR_PARAM = const.VAR_PARAM[var_name]
     except:
         VAR_PARAM = const.VAR_PARAM.DEFAULT
+    if loglog is None:
+        loglog = VAR_PARAM.scat_loglog
+        
     xlim = VAR_PARAM['scat_xlim']
     ylim = VAR_PARAM['scat_ylim'] 
     if ax is None:
