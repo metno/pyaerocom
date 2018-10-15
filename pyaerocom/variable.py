@@ -16,6 +16,7 @@ from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import BrowseDict, list_to_shortstr, dict_to_str
 
 is_3d =  lambda var_name: True if '3d' in var_name.lower() else False
+str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
 
 class VarNameInfo(object):
     _VALID_WVL_RANGE = [100, 2000]
@@ -180,7 +181,7 @@ class Variable(BrowseDict):
                 'obs_wavelength_tol_nm': float,
                 'scat_xlim': literal_eval_list,
                 'scat_ylim': literal_eval_list,
-                'scat_loglog': bool,
+                'scat_loglog': str2bool,
                 'scat_scale_factor': float,
                 'map_vmin': float,
                 'map_vmax': float,
@@ -473,6 +474,8 @@ def all_var_names():
     return [k for k in Variable.read_config().keys()]
 
 if __name__=="__main__":
+    
+    
     v = Variable("od550aer", the_answer=42)
     print(v)
     
@@ -491,4 +494,5 @@ if __name__=="__main__":
     print(VarNameInfo('od440lt1aer').is_optical_density)
     
     print(get_variable('ec550dryaer'))
+    print(Variable('ang4487aer'))
     
