@@ -87,7 +87,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None):
     tmp = difference / (data + ref_data)
     
     result['mnmb'] = 2. / num_points * np.sum(tmp) * 100.
-    result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) * 100.
+    result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) #* 100.
     #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
     
     result['R'] = pearsonr(data, ref_data)[0]
