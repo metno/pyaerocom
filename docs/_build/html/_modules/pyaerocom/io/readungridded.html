@@ -209,7 +209,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.io.cachehandler_ungridded</span> <span class="k">import</span> <span class="n">CacheHandlerUngridded</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.ungriddeddata</span> <span class="k">import</span> <span class="n">UngriddedData</span>
 
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">print_log</span>
 
 <span class="c1"># TODO Note: Removed infiles (list of files from which datasets were read, since it </span>
 <span class="c1"># was not used anywhere so far)</span>
@@ -400,15 +400,23 @@
             <span class="c1"># initate cache handler</span>
             <span class="n">cache</span> <span class="o">=</span> <span class="n">CacheHandlerUngridded</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">vars_available</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">cache</span><span class="o">.</span><span class="n">check_and_load</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found Cache match for </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
-                <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">loaded_data</span>
-        
+                <span class="n">all_avail</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_available</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">cache</span><span class="o">.</span><span class="n">loaded_data</span><span class="p">:</span>
+                        <span class="n">all_avail</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">all_avail</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found Cache match for </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+                    <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">loaded_data</span>
+            
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_hit_flag</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No Cache match found for </span><span class="si">{}</span><span class="s1">. Reading from files (this &#39;</span>
                         <span class="s1">&#39;may take a while)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+            <span class="n">_loglevel</span> <span class="o">=</span> <span class="n">print_log</span><span class="o">.</span><span class="n">level</span>
+            <span class="n">print_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_available</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        
+            <span class="n">print_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">_loglevel</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">revision</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data_revision</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">__version__</span>
         

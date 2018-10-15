@@ -172,8 +172,9 @@
 
 <div class="viewcode-block" id="df_to_heatmap"><a class="viewcode-back" href="../../../api.html#pyaerocom.plot.heatmaps.df_to_heatmap">[docs]</a><span class="k">def</span> <span class="nf">df_to_heatmap</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;bwr&quot;</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">color_rowwise</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                  <span class="n">normalise_rows</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalise_rows_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                  <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">num_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                  <span class="n">normalise_rows</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalise_rows_how</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span>
+                  <span class="n">normalise_rows_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">num_digits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                   <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot a pandas dataframe as heatmap</span>
 <span class="sd">    </span>
@@ -200,10 +201,14 @@
 <span class="sd">        if True, the table is normalised in a rowwise manner either using the</span>
 <span class="sd">        mean value in each row (if argument ``normalise_rows_col`` is </span>
 <span class="sd">        unspecified) or using the value in a specified column. </span>
+<span class="sd">    normalise_rows_how : str</span>
+<span class="sd">        aggregation string for row normalisation. Choose from ``mean, median,</span>
+<span class="sd">        sum``. Only relevant if input arg ``normalise_rows==True``.</span>
 <span class="sd">    normalise_rows_col : int, optional</span>
 <span class="sd">        if provided and if prev. arg. ``normalise_rows==True``, then the </span>
 <span class="sd">        corresponding table column is used for normalisation rather than </span>
 <span class="sd">        the mean value of each row</span>
+<span class="sd">    </span>
 <span class="sd">    annot : bool</span>
 <span class="sd">        if True, the table values are printed into the heatmap</span>
 <span class="sd">    table_name : str</span>
@@ -245,10 +250,19 @@
     <span class="k">if</span> <span class="n">normalise_rows</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">normalise_rows_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">norm_ref</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="n">normalise_rows_col</span><span class="p">]</span>
-            <span class="n">table_name</span> <span class="o">+=</span> <span class="s2">&quot; (normalised using Col </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">normalise_rows_col</span><span class="p">)</span>
+            <span class="n">table_name</span> <span class="o">+=</span> <span class="s2">&quot; (norm. col. </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">normalise_rows_col</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">norm_ref</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">table_name</span> <span class="o">+=</span> <span class="s2">&quot; (normalised using row mean)&quot;</span>
+            <span class="k">if</span> <span class="n">normalise_rows_how</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+                <span class="n">norm_ref</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">normalise_rows_how</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
+                <span class="n">norm_ref</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">normalise_rows_how</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
+                <span class="n">norm_ref</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid input for normalise_rows_how (</span><span class="si">{}</span><span class="s1">). &#39;</span>
+                                 <span class="s1">&#39;Choose from mean, median or sum&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">normalise_rows_how</span><span class="p">))</span>
+            <span class="c1">#print(norm_ref)</span>
+            <span class="n">table_name</span> <span class="o">+=</span> <span class="s2">&quot; (norm. row </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">normalise_rows_how</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">norm_ref</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">norm_ref</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">num_fmt</span> <span class="o">=</span> <span class="s2">&quot;.0%&quot;</span>
         

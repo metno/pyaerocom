@@ -167,6 +167,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">to_pandas_timestamp</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">DataDimensionError</span><span class="p">,</span> <span class="n">NetcdfError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.plot.plotscatter_new</span> <span class="k">import</span> <span class="n">plot_scatter</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.variable</span> <span class="k">import</span> <span class="n">Variable</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -349,7 +350,13 @@
             <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
-        
+     
+<div class="viewcode-block" id="ColocatedData.min"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="ColocatedData.max"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.max">[docs]</a>    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div>
+    
 <div class="viewcode-block" id="ColocatedData.check_dimensions"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.check_dimensions">[docs]</a>    <span class="k">def</span> <span class="nf">check_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks if data source and time dimension are at the right index&quot;&quot;&quot;</span>
         <span class="n">dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dims</span>
@@ -363,7 +370,7 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
         
-<div class="viewcode-block" id="ColocatedData.calc_statistics"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.calc_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">calc_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ColocatedData.calc_statistics"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.calc_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">calc_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constrain_val_range</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate statistics from data ensemble</span>
 <span class="sd">        </span>
 <span class="sd">        Wrapper for function :func:`pyaerocom.mathutils.calc_statistics` </span>
@@ -373,10 +380,18 @@
 <span class="sd">        dict</span>
 <span class="sd">            dictionary containing statistical parameters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">constrain_val_range</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lowlim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">lower_limit</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;highlim&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">upper_limit</span>
+            
+            
         <span class="k">return</span> <span class="n">calc_statistics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
-                               <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span></div>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
         
-<div class="viewcode-block" id="ColocatedData.plot_scatter"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.plot_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    
+<div class="viewcode-block" id="ColocatedData.plot_scatter"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.plot_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constrain_val_range</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create scatter plot of data</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -392,6 +407,12 @@
         <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span>
         <span class="n">num_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_grid_points</span>
         <span class="n">vars_</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">constrain_val_range</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lowlim_stats&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">lower_limit</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;highlim_stats&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">upper_limit</span>
+            
         <span class="k">if</span> <span class="n">vars_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">vars_</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="n">var_ref</span> <span class="o">=</span> <span class="n">vars_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -546,7 +567,9 @@
             <span class="n">save_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_name_aerocom</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">save_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
             <span class="n">save_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.nc&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">save_name</span><span class="p">)</span>
-            
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">save_name</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
       
 <div class="viewcode-block" id="ColocatedData.read_netcdf"><a class="viewcode-back" href="../../api.html#pyaerocom.colocateddata.ColocatedData.read_netcdf">[docs]</a>    <span class="k">def</span> <span class="nf">read_netcdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>

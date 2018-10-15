@@ -317,8 +317,7 @@
     <span class="k">return</span> <span class="n">ColocatedData</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span>
                           <span class="n">name</span><span class="o">=</span><span class="n">gridded_data</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="colocate_gridded_ungridded_2D"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_ungridded_2D">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">ungridded_data</span><span class="p">,</span> 
+<div class="viewcode-block" id="colocate_gridded_ungridded"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_ungridded">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_ungridded</span><span class="p">(</span><span class="n">gridded_data</span><span class="p">,</span> <span class="n">ungridded_data</span><span class="p">,</span> 
                                   <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                                   <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-wMOUNTAINS&#39;</span><span class="p">,</span>
                                   <span class="n">var_ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vert_scheme</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -573,9 +572,22 @@
     
     <span class="k">return</span> <span class="n">data</span></div>
 
+<div class="viewcode-block" id="colocate_gridded_ungridded_2D"><a class="viewcode-back" href="../../api.html#pyaerocom.colocation.colocate_gridded_ungridded_2D">[docs]</a><span class="k">def</span> <span class="nf">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">&#39;Old name of function colocate_gridded_ungridded&#39;</span>
+                             <span class="s1">&#39;(still works)&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">colocate_gridded_ungridded</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
+    
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_OSUITE&#39;</span><span class="p">)</span>
+    <span class="n">model_data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
+    
+    <span class="n">obs_reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">)</span>
+    <span class="n">obs_data</span> <span class="o">=</span> <span class="n">obs_reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="o">=</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
+    
+    <span class="n">colocated_data</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">)</span>
+    
     
     <span class="n">r</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>

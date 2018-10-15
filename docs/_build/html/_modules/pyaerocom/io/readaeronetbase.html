@@ -168,7 +168,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom.ungriddeddata</span> <span class="k">import</span> <span class="n">UngriddedData</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">numbers_in_str</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">MetaDataError</span><span class="p">,</span> <span class="n">VariableNotFoundError</span>
-<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span>
+<span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">print_log</span>
 
 <div class="viewcode-block" id="ReadAeronetBase"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readaeronetbase.ReadAeronetBase">[docs]</a><span class="k">class</span> <span class="nc">ReadAeronetBase</span><span class="p">(</span><span class="n">ReadUngriddedBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;TEMPLATE: Abstract base class template for reading of Aeronet data</span>
@@ -454,7 +454,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
             
             <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="n">disp_each</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading file </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> 
+                <span class="n">print_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading file </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> 
                                  <span class="n">num_files</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
             <span class="n">station_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span> 
                                           <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">vars_to_retrieve</span><span class="p">)</span>

@@ -1811,7 +1811,7 @@ nm. If you like, you can plot this time-series:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1270bb0940>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fe594678c18>
 
 
 
@@ -1845,6 +1845,11 @@ sides.
 
 .. parsed-literal::
 
+    Old name of function colocate_gridded_ungridded(still works)
+
+
+.. parsed-literal::
+
     Interpolating data of shape (12, 192, 288). This may take a while.
     Successfully interpolated cube
 
@@ -1866,6 +1871,11 @@ Let’s do the same for the clear-sky data.
                                                                       start=2010,
                                                                       filter_name='WORLD-noMOUNTAINS')
     type(col_clear_sky_glob)
+
+
+.. parsed-literal::
+
+    Old name of function colocate_gridded_ungridded(still works)
 
 
 .. parsed-literal::
@@ -1930,6 +1940,11 @@ Let’s do the same for the clear-sky data.
 
 .. parsed-literal::
 
+    Old name of function colocate_gridded_ungridded(still works)
+
+
+.. parsed-literal::
+
     Interpolating data of shape (12, 192, 288). This may take a while.
     Successfully interpolated cube
 
@@ -1938,10 +1953,10 @@ Let’s do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1270cdb898>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fe594831f98>
 
 
 
 
-.. image:: tut00_get_started/tut00_get_started_79_2.png
+.. image:: tut00_get_started/tut00_get_started_79_3.png
 

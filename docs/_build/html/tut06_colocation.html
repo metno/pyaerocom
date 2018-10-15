@@ -265,7 +265,7 @@ located at altitudes between 0 and 1000 m.</p>
 <span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">]</span>
 <span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">985</span>
 <span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
- <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181009135131</span>
+ <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181015180836</span>
     <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -277,6 +277,9 @@ located at altitudes between 0 and 1000 m.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
                                                           <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-noMOUNTAINS&#39;</span><span class="p">)</span>
 <span class="n">data_coloc</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Old</span> <span class="n">name</span> <span class="n">of</span> <span class="n">function</span> <span class="n">colocate_gridded_ungridded</span><span class="p">(</span><span class="n">still</span> <span class="n">works</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Interpolating</span> <span class="n">data</span> <span class="n">of</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span><span class="o">.</span> <span class="n">This</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">.</span>
@@ -324,7 +327,7 @@ located at altitudes between 0 and 1000 m.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fa6289180f0</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f495056a470</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_colocation_13_1.png" src="_images/tut06_colocation_13_1.png" />
@@ -334,6 +337,9 @@ located at altitudes between 0 and 1000 m.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span>
                                                              <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;EUROPE-noMOUNTAINS&#39;</span><span class="p">)</span>
 <span class="n">data_coloc</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Old</span> <span class="n">name</span> <span class="n">of</span> <span class="n">function</span> <span class="n">colocate_gridded_ungridded</span><span class="p">(</span><span class="n">still</span> <span class="n">works</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Interpolating</span> <span class="n">data</span> <span class="n">of</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">365</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span><span class="o">.</span> <span class="n">This</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">.</span>
@@ -381,7 +387,7 @@ located at altitudes between 0 and 1000 m.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fa628b6a898</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f495077feb8</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_colocation_16_1.png" src="_images/tut06_colocation_16_1.png" />
