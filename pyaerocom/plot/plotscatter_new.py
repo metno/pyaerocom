@@ -16,7 +16,7 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
                  unit=None, stations_ok=None, 
                  filter_name=None, lowlim_stats=None, highlim_stats=None, 
                  loglog=None, savefig=False, save_dir=None, save_name=None, 
-                 ax=None, figsize=None):
+                 ax=None, figsize=None, fontsize_base=10):
     """Method that performs a scatter plot of data in AEROCOM format
     
     Parameters
@@ -60,7 +60,6 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
         fig, ax = plt.subplots(figsize=figsize)
     if var_name is None:
         var_name = 'n/d'
-
     
     statistics = calc_statistics(y_vals, x_vals,
                                  lowlim_stats, highlim_stats)
@@ -90,16 +89,19 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
     xlbl = '{}'.format(x_name)
     if var_name_ref is not None:
         xlbl += ' ({})'.format(var_name_ref)
-    ax.set_xlabel(xlbl, fontsize=14)
-    ax.set_ylabel('{}'.format(y_name), fontsize=14)
+    ax.set_xlabel(xlbl, fontsize=fontsize_base+4)
+    ax.set_ylabel('{}'.format(y_name), fontsize=fontsize_base+4)
     if ts_type == 'yearly':
-        ax.set_title(start.year)
+        ax.set_title(start.year, fontsize=fontsize_base+4)
     else:
-        ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type))
+        ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type),
+                     fontsize=fontsize_base+4)
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
     
-    plt.plot(VAR_PARAM['scat_xlim'], VAR_PARAM['scat_ylim'], '-', 
+    ax.tick_params(labelsize=fontsize_base)
+    
+    ax.plot(VAR_PARAM['scat_xlim'], VAR_PARAM['scat_ylim'], '-', 
              color='grey')
     
     xypos =   {'var_info'       :   (0.01, .95),
@@ -122,48 +124,51 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
     ax.annotate("{} #: {} # st: {}".format(var_str, 
                         statistics['success'], stations_ok),
                         xy=xypos['var_info'], xycoords='axes fraction', 
-                        fontsize=14, color='red')
+                        fontsize=fontsize_base+4, color='red')
 
     ax.annotate('Mean (x-data): {:.3f}'.format(statistics['refdata_mean']),
                         xy=xypos['refdata_mean'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, 
+                        color='red')
     
     ax.annotate('Mean (y-data): {:.3f}'.format(statistics['data_mean']),
                         xy=xypos['data_mean'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, 
+                        color='red')
     
     ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']),
                         xy=xypos['nmb'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, color='red')
     
     ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']),
                         xy=xypos['mnmb'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, color='red')
     
     ax.annotate('R (Pearson): {:.3f}'.format(statistics['R']),
                         xy=xypos['R'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, color='red')
 
     ax.annotate('RMS: {:.3f}'.format(statistics['rms']),
                         xy=xypos['rms'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, color='red')
     
-    ax.annotate('R (Kendall): {:.3f}%'.format(statistics['R_kendall']),
+    ax.annotate('R (Kendall): {:.3f}'.format(statistics['R_kendall']),
                         xy=xypos['R_kendall'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, color='red')
     
     
-    ax.annotate('FGE: {:.1f}%'.format(statistics['fge']),
+    ax.annotate('FGE: {:.1f}'.format(statistics['fge']),
                         xy=xypos['fge'], xycoords='axes fraction', 
-                        fontsize=10, color='red')
+                        fontsize=fontsize_base, color='red')
     # right lower part
     ax.annotate('{}'.format(ts_type),
                         xy=xypos['ts_type'], xycoords='axes fraction', 
                         ha='center', 
-                        fontsize=10, color='black')
+                        fontsize=fontsize_base, color='black')
     ax.annotate('{}'.format(filter_name),
-                        xy=xypos['filter_name'], xycoords='axes fraction', ha='center', 
-                        fontsize=10, color='black')
+                        xy=xypos['filter_name'], xycoords='axes fraction', 
+                        ha='center', 
+                        fontsize=fontsize_base, color='black')
     
     ax.set_aspect('equal')
     
