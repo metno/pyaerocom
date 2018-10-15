@@ -10,7 +10,8 @@ from seaborn import heatmap
 
 def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
                   vmax=None, color_rowwise=True,
-                  normalise_rows=False, normalise_rows_col=None,
+                  normalise_rows=False, normalise_rows_how='median',
+                  normalise_rows_col=None,
                   annot=True, table_name="", num_digits=0, ax=None, 
                   figsize=(12,12), cbar=False, **kwargs):
     """Plot a pandas dataframe as heatmap
@@ -38,10 +39,14 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         if True, the table is normalised in a rowwise manner either using the
         mean value in each row (if argument ``normalise_rows_col`` is 
         unspecified) or using the value in a specified column. 
+    normalise_rows_how : str
+        aggregation string for row normalisation. Choose from ``mean, median,
+        sum``. Only relevant if input arg ``normalise_rows==True``.
     normalise_rows_col : int, optional
         if provided and if prev. arg. ``normalise_rows==True``, then the 
         corresponding table column is used for normalisation rather than 
         the mean value of each row
+    
     annot : bool
         if True, the table values are printed into the heatmap
     table_name : str
@@ -83,10 +88,19 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
     if normalise_rows:
         if normalise_rows_col is not None:
             norm_ref = df.values[:, normalise_rows_col]
-            table_name += " (normalised using Col {})".format(normalise_rows_col)
+            table_name += " (norm. col. {})".format(normalise_rows_col)
         else:
-            norm_ref = df.mean(axis=1)
-            table_name += " (normalised using row mean)"
+            if normalise_rows_how == 'mean':
+                norm_ref = df.mean(axis=1)
+            elif normalise_rows_how == 'median':
+                norm_ref = df.median(axis=1)
+            elif normalise_rows_how == 'sum':
+                norm_ref = df.sum(axis=1)
+            else:
+                raise ValueError('Invalid input for normalise_rows_how ({}). '
+                                 'Choose from mean, median or sum'.format(normalise_rows_how))
+            #print(norm_ref)
+            table_name += " (norm. row {})".format(normalise_rows_how)
         df = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
         num_fmt = ".0%"
         
