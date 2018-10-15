@@ -6,7 +6,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.exceptions import MetaDataError, VariableNotFoundError
-from pyaerocom import const
+from pyaerocom import const, print_log
 
 class ReadAeronetBase(ReadUngriddedBase):
     """TEMPLATE: Abstract base class template for reading of Aeronet data
@@ -292,7 +292,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         for i, _file in enumerate(files):
             
             if i%disp_each == 0:
-                self.logger.info("Reading file {} of {} ({})".format(i, 
+                print_log.info("Reading file {} of {} ({})".format(i, 
                                  num_files, type(self).__name__))
             station_data = self.read_file(_file, 
                                           vars_to_retrieve=vars_to_retrieve)
