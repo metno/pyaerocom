@@ -1191,11 +1191,17 @@ class GriddedData(object):
                 time_idx = np.argmin(abs(self.time_stamps() - t))
             except:
                 raise ValueError('Failed to interpret input time stamp')
-        from pyaerocom.plot.mapping import plot_map
-        fig = plot_map(self[time_idx], xlim, ylim, **kwargs)
-        fig.axes[0].set_title("Model: %s, var=%s (%s)" 
-                     %(self.name, self.var_name,
-                       self.time.cell(time_idx)))
+        
+        from pyaerocom.plot.mapping import plot_griddeddata_on_map 
+        data = self[time_idx].grid.data
+        lons = self.longitude.points
+        lats = self.latitude.points
+        
+        fig = plot_griddeddata_on_map(data, lons, lats, self.var_name, 
+                                      xlim=xlim, ylim=ylim, **kwargs)
+        
+        fig.axes[0].set_title("Model: {}, var={} ({})".format(self.name, 
+                              self.var_name, self.time.cell(time_idx)))
         return fig
     
     def min(self):

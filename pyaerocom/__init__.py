@@ -18,8 +18,6 @@ def _init_logger():
     
     print_log = logging.getLogger('pyaerocom_print')
     
-    
-    
     print_handler = logging.StreamHandler()
     print_handler.setFormatter(logging.Formatter("%(message)s"))
     
