@@ -88,14 +88,20 @@ class StationData(Station):
         """
         return pd.DataFrame(data=self.data_columns, index=self.dtime)
     
-    def to_timeseries(self, var_name):
+    def to_timeseries(self, var_name, freq=None, resample_how='mean'):
         """Get pandas.Series object for one of the data columns
         
         Parameters
         ----------
         var_name : str
             name of variable (e.g. "od550aer")
-        
+        freq : str
+            new temporal resolution (can be pandas freq. string, or pyaerocom
+            ts_type)
+        resample_how : str
+            choose from mean or median (only relevant if input parameter freq 
+            is provided, i.e. if resampling is applied)
+            
         Returns
         -------
         Series
@@ -123,15 +129,26 @@ class StationData(Station):
                              "variable {} (length: {}) and time array  "
                              "(length: {}).".format(var_name, len(data), 
                                len(self.dtime)))
-        return pd.Series(data, index=self.dtime)
+        s = pd.Series(data, index=self.dtime)
+        if freq is not None:
+            from pyaerocom.helpers import resample_timeseries
+            s = resample_timeseries(s, freq, resample_how)
+        return s
     
-    def plot_variable(self, var_name, **kwargs):
+    def plot_variable(self, var_name, freq=None, resample_how='mean', 
+                      **kwargs):
         """Plot timeseries for variable
         
         Parameters
         ----------
         var_name : str
             name of variable (e.g. "od550aer")
+        freq : str
+            new temporal resolution (can be pandas freq. string, or pyaerocom
+            ts_type)
+        resample_how : str
+            choose from mean or median (only relevant if input parameter freq 
+            is provided, i.e. if resampling is applied)
         **kwargs
             additional keyword args passed to ``Series.plot`` method
             
@@ -147,7 +164,7 @@ class StationData(Station):
         ValueError
             if length of data array does not equal the length of the time array
         """
-        s = self.to_timeseries(var_name)
+        s = self.to_timeseries(var_name, freq, resample_how)
         ax = s.plot(**kwargs)
         return ax
     
