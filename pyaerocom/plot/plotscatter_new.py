@@ -8,7 +8,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from pyaerocom import const
-from pyaerocom.helpers import to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ
+from pyaerocom.helpers import (to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ,
+                               start_stop_str)
 from pyaerocom.mathutils import calc_statistics
 
 def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None, 
@@ -63,23 +64,18 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
     
     statistics = calc_statistics(y_vals, x_vals,
                                  lowlim_stats, highlim_stats)
-    
+
     if loglog:
         ax.loglog(x_vals, y_vals, ' k+')
     else:
         ax.plot(x_vals, y_vals, ' k+')
     
     try:
-        freq_np =TS_TYPE_TO_NUMPY_FREQ[ts_type]
+        title = start_stop_str(start, stop, ts_type)
+        if ts_type is not None:
+            title += ' ({})'.format(ts_type)
     except:
-        freq_np = 'n/d'
-    try:
-        start, stop = to_pandas_timestamp(start), to_pandas_timestamp(stop)
-        start_str = np.datetime64(start).astype('datetime64[{}]'.format(freq_np))
-        stop_str = np.datetime64(stop).astype('datetime64[{}]'.format(freq_np))
-    except:
-        start_str = 'n/d'
-        stop_str = 'n/d'
+        title = ''
     
     if not loglog:
         xlim[0] = 0
@@ -91,11 +87,9 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
         xlbl += ' ({})'.format(var_name_ref)
     ax.set_xlabel(xlbl, fontsize=fontsize_base+4)
     ax.set_ylabel('{}'.format(y_name), fontsize=fontsize_base+4)
-    if ts_type == 'yearly':
-        ax.set_title(start.year, fontsize=fontsize_base+4)
-    else:
-        ax.set_title('{} - {} ({})'.format(start_str, stop_str, ts_type),
-                     fontsize=fontsize_base+4)
+    
+    ax.set_title(title, fontsize=fontsize_base+4)
+    
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
     
