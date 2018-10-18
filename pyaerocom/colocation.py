@@ -7,14 +7,14 @@ import pandas as pd
 import numpy as np
 
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
-                                  ColocationError, DataDimensionError,
+                                  ColocationError, 
                                   DataUnitError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
                                TS_TYPE_TO_NUMPY_FREQ,
                                to_datestring_YYYYMMDD)
 from pyaerocom.filter import Filter
-from pyaerocom import GriddedData, UngriddedData, print_log
+from pyaerocom import GriddedData, UngriddedData
 from pyaerocom.colocateddata import ColocatedData
 
 
