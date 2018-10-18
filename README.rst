@@ -34,7 +34,7 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 	- geonum (for SRTM access and basic atmospheric calculations, e.g. conversion of pressure to altitude)
 	- geopy (for reading Aeolus data)
 
-By installing iris, some of the further listed dependencies will be installed automatically (e.g. pandas and matplotlib).
+By installing iris, some of the further listed dependencies will be installed automatically (e.g. numpy, pandas, cf_units, netcdf4 and matplotlib).
 
 Installation
 ============
@@ -46,6 +46,8 @@ Download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaer
 or in development mode using::
 
 	python setup.py develop
+
+More detailed installation instructions [can be found here](https://github.com/metno/pyaerocom/blob/master/notebooks/info00_install_detailed.ipynb).
 
 Getting started
 ===============
