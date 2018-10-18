@@ -44,7 +44,7 @@ def custom_mpl(mpl_rcparams=None, default_large=True, **kwargs):
     return mpl_rcparams
 
 
-def calc_figsize(lon_range, lat_range, figh=8, add_cbar=True):
+def calc_figsize(lon_range, lat_range, figh=8):
     """Calculate figure size based on data
     
     The required figure width is computed based on the input height and the 
@@ -68,8 +68,10 @@ def calc_figsize(lon_range, lat_range, figh=8, add_cbar=True):
     """
     wfac = (lon_range[1] - lon_range[0]) / (lat_range[1] - lat_range[0])
     figw = int(wfac*figh)
-    if add_cbar:
-        figw += 2
+# =============================================================================
+#     if add_cbar:
+#         figw += 1
+# =============================================================================
     
     return (figw, figh)
     
