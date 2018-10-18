@@ -99,7 +99,7 @@ class GriddedData(object):
     _GRID_IO = const.GRID_IO
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
-    _MAX_SIZE_GB = 4 #maximum file size for in-memory operations
+    _MAX_SIZE_GB = 6 #maximum file size for in-memory operations
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
         self.suppl_info = od(from_files     = [],
