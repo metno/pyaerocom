@@ -25,7 +25,8 @@ from pyaerocom.helpers import (get_time_constraint,
                                str_to_iris,
                                IRIS_AGGREGATORS,
                                to_pandas_timestamp,
-                               TS_TYPE_TO_NUMPY_FREQ)
+                               TS_TYPE_TO_NUMPY_FREQ,
+                               datetime2str)
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
@@ -193,7 +194,7 @@ class GriddedData(object):
             dtype_appr = 'datetime64[{}]'.format(TS_TYPE_TO_NUMPY_FREQ[self.ts_type])
             t=t.astype(dtype_appr)
         except:
-            logger.exception('Failed to round start time {} to beggining of '
+            logger.exception('Failed to round start time {} to beginning of '
                              'frequency {}'.format(t, self.ts_type))
         return t.astype('datetime64[us]')
 
@@ -1193,6 +1194,7 @@ class GriddedData(object):
                 raise ValueError('Failed to interpret input time stamp')
         
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
+        
         data = self[time_idx].grid.data
         lons = self.longitude.points
         lats = self.latitude.points
@@ -1200,8 +1202,14 @@ class GriddedData(object):
         fig = plot_griddeddata_on_map(data, lons, lats, self.var_name, 
                                       xlim=xlim, ylim=ylim, **kwargs)
         
-        fig.axes[0].set_title("Model: {}, var={} ({})".format(self.name, 
-                              self.var_name, self.time.cell(time_idx)))
+        try:
+            t = cftime_to_datetime64(self.time[time_idx])[0]
+            tstr = datetime2str(t, self.ts_type)
+        except:
+            tstr = datetime2str(self.time_stamps()[time_idx], 
+                                self.ts_type)
+        fig.axes[0].set_title("{} ({}, {})".format(self.name, 
+                              self.var_name, tstr))
         return fig
     
     def min(self):
