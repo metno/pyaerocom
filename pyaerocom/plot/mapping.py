@@ -19,15 +19,59 @@ from pyaerocom import logger
 from pyaerocom.plot.config import COLOR_THEME, ColorTheme, MAP_AXES_ASPECT
 from pyaerocom.plot.helpers import (custom_mpl, 
                                     calc_pseudolog_cmaplevels,
-                                    projection_from_str)
+                                    projection_from_str,
+                                    calc_figsize)
 from pyaerocom.mathutils import exponent
 from pyaerocom.region import Region
 
 MPL_PARAMS = custom_mpl()
 
+def set_map_ticks(ax, xticks=None, yticks=None):
+    """Set or update ticks in instance of GeoAxes object (cartopy)
+    
+    Parameters
+    ----------
+    ax : cartopy.GeoAxes
+        map axes instance
+    xticks : iterable, optional
+        ticks of x-axis (longitudes)
+    yticks : iterable, optional
+        ticks of y-axis (latitudes)
+        
+    Returns
+    -------
+    cartopy.GeoAxes
+        modified axes instance
+    """
+    lonleft, lonright = ax.get_xlim()
+    digits = 2 - exponent(lonleft)
+    digits = 0 if digits < 0 else digits
+    tick_format = '.%df' %digits
+    if not xticks:    
+        num_lonticks = 7 if lonleft == -lonright else 6    
+        xticks = linspace(lonleft, lonright, num_lonticks)
+    if not yticks:
+        latleft, latright = ax.get_ylim()
+        num_latticks = 7 if latleft == - latright else 6
+        yticks = linspace(latleft, latright, num_latticks)
+    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+    ax.set_yticks(yticks, crs=ccrs.PlateCarree())    
+
+    lon_formatter = LongitudeFormatter(number_format=tick_format,
+                                       degree_symbol='',
+                                       dateline_direction_label=True)
+    lat_formatter = LatitudeFormatter(number_format=tick_format,
+                                      degree_symbol='')
+    
+    ax.xaxis.set_major_formatter(lon_formatter)
+    ax.yaxis.set_major_formatter(lat_formatter)
+    
+    return ax
+    
 def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
              xticks=None, yticks=None, color_theme=COLOR_THEME, 
-             projection=None, fig=None, ax=None,
+             projection=None, title=None, gridlines=False, 
+             fig=None, ax=None,
              draw_coastlines=True, contains_cbar=False):
     """Initalise a map plot
     
@@ -50,6 +94,8 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
     projection 
         projection instance from cartopy.crs module (e.g. PlateCaree). May also
         be string
+    title : :obj:`str`, optional
+        title that is supposed to be inserted
     fig : :obj:`Figure`, optional
         instance of matplotlib Figure class. If specified, the former to 
         input args (``figh`` and ``fix_aspect``) are ignored. Note that the 
@@ -72,8 +118,14 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
     
     if not isinstance(ax, GeoAxes):
         if fig is None:
-            figw = figh*2
-            fig = figure(figsize=(figw, figh))
+            if not fix_aspect:
+                figsize = calc_figsize(xlim, ylim)
+                #figw = figh*2
+            else:
+                figw = figh*fix_aspect
+                figsize = (figw, figh)
+                    
+            fig = figure(figsize=figsize)
         else:
             fig.clf()
         if contains_cbar:
@@ -93,34 +145,17 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
     if draw_coastlines:
         ax.coastlines(color=COLOR_THEME.color_coastline)
     
-    lonleft, lonright = xlim
-    digits = 2 - exponent(lonleft)
-    digits = 0 if digits < 0 else digits
-    tick_format = '.%df' %digits
-    if not xticks:    
-        num_lonticks = 7 if lonleft == -lonright else 6    
-        xticks = linspace(lonleft, lonright, num_lonticks)
-    if not yticks:
-        latleft, latright = ylim
-        num_latticks = 7 if latleft == - latright else 6
-        yticks = linspace(latleft, latright, num_latticks)
-    
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-    ax.set_yticks(yticks, crs=ccrs.PlateCarree())    
-
-    lon_formatter = LongitudeFormatter(number_format=tick_format,
-                                       degree_symbol='',
-                                       dateline_direction_label=True)
-    lat_formatter = LatitudeFormatter(number_format=tick_format,
-                                      degree_symbol='')
     
-    ax.xaxis.set_major_formatter(lon_formatter)
-    ax.yaxis.set_major_formatter(lat_formatter)
-
+    ax = set_map_ticks(ax, xticks, yticks)
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
+    
+    if title is not None:
+        ax.set_title(title)
+    if gridlines:
+        ax.gridlines()
     
     return ax
 
@@ -193,8 +228,13 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None,
         if data.mask.sum() == sh[0] * sh[1]:
             raise ValueError('All datapoints in input data (masked array) are '
                              'invalid')
-    
-    ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
+    _loc = ax.bbox._bbox
+    try:
+        ax_cbar = fig.add_axes([_loc.x1 + .02,
+                                _loc.y0, .02, _loc.y1 - _loc.y0])
+    except Exception as e:
+        ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
+        print(repr(e))
     X, Y = meshgrid(lons, lats)
     cmap = copy(color_theme.cmap_map)
     if vmin is None:
