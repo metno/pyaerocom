@@ -183,7 +183,11 @@
 multiple variables for an arbitrary number of gridded datasets
 (e.g.&nbsp;model data, level 2 satellite data) and within a specific time
 interval. It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides
-an interface for importing results from a single dataset.</p>
+an interface for importing results from a single dataset (and that does
+the actual reading).</p>
+<p><strong>Note</strong>: This is not strictly relevant for the following tutorials. You
+might skip this tutorial if it is not of particular interest for you to
+read multiple models at once.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 <span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
@@ -263,7 +267,7 @@ for each model.</p>
 </div>
 <p>As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
-this data manually.</p>
+these data manually.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
 <span class="n">r</span><span class="o">.</span><span class="n">vars</span>
 </pre></div>

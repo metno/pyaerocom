@@ -116,6 +116,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#access-of-individual-stations">Access of individual stations</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#you-can-also-plot-the-time-series-directly">You can also plot the time-series directly</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#colocation-of-model-and-obsdata">Colocation of model and obsdata</a></li>
 </ul>
 </li>
@@ -123,7 +124,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#load-example-data-and-apply-region-specific-crop">Load example data and apply region specific crop</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#reading-model-data-the-readgridded-class">Reading model data: the <em>ReadGridded</em> class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#reading-of-gridded-data-the-readgridded-class">Reading of gridded data - the <em>ReadGridded</em> class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#remark-on-reading-of-gridded-data">Remark on reading of gridded data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#remark-on-time-definition">Remark on time definition</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#a-very-brief-introduction-into-the-griddeddata-class">A very brief introduction into the GriddedData class</a></li>
 </ul>
@@ -135,19 +137,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#introducing-the-griddeddata-class">Introducing the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#remark-on-longitude-definition">Remark on longitude definition</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#features-of-the-griddeddata-class">Features of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#change-resolution">Change resolution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#area-weighted-mean">Area weighted mean</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#more-to-come">… more to come</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#colocating-gridded-data-with-discrete-observations">Colocating gridded data with discrete observations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#note">NOTE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#import-setup-and-imports">Import setup and imports</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#import-of-model-data">Import of model data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#import-of-aeronet-sun-v3-data-level-2">Import of AeroNet Sun V3 data (Level 2)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values">Now perform collocation and plot corresponding scatter plots with statistical values</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#monthly-world-no-mountains">2010 monthly World no mountains</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#daily-europe-no-mountains">2010 daily Europe no mountains</a></li>
-</ul>
-</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#handling-of-time-in-pyaerocom">Handling of time in pyaerocom</a><ul>
@@ -504,8 +496,8 @@ objects. These can be computed using the <code class="docutils literal notransla
 <h4>Plotting maps<a class="headerlink" href="#plotting-maps" title="Permalink to this headline">¶</a></h4>
 <p>Maps of individual time stamps can be plotted using the quickplot_map
 method.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax1</span> <span class="o">=</span> <span class="n">od550aer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">od550csaer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">od550aer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
+<span class="n">fig2</span> <span class="o">=</span> <span class="n">od550csaer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_23_0.png" src="_images/tut00_get_started_23_0.png" />
@@ -1760,9 +1752,10 @@ informative string representation (that can be printed):</p>
 </pre></div>
 </div>
 <p>As you can see, the returned object is of type <code class="docutils literal notranslate"><span class="pre">StationData</span></code>, which is
-one further data format that is not displayed in the flowchart above.
-<code class="docutils literal notranslate"><span class="pre">StationData</span></code> may be useful for individual stations and is an extended
-Python dictionary (if you are familiar with Python).</p>
+one further data format of pyaerocom (note that this is not displayed in
+the simplified flowchart above). <code class="docutils literal notranslate"><span class="pre">StationData</span></code> may be useful for
+individual stations and is an extended Python dictionary (if you are
+familiar with Python).</p>
 <p>You may print it to see what is in there:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">station_data</span><span class="p">)</span>
 </pre></div>
@@ -1856,14 +1849,50 @@ altitude: 125.0
 </div>
 <p>As you can see, this station contains a time-series of the AOD at 550
 nm. If you like, you can plot this time-series:</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station_data</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station_data</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39; xg&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Leipzig AOD all times&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe594678c18</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Leipzig AOD all times&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_70_1.png" src="_images/tut00_get_started_70_1.png" />
+<p>You can also retrieve the <code class="docutils literal notranslate"><span class="pre">StationData</span></code> with specifying more
+constraints using <code class="docutils literal notranslate"><span class="pre">to_station_data</span></code> (e.g.&nbsp;in monthly resolution and
+only for the year 2010). And you can overlay different curves, by
+passing the axes instance returned by the plotting method:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span><span class="o">=</span><span class="n">aeronet_data</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="s1">&#39;Leipzig&#39;</span><span class="p">,</span>
+                                <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">,</span>
+                                <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span>
+                                                            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">=</span><span class="n">aeronet_data</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="s1">&#39;Leipzig&#39;</span><span class="p">,</span>
+                                <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">,</span>
+                                <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span>
+                                                              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
+                                                              <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Leipzig AODs 2010&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Leipzig AODs 2010&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tut00_get_started_72_1.png" src="_images/tut00_get_started_72_1.png" />
+</div>
+</div>
+<div class="section" id="you-can-also-plot-the-time-series-directly">
+<h3>You can also plot the time-series directly<a class="headerlink" href="#you-can-also-plot-the-time-series-directly" title="Permalink to this headline">¶</a></h3>
+<p>For instance, if you want to do an air-quality check for you next
+bouldering trip, you may call:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aeronet_data</span><span class="o">.</span><span class="n">plot_station_timeseries</span><span class="p">(</span><span class="s1">&#39;Fontainebleau&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
+                                     <span class="n">start</span><span class="o">=</span><span class="mi">2006</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;AOD in Fontainebleau, 2006&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;AOD in Fontainebleau, 2006&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tut00_get_started_74_1.png" src="_images/tut00_get_started_74_1.png" />
+<p>Seems like November is a good time (maybe a bit rainy though)</p>
 </div>
 <div class="section" id="colocation-of-model-and-obsdata">
 <h3>Colocation of model and obsdata<a class="headerlink" href="#colocation-of-model-and-obsdata" title="Permalink to this headline">¶</a></h3>
@@ -1918,7 +1947,7 @@ sides.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;All sky (2010, monthly)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/tut00_get_started_76_1.png" src="_images/tut00_get_started_76_1.png" />
+<img alt="_images/tut00_get_started_81_1.png" src="_images/tut00_get_started_81_1.png" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax2</span> <span class="o">=</span> <span class="n">col_clear_sky_glob</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Clear sky (2010, monthly)&#39;</span><span class="p">)</span>
 </pre></div>
@@ -1926,7 +1955,7 @@ sides.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Clear sky (2010, monthly)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/tut00_get_started_77_1.png" src="_images/tut00_get_started_77_1.png" />
+<img alt="_images/tut00_get_started_82_1.png" src="_images/tut00_get_started_82_1.png" />
 <p>… or for EUROPE:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">od550aer</span><span class="p">,</span> <span class="n">aeronet_data</span><span class="p">,</span>
                                              <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
@@ -1941,10 +1970,10 @@ sides.</p>
 <span class="n">Successfully</span> <span class="n">interpolated</span> <span class="n">cube</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe594831f98</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f3cd223cf98</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/tut00_get_started_79_3.png" src="_images/tut00_get_started_79_3.png" />
+<img alt="_images/tut00_get_started_84_3.png" src="_images/tut00_get_started_84_3.png" />
 </div>
 </div>
 <div class="section" id="aerocom-default-regions">
@@ -1956,19 +1985,25 @@ All default regions are defined in the file
 <a class="reference external" href="http://aerocom.met.no/pya/config_files.html#default-regions">regions.ini</a>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">pya</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">get_all_default_region_ids</span><span class="p">())</span>
+<span class="n">pya</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;WORLD&#39;</span><span class="p">,</span> <span class="s1">&#39;EUROPE&#39;</span><span class="p">,</span> <span class="s1">&#39;ASIA&#39;</span><span class="p">,</span> <span class="s1">&#39;AUSTRALIA&#39;</span><span class="p">,</span> <span class="s1">&#39;CHINA&#39;</span><span class="p">,</span> <span class="s1">&#39;INDIA&#39;</span><span class="p">,</span> <span class="s1">&#39;NAFRICA&#39;</span><span class="p">,</span> <span class="s1">&#39;SAFRICA&#39;</span><span class="p">,</span> <span class="s1">&#39;SAMERICA&#39;</span><span class="p">,</span> <span class="s1">&#39;NAMERICA&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;WORLD&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;EUROPE&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ASIA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;AUSTRALIA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;CHINA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;INDIA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;NAFRICA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;SAFRICA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;SAMERICA&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;NAMERICA&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Now load some default regions and print them.</p>
+<p>These region IDs can be used to access more information about the
+regions (which is used throughout pyaerocom). For instance:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">europe</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;EUROPE&quot;</span><span class="p">)</span>
-<span class="n">asia</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;ASIA&quot;</span><span class="p">)</span>
-
 <span class="nb">print</span><span class="p">(</span><span class="n">europe</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">asia</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaeorocom</span> <span class="n">Region</span>
@@ -1977,8 +2012,13 @@ All default regions are defined in the file
 <span class="n">Latitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
 <span class="n">Longitude</span> <span class="nb">range</span> <span class="p">(</span><span class="n">plots</span><span class="p">):</span> <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
 <span class="n">Latitude</span> <span class="nb">range</span> <span class="p">(</span><span class="n">plots</span><span class="p">):</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
-
-<span class="n">pyaeorocom</span> <span class="n">Region</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asia</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">Region</span><span class="p">(</span><span class="s2">&quot;ASIA&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">asia</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaeorocom</span> <span class="n">Region</span>
 <span class="n">Name</span><span class="p">:</span> <span class="n">ASIA</span>
 <span class="n">Longitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">150</span><span class="p">]</span>
 <span class="n">Latitude</span> <span class="nb">range</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">]</span>
@@ -2000,21 +2040,22 @@ of the results over Europe.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/tut01_intro_regions_5_1.png" src="_images/tut01_intro_regions_5_1.png" />
+<img alt="_images/tut01_intro_regions_6_1.png" src="_images/tut01_intro_regions_6_1.png" />
+<p>That’s it. Not much more to say about regions until now.</p>
 </div>
 </div>
-<div class="section" id="reading-model-data-the-readgridded-class">
-<h2>Reading model data: the <em>ReadGridded</em> class<a class="headerlink" href="#reading-model-data-the-readgridded-class" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="reading-of-gridded-data-the-readgridded-class">
+<h2>Reading of gridded data - the <em>ReadGridded</em> class<a class="headerlink" href="#reading-of-gridded-data-the-readgridded-class" title="Permalink to this headline">¶</a></h2>
 <p>This notebook introduces the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGridded">ReadGridded</a>
 class of pyaerocom, a flexible interface for importing model results
@@ -2024,18 +2065,48 @@ from a single model, based on variable name (e.g. <em>od550aer</em>,
 <p>The class is part of the
 <a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.io.readgridded">readgridded</a>
 module of pyaerocom, as well as the class
-<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti">ReadGriddedMulti</a>.</p>
-<p>In the following cells, we create an instance of the the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code>
-class and use this object to find and import data files containing the
-aerosol optical depth at 550 nm (<em>od550aer</em>) from the ECMWF CAMS
-reanalysis model (<em>ECMWF_CAMS_REAN</em>) for the years 2003-2007 in daily
-resolution. The files will be temporally merged and put into an instance
-of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class.</p>
+<a class="reference external" href="http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti">ReadGriddedMulti</a>,
+which is introduced in the following tutorial (may be skipped).</p>
+<p>In the following, we create an instance of the the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class
+and use this object to find and import data files containing the aerosol
+optical depth at 550 nm (<em>od550aer</em>) from the ECMWF CAMS reanalysis
+dataset (<em>ECMWF_CAMS_REAN</em>) for the years 2003-2007 and in daily
+resolution. The files will be temporally merged and put into a single
+instance of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class.</p>
 <p>We start with creating a reading object, that will take care of finding
 the model directory for us (based on the model ID) and all valid NetCDF
 files on initialisation. Use the <code class="docutils literal notranslate"><span class="pre">print</span></code> commant to preview the string
 representation of <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> object, which provides useful
 information about what is in there.</p>
+<div class="section" id="remark-on-reading-of-gridded-data">
+<h3>Remark on reading of gridded data<a class="headerlink" href="#remark-on-reading-of-gridded-data" title="Permalink to this headline">¶</a></h3>
+<p>Since model data files can be large (too large for in-memory
+operations), gridded data in pyaerocom (e.g.&nbsp;model data or satellite
+data) is generally read and represented as <em>lazy data</em>. That means, that
+the actual N-dimensional data array is not loaded into memory before
+needed. Lazy data is represented as [dask array] as pyaerocom data
+objects rely either on the Python
+<a class="reference external" href="https://scitools.org.uk/iris/docs/latest/index.html">iris</a> library
+or <a class="reference external" href="http://xarray.pydata.org/en/stable/index.html">xarray</a> (which
+both use dask for representing lazy data and for out of core
+computation). For more information on lazy data, see
+e.g.&nbsp;<a class="reference external" href="https://scitools.org.uk/iris/docs/latest/userguide/real_and_lazy_data.html">https://scitools.org.uk/iris/docs/latest/userguide/real_and_lazy_data.html</a>.</p>
+<p><strong>Example</strong>: Consider one year of daily model data in 1x1 resolution
+with 30 vertical layers, stored as 64 bit floating point numbers.
+Loading such a file into memory, would require a RAM of at least:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1"> GB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="p">(</span><span class="mi">360</span> <span class="o">*</span> <span class="mi">180</span><span class="p">)</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;5.7 GB&#39;</span>
+</pre></div>
+</div>
+<p>Or the same in hourly resolution:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1"> GB&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">64</span> <span class="o">*</span> <span class="p">(</span><span class="mi">360</span> <span class="o">*</span> <span class="mi">180</span><span class="p">)</span> <span class="o">*</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">365</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;136.2 GB&#39;</span>
+</pre></div>
+</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 <span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
 <span class="n">read</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span><span class="p">,</span>
@@ -2168,6 +2239,7 @@ each day of the five years?</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kc">True</span>
 </pre></div>
 </div>
+</div>
 <div class="section" id="remark-on-time-definition">
 <h3>Remark on time definition<a class="headerlink" href="#remark-on-time-definition" title="Permalink to this headline">¶</a></h3>
 <p>If you run this notebook with <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> in the reading object,
@@ -2226,7 +2298,7 @@ series at the coordinates in the city of Leipzig, Germany.</p>
 <span class="n">Successfully</span> <span class="n">interpolated</span> <span class="n">cube</span>
 </pre></div>
 </div>
-<img alt="_images/tut02_intro_class_ReadGridded_17_1.png" src="_images/tut02_intro_class_ReadGridded_17_1.png" />
+<img alt="_images/tut02_intro_class_ReadGridded_21_1.png" src="_images/tut02_intro_class_ReadGridded_21_1.png" />
 <p>In the following section, the <code class="docutils literal notranslate"><span class="pre">ReadGriddedMulti</span></code> class is introduced,
 which is largely based on the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class and allows for
 importing data from multiple models.</p>
@@ -2238,7 +2310,11 @@ importing data from multiple models.</p>
 multiple variables for an arbitrary number of gridded datasets
 (e.g.&nbsp;model data, level 2 satellite data) and within a specific time
 interval. It makes large use of the <code class="docutils literal notranslate"><span class="pre">ReadGridded</span></code> class that provides
-an interface for importing results from a single dataset.</p>
+an interface for importing results from a single dataset (and that does
+the actual reading).</p>
+<p><strong>Note</strong>: This is not strictly relevant for the following tutorials. You
+might skip this tutorial if it is not of particular interest for you to
+read multiple models at once.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
 <span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
@@ -2318,7 +2394,7 @@ for each model.</p>
 </div>
 <p>As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
-this data manually.</p>
+these data manually.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">read</span><span class="p">[</span><span class="s2">&quot;ECHAM6-SALSA_AP3-CTRL2015&quot;</span><span class="p">]</span>
 <span class="n">r</span><span class="o">.</span><span class="n">vars</span>
 </pre></div>
@@ -2527,8 +2603,8 @@ plots the first time stamp of each result file.</p>
 <h2>Introducing the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class<a class="headerlink" href="#introducing-the-griddeddata-class" title="Permalink to this headline">¶</a></h2>
 <p>This notebook introduces basic features of the
 <a class="reference external" href="http://aerocom.met.no/pya/api.html#pya.griddeddata.GriddedData">GriddedData</a>
-class of pya. The <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class is the fundamental base class
-for the analysis of model data. The underlying data type is
+class of pyaerocom. The <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class is the fundamental base
+class for the analysis of model data. The underlying data type is
 <a class="reference external" href="http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube">iris.cube.Cube</a>
 which was extended, for instance by allowing direct imports of netCDF
 files when creating an instance of <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> (i.e.&nbsp;by passing the
@@ -2536,6 +2612,9 @@ filename and specifying the variable name on initialisation). This
 notebook introduces some of the features of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class.
 Starting with some imports…</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">filterwarnings</span>
+<span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s get a test file to load</p>
@@ -2550,10 +2629,6 @@ Starting with some imports…</p>
 <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom1</span><span class="o">/</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">/</span><span class="n">renamed</span><span class="o">/</span><span class="n">aerocom</span><span class="o">.</span><span class="n">ECMWF_OSUITE_NRT_test</span><span class="o">.</span><span class="n">daily</span><span class="o">.</span><span class="n">od550aer</span><span class="o">.</span><span class="mf">2018.</span><span class="n">nc</span>
 </pre></div>
 </div>
-<p>The dictionary, returned by the <code class="docutils literal notranslate"><span class="pre">get()</span></code> function is categorised into
-two subirectories for model based test files (<code class="docutils literal notranslate"><span class="pre">key=&quot;models&quot;</span></code>) and for
-observation based test files (<code class="docutils literal notranslate"><span class="pre">key=observations</span></code>). So far, there is
-not much in there (i.e.&nbsp;only two files).</p>
 <p>Let’s pick out the ECMWF OSUITE test file and load the data directly
 into an instance of the <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class. The <code class="docutils literal notranslate"><span class="pre">GriddedData</span></code> class
 takes either preloaded instances of the <code class="docutils literal notranslate"><span class="pre">iris.cube.Cube</span></code> class as
@@ -2585,18 +2660,6 @@ object.</p>
           <span class="n">nco_openmp_thread_number</span><span class="p">:</span> <span class="mi">1</span>
      <span class="n">Cell</span> <span class="n">methods</span><span class="p">:</span>
           <span class="n">mean</span><span class="p">:</span> <span class="n">time</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="remark-on-longitude-definition">
@@ -2648,21 +2711,7 @@ file (if the file is readable using the <code class="docutils literal notranslat
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This did not work...error message: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="k">repr</span>(e))
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="n">NetcdfError</span><span class="p">(</span><span class="s2">&quot;Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: [&#39;od550oa&#39;, &#39;od550aer&#39;, &#39;od550so4&#39;, &#39;od550bc&#39;, &#39;od550dust&#39;]&quot;</span><span class="p">,)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="n">NetcdfError</span><span class="p">(</span><span class="s2">&quot;Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: [&#39;od550dust&#39;, &#39;od550oa&#39;, &#39;od550aer&#39;, &#39;od550bc&#39;, &#39;od550so4&#39;]&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Also, if you parse an invalid variable name, you will get some hint.</p>
@@ -2675,22 +2724,9 @@ file (if the file is readable using the <code class="docutils literal notranslat
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">also</span> <span class="n">did</span> <span class="ow">not</span> <span class="n">work</span><span class="o">...</span><span class="n">error</span> <span class="n">message</span><span class="p">:</span> <span class="n">NetcdfError</span><span class="p">(</span><span class="s1">&#39;Variable Blaaa not available in file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc&#39;</span><span class="p">,)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>You can have a quick look at the data using the class-own quickplot
 method</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                         <span class="n">fix_aspect</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                          <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                          <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                          <span class="n">c_over</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
@@ -2702,38 +2738,54 @@ method</p>
 <span class="n">data_so4</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550so4&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>… and plot them as well</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">data_bc</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
 <span class="n">fig2</span> <span class="o">=</span> <span class="n">data_so4</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">lon_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
-                     <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">fix_aspect</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
-                                                       <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                     <span class="n">lat_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
                                                        <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">70</span><span class="p">))</span>
 </pre></div>
 </div>
 <img alt="_images/tut04_intro_class_GriddedData_18_0.png" src="_images/tut04_intro_class_GriddedData_18_0.png" />
 <img alt="_images/tut04_intro_class_GriddedData_18_1.png" src="_images/tut04_intro_class_GriddedData_18_1.png" />
+</div>
+<div class="section" id="change-resolution">
+<h3>Change resolution<a class="headerlink" href="#change-resolution" title="Permalink to this headline">¶</a></h3>
+<p>Downscale to 2x2 resolution:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">data_lowres</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">lons</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="n">lats</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Interpolating</span> <span class="n">data</span> <span class="n">of</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">365</span><span class="p">,</span> <span class="mi">451</span><span class="p">,</span> <span class="mi">900</span><span class="p">)</span><span class="o">.</span> <span class="n">This</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">.</span>
+<span class="n">Successfully</span> <span class="n">interpolated</span> <span class="n">cube</span>
+</pre></div>
+</div>
+<p>And plot:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span><span class="n">data_lowres</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/tut04_intro_class_GriddedData_22_0.png" src="_images/tut04_intro_class_GriddedData_22_0.png" />
+</div>
+<div class="section" id="area-weighted-mean">
+<h3>Area weighted mean<a class="headerlink" href="#area-weighted-mean" title="Permalink to this headline">¶</a></h3>
+<p>Retrieve area weighted mean from data</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">mean_highres</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
+<span class="n">mean_lowres</span> <span class="o">=</span> <span class="n">data_lowres</span><span class="o">.</span><span class="n">area_weighted_mean</span><span class="p">()</span>
+<span class="n">s_highres</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mean_highres</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+<span class="n">s_lowres</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mean_lowres</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">())</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">s_highres</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;high res&#39;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">s_lowres</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;low res&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">Legend</span> <span class="n">at</span> <span class="mh">0x7fdc207c0c50</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<img alt="_images/tut04_intro_class_GriddedData_24_1.png" src="_images/tut04_intro_class_GriddedData_24_1.png" />
+<p>Looks similar (which is good).</p>
 </div>
 <div class="section" id="more-to-come">
 <h3>… more to come<a class="headerlink" href="#more-to-come" title="Permalink to this headline">¶</a></h3>
@@ -2741,231 +2793,12 @@ method</p>
 currently under development.</p>
 </div>
 </div>
-<div class="section" id="colocating-gridded-data-with-discrete-observations">
-<h2>Colocating gridded data with discrete observations<a class="headerlink" href="#colocating-gridded-data-with-discrete-observations" title="Permalink to this headline">¶</a></h2>
-<p>This notebook gives an introduction into collocation of gridded data
-with observations. Here, the 550 nm AODs of the ECMWF CAMS reanalysis
-model are compared with global daily AeroNet Sun V2 (Level 2) data for
-the year 2010. The collocated data will be analysed and visualised in
-monthly resolution. The analysis results will be plotted in the form of
-the well known Aerocom loglog scatter plots as can be found in the
-online interface (see e.g.
-<a class="reference external" href="http://aerocom.met.no/cgi-bin/aerocom/surfobs_annualrs.pl">here</a>).</p>
-<div class="section" id="note">
-<h3>NOTE<a class="headerlink" href="#note" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-<div>This notebook is currently under development</div></blockquote>
-</div>
-<div class="section" id="import-setup-and-imports">
-<h3>Import setup and imports<a class="headerlink" href="#import-setup-and-imports" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
-<span class="n">pya</span><span class="o">.</span><span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;critical&#39;</span><span class="p">)</span>
-
-<span class="n">YEAR</span> <span class="o">=</span> <span class="mi">2010</span>
-<span class="n">VAR</span> <span class="o">=</span> <span class="s2">&quot;od550aer&quot;</span>
-<span class="n">TS_TYPE</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
-<span class="n">MODEL_ID</span> <span class="o">=</span> <span class="s2">&quot;ECMWF_CAMS_REAN&quot;</span>
-<span class="n">OBS_ID</span> <span class="o">=</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="import-of-model-data">
-<h3>Import of model data<a class="headerlink" href="#import-of-model-data" title="Permalink to this headline">¶</a></h3>
-<p>Create reader instance for model data and print overview of what is in
-there.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadGridded</span><span class="p">(</span><span class="n">MODEL_ID</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model_reader</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">ReadGridded</span>
-<span class="o">---------------------</span>
-<span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
-<span class="n">Data</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
-<span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
-<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
-<span class="n">Available</span> <span class="n">time</span> <span class="n">resolutions</span> <span class="p">[</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Since we are only interested in a single year we can use the method</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_data</span> <span class="o">=</span> <span class="n">model_reader</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">VAR</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">YEAR</span><span class="p">)</span>
-<span class="c1">#model_data = read_result[VAR][YEAR]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">model_data</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
-<span class="n">Grid</span> <span class="n">data</span><span class="p">:</span> <span class="n">Aerosol</span> <span class="n">optical</span> <span class="n">depth</span> <span class="n">at</span> <span class="mi">550</span> <span class="n">nm</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">;</span> <span class="n">latitude</span><span class="p">:</span> <span class="mi">161</span><span class="p">;</span> <span class="n">longitude</span><span class="p">:</span> <span class="mi">320</span><span class="p">)</span>
-     <span class="n">Dimension</span> <span class="n">coordinates</span><span class="p">:</span>
-          <span class="n">time</span>                             <span class="n">x</span>              <span class="o">-</span>               <span class="o">-</span>
-          <span class="n">latitude</span>                         <span class="o">-</span>              <span class="n">x</span>               <span class="o">-</span>
-          <span class="n">longitude</span>                        <span class="o">-</span>              <span class="o">-</span>               <span class="n">x</span>
-     <span class="n">Attributes</span><span class="p">:</span>
-          <span class="n">Conventions</span><span class="p">:</span> <span class="n">CF</span><span class="o">-</span><span class="mf">1.6</span>
-          <span class="n">NCO</span><span class="p">:</span> <span class="s2">&quot;4.5.4&quot;</span>
-          <span class="n">history</span><span class="p">:</span> <span class="n">Sat</span> <span class="n">May</span> <span class="mi">26</span> <span class="mi">21</span><span class="p">:</span><span class="mi">08</span><span class="p">:</span><span class="mi">48</span> <span class="mi">2018</span><span class="p">:</span> <span class="n">ncecat</span> <span class="o">-</span><span class="n">O</span> <span class="o">-</span><span class="n">u</span> <span class="n">time</span> <span class="o">-</span><span class="n">n</span> <span class="mi">365</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span> <span class="n">CAMS_REAN_001</span><span class="o">.</span><span class="n">nc</span><span class="o">...</span>
-          <span class="n">nco_openmp_thread_number</span><span class="p">:</span> <span class="mi">1</span>
-     <span class="n">Cell</span> <span class="n">methods</span><span class="p">:</span>
-          <span class="n">mean</span><span class="p">:</span> <span class="n">step</span>
-          <span class="n">mean</span><span class="p">:</span> <span class="n">time</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">model_data</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="n">time_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-<img alt="_images/tut06_colocation_7_0.png" src="_images/tut06_colocation_7_0.png" />
-</div>
-<div class="section" id="import-of-aeronet-sun-v3-data-level-2">
-<h3>Import of AeroNet Sun V3 data (Level 2)<a class="headerlink" href="#import-of-aeronet-sun-v3-data-level-2" title="Permalink to this headline">¶</a></h3>
-<p>Import Aeronet data and apply filter that selects only stations that are
-located at altitudes between 0 and 1000 m.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs_reader</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">(</span><span class="n">OBS_ID</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">VAR</span><span class="p">)</span>
-<span class="n">obs_data</span> <span class="o">=</span> <span class="n">obs_reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">filter_by_meta</span><span class="p">(</span><span class="n">stat_alt</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">obs_data</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">UngriddedData</span>
-<span class="o">-----------------------</span>
-<span class="n">Contains</span> <span class="n">networks</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">]</span>
-<span class="n">Contains</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
-<span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">]</span>
-<span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">985</span>
-<span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
- <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181015180836</span>
-    <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values">
-<h3>Now perform collocation and plot corresponding scatter plots with statistical values<a class="headerlink" href="#now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="monthly-world-no-mountains">
-<h4>2010 monthly World no mountains<a class="headerlink" href="#monthly-world-no-mountains" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
-                                                          <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-noMOUNTAINS&#39;</span><span class="p">)</span>
-<span class="n">data_coloc</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Old</span> <span class="n">name</span> <span class="n">of</span> <span class="n">function</span> <span class="n">colocate_gridded_ungridded</span><span class="p">(</span><span class="n">still</span> <span class="n">works</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Interpolating</span> <span class="n">data</span> <span class="n">of</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span><span class="o">.</span> <span class="n">This</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">.</span>
-<span class="n">Successfully</span> <span class="n">interpolated</span> <span class="n">cube</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span> <span class="s1">&#39;od550aer&#39;</span> <span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="n">station_name</span><span class="p">:</span> <span class="mi">278</span><span class="p">)</span><span class="o">&gt;</span>
-<span class="n">array</span><span class="p">([[[</span>     <span class="n">nan</span><span class="p">,</span> <span class="mf">0.117588</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
-        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span> <span class="mf">0.132128</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
-        <span class="o">...</span><span class="p">,</span>
-        <span class="p">[</span><span class="mf">0.132236</span><span class="p">,</span> <span class="mf">0.195057</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
-        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span> <span class="mf">0.098409</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">]],</span>
-
-       <span class="p">[[</span><span class="mf">0.189948</span><span class="p">,</span> <span class="mf">0.140062</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.079353</span><span class="p">,</span> <span class="mf">0.204337</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.150408</span><span class="p">,</span> <span class="mf">0.190089</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.10622</span> <span class="p">,</span> <span class="mf">0.257806</span><span class="p">],</span>
-        <span class="o">...</span><span class="p">,</span>
-        <span class="p">[</span><span class="mf">0.159844</span><span class="p">,</span> <span class="mf">0.178564</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.054091</span><span class="p">,</span> <span class="mf">0.239393</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.147172</span><span class="p">,</span> <span class="mf">0.138039</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.077916</span><span class="p">,</span> <span class="mf">0.19986</span> <span class="p">]]])</span>
-<span class="n">Coordinates</span><span class="p">:</span>
-  <span class="o">*</span> <span class="n">data_source</span>   <span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U22</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span>
-    <span class="n">var_name</span>      <span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U8</span> <span class="s1">&#39;od550aer&#39;</span> <span class="s1">&#39;od550aer&#39;</span>
-  <span class="o">*</span> <span class="n">time</span>          <span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="n">datetime64</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">01</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">01</span> <span class="o">...</span>
-  <span class="o">*</span> <span class="n">station_name</span>  <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U19</span> <span class="s1">&#39;ARM_Darwin&#39;</span> <span class="s1">&#39;ATHENS-NOA&#39;</span> <span class="s1">&#39;Agoufou&#39;</span> <span class="o">...</span>
-    <span class="n">latitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="o">-</span><span class="mf">12.43</span> <span class="mf">37.97</span> <span class="mf">15.35</span> <span class="o">-</span><span class="mf">9.871</span> <span class="mf">42.02</span> <span class="o">...</span>
-    <span class="n">longitude</span>     <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">130.9</span> <span class="mf">23.72</span> <span class="o">-</span><span class="mf">1.479</span> <span class="o">-</span><span class="mf">56.1</span> <span class="o">-</span><span class="mf">93.77</span> <span class="o">...</span>
-    <span class="n">altitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">29.9</span> <span class="mf">130.0</span> <span class="mf">305.0</span> <span class="mf">277.0</span> <span class="mf">338.0</span> <span class="mf">49.0</span> <span class="o">...</span>
-<span class="n">Attributes</span><span class="p">:</span>
-    <span class="n">data_source</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
-    <span class="n">var_name</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
-    <span class="n">ts_type</span><span class="p">:</span>          <span class="n">monthly</span>
-    <span class="n">filter_name</span><span class="p">:</span>      <span class="n">WORLD</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
-    <span class="n">ts_type_src</span><span class="p">:</span>      <span class="n">daily</span>
-    <span class="n">ts_type_src_ref</span><span class="p">:</span>  <span class="n">daily</span>
-    <span class="n">start_str</span><span class="p">:</span>        <span class="mi">20100101</span>
-    <span class="n">stop_str</span><span class="p">:</span>         <span class="mi">20101231</span>
-    <span class="n">unit</span><span class="p">:</span>             <span class="mi">1</span>
-    <span class="n">data_level</span><span class="p">:</span>       <span class="n">colocated</span>
-    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20180820</span>
-    <span class="n">region</span><span class="p">:</span>           <span class="n">WORLD</span>
-    <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
-    <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
-    <span class="n">alt_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f495056a470</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<img alt="_images/tut06_colocation_13_1.png" src="_images/tut06_colocation_13_1.png" />
-</div>
-<div class="section" id="daily-europe-no-mountains">
-<h4>2010 daily Europe no mountains<a class="headerlink" href="#daily-europe-no-mountains" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span>
-                                                             <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;EUROPE-noMOUNTAINS&#39;</span><span class="p">)</span>
-<span class="n">data_coloc</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Old</span> <span class="n">name</span> <span class="n">of</span> <span class="n">function</span> <span class="n">colocate_gridded_ungridded</span><span class="p">(</span><span class="n">still</span> <span class="n">works</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Interpolating</span> <span class="n">data</span> <span class="n">of</span> <span class="n">shape</span> <span class="p">(</span><span class="mi">365</span><span class="p">,</span> <span class="mi">161</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span><span class="o">.</span> <span class="n">This</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">.</span>
-<span class="n">Successfully</span> <span class="n">interpolated</span> <span class="n">cube</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">xarray</span><span class="o">.</span><span class="n">DataArray</span> <span class="s1">&#39;od550aer&#39;</span> <span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="mi">365</span><span class="p">,</span> <span class="n">station_name</span><span class="p">:</span> <span class="mi">89</span><span class="p">)</span><span class="o">&gt;</span>
-<span class="n">array</span><span class="p">([[[</span><span class="mf">0.163447</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.078648</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
-        <span class="o">...</span><span class="p">,</span>
-        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">],</span>
-        <span class="p">[</span>     <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>      <span class="n">nan</span><span class="p">,</span>      <span class="n">nan</span><span class="p">]],</span>
-
-       <span class="p">[[</span><span class="mf">0.086522</span><span class="p">,</span> <span class="mf">0.015151</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.075447</span><span class="p">,</span> <span class="mf">0.03005</span> <span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.067198</span><span class="p">,</span> <span class="mf">0.043074</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.103671</span><span class="p">,</span> <span class="mf">0.042999</span><span class="p">],</span>
-        <span class="o">...</span><span class="p">,</span>
-        <span class="p">[</span><span class="mf">0.242585</span><span class="p">,</span> <span class="mf">0.186407</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.053797</span><span class="p">,</span> <span class="mf">0.011344</span><span class="p">],</span>
-        <span class="p">[</span><span class="mf">0.079498</span><span class="p">,</span> <span class="mf">0.122098</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="mf">0.027066</span><span class="p">,</span> <span class="mf">0.019639</span><span class="p">]]])</span>
-<span class="n">Coordinates</span><span class="p">:</span>
-  <span class="o">*</span> <span class="n">data_source</span>   <span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U22</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span>
-    <span class="n">var_name</span>      <span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U8</span> <span class="s1">&#39;od550aer&#39;</span> <span class="s1">&#39;od550aer&#39;</span>
-  <span class="o">*</span> <span class="n">time</span>          <span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="n">datetime64</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span> <span class="mi">2010</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span> <span class="o">...</span>
-  <span class="o">*</span> <span class="n">station_name</span>  <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="o">&lt;</span><span class="n">U19</span> <span class="s1">&#39;ATHENS-NOA&#39;</span> <span class="s1">&#39;Andenes&#39;</span> <span class="s1">&#39;Arcachon&#39;</span> <span class="o">...</span>
-    <span class="n">latitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">37.97</span> <span class="mf">69.28</span> <span class="mf">44.66</span> <span class="mf">45.76</span> <span class="mf">42.0</span> <span class="mf">43.93</span> <span class="o">...</span>
-    <span class="n">longitude</span>     <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">23.72</span> <span class="mf">16.01</span> <span class="o">-</span><span class="mf">1.163</span> <span class="mf">3.111</span> <span class="o">-</span><span class="mf">4.603</span> <span class="o">...</span>
-    <span class="n">altitude</span>      <span class="p">(</span><span class="n">station_name</span><span class="p">)</span> <span class="n">float64</span> <span class="mf">130.0</span> <span class="mf">379.0</span> <span class="mf">11.0</span> <span class="mf">423.0</span> <span class="mf">873.0</span> <span class="mf">32.0</span> <span class="o">...</span>
-<span class="n">Attributes</span><span class="p">:</span>
-    <span class="n">data_source</span><span class="p">:</span>      <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">,</span> <span class="s1">&#39;ECMWF_CAMS_REAN&#39;</span><span class="p">]</span>
-    <span class="n">var_name</span><span class="p">:</span>         <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
-    <span class="n">ts_type</span><span class="p">:</span>          <span class="n">daily</span>
-    <span class="n">filter_name</span><span class="p">:</span>      <span class="n">EUROPE</span><span class="o">-</span><span class="n">noMOUNTAINS</span>
-    <span class="n">ts_type_src</span><span class="p">:</span>      <span class="n">daily</span>
-    <span class="n">ts_type_src_ref</span><span class="p">:</span>  <span class="n">daily</span>
-    <span class="n">start_str</span><span class="p">:</span>        <span class="mi">20100101</span>
-    <span class="n">stop_str</span><span class="p">:</span>         <span class="mi">20101231</span>
-    <span class="n">unit</span><span class="p">:</span>             <span class="mi">1</span>
-    <span class="n">data_level</span><span class="p">:</span>       <span class="n">colocated</span>
-    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20180820</span>
-    <span class="n">region</span><span class="p">:</span>           <span class="n">EUROPE</span>
-    <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
-    <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
-    <span class="n">alt_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">1000000.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">]</span>
-</pre></div>
-</div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f495077feb8</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<img alt="_images/tut06_colocation_16_1.png" src="_images/tut06_colocation_16_1.png" />
-<div class="section" id="further-tutorials-in-depth">
-<h5>Further tutorials (in-depth)<a class="headerlink" href="#further-tutorials-in-depth" title="Permalink to this headline">¶</a></h5>
-</div>
-</div>
-</div>
-</div>
 <div class="section" id="handling-of-time-in-pyaerocom">
 <h2>Handling of time in pyaerocom<a class="headerlink" href="#handling-of-time-in-pyaerocom" title="Permalink to this headline">¶</a></h2>
-<p>The
+<p><strong>NOTE</strong>: the topics of this notebook are not necessarily required for
+using <em>pyaerocom</em>. It The
 <a class="reference external" href="http://aerocom.met.no/pya/api.html#module-pya.griddeddata">GriddedData</a>
-class of <em>pyaerocom</em> was introduced in the previous tutorial.</p>
+class of <em>pyaerocom</em> was introduced in a previous tutorial.</p>
 <p>Here, we illustrate how <em>pyaerocom</em> handles time. In particular, how
 <em>pyaerocom</em> performs the conversion of CF conform numerical time stamps
 with a defined unit (i.e.&nbsp;basedate and calendar, see e.g.
@@ -3003,15 +2836,15 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
-  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -3140,14 +2973,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>119 ms ± 2.01 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>118 ms ± 797 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 898 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 574 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -3158,14 +2991,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>123 ms ± 3.92 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>120 ms ± 660 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>110 ms ± 5.43 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 344 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -3184,7 +3017,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.73 ms ± 78.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.68 ms ± 38.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -3302,7 +3135,7 @@ based on the information encoded in the units string(e.g. <em>day since
 cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>56 µs ± 802 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>54.8 µs ± 291 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 </pre></div>
 </div>
 </div>
@@ -3320,7 +3153,7 @@ here</a>).</p>
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>374 µs ± 46.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>330 µs ± 2.34 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -3329,7 +3162,7 @@ pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 pya_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.18 ms ± 82.2 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.06 ms ± 15.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -3343,14 +3176,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>405 µs ± 37.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>374 µs ± 4.59 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.12 ms ± 20.6 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.1 ms ± 31.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>
@@ -3620,7 +3453,7 @@ of the file.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;numflag&#39;</span><span class="p">,</span>
-              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7fdb3b12f390</span><span class="o">&gt;</span><span class="p">)])</span>
+              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7fd542191390</span><span class="o">&gt;</span><span class="p">)])</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s2">&quot;numflag&quot;</span><span class="p">]</span>

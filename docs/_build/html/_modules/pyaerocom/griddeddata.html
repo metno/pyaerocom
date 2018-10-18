@@ -187,7 +187,8 @@
                                <span class="n">str_to_iris</span><span class="p">,</span>
                                <span class="n">IRIS_AGGREGATORS</span><span class="p">,</span>
                                <span class="n">to_pandas_timestamp</span><span class="p">,</span>
-                               <span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">)</span>
+                               <span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">,</span>
+                               <span class="n">datetime2str</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">closest_index</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.stationdata</span> <span class="k">import</span> <span class="n">StationData</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.region</span> <span class="k">import</span> <span class="n">Region</span>
@@ -260,7 +261,7 @@
     <span class="n">_GRID_IO</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">GRID_IO</span>
     <span class="c1">#: Req. order of dimension coordinates for time-series computation</span>
     <span class="n">COORDS_ORDER_TSERIES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
-    <span class="n">_MAX_SIZE_GB</span> <span class="o">=</span> <span class="mi">4</span> <span class="c1">#maximum file size for in-memory operations</span>
+    <span class="n">_MAX_SIZE_GB</span> <span class="o">=</span> <span class="mi">6</span> <span class="c1">#maximum file size for in-memory operations</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">convert_unit_on_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">suppl_info</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="n">from_files</span>     <span class="o">=</span> <span class="p">[],</span>
@@ -355,7 +356,7 @@
             <span class="n">dtype_appr</span> <span class="o">=</span> <span class="s1">&#39;datetime64[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TS_TYPE_TO_NUMPY_FREQ</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_type</span><span class="p">])</span>
             <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype_appr</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Failed to round start time </span><span class="si">{}</span><span class="s1"> to beggining of &#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Failed to round start time </span><span class="si">{}</span><span class="s1"> to beginning of &#39;</span>
                              <span class="s1">&#39;frequency </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_type</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[us]&#39;</span><span class="p">)</span>
 
@@ -1353,11 +1354,24 @@
                 <span class="n">time_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">))</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Failed to interpret input time stamp&#39;</span><span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">pyaerocom.plot.mapping</span> <span class="k">import</span> <span class="n">plot_map</span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_map</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">time_idx</span><span class="p">],</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Model: </span><span class="si">%s</span><span class="s2">, var=</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> 
-                     <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">time_idx</span><span class="p">)))</span>
+        
+        <span class="kn">from</span> <span class="nn">pyaerocom.plot.mapping</span> <span class="k">import</span> <span class="n">plot_griddeddata_on_map</span> 
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">time_idx</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">lons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">longitude</span><span class="o">.</span><span class="n">points</span>
+        <span class="n">lats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">points</span>
+        
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_griddeddata_on_map</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> 
+                                      <span class="n">xlim</span><span class="o">=</span><span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="n">ylim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">cftime_to_datetime64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="n">time_idx</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="n">datetime2str</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_type</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">tstr</span> <span class="o">=</span> <span class="n">datetime2str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">()[</span><span class="n">time_idx</span><span class="p">],</span> 
+                                <span class="bp">self</span><span class="o">.</span><span class="n">ts_type</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
+                              <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="n">tstr</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">fig</span></div>
     
 <div class="viewcode-block" id="GriddedData.min"><a class="viewcode-back" href="../../api.html#pyaerocom.griddeddata.GriddedData.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

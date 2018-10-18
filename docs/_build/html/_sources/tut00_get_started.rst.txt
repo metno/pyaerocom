@@ -300,8 +300,8 @@ method.
 
 .. code:: ipython3
 
-    ax1 = od550aer.quickplot_map('2009-3-15')
-    ax2 = od550csaer.quickplot_map('2009-3-15')
+    fig1 = od550aer.quickplot_map('2009-3-15')
+    fig2 = od550csaer.quickplot_map('2009-3-15')
 
 
 
@@ -1698,9 +1698,10 @@ Let’s say you are interested in the city of Leipzig, Germany.
 
 
 As you can see, the returned object is of type ``StationData``, which is
-one further data format that is not displayed in the flowchart above.
-``StationData`` may be useful for individual stations and is an extended
-Python dictionary (if you are familiar with Python).
+one further data format of pyaerocom (note that this is not displayed in
+the simplified flowchart above). ``StationData`` may be useful for
+individual stations and is an extended Python dictionary (if you are
+familiar with Python).
 
 You may print it to see what is in there:
 
@@ -1804,20 +1805,79 @@ nm. If you like, you can plot this time-series:
 
 .. code:: ipython3
 
-    station_data.plot_variable('od550aer')
+    station_data.plot_variable('od550aer', style=' xg', figsize=(16,6)).set_title('Leipzig AOD all times')
 
 
 
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fe594678c18>
+    Text(0.5,1,'Leipzig AOD all times')
 
 
 
 
 .. image:: tut00_get_started/tut00_get_started_70_1.png
 
+
+You can also retrieve the ``StationData`` with specifying more
+constraints using ``to_station_data`` (e.g. in monthly resolution and
+only for the year 2010). And you can overlay different curves, by
+passing the axes instance returned by the plotting method:
+
+.. code:: ipython3
+
+    ax=aeronet_data.to_station_data('Leipzig', 
+                                    start=2010, 
+                                    freq='daily').plot_variable('od550aer', 
+                                                                label='daily')
+    
+    ax=aeronet_data.to_station_data('Leipzig', 
+                                    start=2010, 
+                                    freq='monthly').plot_variable('od550aer', 
+                                                                  label='monthly',
+                                                                  ax=ax)
+    ax.legend()
+    ax.set_title('Leipzig AODs 2010')
+
+
+
+
+.. parsed-literal::
+
+    Text(0.5,1,'Leipzig AODs 2010')
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_72_1.png
+
+
+You can also plot the time-series directly
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For instance, if you want to do an air-quality check for you next
+bouldering trip, you may call:
+
+.. code:: ipython3
+
+    aeronet_data.plot_station_timeseries('Fontainebleau', 'od550aer', ts_type='monthly',
+                                         start=2006).set_title('AOD in Fontainebleau, 2006')
+
+
+
+
+.. parsed-literal::
+
+    Text(0.5,1,'AOD in Fontainebleau, 2006')
+
+
+
+
+.. image:: tut00_get_started/tut00_get_started_74_1.png
+
+
+Seems like November is a good time (maybe a bit rainy though)
 
 Colocation of model and obsdata
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1907,7 +1967,7 @@ Let’s do the same for the clear-sky data.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_76_1.png
+.. image:: tut00_get_started/tut00_get_started_81_1.png
 
 
 .. code:: ipython3
@@ -1925,7 +1985,7 @@ Let’s do the same for the clear-sky data.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_77_1.png
+.. image:: tut00_get_started/tut00_get_started_82_1.png
 
 
 … or for EUROPE:
@@ -1953,10 +2013,10 @@ Let’s do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fe594831f98>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f3cd223cf98>
 
 
 
 
-.. image:: tut00_get_started/tut00_get_started_79_3.png
+.. image:: tut00_get_started/tut00_get_started_84_3.png
 

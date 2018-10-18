@@ -1,6 +1,6 @@
 
-Reading model data: the *ReadGridded* class
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Reading of gridded data - the *ReadGridded* class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This notebook introduces the
 `ReadGridded <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGridded>`__
@@ -12,20 +12,68 @@ from a single model, based on variable name (e.g. *od550aer*,
 The class is part of the
 `readgridded <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.io.readgridded>`__
 module of pyaerocom, as well as the class
-`ReadGriddedMulti <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti>`__.
+`ReadGriddedMulti <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.readgridded.ReadGriddedMulti>`__,
+which is introduced in the following tutorial (may be skipped).
 
-In the following cells, we create an instance of the the ``ReadGridded``
-class and use this object to find and import data files containing the
-aerosol optical depth at 550 nm (*od550aer*) from the ECMWF CAMS
-reanalysis model (*ECMWF_CAMS_REAN*) for the years 2003-2007 in daily
-resolution. The files will be temporally merged and put into an instance
-of the ``GriddedData`` class.
+In the following, we create an instance of the the ``ReadGridded`` class
+and use this object to find and import data files containing the aerosol
+optical depth at 550 nm (*od550aer*) from the ECMWF CAMS reanalysis
+dataset (*ECMWF_CAMS_REAN*) for the years 2003-2007 and in daily
+resolution. The files will be temporally merged and put into a single
+instance of the ``GriddedData`` class.
 
 We start with creating a reading object, that will take care of finding
 the model directory for us (based on the model ID) and all valid NetCDF
 files on initialisation. Use the ``print`` commant to preview the string
 representation of ``ReadGridded`` object, which provides useful
 information about what is in there.
+
+Remark on reading of gridded data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Since model data files can be large (too large for in-memory
+operations), gridded data in pyaerocom (e.g. model data or satellite
+data) is generally read and represented as *lazy data*. That means, that
+the actual N-dimensional data array is not loaded into memory before
+needed. Lazy data is represented as [dask array] as pyaerocom data
+objects rely either on the Python
+`iris <https://scitools.org.uk/iris/docs/latest/index.html>`__ library
+or `xarray <http://xarray.pydata.org/en/stable/index.html>`__ (which
+both use dask for representing lazy data and for out of core
+computation). For more information on lazy data, see
+e.g. https://scitools.org.uk/iris/docs/latest/userguide/real_and_lazy_data.html.
+
+**Example**: Consider one year of daily model data in 1x1 resolution
+with 30 vertical layers, stored as 64 bit floating point numbers.
+Loading such a file into memory, would require a RAM of at least:
+
+.. code:: ipython3
+
+    '{:.1f} GB'.format(64 * (360 * 180) * 30 * 365 / (8 * 10**9))
+
+
+
+
+.. parsed-literal::
+
+    '5.7 GB'
+
+
+
+Or the same in hourly resolution:
+
+.. code:: ipython3
+
+    '{:.1f} GB'.format(64 * (360 * 180) * 30 * 365 * 24 / (8 * 10**9))
+
+
+
+
+.. parsed-literal::
+
+    '136.2 GB'
+
+
 
 .. code:: ipython3
 
@@ -277,7 +325,7 @@ series at the coordinates in the city of Leipzig, Germany.
 
 
 
-.. image:: tut02_intro_class_ReadGridded/tut02_intro_class_ReadGridded_17_1.png
+.. image:: tut02_intro_class_ReadGridded/tut02_intro_class_ReadGridded_21_1.png
 
 
 In the following section, the ``ReadGriddedMulti`` class is introduced,

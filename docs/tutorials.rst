@@ -23,8 +23,8 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 Further tutorials (in-depth)
 ----------------------------
 
-.. include:: tut05_intro_time_handling.rst
+.. include:: add01_intro_time_handling.rst
 
-.. include:: tut07_read_ebas_nasa_ames.rst
+.. include:: add02_read_ebas_nasa_ames.rst
 
-.. include:: tut08_ebas_database_browser.rst
+.. include:: add03_ebas_database_browser.rst

@@ -95,6 +95,9 @@ if __name__=="__main__":
     
     files = sorted(fnmatch.filter(os.listdir("."), "tut[0-9][0-9]*.ipynb"))
 
+    add_files = sorted(fnmatch.filter(os.listdir("."), "add[0-9][0-9]*.ipynb"))
+    files.extend(add_files)
+
     if args.execute_all:
         for f in files:    
             execute_and_save_notebook(f)

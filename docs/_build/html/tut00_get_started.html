@@ -413,8 +413,8 @@ objects. These can be computed using the <code class="docutils literal notransla
 <h3>Plotting maps<a class="headerlink" href="#plotting-maps" title="Permalink to this headline">¶</a></h3>
 <p>Maps of individual time stamps can be plotted using the quickplot_map
 method.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax1</span> <span class="o">=</span> <span class="n">od550aer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">od550csaer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig1</span> <span class="o">=</span> <span class="n">od550aer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
+<span class="n">fig2</span> <span class="o">=</span> <span class="n">od550csaer</span><span class="o">.</span><span class="n">quickplot_map</span><span class="p">(</span><span class="s1">&#39;2009-3-15&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_23_0.png" src="_images/tut00_get_started_23_0.png" />
@@ -1669,9 +1669,10 @@ informative string representation (that can be printed):</p>
 </pre></div>
 </div>
 <p>As you can see, the returned object is of type <code class="docutils literal notranslate"><span class="pre">StationData</span></code>, which is
-one further data format that is not displayed in the flowchart above.
-<code class="docutils literal notranslate"><span class="pre">StationData</span></code> may be useful for individual stations and is an extended
-Python dictionary (if you are familiar with Python).</p>
+one further data format of pyaerocom (note that this is not displayed in
+the simplified flowchart above). <code class="docutils literal notranslate"><span class="pre">StationData</span></code> may be useful for
+individual stations and is an extended Python dictionary (if you are
+familiar with Python).</p>
 <p>You may print it to see what is in there:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">station_data</span><span class="p">)</span>
 </pre></div>
@@ -1765,14 +1766,50 @@ altitude: 125.0
 </div>
 <p>As you can see, this station contains a time-series of the AOD at 550
 nm. If you like, you can plot this time-series:</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station_data</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station_data</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39; xg&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Leipzig AOD all times&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe594678c18</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Leipzig AOD all times&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/tut00_get_started_70_1.png" src="_images/tut00_get_started_70_1.png" />
+<p>You can also retrieve the <code class="docutils literal notranslate"><span class="pre">StationData</span></code> with specifying more
+constraints using <code class="docutils literal notranslate"><span class="pre">to_station_data</span></code> (e.g.&nbsp;in monthly resolution and
+only for the year 2010). And you can overlay different curves, by
+passing the axes instance returned by the plotting method:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span><span class="o">=</span><span class="n">aeronet_data</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="s1">&#39;Leipzig&#39;</span><span class="p">,</span>
+                                <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">,</span>
+                                <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span>
+                                                            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">=</span><span class="n">aeronet_data</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="s1">&#39;Leipzig&#39;</span><span class="p">,</span>
+                                <span class="n">start</span><span class="o">=</span><span class="mi">2010</span><span class="p">,</span>
+                                <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot_variable</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span>
+                                                              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
+                                                              <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Leipzig AODs 2010&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Leipzig AODs 2010&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tut00_get_started_72_1.png" src="_images/tut00_get_started_72_1.png" />
+</div>
+</div>
+<div class="section" id="you-can-also-plot-the-time-series-directly">
+<h2>You can also plot the time-series directly<a class="headerlink" href="#you-can-also-plot-the-time-series-directly" title="Permalink to this headline">¶</a></h2>
+<p>For instance, if you want to do an air-quality check for you next
+bouldering trip, you may call:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aeronet_data</span><span class="o">.</span><span class="n">plot_station_timeseries</span><span class="p">(</span><span class="s1">&#39;Fontainebleau&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
+                                     <span class="n">start</span><span class="o">=</span><span class="mi">2006</span><span class="p">)</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;AOD in Fontainebleau, 2006&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;AOD in Fontainebleau, 2006&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tut00_get_started_74_1.png" src="_images/tut00_get_started_74_1.png" />
+<p>Seems like November is a good time (maybe a bit rainy though)</p>
 </div>
 <div class="section" id="colocation-of-model-and-obsdata">
 <h2>Colocation of model and obsdata<a class="headerlink" href="#colocation-of-model-and-obsdata" title="Permalink to this headline">¶</a></h2>
@@ -1827,7 +1864,7 @@ sides.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;All sky (2010, monthly)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/tut00_get_started_76_1.png" src="_images/tut00_get_started_76_1.png" />
+<img alt="_images/tut00_get_started_81_1.png" src="_images/tut00_get_started_81_1.png" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax2</span> <span class="o">=</span> <span class="n">col_clear_sky_glob</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Clear sky (2010, monthly)&#39;</span><span class="p">)</span>
 </pre></div>
@@ -1835,7 +1872,7 @@ sides.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;Clear sky (2010, monthly)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/tut00_get_started_77_1.png" src="_images/tut00_get_started_77_1.png" />
+<img alt="_images/tut00_get_started_82_1.png" src="_images/tut00_get_started_82_1.png" />
 <p>… or for EUROPE:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">od550aer</span><span class="p">,</span> <span class="n">aeronet_data</span><span class="p">,</span>
                                              <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
@@ -1850,10 +1887,10 @@ sides.</p>
 <span class="n">Successfully</span> <span class="n">interpolated</span> <span class="n">cube</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe594831f98</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f3cd223cf98</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/tut00_get_started_79_3.png" src="_images/tut00_get_started_79_3.png" />
+<img alt="_images/tut00_get_started_84_3.png" src="_images/tut00_get_started_84_3.png" />
 </div>
 </div>
 

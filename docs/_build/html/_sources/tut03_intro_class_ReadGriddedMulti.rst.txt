@@ -6,7 +6,12 @@ The ``pyaerocom.ReadGriddedMulti`` class provides an interface to import
 multiple variables for an arbitrary number of gridded datasets
 (e.g. model data, level 2 satellite data) and within a specific time
 interval. It makes large use of the ``ReadGridded`` class that provides
-an interface for importing results from a single dataset.
+an interface for importing results from a single dataset (and that does
+the actual reading).
+
+**Note**: This is not strictly relevant for the following tutorials. You
+might skip this tutorial if it is not of particular interest for you to
+read multiple models at once.
 
 .. code:: ipython3
 
@@ -105,7 +110,7 @@ Read all variables for all models
 
 As we can see, for the ECHAM6 data, the import failed. The reason for
 this is, that these data only exists in monthly resolution. We can load
-this data manually.
+these data manually.
 
 .. code:: ipython3
 

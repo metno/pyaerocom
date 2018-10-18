@@ -4,8 +4,8 @@ Introducing the ``GriddedData`` class
 
 This notebook introduces basic features of the
 `GriddedData <http://aerocom.met.no/pya/api.html#pya.griddeddata.GriddedData>`__
-class of pya. The ``GriddedData`` class is the fundamental base class
-for the analysis of model data. The underlying data type is
+class of pyaerocom. The ``GriddedData`` class is the fundamental base
+class for the analysis of model data. The underlying data type is
 `iris.cube.Cube <http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube>`__
 which was extended, for instance by allowing direct imports of netCDF
 files when creating an instance of ``GriddedData`` (i.e. by passing the
@@ -16,6 +16,9 @@ Starting with some imports…
 .. code:: ipython3
 
     import pyaerocom as pya
+    from warnings import filterwarnings
+    filterwarnings('ignore')
+    pya.change_verbosity('critical')
 
 Let’s get a test file to load
 
@@ -34,11 +37,6 @@ Let’s get a test file to load
     /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc
     
 
-
-The dictionary, returned by the ``get()`` function is categorised into
-two subirectories for model based test files (``key="models"``) and for
-observation based test files (``key=observations``). So far, there is
-not much in there (i.e. only two files).
 
 Let’s pick out the ECMWF OSUITE test file and load the data directly
 into an instance of the ``GriddedData`` class. The ``GriddedData`` class
@@ -76,20 +74,6 @@ object.
               nco_openmp_thread_number: 1
          Cell methods:
               mean: time
-
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
 
 
 Remark on longitude definition
@@ -163,25 +147,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-
-
-.. parsed-literal::
-
-    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550oa', 'od550aer', 'od550so4', 'od550bc', 'od550dust']",)
-
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
+    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550dust', 'od550oa', 'od550aer', 'od550bc', 'od550so4']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -199,27 +165,12 @@ Also, if you parse an invalid variable name, you will get some hint.
     This also did not work...error message: NetcdfError('Variable Blaaa not available in file /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc',)
 
 
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
-
-
 You can have a quick look at the data using the class-own quickplot
 method
 
 .. code:: ipython3
 
-    fig = data.quickplot_map(time_idx=0,
-                             fix_aspect=2, 
+    fig = data.quickplot_map(time_idx=0, 
                              vmin=0, 
                              vmax=1, 
                              c_over="r")
@@ -236,39 +187,13 @@ Why not load some of the other variables…
     data_bc = pya.GriddedData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
     data_so4 = pya.GriddedData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
 
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
-
-
 … and plot them as well
 
 .. code:: ipython3
 
     fig1 = data_bc.quickplot_map()
     fig2 = data_so4.crop(lon_range=(-30, 30), 
-                         lat_range=(10, 60)).quickplot_map(fix_aspect=1.5, 
-                                                           xlim=(-100, 100), 
+                         lat_range=(10, 60)).quickplot_map(xlim=(-100, 100), 
                                                            ylim=(-70, 70))
 
 
@@ -279,6 +204,68 @@ Why not load some of the other variables…
 
 .. image:: tut04_intro_class_GriddedData/tut04_intro_class_GriddedData_18_1.png
 
+
+Change resolution
+^^^^^^^^^^^^^^^^^
+
+Downscale to 2x2 resolution:
+
+.. code:: ipython3
+
+    lons = np.arange(-180, 180, 2)
+    lats = np.arange(-90, 90, 2)
+    
+    data_lowres = data.interpolate(longitude=lons, latitude=lats)
+
+
+.. parsed-literal::
+
+    Interpolating data of shape (365, 451, 900). This may take a while.
+    Successfully interpolated cube
+
+
+And plot:
+
+.. code:: ipython3
+
+    fig =data_lowres.quickplot_map()
+
+
+
+.. image:: tut04_intro_class_GriddedData/tut04_intro_class_GriddedData_22_0.png
+
+
+Area weighted mean
+^^^^^^^^^^^^^^^^^^
+
+Retrieve area weighted mean from data
+
+.. code:: ipython3
+
+    import pandas as pd
+    mean_highres = data.area_weighted_mean()
+    mean_lowres = data_lowres.area_weighted_mean()
+    s_highres = pd.Series(mean_highres, data.time_stamps())
+    s_lowres = pd.Series(mean_lowres, data.time_stamps())
+    
+    ax = s_highres.plot(label='high res')
+    ax = s_lowres.plot(ax=ax, label = 'low res')
+    ax.legend()
+
+
+
+
+.. parsed-literal::
+
+    <matplotlib.legend.Legend at 0x7fdc207c0c50>
+
+
+
+
+.. image:: tut04_intro_class_GriddedData/tut04_intro_class_GriddedData_24_1.png
+
+
+Looks similar (which is good).
 
 … more to come
 ^^^^^^^^^^^^^^

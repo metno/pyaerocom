@@ -250,14 +250,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtime</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="StationData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">):</span>
+<div class="viewcode-block" id="StationData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resample_how</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get pandas.Series object for one of the data columns</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        var_name : str</span>
 <span class="sd">            name of variable (e.g. &quot;od550aer&quot;)</span>
-<span class="sd">        </span>
+<span class="sd">        freq : str</span>
+<span class="sd">            new temporal resolution (can be pandas freq. string, or pyaerocom</span>
+<span class="sd">            ts_type)</span>
+<span class="sd">        resample_how : str</span>
+<span class="sd">            choose from mean or median (only relevant if input parameter freq </span>
+<span class="sd">            is provided, i.e. if resampling is applied)</span>
+<span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Series</span>
@@ -285,15 +291,26 @@
                              <span class="s2">&quot;variable </span><span class="si">{}</span><span class="s2"> (length: </span><span class="si">{}</span><span class="s2">) and time array  &quot;</span>
                              <span class="s2">&quot;(length: </span><span class="si">{}</span><span class="s2">).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> 
                                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtime</span><span class="p">)))</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtime</span><span class="p">)</span></div>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">resample_timeseries</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">resample_timeseries</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">resample_how</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span></div>
     
-<div class="viewcode-block" id="StationData.plot_variable"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.plot_variable">[docs]</a>    <span class="k">def</span> <span class="nf">plot_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="StationData.plot_variable"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.plot_variable">[docs]</a>    <span class="k">def</span> <span class="nf">plot_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resample_how</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> 
+                      <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot timeseries for variable</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        var_name : str</span>
 <span class="sd">            name of variable (e.g. &quot;od550aer&quot;)</span>
+<span class="sd">        freq : str</span>
+<span class="sd">            new temporal resolution (can be pandas freq. string, or pyaerocom</span>
+<span class="sd">            ts_type)</span>
+<span class="sd">        resample_how : str</span>
+<span class="sd">            choose from mean or median (only relevant if input parameter freq </span>
+<span class="sd">            is provided, i.e. if resampling is applied)</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            additional keyword args passed to ``Series.plot`` method</span>
 <span class="sd">            </span>
@@ -309,7 +326,7 @@
 <span class="sd">        ValueError</span>
 <span class="sd">            if length of data array does not equal the length of the time array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">resample_how</span><span class="p">)</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ax</span></div>
     

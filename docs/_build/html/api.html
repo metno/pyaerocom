@@ -1228,13 +1228,12 @@ station_names is list or None: list of dictionaries with station data</p>
 
 <dl class="method">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.to_station_data">
-<code class="descname">to_station_data</code><span class="sig-paren">(</span><em>meta_idx</em>, <em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em>, <em>data_as_series=True</em>, <em>_test_mode=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.to_station_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_station_data</code><span class="sig-paren">(</span><em>meta_idx</em>, <em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em>, <em>data_as_series=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.to_station_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert data from one station to <code class="xref py py-class docutils literal notranslate"><span class="pre">StationData</span></code></p>
 <div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Review for retrieval of profile data (e.g. Lidar data)</li>
-<li>Handle stop time if only year is provided</li>
 </ul>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1271,7 +1270,7 @@ roughly corresponding to 1 sigma)</li>
 
 <dl class="method">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.to_station_data_all">
-<code class="descname">to_station_data_all</code><span class="sig-paren">(</span><em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.to_station_data_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data_all" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_station_data_all</code><span class="sig-paren">(</span><em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em>, <em>keep_na=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.to_station_data_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert all possible stations to <code class="xref py py-class docutils literal notranslate"><span class="pre">StationData</span></code> objects</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1289,6 +1288,7 @@ pandas.Timestamp)</li>
 variable are interpolated using linear interpolation</li>
 <li><strong>min_coverage_interp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – required coverage fraction for interpolation (default is 0.68, i.e.
 roughly corresponding to 1 sigma)</li>
+<li><strong>drop_na</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -1350,7 +1350,7 @@ stat_lon, stat_lat, stat_alt, ts_type)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a> – when variables are supposed to be filtered (not yet possible)</li>
+<li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code></a> – if attempt variables are supposed to be filtered (not yet possible)</li>
 <li><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IOError" title="(in Python v3.7)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> – if any of the input keys are not valid meta key</li>
 </ul>
 </td>
@@ -1605,6 +1605,104 @@ station in the other object</p>
 <dt id="pyaerocom.ungriddeddata.UngriddedData.find_common_data_points">
 <code class="descname">find_common_data_points</code><span class="sig-paren">(</span><em>other</em>, <em>var_name</em>, <em>sampling_freq='daily'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.find_common_data_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.find_common_data_points" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.ungriddeddata.UngriddedData.get_time_series">
+<code class="descname">get_time_series</code><span class="sig-paren">(</span><em>station</em>, <em>var_name</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.get_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.get_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get time series of station variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – station name or index of station in metadata dict</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of variable to be retrieved</li>
+<li><strong>start</strong> – start time (optional)</li>
+<li><strong>stop</strong> – stop time (optional). If start time is provided and stop time not,
+then only the corresponding year inferred from start time will be
+considered</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – temporal resolution</li>
+<li><strong>**kwargs</strong> – Addifional keyword args passed to method <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data" title="pyaerocom.ungriddeddata.UngriddedData.to_station_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_station_data()</span></code></a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">time series data</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.ungriddeddata.UngriddedData.plot_station_timeseries">
+<code class="descname">plot_station_timeseries</code><span class="sig-paren">(</span><em>station</em>, <em>var_name</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.plot_station_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.plot_station_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot time series of station and variable</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>station</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>) – station name or index of station in metadata dict</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of variable to be retrieved</li>
+<li><strong>start</strong> – start time (optional)</li>
+<li><strong>stop</strong> – stop time (optional). If start time is provided and stop time not,
+then only the corresponding year inferred from start time will be
+considered</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – temporal resolution</li>
+<li><strong>**kwargs</strong> – Addifional keyword args passed to method <code class="xref py py-func docutils literal notranslate"><span class="pre">pandas.Series.plot()</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib axes instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.ungriddeddata.UngriddedData.plot_station_coordinates">
+<code class="descname">plot_station_coordinates</code><span class="sig-paren">(</span><em>var_name=None</em>, <em>filter_name=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>color='r'</em>, <em>marker='o'</em>, <em>markersize=8</em>, <em>fontsize_base=10</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.plot_station_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.plot_station_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot station coordinates on a map</p>
+<p>All input parameters are optional and may be used to add constraints
+related to which stations are plotted. Default is all stations of all
+times.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – name of variable to be retrieved</li>
+<li><strong>filter_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – name of filter (e.g. EUROPE-noMOUNTAINS)</li>
+<li><strong>start</strong> – start time (optional)</li>
+<li><strong>stop</strong> – stop time (optional). If start time is provided and stop time not,
+then only the corresponding year inferred from start time will be
+considered</li>
+<li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – temporal resolution</li>
+<li><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – color of stations on map</li>
+<li><strong>marker</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – marker type of stations</li>
+<li><strong>markersize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – size of station markers</li>
+<li><strong>fontsize_base</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – basic fontsize</li>
+<li><strong>**kwargs</strong> – Addifional keyword args passed to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">pyaerocom.plot.plot_coordinates()</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">matplotlib axes instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -2102,13 +2200,19 @@ must be list or array and must have the same length as attribute
 
 <dl class="method">
 <dt id="pyaerocom.stationdata.StationData.to_timeseries">
-<code class="descname">to_timeseries</code><span class="sig-paren">(</span><em>var_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/stationdata.html#StationData.to_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.stationdata.StationData.to_timeseries" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_timeseries</code><span class="sig-paren">(</span><em>var_name</em>, <em>freq=None</em>, <em>resample_how='mean'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/stationdata.html#StationData.to_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.stationdata.StationData.to_timeseries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get pandas.Series object for one of the data columns</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of variable (e.g. “od550aer”)</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of variable (e.g. “od550aer”)</li>
+<li><strong>freq</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – new temporal resolution (can be pandas freq. string, or pyaerocom
+ts_type)</li>
+<li><strong>resample_how</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – choose from mean or median (only relevant if input parameter freq
+is provided, i.e. if resampling is applied)</li>
+</ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">time series object</p>
@@ -2129,7 +2233,7 @@ must be list or array and must have the same length as attribute
 
 <dl class="method">
 <dt id="pyaerocom.stationdata.StationData.plot_variable">
-<code class="descname">plot_variable</code><span class="sig-paren">(</span><em>var_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/stationdata.html#StationData.plot_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.stationdata.StationData.plot_variable" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_variable</code><span class="sig-paren">(</span><em>var_name</em>, <em>freq=None</em>, <em>resample_how='mean'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/stationdata.html#StationData.plot_variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.stationdata.StationData.plot_variable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot timeseries for variable</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2137,6 +2241,10 @@ must be list or array and must have the same length as attribute
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – name of variable (e.g. “od550aer”)</li>
+<li><strong>freq</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – new temporal resolution (can be pandas freq. string, or pyaerocom
+ts_type)</li>
+<li><strong>resample_how</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – choose from mean or median (only relevant if input parameter freq
+is provided, i.e. if resampling is applied)</li>
 <li><strong>**kwargs</strong> – additional keyword args passed to <code class="docutils literal notranslate"><span class="pre">Series.plot</span></code> method</li>
 </ul>
 </td>
@@ -2434,7 +2542,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f2782803510&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f2957cc2488&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3735,7 +3843,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f27828031e0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2782803268&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f2957cc2158&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4136,7 +4244,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f27828031e0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2782803268&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f2782803378&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f2782803400&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f2957cc2158&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f2957cc22f0&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f2957cc2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4542,7 +4650,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f27828032f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2782803268&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f2957cc2268&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4966,7 +5074,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f27828031e0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2782803268&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f2957cc2158&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5364,7 +5472,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f2782803268&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f2782803378&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f2782803400&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f2957cc22f0&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f2957cc2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5758,7 +5866,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f27828032f0&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2782803268&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f2957cc2268&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -8643,6 +8751,12 @@ cannot be found in regions.ini file</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="pyaerocom.region.all">
+<code class="descclassname">pyaerocom.region.</code><code class="descname">all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/region.html#all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.region.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for <a class="reference internal" href="#pyaerocom.region.get_all_default_region_ids" title="pyaerocom.region.get_all_default_region_ids"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_all_default_region_ids()</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.region.get_all_default_region_ids">
 <code class="descclassname">pyaerocom.region.</code><code class="descname">get_all_default_region_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/region.html#get_all_default_region_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.region.get_all_default_region_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get list containing IDs of all default regions</p>
@@ -9008,19 +9122,86 @@ available)</li>
 <p>This module contains plot routines for Aerocom data. So far, this includes a
 low level, very flexible plot method</p>
 <dl class="function">
-<dt id="pyaerocom.plot.mapping.plot_map">
-<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>add_zero=False</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>figh=8</em>, <em>fix_aspect=False</em>, <em>cbar_levels=None</em>, <em>cbar_ticks=None</em>, <em>xticks=None</em>, <em>yticks=None</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>projection=&lt;cartopy.crs.PlateCarree object&gt;</em>, <em>fig=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a plot of grid data onto a map</p>
+<dt id="pyaerocom.plot.mapping.set_map_ticks">
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">set_map_ticks</code><span class="sig-paren">(</span><em>ax</em>, <em>xticks=None</em>, <em>yticks=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#set_map_ticks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.set_map_ticks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set or update ticks in instance of GeoAxes object (cartopy)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">GriddedData</span></code>) – input grid data object. Uses first time stamp if data is has
-more than one time stamp</li>
+<li><strong>ax</strong> (<em>cartopy.GeoAxes</em>) – map axes instance</li>
+<li><strong>xticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of x-axis (longitudes)</li>
+<li><strong>yticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of y-axis (latitudes)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">modified axes instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">cartopy.GeoAxes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.plot.mapping.init_map">
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">init_map</code><span class="sig-paren">(</span><em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>figh=8</em>, <em>fix_aspect=False</em>, <em>xticks=None</em>, <em>yticks=None</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>projection=None</em>, <em>title=None</em>, <em>gridlines=False</em>, <em>fig=None</em>, <em>ax=None</em>, <em>draw_coastlines=True</em>, <em>contains_cbar=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#init_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.init_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initalise a map plot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
 <li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
-<li><strong>color_norm</strong> – data mapping norm for color display</li>
+<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – height of figure in inches</li>
+<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if True, the aspect of the GeoAxes instance is kept fix using the
+default aspect <code class="docutils literal notranslate"><span class="pre">MAP_AXES_ASPECT</span></code> defined in
+<a class="reference internal" href="#module-pyaerocom.plot.config" title="pyaerocom.plot.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyaerocom.plot.config</span></code></a></li>
+<li><strong>xticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of x-axis (longitudes)</li>
+<li><strong>yticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of y-axis (latitudes)</li>
+<li><strong>projection</strong> – projection instance from cartopy.crs module (e.g. PlateCaree). May also
+be string</li>
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – title that is supposed to be inserted</li>
+<li><strong>fig</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
+input args (<code class="docutils literal notranslate"><span class="pre">figh</span></code> and <code class="docutils literal notranslate"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
+Figure is wiped clean before plotting, so any plotted content will be
+lost</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – axes instance</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">cartopy.mpl.geoaxes.GeoAxes</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.plot.mapping.plot_griddeddata_on_map">
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_griddeddata_on_map</code><span class="sig-paren">(</span><em>data</em>, <em>lons</em>, <em>lats</em>, <em>var_name=None</em>, <em>xlim=(-180</em>, <em>180)</em>, <em>ylim=(-90</em>, <em>90)</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>add_zero=False</em>, <em>c_under=None</em>, <em>c_over=None</em>, <em>log_scale=True</em>, <em>discrete_norm=True</em>, <em>cbar_levels=None</em>, <em>cbar_ticks=None</em>, <em>color_theme=&lt;pyaerocom.plot.config.ColorTheme object&gt;</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_griddeddata_on_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_griddeddata_on_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a plot of gridded data onto a map</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is a lowlevel plotting method</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>ndarray</em>) – 2D data array</li>
+<li><strong>lons</strong> (<em>ndarray</em>) – longitudes of data</li>
+<li><strong>lats</strong> (<em>ndarray</em>) – latitudes of data</li>
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – name of variable that is plotted</li>
+<li><strong>xlim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted longitude range</li>
+<li><strong>ylim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – 2-element tuple specifying plotted latitude range</li>
 <li><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – lower value of colorbar range</li>
 <li><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – upper value of colorbar range</li>
 <li><strong>add_zero</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True and vmin is not 0, then, the colorbar is extended down to 0.
@@ -9029,24 +9210,11 @@ This may be used, e.g. for logarithmic scales that should include 0.</li>
 <li><strong>c_over</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – colour of data values exceeding <code class="docutils literal notranslate"><span class="pre">vmax</span></code></li>
 <li><strong>log_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, the value to color mapping is done in a pseudo log scale
 (see <code class="xref py py-func docutils literal notranslate"><span class="pre">get_cmap_levels_auto()</span></code> for implementation)</li>
-<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True,</li>
-<li><strong>figh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – height of figure in inches</li>
-<li><strong>fix_aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional) – if True, the aspect of the GeoAxes instance is kept fix using the
-default aspect <code class="docutils literal notranslate"><span class="pre">MAP_AXES_ASPECT</span></code> defined in
-<a class="reference internal" href="#module-pyaerocom.plot.config" title="pyaerocom.plot.config"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyaerocom.plot.config</span></code></a></li>
+<li><strong>discrete_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – if True, color mapping will be subdivided into discrete intervals</li>
 <li><strong>cbar_levels</strong> (<em>iterable</em><em>, </em><em>optional</em>) – discrete colorbar levels. Will be computed automatically, if None
 (and applicable)</li>
 <li><strong>cbar_ticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of colorbar levels. Will be computed automatically, if None
 (and applicable)</li>
-<li><strong>xticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of x-axis (longitudes)</li>
-<li><strong>yticks</strong> (<em>iterable</em><em>, </em><em>optional</em>) – ticks of y-axis (latitudes)</li>
-<li><strong>color_theme</strong> (<a class="reference internal" href="#pyaerocom.plot.config.ColorTheme" title="pyaerocom.plot.config.ColorTheme"><em>ColorTheme</em></a>) – pyaerocom color theme</li>
-<li><strong>projection</strong> – projection instance from cartopy.crs module (e.g. PlateCaree). May also
-be string</li>
-<li><strong>fig</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">Figure</span></code>, optional) – instance of matplotlib Figure class. If specified, the former to
-input args (<code class="docutils literal notranslate"><span class="pre">figh</span></code> and <code class="docutils literal notranslate"><span class="pre">fix_aspect</span></code>) are ignored. Note that the
-Figure is wiped clean before plotting, so any plotted content will be
-lost</li>
 </ul>
 </td>
 </tr>
@@ -9068,7 +9236,7 @@ title or lon / lat range, etc.)</p>
 <dd><p>High level map plotting function for Aerocom default plotting</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This function requires does not iterate over a cube in time, but uses the
+<p class="last">This function does not iterate over a cube in time, but uses the
 first available time index in the data.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -9080,6 +9248,37 @@ first available time index in the data.</p>
 stamp, the first index is used)</li>
 <li><strong>TODO</strong> – finish docstring</li>
 </ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.plot.mapping.plot_map">
+<code class="descclassname">pyaerocom.plot.mapping.</code><code class="descname">plot_map</code><span class="sig-paren">(</span><em>data</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/mapping.html#plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.mapping.plot_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map plot of grid data</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Deprecated name of method. Please use <a class="reference internal" href="#pyaerocom.plot.mapping.plot_griddeddata_on_map" title="pyaerocom.plot.mapping.plot_griddeddata_on_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_griddeddata_on_map()</span></code></a> in
+the future.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – data (2D numpy array or instance of GriddedData class. The latter is
+deprecated, but will continue to work)</li>
+<li><strong>**kwargs</strong> (<em>*args</em><em>,</em>) – <p>See <a class="reference internal" href="#pyaerocom.plot.mapping.plot_griddeddata_on_map" title="pyaerocom.plot.mapping.plot_griddeddata_on_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_griddeddata_on_map()</span></code></a></p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">See <a class="reference internal" href="#pyaerocom.plot.mapping.plot_griddeddata_on_map" title="pyaerocom.plot.mapping.plot_griddeddata_on_map"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_griddeddata_on_map()</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -9398,6 +9597,32 @@ tabular format or to be displayed in a jupyter notebook)</p>
 <span id="helpers"></span><h2>Helpers<a class="headerlink" href="#module-pyaerocom.helpers" title="Permalink to this headline">¶</a></h2>
 <p>General helper methods for the pyaerocom library.</p>
 <dl class="function">
+<dt id="pyaerocom.helpers.resample_timeseries">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">resample_timeseries</code><span class="sig-paren">(</span><em>s</em>, <em>freq</em>, <em>how='mean'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#resample_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.resample_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample a timeseries (pandas.Series)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>s</strong> (<em>Series</em>) – time series instance</li>
+<li><strong>freq</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – new temporal resolution (can be pandas freq. string, or pyaerocom
+ts_type)</li>
+<li><strong>how</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – choose from mean or median</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">resampled time series object</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="pyaerocom.helpers.unit_conversion_fac">
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">unit_conversion_fac</code><span class="sig-paren">(</span><em>from_unit</em>, <em>to_unit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#unit_conversion_fac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.unit_conversion_fac" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns multiplicative unit conversion factor for input units</p>
@@ -9479,6 +9704,26 @@ tabular format or to be displayed in a jupyter notebook)</p>
 <code class="descclassname">pyaerocom.helpers.</code><code class="descname">to_pandas_timestamp</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#to_pandas_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.to_pandas_timestamp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert input to instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Timestamp</span></code></p>
 </dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.is_year">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">is_year</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#is_year"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.is_year" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.start_stop">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">start_stop</code><span class="sig-paren">(</span><em>start</em>, <em>stop=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#start_stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.start_stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.datetime2str">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">datetime2str</code><span class="sig-paren">(</span><em>time</em>, <em>ts_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#datetime2str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.datetime2str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.helpers.start_stop_str">
+<code class="descclassname">pyaerocom.helpers.</code><code class="descname">start_stop_str</code><span class="sig-paren">(</span><em>start</em>, <em>stop=None</em>, <em>ts_type=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/helpers.html#start_stop_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.helpers.start_stop_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="pyaerocom.helpers.start_stop_from_year">

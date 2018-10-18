@@ -12,24 +12,33 @@ All default regions are defined in the file
 
     import pyaerocom as pya
     
-    print(pya.region.get_all_default_region_ids())
+    pya.region.all()
+
+
 
 
 .. parsed-literal::
 
-    ['WORLD', 'EUROPE', 'ASIA', 'AUSTRALIA', 'CHINA', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
+    ['WORLD',
+     'EUROPE',
+     'ASIA',
+     'AUSTRALIA',
+     'CHINA',
+     'INDIA',
+     'NAFRICA',
+     'SAFRICA',
+     'SAMERICA',
+     'NAMERICA']
 
 
-Now load some default regions and print them.
+
+These region IDs can be used to access more information about the
+regions (which is used throughout pyaerocom). For instance:
 
 .. code:: ipython3
 
     europe = pya.Region("EUROPE")
-    asia = pya.Region("ASIA")
-    
     print(europe)
-    print()
-    print(asia)
 
 
 .. parsed-literal::
@@ -40,7 +49,16 @@ Now load some default regions and print them.
     Latitude range: [30, 80]
     Longitude range (plots): [-20, 70]
     Latitude range (plots): [30, 80]
-    
+
+
+.. code:: ipython3
+
+    asia = pya.Region("ASIA")
+    print(asia)
+
+
+.. parsed-literal::
+
     pyaeorocom Region
     Name: ASIA
     Longitude range: [40, 150]
@@ -69,16 +87,18 @@ of the results over Europe.
 
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
       warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
+      warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
+      warnings.warn(msg)
 
 
 
-.. image:: tut01_intro_regions/tut01_intro_regions_5_1.png
+.. image:: tut01_intro_regions/tut01_intro_regions_6_1.png
 
+
+That’s it. Not much more to say about regions until now.
