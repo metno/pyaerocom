@@ -58,10 +58,47 @@ TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
                           'daily'   :   'D',
                           'monthly' :   'M', #Month start !
                           'yearly'  :   'Y'}
+# conversion of datetime-like objects for given temporal resolutions (can, e.g.
+# be used in plotting methods)
+TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
+                         'hourly'     : '%d.%m.%Y',
+                         '3hourly'    : '%d.%m.%Y',
+                         'daily'      : '%d.%m.%Y',
+                         'monthly'    : '%b %Y',
+                         'yearly'    : '%Y'}
 
 NUM_KEYS_META = ['stat_lon', 'stat_lat', 'stat_alt',
                  'longitude', 'latitude', 'altitude']
 
+def resample_timeseries(s, freq, how='mean'):
+    """Resample a timeseries (pandas.Series)
+    
+    Parameters
+    ----------
+    s : Series
+        time series instance
+    freq : str
+        new temporal resolution (can be pandas freq. string, or pyaerocom
+        ts_type)
+    how : str
+        choose from mean or median
+    
+    Returns
+    -------
+    Series
+        resampled time series object
+    """
+    if freq in TS_TYPE_TO_PANDAS_FREQ:
+        freq = TS_TYPE_TO_PANDAS_FREQ[freq]
+    resampler = s.resample(freq)
+    if how =='mean':
+        return resampler.mean() 
+    elif how == 'median':
+        return resampler.median() 
+    else:
+        raise ValueError('resampling can only be performed using mean or median'
+                         'aggregators')
+        
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
     
@@ -169,6 +206,41 @@ def to_pandas_timestamp(value):
             raise ValueError('Failed to convert {} to Timestamp: {}'
                              .format(value, repr(e)))    
   
+def is_year(val):
+    try:
+        if -2000 < int(val) < 10000:
+            return True
+        raise Exception
+    except:
+        return False
+    
+def start_stop(start, stop=None):
+    start = to_pandas_timestamp(start)
+    if stop is None:
+        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(start.year))
+    else:
+        stop = to_pandas_timestamp(stop)
+    return (start, stop)
+
+def datetime2str(time, ts_type=None):
+    conv = TS_TYPE_DATETIME_CONV[ts_type]
+    if is_year(time):
+        return str(time)
+    time = to_pandas_timestamp(time).strftime(conv)
+    return time
+
+def start_stop_str(start, stop=None, ts_type=None):
+    
+    conv = TS_TYPE_DATETIME_CONV[ts_type]
+    if is_year(start) and stop is None:
+        return str(start)
+    start, stop = start_stop(start, stop)
+    start_str = start.strftime(conv)
+    stop_str = stop.strftime(conv)
+    if stop_str != start_str:
+        return '{}-{}'.format(start_str, stop_str)
+    return start_str
+
 def start_stop_from_year(year):
     """Create start / stop timestamp from year
     
@@ -641,6 +713,8 @@ if __name__=="__main__":
 
     cube_crop = cubes.extract(c)[0]
 
+
+    print(start_stop_str(2010, '15-2-2018', ts_type='monthly'))
                            
 
 
