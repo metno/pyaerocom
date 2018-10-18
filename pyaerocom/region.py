@@ -151,6 +151,10 @@ class Region(BrowseDict):
                self.lon_range_plot, self.lat_range_plot))
         return s
 
+def all():
+    """Wrapper for :func:`get_all_default_region_ids`"""
+    return get_all_default_region_ids()
+
 def get_all_default_region_ids():
     """Get list containing IDs of all default regions
     
