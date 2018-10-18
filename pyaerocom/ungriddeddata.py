@@ -14,7 +14,8 @@ from pyaerocom import StationData
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (to_pandas_timestamp, same_meta_dict, 
-                               TS_TYPE_TO_PANDAS_FREQ)
+                               TS_TYPE_TO_PANDAS_FREQ, start_stop_str,
+                               start_stop)
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -67,7 +68,7 @@ class UngriddedData(object):
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
     """
-    __version__ = '0.13'
+    __version__ = '0.15'
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -335,13 +336,12 @@ class UngriddedData(object):
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
                         stop=None, freq=None, interp_nans=False, 
                         min_coverage_interp=0.68, 
-                        data_as_series=True, _test_mode=False):
+                        data_as_series=True):
         """Convert data from one station to :class:`StationData`
         
         Todo
         ----
         - Review for retrieval of profile data (e.g. Lidar data)
-        - Handle stop time if only year is provided 
         
         Parameters
         ----------
@@ -382,17 +382,11 @@ class UngriddedData(object):
                 
         if isinstance(vars_to_convert, str):
             vars_to_convert = [vars_to_convert]
-        if start is None:
+        if start is None and stop is None:
             start = pd.Timestamp('1970')
-        else:
-            start = to_pandas_timestamp(start)
-        if stop is None:
             stop = pd.Timestamp('2200')
         else:
-            stop = to_pandas_timestamp(stop)
-        
-        if freq in TS_TYPE_TO_PANDAS_FREQ:
-            freq = TS_TYPE_TO_PANDAS_FREQ[freq]
+            start, stop = start_stop(start, stop)
         
         stat_data = StationData()
         val = self.metadata[meta_idx]
@@ -422,23 +416,22 @@ class UngriddedData(object):
         indices_first = self.meta_idx[meta_idx][first_var]
         dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
         stat_data['dtime'] = dtime
-        if not any([start <= t <= stop for t in dtime]):
+        overlap = np.logical_and(dtime >= start, dtime <= stop)
+        if overlap.sum() == 0:
             raise TimeMatchError('No data available for station {} ({}) in '
                                  'time interval {} - {}'
                                  .format(stat_data['station_name'],
                                          stat_data['dataset_name'],
                                          start, stop))
+        dtime = dtime[overlap]
         for var in vars_to_convert:
-            indices = self.meta_idx[meta_idx][var]
+            indices = self.meta_idx[meta_idx][var][overlap]
             data = self._data[indices, self._DATAINDEX]
             if data_as_series:
                 data = pd.Series(data, dtime)
                 if not data.index.is_monotonic:
                     data = data.sort_index()
                 data = data[start:stop]
-                if _test_mode:
-                    data[0] = np.nan
-                    data[4:6] = np.nan
                 if interp_nans:
                     coverage = 1 - data.isnull().sum() / len(data)
                     if coverage < min_coverage_interp:
@@ -452,13 +445,14 @@ class UngriddedData(object):
                                                         start, stop))
                     data = data.interpolate().dropna()
                 if freq is not None:
-                    data = data.resample(freq).mean()     
+                    from pyaerocom.helpers import resample_timeseries
+                    data = resample_timeseries(data, freq)    
             stat_data[var] = data
         return stat_data
     
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
                             freq=None, interp_nans=False, 
-                            min_coverage_interp=0.68):
+                            min_coverage_interp=0.68, keep_na=True):
         """Convert all possible stations to :class:`StationData` objects
 
         Parameters
@@ -480,6 +474,7 @@ class UngriddedData(object):
         min_coverage_interp : float
             required coverage fraction for interpolation (default is 0.68, i.e.
             roughly corresponding to 1 sigma)
+        drop_na 
 
         Returns
         -------
@@ -506,7 +501,8 @@ class UngriddedData(object):
                                'Error: {}'.format(repr(e)))
                 # append None to make sure indices of stations are 
                 # preserved in output array
-                out_data.append(None)
+                if keep_na:
+                    out_data.append(None)
         return out_data
     
     # TODO: check more general cases (i.e. no need to convert to StationData
@@ -638,7 +634,7 @@ class UngriddedData(object):
         Raises
         ------
         NotImplementedError
-            when variables are supposed to be filtered (not yet possible)
+            if attempt variables are supposed to be filtered (not yet possible)
         IOError
             if any of the input keys are not valid meta key
             
@@ -1208,6 +1204,104 @@ class UngriddedData(object):
         
         return (dates, data_this_match, data_other_match)
     
+    def _meta_to_lists(self):
+        meta = {k:[] for k in self.metadata[0].keys()}
+        for meta_item in self.metadata.values():
+            for k, v in meta.items():
+                v.append(meta_item[k])
+        return meta
+    
+    def get_time_series(self, station, var_name, start=None, stop=None, 
+                        ts_type=None, **kwargs):
+    
+        return self.to_station_data(station, var_name, 
+                                    start, stop, freq=ts_type).to_timeseries(var_name)
+
+    def plot_station_timeseries(self, station, var_name, start=None, 
+                                stop=None, ts_type=None, **kwargs):
+        """Plot time series of station and variable"""
+        return self.get_time_series(station, var_name, start, 
+                                    stop, ts_type).plot(**kwargs)
+        
+    def plot_station_coordinates(self, var_name=None, 
+                                 filter_name=None, start=None, 
+                                 stop=None, ts_type=None, color='r', 
+                                 marker='o', markersize=8, fontsize_base=10, 
+                                 **kwargs):
+        
+        from pyaerocom import Filter, print_log
+        from pyaerocom.plot.plotcoordinates import plot_coordinates
+        from pyaerocom.plot.mapping import set_map_ticks
+    
+        if len(self.contains_datasets) > 1:
+            print_log.warning('UngriddedData object contains more than one '
+                              'dataset ({}). Station coordinates will not be '
+                              'distinguishable. You may want to apply a filter '
+                              'first and plot them separately')
+        
+        f = Filter(filter_name) 
+        if var_name is None:
+            info_str = 'AllVars'
+        else:
+            if not isinstance(var_name, str):
+                raise ValueError('Can only handle single variable (or all'
+                                 '-> input var_name=None)')
+            elif not var_name in self.contains_vars:
+                raise ValueError('Input variable is not available in dataset '
+                                 .format(var_name))
+            info_str = var_name
+    
+        info_str += '_{}'.format(f.name)
+        try:
+            info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
+        except:
+            info_str += '_AllTimes'
+        if ts_type is not None:
+            info_str += '_{}'.format(ts_type)
+        
+        if all([x is None for x in (var_name, filter_name, start, stop)]): #use all stations
+            all_meta = self._meta_to_lists()
+            lons, lats = all_meta['stat_lon'], all_meta['stat_lat']
+            
+        else:
+            stat_data = self.to_station_data_all(var_name, start, stop, 
+                                                 ts_type, keep_na=False)
+            
+            if len(stat_data) == 0:
+                raise DataCoverageError('No stations could be found for input '
+                                        'specs (var, start, stop, freq)')
+            lons, lats = [], []
+            for stat in stat_data:
+                lons.append(stat['longitude'])
+                lats.append(stat['latitude'])
+                
+        if not 'label' in kwargs:
+            kwargs['label'] = info_str
+        ax = plot_coordinates(lons, lats,
+                              color=color, marker=marker, 
+                              markersize=markersize, 
+                              fontsize_base=fontsize_base, **kwargs)
+        region = f._region
+        ax.set_xlim(region.lon_range_plot)
+        ax.set_ylim(region.lat_range_plot)
+        
+        ax = set_map_ticks(ax, 
+                           region.lon_ticks, 
+                           region.lat_ticks)
+        
+        if 'title' in kwargs:
+            title = kwargs['title']
+        else:
+            title = info_str
+        ax.set_title(title, fontsize=fontsize_base+4)
+        return ax
+            
+        
+        
+        
+        
+        
+        
     def __contains__(self, key):
         """Check if input key (str) is valid dataset, variable, instrument or
         station name
