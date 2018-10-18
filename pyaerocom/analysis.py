@@ -12,14 +12,12 @@ colocation.
 import os
 import numpy as np
 import traceback
-from functools import reduce
 import matplotlib.pyplot as plt
 from datetime import datetime
 
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import Filter, const
-from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
-                               start_stop_from_year)
+from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD)
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded_2D)
 from pyaerocom import ColocatedData, print_log
@@ -42,6 +40,7 @@ class _AnalysisTasks(BrowseDict):
                           'plot_maps'           :   'maps',
                           'plot_scatter'        :   'scatter',
                           'plot_stat_tseries'   :   'stat_tseries'}
+    
     def __init__(self, colocate=True, plot_maps=False,
                  plot_scatter=False, plot_stat_tseries=False):
         self.colocate = colocate
