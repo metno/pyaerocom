@@ -25,6 +25,8 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 - xarray >= 0.10.8
 - pandas >= 0.22.0
 - cartopy >= 0.16.0
+- netcdf4 >= 1.4.0
+- cf_units >= 2.0.1
 - numpy >= 1.14
 - matplotlib >= 2.1.2
 - **Optional**:
@@ -32,17 +34,19 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 	- geonum (for SRTM access and basic atmospheric calculations, e.g. conversion of pressure to altitude)
 	- geopy (for reading Aeolus data)
 
+By installing iris, some of the further listed dependencies will be installed automatically (e.g. pandas and matplotlib).
+
 Installation
 ============
 
 Download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ and install from source folder either using::
 
 	python setup.py install
-	
+
 or in development mode using::
 
 	python setup.py develop
-	
+
 Getting started
 ===============
 
