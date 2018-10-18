@@ -1213,13 +1213,61 @@ class UngriddedData(object):
     
     def get_time_series(self, station, var_name, start=None, stop=None, 
                         ts_type=None, **kwargs):
-    
+        """Get time series of station variable
+        
+        Parameters
+        ----------
+        station : :obj:`str` or :obj:`int`
+            station name or index of station in metadata dict
+        var_name : str
+            name of variable to be retrieved
+        start 
+            start time (optional)
+        stop 
+            stop time (optional). If start time is provided and stop time not, 
+            then only the corresponding year inferred from start time will be 
+            considered
+        ts_type : :obj:`str`, optional
+            temporal resolution
+        **kwargs
+            Addifional keyword args passed to method :func:`to_station_data`
+            
+        Returns
+        -------
+        pandas.Series
+            time series data
+        """
         return self.to_station_data(station, var_name, 
-                                    start, stop, freq=ts_type).to_timeseries(var_name)
+                                    start, stop, freq=ts_type,
+                                    **kwargs).to_timeseries(var_name)
 
     def plot_station_timeseries(self, station, var_name, start=None, 
                                 stop=None, ts_type=None, **kwargs):
-        """Plot time series of station and variable"""
+        """Plot time series of station and variable
+        
+        Parameters
+        ----------
+        station : :obj:`str` or :obj:`int`
+            station name or index of station in metadata dict
+        var_name : str
+            name of variable to be retrieved
+        start 
+            start time (optional)
+        stop 
+            stop time (optional). If start time is provided and stop time not, 
+            then only the corresponding year inferred from start time will be 
+            considered
+        ts_type : :obj:`str`, optional
+            temporal resolution
+        **kwargs
+            Addifional keyword args passed to method :func:`pandas.Series.plot`
+            
+        Returns
+        -------
+        axes
+            matplotlib axes instance
+            
+        """
         return self.get_time_series(station, var_name, start, 
                                     stop, ts_type).plot(**kwargs)
         
@@ -1228,6 +1276,45 @@ class UngriddedData(object):
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
                                  **kwargs):
+        """Plot station coordinates on a map
+        
+        All input parameters are optional and may be used to add constraints 
+        related to which stations are plotted. Default is all stations of all 
+        times.
+        
+        Parameters
+        ----------
+        
+        var_name : :obj:`str`, optional
+            name of variable to be retrieved
+        filter_name : :obj:`str`, optional
+            name of filter (e.g. EUROPE-noMOUNTAINS)
+        start 
+            start time (optional)
+        stop 
+            stop time (optional). If start time is provided and stop time not, 
+            then only the corresponding year inferred from start time will be 
+            considered
+        ts_type : :obj:`str`, optional
+            temporal resolution
+        color : str
+            color of stations on map
+        marker : str
+            marker type of stations
+        markersize : int
+            size of station markers
+        fontsize_base : int
+            basic fontsize 
+        **kwargs
+            Addifional keyword args passed to 
+            :func:`pyaerocom.plot.plot_coordinates`
+            
+        Returns
+        -------
+        axes
+            matplotlib axes instance
+            
+        """
         
         from pyaerocom import Filter, print_log
         from pyaerocom.plot.plotcoordinates import plot_coordinates
@@ -1295,11 +1382,6 @@ class UngriddedData(object):
             title = info_str
         ax.set_title(title, fontsize=fontsize_base+4)
         return ax
-            
-        
-        
-        
-        
         
         
     def __contains__(self, key):
