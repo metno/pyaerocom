@@ -36,10 +36,15 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 
 By installing iris, some of the further listed dependencies will be installed automatically (e.g. numpy, pandas, cf_units, netcdf4 and matplotlib).
 
+Installing requirements using provided *environment.yml* file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you use Anaconda as a package manager, you can install all requirements using the *environment.yml* file in the source code. 
+
 Installation
 ============
 
-Make sure to have all requirements installed (see previous point), then download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ and install from source tree folder (that contains a file *setup.py*) either using::
+Make sure to have all requirements installed (see previous point). Download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ and install from source tree folder (that contains a file *setup.py*) either using::
 
 	python setup.py install
 
@@ -51,23 +56,6 @@ You may also download and extract (or clone) the `GitHub repo <https://github.co
 
 More detailed installation instructions `can be found here <https://github.com/metno/pyaerocom/blob/master/notebooks/info00_install_detailed.ipynb>`__.
 
-In short (using conda)::
-
-   conda install -c conda-forge iris
-   conda install xarray
-   conda install matplotlib=2.2.2 
-   
-The last command downgrades matplotlib to version 2.2.2. due to `this known issue <https://github.com/SciTools/cartopy/issues/1120>`__ of matplotlib 3.0.0 (version when this was written) with cartopy. 
-
-And for the optional libraries::
-   
-   conda install seaborn
-   pip install geonum
-
-And then::
-
-   python setup.py install
-   
 Finally, we recommend installing jupyter (if not already installed in your conda environment)::
 
    conda install jupyter
