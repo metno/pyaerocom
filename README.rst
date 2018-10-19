@@ -28,7 +28,7 @@ We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 - netcdf4 >= 1.4.0 (comes with iris)
 - cf_units >= 2.0.1 (comes with iris)
 - numpy >= 1.14 (comes with iris)
-- matplotlib >= 2.1.2 (comes with iris)
+- matplotlib >= 2.1.2 and < 3.0.0 (**Note** `this issue <https://github.com/SciTools/cartopy/issues/1120>`__ with latest 3.0.0 update of matplotlib.)
 - **Optional**:
 	- seaborn >= 0.8.1
 	- geonum (for SRTM access and basic atmospheric calculations, e.g. conversion of pressure to altitude)
@@ -55,7 +55,10 @@ In short (using conda)::
 
    conda install -c conda-forge iris
    conda install xarray
+   conda install matplotlib=2.2.2 
    
+The last command downgrades matplotlib to version 2.2.2. due to `this known issue <https://github.com/SciTools/cartopy/issues/1120>`__ of matplotlib 3.0.0 (version when this was written) with cartopy. 
+
 And for the optional libraries::
    
    conda install seaborn
