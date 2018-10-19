@@ -37,7 +37,7 @@ By installing iris, some of the further listed dependencies will be installed au
 Installing requirements using provided *environment.yml* file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you use Anaconda as a package manager, you can install all requirements using the `environment.yml <https://github.com/metno/pyaerocom/blob/master/environment.yml>`__ file in the source code. 
+If you use Anaconda as a package manager, you can install all requirements using the provided `environment.yml <https://github.com/metno/pyaerocom/blob/master/environment.yml>`__ file.
 
 Installation
 ============
