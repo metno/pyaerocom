@@ -17,9 +17,7 @@ Documentation can be found here: http://aerocom.met.no/pyaerocom
 Requirements
 ============
 
-We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package manager.
-
-.. note:: This list may be incomplete
+We recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package manager. The following packages are required for the installation of pyaerocom.
 
 - iris >= 2.0.0
 - xarray >= 0.10.8
