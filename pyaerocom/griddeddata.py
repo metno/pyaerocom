@@ -1078,6 +1078,8 @@ class GriddedData(object):
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
             
+        self._check_lonlat_bounds()
+        other._check_lonlat_bounds()
         data_rg = self.grid.regrid(other.grid, scheme)
         suppl = od(**self.suppl_info)
         suppl['regridded'] = True
