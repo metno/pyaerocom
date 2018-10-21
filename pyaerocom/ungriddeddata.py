@@ -415,7 +415,7 @@ class UngriddedData(object):
         first_var = vars_to_convert[0]
         indices_first = self.meta_idx[meta_idx][first_var]
         dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
-        stat_data['dtime'] = dtime
+        
         overlap = np.logical_and(dtime >= start, dtime <= stop)
         if overlap.sum() == 0:
             raise TimeMatchError('No data available for station {} ({}) in '
@@ -424,6 +424,7 @@ class UngriddedData(object):
                                          stat_data['dataset_name'],
                                          start, stop))
         dtime = dtime[overlap]
+        stat_data['dtime'] = dtime
         for var in vars_to_convert:
             indices = self.meta_idx[meta_idx][var][overlap]
             data = self._data[indices, self._DATAINDEX]
