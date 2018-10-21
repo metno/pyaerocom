@@ -202,10 +202,12 @@ class StationData(Station):
                 elif isinstance(v, np.ndarray) and v.ndim==1:
                     s_data += "\n{} (array, {} items)".format(k, len(v))
                     s_data += list_to_shortstr(v)
+                elif isinstance(v, pd.Series):
+                    s_data += "\n{} (Series, {} items)".format(k, len(v))
                 else:
                     s_data += "\n%s: %s" %(k,v)
         if s_data:
-            s += '\nData coordinates\n.................'
+            s += '\n\nData coordinates\n.................'
             s += s_data
         return s
     
