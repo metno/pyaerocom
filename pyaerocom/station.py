@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
+import pandas as pd
 from pyaerocom.exceptions import CoordinateError, MetaDataError
 from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
@@ -166,6 +167,7 @@ class Station(BrowseDict):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
         arrays = ''
+        series = ''
         for k, v in self.items():
             if k[0] == '_':
                 continue
@@ -181,9 +183,16 @@ class Station(BrowseDict):
             elif isinstance(v, np.ndarray):
                 arrays += "\n{} (array, shape {})".format(k, v.shape)
                 arrays += "\n{}".format(v)
+            elif isinstance(v, pd.Series):
+                series += "\n{} (Series, {} items)".format(k, len(v))
             else:
                 s += "\n%s: %s" %(k,v)
-        s += arrays
+        if arrays:
+            s += '\n\nData arrays\n.................'
+            s += arrays
+        if series:
+            s += '\nPandas Series\n.................'
+            s += series
         return s
       
 if __name__=="__main__":
