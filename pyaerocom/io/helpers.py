@@ -39,22 +39,28 @@ def add_file_to_log(filepath, err_msg):
             model_or_obs_id = spl[-1]
     except:
         model_or_obs_id = 'others'
-    logdir = const.LOGFILESDIR
-    found = False
-    logfile = os.path.join(logdir, model_or_obs_id + '.log')
-    if os.path.exists(logfile):
-        with open(logfile, 'r') as f:
-            for line in f:
-                if filepath == line.strip():
-                    found = True
-                    break
-        
-    if not found:
-        with open(logfile, 'a+') as f:
-            f.write(filepath + '\n')
-        with open(os.path.join(logdir, model_or_obs_id + '_ERR.log'), 'a+') as ferr:
-            ferr.write('{}\n{}\n\n'.format(filepath,
-                                           err_msg))
+    try:
+        logdir = const.LOGFILESDIR
+        found = False
+        logfile = os.path.join(logdir, model_or_obs_id + '.log')
+        if os.path.exists(logfile):
+            with open(logfile, 'r') as f:
+                for line in f:
+                    if filepath == line.strip():
+                        found = True
+                        break
+            
+        if not found:
+            with open(logfile, 'a+') as f:
+                f.write(filepath + '\n')
+            with open(os.path.join(logdir, model_or_obs_id + '_ERR.log'), 'a+') as ferr:
+                ferr.write('{}\n{}\n\n'.format(filepath,
+                                               err_msg))
+    except Exception as e:
+        from pyaerocom import print_log
+        const.WRITE_FILEIO_ERR_LOG = False
+        print_log.info('Failed to write to file-read error logging ({}). '
+                       'Deactiving lgging'.format(repr(e)))
         
 def get_standard_name(var_name):
     """Get standard name of aerocom variable

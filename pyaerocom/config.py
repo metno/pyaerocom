@@ -199,8 +199,14 @@ class Config(object):
     @property
     def CACHEDIR(self):
         """Cache directory"""
-        return chk_make_subdir(self._cachedir, getpass.getuser())
-    
+        try:
+            return chk_make_subdir(self._cachedir, getpass.getuser())
+        except Exception as e:
+            from pyaerocom import print_log
+            print_log.info('Failed to access CACHEDIR: {}'
+                           'Deactivating caching'.format(repr(e)))
+            self._caching_active = False
+            
     @CACHEDIR.setter
     def CACHEDIR(self, val):
         """Cache directory"""
@@ -220,8 +226,15 @@ class Config(object):
     @property
     def LOGFILESDIR(self):
         """Directory where logfiles are stored"""
-        logdir=chk_make_subdir(self.OUTPUTDIR, '_log')
-        return logdir
+        try:
+            logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
+            return logdir
+        except Exception as e:
+            from pyaerocom import print_log
+            print_log.info('Failed to access LOGFILESDIR: {}'
+                           'Deactivating file logging'.format(repr(e)))
+            self.WRITE_FILEIO_ERR_LOG = False
+            
        
     @property
     def MODELBASEDIR(self):
@@ -328,21 +341,22 @@ class Config(object):
     
     def check_output_dirs(self):
         """Checks if output directories are available and have write-access"""
-        
+        ok = True
+        from pyaerocom import print_log
         if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
             self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
         if not self._write_access(self._outputdir):
-            print('Cannot establish write access to output directory {}'
-                  .format(self._outputdir))
-            return False
+            print_log.info('Cannot establish write access to output directory {}'
+                           .format(self._outputdir))
+            ok = False
         if not self.dir_exists(self._cachedir) or not self._write_access(self._cachedir):
             self._cachedir = chk_make_subdir(self._outputdir, '_cache')
         if not self._write_access(self._cachedir):
-            print('Cannot establish write access to cache directory {}.'
+            print_log.info('Cannot establish write access to cache directory {}.'
                   'Deactivating caching of files'.format(self._cachedir))
             self._caching_active = False
-            return False
-        return True
+            ok = False
+        return ok
     
     def check_data_dirs(self):
         """Checks all predefined data directories for availability
@@ -359,11 +373,7 @@ class Config(object):
             ok=False
         if not self.dir_exists(self._obsbasedir):
             logger.warning("Observations base directory %s does not exist")
-            ok=False
-        if not self.dir_exists(self._cachedir):
-            logger.warning("Observations cache directory %s does not exist. "
-                           "Turning off caching")
-            self.CACHING = False     
+            ok=False   
         if not self.dir_exists(self._colocateddatadir) or not self._read_access(self._colocateddatadir):
             self._colocateddatadir = os.path.join(self._outputdir,
                                                   'colocated_data')
