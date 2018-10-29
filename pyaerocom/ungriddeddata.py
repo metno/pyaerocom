@@ -13,8 +13,8 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
 from pyaerocom import StationData
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
-from pyaerocom.helpers import (to_pandas_timestamp, same_meta_dict, 
-                               TS_TYPE_TO_PANDAS_FREQ, start_stop_str,
+from pyaerocom.helpers import (same_meta_dict, 
+                               start_stop_str,
                                start_stop)
 
 class UngriddedData(object):
@@ -824,6 +824,7 @@ class UngriddedData(object):
         UngriddedData
             merged data object
         """
+        sh = self.shape
         lst_meta_idx, lst_meta = self._find_common_meta()
         new = UngriddedData(num_points=self.shape[0])
         didx = 0
@@ -853,6 +854,9 @@ class UngriddedData(object):
         new.var_idx.update(self.var_idx)
         new.unit = self.unit
         new.filter_hist.update(self.filter_hist)
+        if not new.shape == sh:
+            raise Exception('FATAL: Mismatch in shape between initial and '
+                            'and final object. Developers: please check')
         return new
         
     def merge(self, other, new_obj=True):
