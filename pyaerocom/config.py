@@ -494,29 +494,45 @@ class Config(object):
         self.check_directories()
     
     def check_directories(self):
+        """Check access to data and output directories
+        
+        Calls :func:`check_data_dirs` and :func:`check_output_dirs`
+        
+        Returns
+        -------
+        Bool
+            True if all is good, else if something is wrong (in the latter 
+            case, see output for more info)
+        """
         d_ok = self.check_data_dirs()
         o_ok = self.check_output_dirs()
-        if not bool(d_ok*o_ok):
+        ok = bool(d_ok * o_ok)
+        if not ok:
             self.print_log.warning("WARNING: Failed to initiate directories")
-            
+        return ok
+     
     def _init_obsconfig(self, cr):
         
         # read obs network names from ini file
         # Aeronet V2
-        for obsname in cr['obsnames']:
-            self['{}_NAME'.format(obsname.upper())] =  obsname.upper()
+        for obsname, ID in cr['obsnames'].items():
+            self['{}_NAME'.format(obsname.upper())] =  ID.upper()
         
         OBSCONFIG = self.OBSCONFIG
-        for name, path in cr['obsfolders'].items():
-            NAME = name.upper()
-            OBSCONFIG[NAME] = {}
-            OBSCONFIG[NAME]['PATH'] = path.replace('${BASEDIR}', 
-                                                       self._obsbasedir)
+        for obsname, path in cr['obsfolders'].items():
+            NAME = '{}_NAME'.format(obsname.upper())
+            if NAME in self.__dict__:
+                ID = self.__dict__[NAME]    
+            OBSCONFIG[ID] = {}
+            OBSCONFIG[ID]['PATH'] = path.replace('${BASEDIR}', 
+                                                 self._obsbasedir)
             
-        for name, year in cr['obsstartyears'].items():
-            NAME = name.upper()
+        for obsname, year in cr['obsstartyears'].items():
+            NAME = '{}_NAME'.format(obsname.upper())
+            if NAME in self.__dict__:
+                ID = self.__dict__[NAME]
             if NAME in OBSCONFIG.keys():
-                OBSCONFIG[NAME]['START_YEAR'] = year
+                OBSCONFIG[ID]['START_YEAR'] = year
         
         self.OBSCONFIG = OBSCONFIG
         
