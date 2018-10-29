@@ -153,9 +153,13 @@ def check_and_regrid_lons_cube(cube):
         True, if longitudes were on 0 -> 360 and have been rolled, else
         False
     """
-    if cube.coord("longitude").points.max() > 180:
-        logger.info("Rolling longitudes to -180 -> 180 definition")
-        cube = cube.intersection(longitude=(-180, 180))
+    from pyaerocom import print_log
+    try:
+        if cube.coord("longitude").points.max() > 180:
+            logger.info("Rolling longitudes to -180 -> 180 definition")
+            cube = cube.intersection(longitude=(-180, 180))
+    except Exception as e:
+        print_log.warn('Failed to roll longitudes: {}'.format(repr(e)))
     return cube
 
 def check_dim_coords_cube(cube):
