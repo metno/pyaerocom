@@ -40,17 +40,6 @@ def _init_supplemental():
     from os.path import abspath, dirname
     return (get_distribution('pyaerocom').version, abspath(dirname(__file__)))
 
-
-def _init_config(package_dir):
-    from socket import gethostname
-    from os.path import join
-    if gethostname() == 'aerocom-users-ng':
-        print("Initiating global PATHS for Aerocom users server")
-        cfg = join(package_dir, 'data', 'paths_user_server.ini')
-    else:
-        cfg = join(package_dir, 'data', 'paths.ini')
-    return Config(config_file=cfg)
-
 def check_requirements(logger):
     GEONUM_AVAILABLE = True
     BASEMAP_AVAILABLE = True
@@ -88,9 +77,7 @@ from .variable import Variable
 from .region import Region
 from .config import Config
 
-const = _init_config(__dir__)
-if not const.READY:
-    logger.warning("WARNING: Failed to initiate data directories")
+const = Config()
     
 from . import mathutils
 from . import multiproc
