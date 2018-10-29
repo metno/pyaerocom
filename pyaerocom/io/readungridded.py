@@ -65,7 +65,7 @@ class ReadUngridded(object):
     # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
-    def __init__(self, datasets_to_read=const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
+    def __init__(self, datasets_to_read=const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
                  vars_to_retrieve=None, ignore_cache=False):
         
         #will be assigned in setter method of dataset_to_read
@@ -233,7 +233,6 @@ class ReadUngridded(object):
         
         # read the data sets
         cache_hit_flag = False
-        
         if not self.ignore_cache:
             # initate cache handler
             cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
@@ -244,12 +243,13 @@ class ReadUngridded(object):
                         all_avail = False
                         break
                 if all_avail:
-                    self.logger.info('Found Cache match for {}'.format(dataset_to_read))
+                    print_log.info('Found Cache match for {}'
+                                   .format(dataset_to_read))
                     cache_hit_flag = True
                     data = cache.loaded_data
             
         if not cache_hit_flag:
-            self.logger.info('No Cache match found for {}. Reading from files (this '
+            print_log.info('No Cache match found for {}. Reading from files (this '
                         'may take a while)'.format(dataset_to_read))
             _loglevel = print_log.level
             print_log.setLevel(logging.INFO)
