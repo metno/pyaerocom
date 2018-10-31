@@ -37,8 +37,11 @@ class CacheHandlerUngridded(object):
     """
     __version__ = '0.03'
     #: Directory of cache files
-    CACHE_DIR = const.OBSDATACACHEDIR
-    
+    CACHE_DIR = None
+    try:
+        CACHE_DIR = const.CACHEDIR
+    except:
+        logger.exception('Pyaerocom cache directory is not defined')
     #: Length of header of cached pickle files (i.e. no of calls of
     #: pickle.load before actual data object is returned)
     LEN_CACHE_HEAD = 6
@@ -123,6 +126,8 @@ class CacheHandlerUngridded(object):
     @property
     def file_path(self):
         """Full file path of cache file for query"""
+        if self.CACHE_DIR is None:
+            raise IOError('pyaerocom cache directory is not defined')
         return os.path.join(self.CACHE_DIR, self.file_name)
     
     def _check_pkl_head_vs_database(self, in_handle):
