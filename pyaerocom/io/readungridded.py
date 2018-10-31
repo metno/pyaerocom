@@ -63,7 +63,9 @@ class ReadUngridded(object):
                  ReadEbas]
     
     # when this file exists, an existing cache file is not read
-    _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
+    _DONOTCACHEFILE = None
+    if isinstance(const._cachedir, str) and os.path.exists(const._cachedir):
+        _DONOTCACHEFILE = os.path.join(const.OBSDATACACHEDIR, 'DONOTCACHE')
 
     def __init__(self, datasets_to_read=const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
                  vars_to_retrieve=None, ignore_cache=False):
