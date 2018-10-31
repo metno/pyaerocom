@@ -38,7 +38,6 @@ Provides access to pyaerocom specific configuration values
 import numpy as np
 import os
 import getpass
-from socket import gethostname
 from warnings import warn
 from collections import OrderedDict as od
 import pyaerocom.obs_io as obs_io
@@ -115,7 +114,12 @@ class Config(object):
     #: Name of the file containing the revision string of an obs data network
     REVISION_FILE = 'Revision.txt'
     
+    _DATA_HOSTS = {'metno'                  : '/lustre',
+                   'aerocom-users-database' : '/metno'}
+    
     BASEDIR_PPI = os.path.join('/lustre', 'storeA', 'project', 'aerocom') 
+    BASEDIR_USER_SERVER = os.path.join('/metno', 'aerocom-users-database')
+    
     
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
@@ -132,13 +136,18 @@ class Config(object):
                  cache_dir=None, colocateddata_dir=None,
                  write_fileio_err_log=True, 
                  activate_caching=True):
-        from pyaerocom import print_log
-        self.print_log = print_log
-        if isinstance(config_file, str) and os.path.exists(config_file):
-            self._config_file = config_file
-        else:
-            self._config_file = self._infer_config_file()
         
+        from pyaerocom import print_log, logger
+        #: Settings for reading and writing of gridded data
+        self.GRID_IO = GridIO()
+        
+        self.print_log = print_log
+        self.logger = logger
+        if not isinstance(config_file, str) or not os.path.exists(config_file):
+            from time import time
+            t0 = time()
+            config_file = self._infer_config_file()
+            print(time() - t0, 's')
         # Directories
         self._modelbasedir = model_base_dir
         self._obsbasedir = obs_base_dir
@@ -149,42 +158,40 @@ class Config(object):
         
         self._var_param = None
         
-        #: Settings for reading and writing of gridded data
-        self.GRID_IO = GridIO()
-        
         # Attributes that are used to store import results
         self.OBSCONFIG = od()
         self.MODELDIRS = []
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
-                 
-        try:
-            # only overwrites above defined directories if they do not exist
-            # (which is the default case, since they are None on default input)
-            self.read_config(config_file)
-        except Exception as e:
-            print("Failed to read config file. Error: %s" %repr(e))
+        self.DONOTCACHEFILE = None
+         
+        if config_file is not None:
+            try:
+                # only overwrites above defined directories if they do not exist
+                # (which is the default case, since they are None on default input)
+                self.read_config(config_file)
+            except Exception as e:
+                from traceback import format_exc
+                print(format_exc())
+                print("Failed to init config. Error: %s" %repr(e))
         
-        #self.check_output_dirs()
-        #self.check_data_dirs()
         
-        # if this file exists no cache file is read
-        # used to ease debugging
-        self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 'DONOTCACHE')
-        if os.path.exists(self.DONOTCACHEFILE):
-            self._caching_active=False
-    
     def _infer_config_file(self):
         """Infer the database configuration to be loaded"""
-        if gethostname() == 'aerocom-users-ng':
-            self.print_log.info("Init data paths for Aerocom users server")
-            return self._config_files['aerocom-users-database']
-        elif os.path.exists(self.BASEDIR_PPI):
+        if (os.path.exists(self._DATA_HOSTS['metno']) and 
+            'storeA' in os.listdir(self._DATA_HOSTS['metno'])):
             self.print_log.info("Init data paths for lustre")
             return self._config_files['metno']
-        else:
+        elif (os.path.exists(self._DATA_HOSTS['aerocom-users-database']) and
+              'aerocom-users-database' in os.listdir(self._DATA_HOSTS['aerocom-users-database'])):
+            self.print_log.info("Init data paths for Aerocom users server")
+            return self._config_files['aerocom-users-database']
+        elif os.path.exists(os.path.join(self.HOMEDIR, 'pyaerocom-testdata')):
             self.print_log.info("Init data paths for pyaerocom testdata")
             return self._config_files['pyaerocom-testdata']
+        
+        self.GRID_IO.load_default()
+        return None
             
     @property
     def ALL_DATABASE_IDS(self):
@@ -229,6 +236,8 @@ class Config(object):
     @property
     def CACHEDIR(self):
         """Cache directory"""
+        if self._cachedir is None:
+            raise IOError('Cache directory is not defined')
         try:
             return chk_make_subdir(self._cachedir, getpass.getuser())
         except Exception as e:
@@ -368,59 +377,56 @@ class Config(object):
     def _read_access(path):
         return os.access(path, os.R_OK)
     
-    def check_data_dirs(self):
+    def check_directories(self):
         """Checks all predefined data directories for availability
         
         Prints each directory that is not available
         """
-        from logging import getLogger
-        logger = getLogger('pyaerocom')
-        logger.info('Checking data directories')
+        self.logger.info('Checking data directories')
         ok =True
         #model_dirs = []
+        # CHECK BASIC DATA READING DIRECTORIES
         if not self.dir_exists(self._modelbasedir):
-            self.print_log.warning("Model base directory {} does not exist"
-                                   .format(self._modelbasedir))
+            self.logger.warning("Model base directory {} does not exist"
+                                .format(self._modelbasedir))
             ok=False
         if not self.dir_exists(self._obsbasedir):
-            self.print_log.warning("Observations base directory {} does not "
-                                   "exist".format(self._obsbasedir))
-            ok=False   
-        if not self.dir_exists(self._colocateddatadir) or not self._read_access(self._colocateddatadir):
+            self.logger.warning("Observations base directory {} does not "
+                                "exist".format(self._obsbasedir))
+            ok=False
+            
+        if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
+            out_ok = True
+            try:
+                self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
+            except:
+                out_ok = False
+        
+        if not out_ok or not self._write_access(self._outputdir):
+            self.log.info('Cannot establish write access to output directory {}'
+                           .format(self._outputdir))
+            return False
+
+        if (not self.dir_exists(self._colocateddatadir) or not 
+                self._read_access(self._colocateddatadir)):
             self._colocateddatadir = os.path.join(self._outputdir,
                                                   'colocated_data')
-# =============================================================================
-#         for subdir in self.MODELDIRS:
-#             if not os.path.exists(subdir):
-#                 self.print_log.warning('Model directory base path does not '
-#                                        'exist and will be removed from search '
-#                                        'tree: {}'.format(subdir))
-#             else:
-#                 model_dirs.append(subdir)
-#         for subdir in self.OBSDIRS:
-#             if not os.path.exists(subdir):
-#                 self.print_log.warning('OBS directory path {} does not exist'
-#                                        .format(subdir))
-#      
-#         self.MODELDIRS = model_dirs
-# =============================================================================
-        return ok
-    
-    def check_output_dirs(self):
-        """Checks if output directories are available and have write-access"""
-        ok = True
-        from pyaerocom import print_log
-        if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
-            self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
-        if not self._write_access(self._outputdir):
-            print_log.info('Cannot establish write access to output directory {}'
-                           .format(self._outputdir))
-            ok = False
         if not self.dir_exists(self._cachedir) or not self._write_access(self._cachedir):
             self._cachedir = chk_make_subdir(self._outputdir, '_cache')
+        
+        
+        # if this file exists no cache file is read
+        # used to ease debugging
+        if self.OBSDATACACHEDIR and os.path.exists(self.OBSDATACACHEDIR):
+            self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 
+                                               'DONOTCACHE')
+            if os.path.exists(self.DONOTCACHEFILE):
+                self._caching_active=False
+        
         if not self._write_access(self._cachedir):
-            print_log.info('Cannot establish write access to cache directory {}.'
-                  'Deactivating caching of files'.format(self._cachedir))
+            self.logger.info('Cannot establish write access to cache '
+                             'directory {}. Deactivating caching of files'
+                             .format(self._cachedir))
             self._caching_active = False
             ok = False
         return ok
@@ -453,11 +459,8 @@ class Config(object):
         """Reload config file (for details see :func:`read_config`)"""
         self.read_config(self._config_ini, keep_basedirs)
         
-    def read_config(self, config_file=None, keep_basedirs=True):
+    def read_config(self, config_file, keep_basedirs=True):
         """Read and import form paths.ini"""
-        if config_file is None:
-            config_file = self._config_ini
-
         if not os.path.isfile(config_file):
             raise IOError("Configuration file paths.ini at %s does not exist "
                           "or is not a file"
@@ -474,7 +477,10 @@ class Config(object):
         
         #init base directories for Model data
         if not keep_basedirs or not self.dir_exists(self._modelbasedir):
-            self._modelbasedir = cr['modelfolders']['BASEDIR']
+            _dir = cr['modelfolders']['BASEDIR']
+            if '$HOME' in _dir:
+                _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+            self._modelbasedir = _dir
         
         self.MODELDIRS = (cr['modelfolders']['dir'].
                           replace('${BASEDIR}', self._modelbasedir).
@@ -482,7 +488,10 @@ class Config(object):
 
         #Read directories for observation location
         if not keep_basedirs or not self.dir_exists(self._obsbasedir):
-            self._obsbasedir = cr['obsfolders']['BASEDIR']
+            _dir = cr['obsfolders']['BASEDIR']
+            if '$HOME' in _dir:
+                _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+            self._obsbasedir = _dir
         
         try:
             self._init_obsconfig(cr)
@@ -493,30 +502,32 @@ class Config(object):
         cr.clear()
         self.check_directories()
     
-    def check_directories(self):
-        """Check access to data and output directories
-        
-        Calls :func:`check_data_dirs` and :func:`check_output_dirs`
-        
-        Returns
-        -------
-        Bool
-            True if all is good, else if something is wrong (in the latter 
-            case, see output for more info)
-        """
-        d_ok = self.check_data_dirs()
-        o_ok = self.check_output_dirs()
-        ok = bool(d_ok * o_ok)
-        if not ok:
-            self.print_log.warning("WARNING: Failed to initiate directories")
-        return ok
+# =============================================================================
+#     def check_directories(self):
+#         """Check access to data and output directories
+#         
+#         Calls :func:`check_data_dirs` and :func:`check_output_dirs`
+#         
+#         Returns
+#         -------
+#         Bool
+#             True if all is good, else if something is wrong (in the latter 
+#             case, see output for more info)
+#         """
+#         d_ok = self.check_data_dirs()
+#         o_ok = self.check_output_dirs()
+#         ok = bool(d_ok * o_ok)
+#         if not ok:
+#             self.print_log.warning("WARNING: Failed to initiate directories")
+#         return ok
+# =============================================================================
      
     def _init_obsconfig(self, cr):
         
         # read obs network names from ini file
         # Aeronet V2
         for obsname, ID in cr['obsnames'].items():
-            self['{}_NAME'.format(obsname.upper())] =  ID.upper()
+            self['{}_NAME'.format(obsname.upper())] =  ID
         
         OBSCONFIG = self.OBSCONFIG
         for obsname, path in cr['obsfolders'].items():
@@ -524,8 +535,9 @@ class Config(object):
             if NAME in self.__dict__:
                 ID = self.__dict__[NAME]    
             OBSCONFIG[ID] = {}
-            OBSCONFIG[ID]['PATH'] = path.replace('${BASEDIR}', 
-                                                 self._obsbasedir)
+            p = path.replace('${BASEDIR}', self._obsbasedir)
+            p = p.replace('$HOME', os.path.expanduser('~'))
+            OBSCONFIG[ID]['PATH'] = p
             
         for obsname, year in cr['obsstartyears'].items():
             NAME = '{}_NAME'.format(obsname.upper())
@@ -823,6 +835,7 @@ class GridIO(object):
                                       dict_to_str(self.to_dict())))
         
 if __name__=="__main__":
+    import pyaerocom 
     config = Config()
     
     print(config.short_str())
