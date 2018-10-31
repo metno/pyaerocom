@@ -60,31 +60,42 @@ class Config(object):
     # default names of the different obs networks
     # might get overwritten from paths.ini see func read_config
     
-    #: Aeronet V2 access names
+    #: Aeronet Sun V2 access names
     AERONET_SUN_V2L15_AOD_DAILY_NAME = 'AeronetSunV2Lev1.5.daily'
     AERONET_SUN_V2L15_AOD_ALL_POINTS_NAME = 'AeronetSun_2.0_NRT'
     AERONET_SUN_V2L2_AOD_DAILY_NAME = 'AeronetSunV2Lev2.daily'
     AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME = 'AeronetSunV2Lev2.AP'
+    
+    #: Aeronet SDA V2 access names
     AERONET_SUN_V2L2_SDA_DAILY_NAME = 'AeronetSDAV2Lev2.daily'
     AERONET_SUN_V2L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV2Lev2.AP'
     
-    #Aeronet V3 access names
+    # Aeronet V2 inversion products
+    AERONET_INV_V2L15_DAILY_NAME = 'AeronetInvV2Lev1.5.daily'
+    AERONET_INV_V2L15_ALL_POINTS_NAME = 'AeronetInvV2Lev1.5.AP'
+    AERONET_INV_V2L2_DAILY_NAME = 'AeronetInvV2Lev2.daily'
+    AERONET_INV_V2L2_ALL_POINTS_NAME = 'AeronetInvV2Lev2.AP'
+    
+    #: Aeronet Sun V3 access names
     AERONET_SUN_V3L15_AOD_DAILY_NAME = 'AeronetSunV3Lev1.5.daily'
     AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev1.5.AP'
     AERONET_SUN_V3L2_AOD_DAILY_NAME = 'AeronetSunV3Lev2.daily'
     AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME = 'AeronetSunV3Lev2.AP'
+    
+    #: Aeronet SDA V3 access names
     AERONET_SUN_V3L15_SDA_DAILY_NAME = 'AeronetSDAV3Lev1.5.daily'
     AERONET_SUN_V3L15_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev1.5.AP'
     AERONET_SUN_V3L2_SDA_DAILY_NAME = 'AeronetSDAV3Lev2.daily'
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev2.AP'
 
-    # inversions
-    AERONET_INV_V2L15_DAILY_NAME = 'AeronetInvV2Lev1.5.daily'
-    AERONET_INV_V2L15_ALL_POINTS_NAME = 'AeronetInvV2Lev1.5.AP'
-    AERONET_INV_V2L2_DAILY_NAME = 'AeronetInvV2Lev2.daily'
-    AERONET_INV_V2L2_ALL_POINTS_NAME = 'AeronetInvV2Lev2.AP'
-    #
+    #: Aeront V3 inversions
+    AERONET_INV_V3L15_DAILY_NAME = 'AeronetInvV3Lev1.5.daily'
+    AERONET_INV_V3L2_DAILY_NAME = 'AeronetInvV3Lev2.daily'
+    
+    #: EBAS name
     EBAS_MULTICOLUMN_NAME = 'EBASMC'
+    
+    #: EEA nmea
     EEA_NAME = 'EEAAQeRep'
 
     #: Earlinet access name;
@@ -113,9 +124,7 @@ class Config(object):
 
     #: Name of the file containing the revision string of an obs data network
     REVISION_FILE = 'Revision.txt'
-    
-    _DATA_HOSTS = {'metno'                  : '/lustre',
-                   'aerocom-users-database' : '/metno'}
+
     
     BASEDIR_PPI = os.path.join('/lustre', 'storeA', 'project', 'aerocom') 
     BASEDIR_USER_SERVER = os.path.join('/metno', 'aerocom-users-database')
@@ -178,15 +187,29 @@ class Config(object):
         
     def _infer_config_file(self):
         """Infer the database configuration to be loaded"""
-        if (os.path.exists(self._DATA_HOSTS['metno']) and 
-            'storeA' in os.listdir(self._DATA_HOSTS['metno'])):
-            self.print_log.info("Init data paths for lustre")
-            return self._config_files['metno']
-        elif (os.path.exists(self._DATA_HOSTS['aerocom-users-database']) and
-              'aerocom-users-database' in os.listdir(self._DATA_HOSTS['aerocom-users-database'])):
+        if os.path.exists('/lustre'):
+            try:
+                # check if host is connected (lustre may be mounted locally but
+                # not connected). THe listdir command will raise FileNotFoundError
+                # if directory is mounted but not connected
+                os.listdir('/lustre/storeA')
+                self.print_log.info("Init data paths for lustre")
+                return self._config_files['metno']
+            except FileNotFoundError:
+                pass
+        if os.path.exists('/metno'):
+            try:
+                # check if host is connected (lustre may be mounted locally but
+                # not connected). THe listdir command will raise FileNotFoundError
+                # if directory is mounted but not connected
+                os.listdir('/metno/aerocom-users-database')
+                self.print_log.info("Init data paths for users database")
+                return self._config_files['aerocom-users-database']
+            except FileNotFoundError:
+                pass
             self.print_log.info("Init data paths for Aerocom users server")
             return self._config_files['aerocom-users-database']
-        elif os.path.exists(os.path.join(self.HOMEDIR, 'pyaerocom-testdata')):
+        if os.path.exists(os.path.join(self.HOMEDIR, 'pyaerocom-testdata')):
             self.print_log.info("Init data paths for pyaerocom testdata")
             return self._config_files['pyaerocom-testdata']
         
