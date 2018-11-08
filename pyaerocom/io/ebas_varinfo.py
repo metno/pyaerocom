@@ -55,7 +55,6 @@ class EbasVarInfo(BrowseDict):
         self.requires = None
         
         #: scale factor for conversion to Aerocom units
-        
         self.scale_factor = None
         
         #imports default information and, on top, variable information (if 
@@ -138,8 +137,21 @@ class EbasVarInfo(BrowseDict):
         if self.old_name is not None:
             self.aliases.append(self.old_name)
 
-    def make_sql_request(self):
-        """Create an SQL request for the specifications in this object"""
+    def make_sql_request(self, **constraints):
+        """Create an SQL request for the specifications in this object
+        
+        Parameters
+        ----------
+        **constraints
+            request constraints deviating from default. For details on 
+            parameters see :class:`EbasSQLRequest`
+            
+        Returns
+        -------
+        EbasSQLRequest
+            the SQL request object that can be used to retrieve corresponding 
+            file names using instance of :func:`EbasFileIndex.get_file_names`.
+        """
         if self.requires is not None:
             raise NotImplementedError('Cannot create SQL request for variables '
                                       'that depend on other variables')
@@ -147,9 +159,12 @@ class EbasVarInfo(BrowseDict):
             raise AttributeError('At least one component (Ebas variable name) '
                                  'must be specified for retrieval of variable '
                                  '{}'.format(self.var_name))
-        return EbasSQLRequest(variables=self.component, matrices=self.matrix,
+        # default request
+        req = EbasSQLRequest(variables=self.component, matrices=self.matrix,
                               instrument_types=self.instrument,
                               statistics=self.statistics)
+        req.update(**constraints)
+        return req
         
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
