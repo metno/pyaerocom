@@ -187,13 +187,6 @@ class ReadUngridded(object):
         raise NetworkNotImplemented("No reading class available yet for dataset "
                                     "{}".format(dataset_to_read))
         
-    def __str__(self):
-        #raise NotImplementedError("Requires review after API changes")
-        s=''
-        for ds in self.datasets_to_read:
-            s += '\n{}'.format(self.get_reader(ds))
-        return s
-        
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None, **kwargs):
         """Read single dataset into instance of :class:`ReadUngridded`
         
@@ -257,6 +250,7 @@ class ReadUngridded(object):
             print_log.setLevel(logging.INFO)
             data = reader.read(vars_available, **kwargs)
             print_log.setLevel(_loglevel)
+        
         self.revision[dataset_to_read] = reader.data_revision
         self.data_version[dataset_to_read] = reader.__version__
         
@@ -306,6 +300,13 @@ class ReadUngridded(object):
     @property
     def supported_datasets(self):
         return self.SUPPORTED_DATASETS
+    
+    def __str__(self):
+        #raise NotImplementedError("Requires review after API changes")
+        s=''
+        for ds in self.datasets_to_read:
+            s += '\n{}'.format(self.get_reader(ds))
+        return s
     
 if __name__=="__main__":
 
