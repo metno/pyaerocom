@@ -72,6 +72,8 @@ class ReadEbas(ReadUngriddedBase):
     PREFER_STATISTICS = ['arithmetic mean',
                          'median']
     
+    PREFER_LEVEL=2
+    
     IGNORE_STATISTICS = ['percentile:15.87',
                          'percentile:84.13']
     #: Wavelength tolerance in nm for reading of variables. If multiple matches
@@ -137,6 +139,7 @@ class ReadEbas(ReadUngriddedBase):
         
         #: SQL database interface class used to retrieve file paths for vars
         self.file_index = EbasFileIndex()
+        self.last_sql_request = None
         
     @property
     def _FILEMASK(self):
@@ -197,7 +200,7 @@ class ReadEbas(ReadUngriddedBase):
         self.files_contain = files_contain
         return files
     
-    def get_file_list(self, vars_to_retrieve=None):
+    def get_file_list(self, vars_to_retrieve=None, **constraints):
         """Get list of files for all variables to retrieve
         
         Note
@@ -216,6 +219,13 @@ class ReadEbas(ReadUngriddedBase):
         ----------
         vars_to_retrieve : list
             list of variables that are supposed to be loaded
+        **constraints
+            further EBAS request constraints deviating from default (default 
+            info for each AEROCOM variable can be found in `ebas_config.ini <
+            https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
+            ebas_config.ini>`__). For details on possible input parameters 
+            see :class:`EbasSQLRequest` (or `this tutorial <http://aerocom.met.no
+            /pyaerocom/tutorials.html#ebas-file-query-and-database-browser>`__)
             
         Returns
         -------
@@ -240,8 +250,9 @@ class ReadEbas(ReadUngriddedBase):
             if info.requires is not None:
                 raise NotImplementedError('Auxiliary variables can not yet '
                                           'be handled / retrieved')
+            self.last_sql_request = req = info.make_sql_request(**constraints)
             
-            filenames = db.get_file_names(info.make_sql_request())
+            filenames = db.get_file_names(req)
             
             paths = []
             for file in filenames:
@@ -453,9 +464,11 @@ class ReadEbas(ReadUngriddedBase):
             var_info = self.loaded_aerocom_vars[var]
             var_info_ebas = EbasVarInfo(var)
             
-            if var_info_ebas['matrix'] is not None:
-                if not file.matrix in var_info_ebas['matrix']:
-                    continue
+# =============================================================================
+#             if var_info_ebas['matrix'] is not None:
+#                 if not file.matrix in var_info_ebas['matrix']:
+#                     continue
+# =============================================================================
             ebas_var_info[var] = var_info_ebas
             try:
                 col_matches = self._get_var_cols(var_info_ebas, file)
@@ -541,7 +554,8 @@ class ReadEbas(ReadUngriddedBase):
         data_out['station_name'] = meta['station_name']
         data_out['PI'] = meta['submitter']
         data_out['altitude'] = data_alt
-        data_out['instrument_name'] = meta['instrument_type']
+        data_out['instrument_name'] = meta['instrument_name']
+        data_out['instrument_type'] = meta['instrument_type']
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
@@ -577,7 +591,7 @@ class ReadEbas(ReadUngriddedBase):
         return data_out
     
     def read(self, vars_to_retrieve=None, first_file=None, 
-             last_file=None):
+             last_file=None, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -591,6 +605,13 @@ class ReadEbas(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file 
             in the list is used
+        **constraints
+            further EBAS request constraints deviating from default (default 
+            info for each AEROCOM variable can be found in `ebas_config.ini <
+            https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
+            ebas_config.ini>`__). For details on possible input parameters 
+            see :class:`EbasSQLRequest` (or `this tutorial <http://aerocom.met.no
+            /pyaerocom/tutorials.html#ebas-file-query-and-database-browser>`__)
             
         Returns
         -------
@@ -602,8 +623,7 @@ class ReadEbas(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
            
-        if len(self.files) == 0:
-            self.get_file_list(vars_to_retrieve)
+        self.get_file_list(vars_to_retrieve, **constraints)
         files = self.files
     
         if first_file is None:
@@ -725,113 +745,9 @@ if __name__=="__main__":
     from pyaerocom import change_verbosity
     change_verbosity('critical')
 
-    reader = ReadEbas()
-    
-    vars_to_retrieve = ['absc550aer']
-    
-    files = reader.get_file_list(vars_to_retrieve)
-    
-    data = reader.read(vars_to_retrieve, last_file=10)
-    
-    stat_data = data.to_station_data(0)
-    
-    print(stat_data)    
-    print(data)
-
-    idx, meta = data._find_common_meta()
-    
-    dm = data.merge_common_meta()
-    
-    sd = dm.to_station_data(0, data_as_series=True)
-    
-    
-    DO_META_TEST = False
-    DO_TIME_SAMPLE_TEST = False
-    if DO_TIME_SAMPLE_TEST:
-        files_failed = []
-        has_24h = []
-        success = 0
-        failed = 0
-        file_info = {}
-        for file in files[:200]:
-            try:
-                data = reader.read_file(file)
-                days_vs_num = {}
-                prev_date= 0 
-                for t in data.dtime:
-                    date = t.astype('datetime64[D]')
-                    if not date == prev_date:
-                        if prev_date != 0:
-                            if days_vs_num[prev_date] == 24:
-                                has_24h.append(True)
-                            else:
-                                has_24h.append(False)
-                                
-                        days_vs_num[date] = 1
-                    else:
-                        days_vs_num[date] += 1
-                    prev_date = date
-                file_info[file] = days_vs_num
-                success += 1
-            except NotInFileError:
-                failed += 1
-                files_failed.append(file)
-        for file in files_failed:
-            data = EbasNasaAmesFile(file, only_head=True)
-            print("File {} contains:\n".format(file))
-            for var in data.var_defs:
-                if var.is_var:
-                    print(repr(var))
-            print()
-            print()
-
-                
-    if DO_META_TEST:
-        totnum = len(files)
-        failed = 0
-        mat_in_head = 0
-        mat_in_coldef =  0
-        mat_in_both = 0
-        mat_in_none = 0
-        stat_in_head = 0
-        stat_in_coldef = 0
-        stat_in_both = 0
-        stat_in_none = 0
-        for i, f in enumerate(read.files):
-            if i%25 == 0:
-                print('File {} of {}'.format(i, totnum))
-            _mat_in_head = 0
-            _mat_in_coldef =  0
-            _mat_in_both = 0
-            _stat_in_head = 0
-            _stat_in_coldef = 0
-            _stat_in_both = 0
-            try:
-                head = EbasNasaAmesFile(f, only_head=True)
-                for col in head.var_defs:
-                    if 'matrix' in col:
-                        _mat_in_coldef = 1
-                    if 'statistics' in col:
-                        _stat_in_coldef = 1
-                if 'matrix' in head.meta:
-                    _mat_in_head = 1
-                if 'statistics' in head.meta:
-                    _stat_in_head = 1
-                if _mat_in_coldef and _mat_in_head:
-                    _mat_in_both = True
-                if _stat_in_coldef and _stat_in_head:
-                    _stat_in_both = True
-                if not _mat_in_coldef and not _mat_in_head:
-                    mat_in_none += 1
-                if not _stat_in_coldef and not _stat_in_head:
-                    stat_in_none += 1
-                mat_in_both += _mat_in_both
-                mat_in_coldef += _mat_in_coldef
-                mat_in_head += _mat_in_head
-                
-                stat_in_both += _stat_in_both
-                stat_in_coldef += _stat_in_coldef
-                stat_in_head += _stat_in_head
-                   
-            except:
-                failed += 1
+    r = ReadEbas()
+    files_ebas = r.get_file_list(vars_to_retrieve='scatc550aer', 
+                                 station_names='Appalachian State University, Boone (NC)', 
+                                 datalevel=None)
+    print(len(files_ebas))
+    r.read_file(files_ebas[0],vars_to_retrieve='scatc550aer')
