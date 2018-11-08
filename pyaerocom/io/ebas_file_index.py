@@ -52,7 +52,7 @@ class EbasSQLRequest(BrowseDict):
     def __init__(self, variables=None, start_date=None, stop_date=None, 
                  station_names=None, matrices=None, altitude_range=None, 
                  lon_range=None, lat_range=None, 
-                 instrument_types=None, statistics=None):
+                 instrument_types=None, statistics=None, datalevel=2):
         self.variables = variables
         self.start_date = start_date
         self.stop_date = stop_date
@@ -63,6 +63,7 @@ class EbasSQLRequest(BrowseDict):
         self.lat_range = lat_range
         self.instrument_types = instrument_types
         self.statistics = statistics
+        self.datalevel = datalevel
         
     
     def update(self, verbose=True, **kwargs):
@@ -73,6 +74,21 @@ class EbasSQLRequest(BrowseDict):
                 if verbose:
                     print("Unknown request key {} (value {})".format(k, v))
     
+    @staticmethod
+    def _var2sql(var):
+        if isinstance(var, list):
+            if len(var) > 1:
+                var = tuple(var)
+            else:
+                var = var[0]
+        if isinstance(var, tuple):
+            return "{}".format(var)
+        elif isinstance(var, str):
+            return "(\'{}\')".format(var)
+        else:
+            raise ValueError("Invalid value encountered, need list, tuple or "
+                             "str, got {}".format(type(var)))
+            
     def make_file_query_str(self, distinct=True, **kwargs):
         """Wrapper for base method :func:`make_query_str` 
         
@@ -90,20 +106,7 @@ class EbasSQLRequest(BrowseDict):
         """
         return self.make_query_str(distinct=distinct, **kwargs)
     
-    @staticmethod
-    def _var2sql(var):
-        if isinstance(var, list):
-            if len(var) > 1:
-                var = tuple(var)
-            else:
-                var = var[0]
-        if isinstance(var, tuple):
-            return "{}".format(var)
-        elif isinstance(var, str):
-            return "(\'{}\')".format(var)
-        else:
-            raise ValueError("Invalid value encountered, need list, tuple or "
-                             "str, got {}".format(type(var)))
+    
             
     def make_query_str(self, what="filename",
                        distinct=True, **kwargs):
@@ -182,7 +185,11 @@ class EbasSQLRequest(BrowseDict):
         if self.statistics is not None:
             req += ' and ' if add_cond else ' where '
             req += 'statistics in {}'.format(conv(self.statistics))
-            add_cond += 1      
+            add_cond += 1     
+        if self.datalevel is not None:
+            req += ' and ' if add_cond else ' where '
+            req += 'datalevel={}'.format(self.datalevel)
+            add_cond += 1     
         return (req + ";")
     
     def __str__(self):
@@ -329,7 +336,29 @@ class EbasFileIndex(object):
             list containing result
         """
         return self.execute_request(request.make_query_str(what='station_name'))
-        
+      
+    def table_names(self):
+        return [x[0] for x in self.execute_request("SELECT name FROM sqlite_master WHERE type='table';")]
+
+
+    def table_columns(self, table_name):
+        req = "select * from {} where 1=0;".format(table_name)
+        try:
+            con = sqlite3.connect(self.database)
+            cur = con.cursor()
+            cur.execute(req)
+            #return [f[0] for f in cur.fetchall()]
+            return [f[0] for f in cur.description]
+        except sqlite3.Error as e:
+            if con:
+                con.rollback()
+                
+            print("Error: {}".format(repr(e)))
+            sys.exit(1)
+        finally:
+            if con:
+                con.close() 
+    
     def execute_request(self, request):
         """Connect to database and retrieve data for input request
         
@@ -392,33 +421,28 @@ class EbasFileIndex(object):
         return names
             
 if __name__=="__main__":
+    from pyaerocom.io import EbasNasaAmesFile
+    from os.path import join
+    
     dbfile = const.EBASMC_SQL_DATABASE
     
     db = EbasFileIndex(dbfile)
     
-    req = EbasSQLRequest(variables=['aerosol_optical_depth',
-                                    'aerosol_light_scattering_coefficient',
-                                    'aerosol_light_backscattering_coefficient',
-                                    'aerosol_optical_depth'],
-                        start_date="2010-01-01", 
-                        stop_date="2010-07-01")
+    req = EbasSQLRequest(variables=['aerosol_light_scattering_coefficient'],
+                         station_names='Alert')
+    #req.update(lat_range=(80, 90))
     
-    files = db.execute_request(req.make_query_str())
+    files = db.get_file_names(req.make_query_str())
     
-    req.update(lat_range=(80, 90))
-        
-    files_arctic = db.execute_request(req)
+    data = EbasNasaAmesFile(join(const.EBASMC_DATA_DIR, files[19]))
+    data.print_col_info()
     
-    print(len(files), len(files_arctic))
+    df = data.to_dataframe()
     
-    variables = db.contains_variables(req)
-    coords = db.contains_coordinates(req)
+    #print(len(files))
     
     
-    print(db.ALL_STATION_CODES)
-    print(db.ALL_STATION_NAMES)
-    print(db.ALL_STATISTICS_PARAMS)
-    print(db.ALL_VARIABLES)
+
     
     
     
