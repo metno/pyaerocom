@@ -13,6 +13,46 @@ from scipy.stats import pearsonr, spearmanr, kendalltau
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
+def haversine(lon0, lat0, lon1, lat1, radius=6371.0):
+    """Haversine formula
+    
+    Approximate horizontal distance between 2 points assuming a spherical 
+    earth using haversine formula. 
+    
+    Note
+    ----
+    This code was copied from geonum library (date 12/11/2018, J. Gliss)
+    
+    Parameters
+    ----------
+    lon0 : float
+        longitude of first point in decimal degrees
+    lat0 : float
+        latitude of first point in decimal degrees
+    lon1 : float
+        longitude of second point in decimal degrees
+    lat1 : float 
+        latitude of second point in decimal degrees
+    radius : float 
+        average earth radius in km, defaults to 6371.0
+        
+    Returns
+    --------
+    float
+        horizontal distance in km
+    """
+    hav = lambda d_theta: np.sin(d_theta / 2.0) ** 2
+    
+    d_lon = np.radians(lon1 - lon0)
+    d_lat = np.radians(lat1 - lat0)
+    lat0 = np.radians(lat0)
+    lat1 = np.radians(lat1)
+ 
+    a = hav(d_lat) + np.cos(lat0) * np.cos(lat1) * hav(d_lon)
+    c = 2 * np.arcsin(np.sqrt(a))
+ 
+    return radius * c
+
 ### OTHER FUNCTIONS
 def calc_statistics(data, ref_data, lowlim=None, highlim=None):
     """Calc statistical properties from two data arrays
