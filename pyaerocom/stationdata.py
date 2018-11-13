@@ -6,6 +6,7 @@ from pyaerocom.station import Station
 from pyaerocom import VerticalProfile, logger
 from pyaerocom._lowlevel_helpers import list_to_shortstr, BrowseDict
 
+
 class StationData(Station):
     """Dict-like base class for single station data
     
@@ -35,12 +36,11 @@ class StationData(Station):
                              'altitude' : None}
         
         self.dtime = []
-        self.instrument_name=None
+        self.instrument_name = None
         self.unit = BrowseDict()
         super(StationData, self).__init__(*args, **kwargs)
         
-    @property
-    def data_columns(self):
+    def get_data_columns(self):
         """List containing all data columns
         
         Iterates over all key / value pairs and finds all values that are 
@@ -86,7 +86,7 @@ class StationData(Station):
         ``time``)
         
         """
-        return pd.DataFrame(data=self.data_columns, index=self.dtime)
+        return pd.DataFrame(data=self.get_data_columns(), index=self.dtime)
     
     def to_timeseries(self, var_name, freq=None, resample_how='mean'):
         """Get pandas.Series object for one of the data columns
@@ -167,7 +167,7 @@ class StationData(Station):
         s = self.to_timeseries(var_name, freq, resample_how)
         ax = s.plot(**kwargs)
         return ax
-    
+            
     def __getitem__(self, name):
         if not name in self.NAMES_STAT_COORDS:
             # no special treatment
