@@ -758,4 +758,7 @@ if __name__=="__main__":
     
     print(data)
 
-    #stat = data.to_station_data('Appalachian State*')
+    stat = data.to_station_data('Appalachian State*')
+    
+    stats = data.to_station_data('Appalachian State University*', 
+                                 vars_to_convert='scatc550aer')

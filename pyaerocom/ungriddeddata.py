@@ -4,6 +4,7 @@ import numpy as np
 from copy import deepcopy
 from datetime import datetime
 from collections import OrderedDict as od
+import fnmatch
 import pandas as pd
 from pyaerocom import logger
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -11,6 +12,8 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, DataUnitError)
 from pyaerocom import StationData
+from pyaerocom.mathutils import haversine
+from pyaerocom.exceptions import CoordinateError
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
@@ -178,7 +181,7 @@ class UngriddedData(object):
         
     @property
     def altitude(self):
-        """Alttudes of stations"""
+        """Altitudes of stations"""
         return [stat['stat_alt'] for stat in self.metadata.values()]
 
     @altitude.setter
@@ -332,6 +335,16 @@ class UngriddedData(object):
                 return out_data
                     
     
+    def _find_station_indices(self, station_pattern):
+        idx = []
+        for i, meta in self.metadata.items():
+            if fnmatch.fnmatch(meta['station_name'], station_pattern):
+                idx.append(i)
+        if len(idx) == 0:
+            raise ValueError('No station available in UngriddedData that '
+                             'matches pattern {}'.format(station_pattern))
+        return idx
+    
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
                         stop=None, freq=None, interp_nans=False, 
@@ -371,15 +384,21 @@ class UngriddedData(object):
         
         Returns
         -------
-        StationData
-            data of this station (can be used like dictionary if desired)
+        StationData or list
+            StationData object(s) containing results. list is only returned if 
+            input for meta_idx is station name and multiple matches are 
+            detected for that station (e.g. data from different instruments), 
+            else single instance of StationData
         """
         if isinstance(meta_idx, str):
+            # user asks explicitely for station name, find all meta indices
+            # that match this station
             try:
-                meta_idx = self.station_name.index(meta_idx)
+                meta_idx = self._find_station_indices(meta_idx)
             except ValueError:
                 raise ValueError('No such station {} in UngriddedData'.format(meta_idx))
-                
+        if not isinstance(meta_idx, list):
+            meta_idx = [meta_idx]
         if isinstance(vars_to_convert, str):
             vars_to_convert = [vars_to_convert]
         if start is None and stop is None:
@@ -387,8 +406,41 @@ class UngriddedData(object):
             stop = pd.Timestamp('2200')
         else:
             start, stop = start_stop(start, stop)
+            
+        if len(meta_idx) == 0:
+            return self._metablock_to_stationdata(meta_idx[0], 
+                                                  vars_to_convert,  
+                                                  start, stop, freq, 
+                                                  interp_nans, 
+                                                  min_coverage_interp, 
+                                                  data_as_series)
         
+        stats = []
+        for idx in meta_idx:
+            try:
+                stat = self._metablock_to_stationdata(idx, 
+                                                      vars_to_convert,  
+                                                      start, stop, freq, 
+                                                      interp_nans, 
+                                                      min_coverage_interp, 
+                                                      data_as_series)
+                stats.append(stat)
+            except VarNotAvailableError:
+                pass
+                                      
+        return stats
+        
+    def _metablock_to_stationdata(self, meta_idx, vars_to_convert=None, 
+                                  start=None, stop=None, freq=None, 
+                                  interp_nans=False, 
+                                  min_coverage_interp=0.68, 
+                                  data_as_series=True):
+        """Convert one metadata index to StationData (helper method)
+        
+        See :func:`to_station_data` for input parameters
+        """
         stat_data = StationData()
+        
         val = self.metadata[meta_idx]
         
         # do not return anything for stations without data
@@ -411,7 +463,8 @@ class UngriddedData(object):
         vars_to_convert = np.intersect1d(vars_to_convert, val['variables']) 
         if not len(vars_to_convert) >= 1:
             raise VarNotAvailableError('None of the input variables matches, '
-                                       'or station does not contain data')
+                                       'or station does not contain data. {}'
+                                       .format(val['variables']))
         first_var = vars_to_convert[0]
         indices_first = self.meta_idx[meta_idx][first_var]
         dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
@@ -745,14 +798,21 @@ class UngriddedData(object):
         new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
         new.data_revision[dataset_name] = self.data_revision[dataset_name]
         return new
+
+    def _station_to_json_trends_interface(self, var_name, station_name, 
+                                          freq, **kwargs):
+        """Convert station data to json file for trends interface
         
-    def station_data_to_ascii(self, vars_to_convert=None, start=None, stop=None, 
-                              freq=None, interp_nans=False, 
-                              min_coverage_interp=0.68):
-        """
-        TODO
-        ----
-        Write docstring
+        Parameters
+        ----------
+        var_name : str
+            variable name (e.g. od550aer)
+        station_name : str
+            name (or wildcard pattern) that specifies station
+        freq : str
+            temporal resolution
+        **kwargs
+            further input arguments that are passed to :func:`to_station_data`
         """
         raise NotImplementedError
         
@@ -775,7 +835,6 @@ class UngriddedData(object):
 
         return lats, lons
             
-
     def _find_common_meta(self, ignore_keys=['PI', 'var_info']):
         """Searches all metadata dictionaries that are the same
         
@@ -812,7 +871,7 @@ class UngriddedData(object):
         ----
         Keep mapping of ``var_info`` (if defined in ``metadata``) to data 
         points (e.g. EBAS), since the data sources may be at different 
-        wavelengths
+        wavelengths.
         
         Parameters
         ----------
@@ -842,6 +901,7 @@ class UngriddedData(object):
                     num = len(data_idx)
                     stop = didx + num
                     new._data[didx:stop, :] = self._data[data_idx]
+                    new._data[didx:stop, 0] = i
                     if not var in _meta_idx_new:
                         _meta_idx_new[var] = np.arange(didx, stop)
                     else:
@@ -1247,7 +1307,8 @@ class UngriddedData(object):
                                     **kwargs).to_timeseries(var_name)
 
     def plot_station_timeseries(self, station, var_name, start=None, 
-                                stop=None, ts_type=None, **kwargs):
+                                stop=None, ts_type=None, vmin=None, 
+                                vmax=None, ax=None, **kwargs):
         """Plot time series of station and variable
         
         Parameters
@@ -1273,8 +1334,14 @@ class UngriddedData(object):
             matplotlib axes instance
             
         """
-        return self.get_time_series(station, var_name, start, 
-                                    stop, ts_type).plot(**kwargs)
+        if ax is None:
+            import matplotlib.pyplot as plt
+            from pyaerocom.plot.config import FIGSIZE_DEFAULT
+            fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
+        s = self.get_time_series(station, var_name, start, stop, ts_type)
+        s.plot(ax=ax, **kwargs)
+        
+        return ax
         
     def plot_station_coordinates(self, var_name=None, 
                                  filter_name=None, start=None, 
@@ -1452,7 +1519,7 @@ class UngriddedData(object):
         s += ('\nContains networks: {}'
               '\nContains variables: {}'
               '\nContains instruments: {}'
-              '\nTotal no. of stations: {}'.format(self.contains_datasets,
+              '\nTotal no. of meta-blocks: {}'.format(self.contains_datasets,
                                                    self.contains_vars,
                                                    self.contains_instruments,
                                                    len(self.metadata)))
