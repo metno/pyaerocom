@@ -156,10 +156,10 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                           name=gridded_data.var_name, attrs=meta)
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, 
-                                  ts_type='daily', start=None, stop=None, 
-                                  filter_name='WORLD-wMOUNTAINS',
-                                  var_ref=None, vert_scheme=None,
-                                  **kwargs):
+                               ts_type='daily', start=None, stop=None, 
+                               filter_name='WORLD-wMOUNTAINS',
+                               var_ref=None, vert_scheme=None,
+                               **kwargs):
     """Colocate gridded with ungridded data of 2D data
     
     2D means, that the vertical direction is only sampled at one altitude or
