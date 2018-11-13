@@ -80,8 +80,11 @@ class VarNameInfo(object):
         return low <= self.wavelength <= high
     
     def translate_to_wavelength(self, to_wavelength):
-        if self.contains_wavelength_nm:
-            return self.var_name.replace(str(self.wavelength_nm))
+        if not self.contains_wavelength_nm:
+            raise ValueError('Variable {} is not wavelength dependent'.format(self.var_name))
+        name = self.var_name.replace(str(self.wavelength_nm),
+                                     str(to_wavelength))
+        return VarNameInfo(name)
     
     def __str__(self):
         s = ('\nVariable {}\n'
