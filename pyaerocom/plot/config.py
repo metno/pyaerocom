@@ -25,7 +25,7 @@ _COLOR_THEMES = dict(light = dict(name="light",
                                  color_coastline ="#e6e6e6"))
 
 MAP_AXES_ASPECT = 1.5
-
+FIGSIZE_DEFAULT = (16, 10)
 # text positions for annotations in scatter plots
 SCAT_ANNOT_XYPOS = [(.01, 0.95),
                     (0.01, 0.90),
