@@ -36,6 +36,7 @@ from copy import deepcopy
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
+from pyaerocom.variable import VarNameInfo
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData
 from pyaerocom import UngriddedData
@@ -60,7 +61,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.07_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.08_" + ReadUngriddedBase.__baseversion__
     
     #: preferred order of data statistics. Some files may contain multiple 
     #: columns for one variable, where each column corresponds to one of the
@@ -552,7 +553,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out['stat_lat'] = float(meta['station_latitude'])
         data_out['stat_alt'] = stat_alt
         data_out['station_name'] = meta['station_name']
-        data_out['PI'] = meta['submitter']
+        data_out['PI'] = file['data_originator']
         data_out['altitude'] = data_alt
         data_out['instrument_name'] = meta['instrument_name']
         data_out['instrument_type'] = meta['instrument_type']
@@ -573,10 +574,13 @@ class ReadEbas(ReadUngriddedBase):
                 continue
             data_out[var] = data
             data_out['var_info'][var] = file.var_defs[colnum]
-            if 'unit' in file.var_defs[colnum]:
+            _col = file.var_defs[colnum]
+            if 'unit' in _col:
                 data_out.unit[var] = file.var_defs[colnum]['unit']
             else:
                 data_out.unit[var]= file.unit
+            if 'wavelength' in _col:
+                data_out['var_info'][var]['wavelength_nm'] = _col.get_wavelength_nm() 
             contains_vars.append(var)
         
         if len(contains_vars) == 0:
@@ -584,7 +588,7 @@ class ReadEbas(ReadUngriddedBase):
                                 'are NaN in {}'.format(filename))
         data_out['dtime'] = file.time_stamps
         # compute additional variables (if applicable)
-        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        #data_out = self.compute_additional_vars(data_out, vars_to_compute)
         contains_vars.extend(vars_to_compute)
         data_out['contains_vars'] = contains_vars
         
@@ -648,6 +652,8 @@ class ReadEbas(ReadUngriddedBase):
         if disp_each < 1:
             disp_each = 1
             
+        # note: check_vars_to_retrieve is implemented in template base 
+        # class ReadUngriddedBase (module readungriddedbase.py)
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
         self.files_failed = []
@@ -713,7 +719,7 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj._data[start:stop, 
                                data_obj._LATINDEX] = station_data['stat_lat']
                 data_obj._data[start:stop, 
-                               data_obj._LONINDEX] = station_data['stat_lat']
+                               data_obj._LONINDEX] = station_data['stat_lon']
                 data_obj._data[start:stop, 
                                data_obj._ALTITUDEINDEX] = station_data['stat_alt']
                 data_obj._data[start:stop, 
@@ -746,8 +752,10 @@ if __name__=="__main__":
     change_verbosity('critical')
 
     r = ReadEbas()
-    files_ebas = r.get_file_list(vars_to_retrieve='scatc550aer', 
-                                 station_names='Appalachian State University, Boone (NC)', 
-                                 datalevel=None)
-    print(len(files_ebas))
-    r.read_file(files_ebas[0],vars_to_retrieve='scatc550aer')
+    data = r.read(vars_to_retrieve=['scatc550aer', 'absc550aer'], 
+                  station_names='Appalachian State University, Boone (NC)', 
+                  datalevel=None)
+    
+    print(data)
+
+    #stat = data.to_station_data('Appalachian State*')
