@@ -52,7 +52,7 @@ class EbasSQLRequest(BrowseDict):
     def __init__(self, variables=None, start_date=None, stop_date=None, 
                  station_names=None, matrices=None, altitude_range=None, 
                  lon_range=None, lat_range=None, 
-                 instrument_types=None, statistics=None, datalevel=2):
+                 instrument_types=None, statistics=None, datalevel=None):
         self.variables = variables
         self.start_date = start_date
         self.stop_date = stop_date
