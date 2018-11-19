@@ -172,7 +172,7 @@ class Station(BrowseDict):
             if k[0] == '_':
                 continue
             if isinstance(v, dict):
-                s += "\n{} ({})".format(k, type(v))
+                s += "\n{} ({})".format(k, repr(v))
                 s = dict_to_str(v, s)
             elif isinstance(v, list):
                 s += "\n{} (list, {} items)".format(k, len(v))
