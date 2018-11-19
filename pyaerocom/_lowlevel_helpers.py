@@ -24,11 +24,14 @@ class BrowseDict(OrderedDict):
         
     def __dir__(self):
         return self.keys()
-    
+
     def __str__(self):
         return dict_to_str(self)
    
-    
+def _is_interactive():
+    import __main__ as main
+    return not hasattr(main, '__file__')
+
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)
