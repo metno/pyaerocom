@@ -251,6 +251,32 @@ class ReadEbas(ReadUngriddedBase):
             if info.requires is not None:
                 raise NotImplementedError('Auxiliary variables can not yet '
                                           'be handled / retrieved')
+                
+            if 'station_names' in constraints:
+                val = constraints['station_names']
+                contains_wildcards = False
+                if isinstance(val, str):
+                    val = [val]
+                elif isinstance(val, tuple):
+                    val = [x for x in val]
+                for name in val:
+                    if '*' in name:
+                        contains_wildcards = True
+                        break
+                
+                if contains_wildcards:
+                    stats = []
+                    import fnmatch
+                    all_stats = db.ALL_STATION_NAMES
+                    for name in val:
+                        if not '*' in name:
+                            stats.append(name)
+                        else:
+                            for stat in all_stats:
+                                if fnmatch.fnmatch(stat, name):
+                                    stats.append(stat)
+                    constraints['station_names'] = stats
+                                    
             self.last_sql_request = req = info.make_sql_request(**constraints)
             
             filenames = db.get_file_names(req)
@@ -548,15 +574,17 @@ class ReadEbas(ReadUngriddedBase):
             meas_height = 0.0
         data_alt = stat_alt + meas_height
             
-        
+        # file specific meta information
         data_out['stat_lon'] = float(meta['station_longitude'])
         data_out['stat_lat'] = float(meta['station_latitude'])
+        
         data_out['stat_alt'] = stat_alt
         data_out['station_name'] = meta['station_name']
         data_out['PI'] = file['data_originator']
         data_out['altitude'] = data_alt
         data_out['instrument_name'] = meta['instrument_name']
         data_out['instrument_type'] = meta['instrument_type']
+        
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
@@ -575,10 +603,8 @@ class ReadEbas(ReadUngriddedBase):
             data_out[var] = data
             data_out['var_info'][var] = file.var_defs[colnum]
             _col = file.var_defs[colnum]
-            if 'unit' in _col:
-                data_out.unit[var] = file.var_defs[colnum]['unit']
-            else:
-                data_out.unit[var]= file.unit
+            if not 'unit' in _col: #make sure a unit is assigned to data column
+                data_out['var_info'][var]['unit']= file.unit
             if 'wavelength' in _col:
                 data_out['var_info'][var]['wavelength_nm'] = _col.get_wavelength_nm() 
             contains_vars.append(var)
@@ -657,6 +683,10 @@ class ReadEbas(ReadUngriddedBase):
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
         self.files_failed = []
+        
+        # counter that is updated whenever a new variable appears during read
+        # (is used for attr. var_idx in UngriddedData object)
+        var_count_glob = -1
         for i, _file in enumerate(files):
             if i%disp_each == 0:
                 print("Reading file {} of {} ({})".format(i, 
@@ -704,15 +734,22 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj.add_chunk(totnum)
                 
             vars_avail = station_data.contains_vars
-            for var_idx, var in enumerate(vars_avail):
-                if not var in data_obj.unit:
-                    data_obj.unit[var] = station_data.unit[var]
-                elif station_data.unit[var] != data_obj.unit[var]:
-                    raise DataUnitError("Unit mismatch")
+            for var_count, var in enumerate(vars_avail):
+# =============================================================================
+#                 if not var in data_obj.unit:
+#                     data_obj.unit[var] = station_data.unit[var]
+#                 elif station_data.unit[var] != data_obj.unit[var]:
+#                     raise DataUnitError("Unit mismatch")
+# =============================================================================
                 values = station_data[var]
-                start = idx + var_idx * num_times
+                start = idx + var_count * num_times
                 stop = start + num_times
                 
+                if not var in data_obj.var_idx:
+                    var_count_glob += 1
+                    var_idx = var_count_glob
+                else:
+                    var_idx = data_obj.var_idx[var]
                 
                 #write common meta info for this station (data lon, lat and 
                 #altitude are set to station locations)
@@ -753,7 +790,8 @@ if __name__=="__main__":
 
     r = ReadEbas()
     data = r.read(vars_to_retrieve=['scatc550aer', 'absc550aer'], 
-                  station_names='Appalachian State University, Boone (NC)', 
+                  station_names=['Appalachian State University, Boone (NC)',
+                                 'Alert'], 
                   datalevel=None)
     
     print(data)
