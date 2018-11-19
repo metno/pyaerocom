@@ -256,21 +256,6 @@ class ReadAeronetSunV3(ReadAeronetBase):
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     
-    SAVE_DIR = '../../dev_scripts/out/anstrom_analysis/'
-    
-    if not os.path.exists(SAVE_DIR):
-        os.mkdir(SAVE_DIR)
-        
-    plt.close('all')
-    def plot_angstrom(data, save_dir=SAVE_DIR):
-        fig, ax = plt.subplots(figsize=(12,8))
-        ax.plot(data.ang4487aer, data.ang4487aer_calc, ' *')
-        ax.set_xlabel("Angstrom coeff 440-870 nm (from data)")
-        ax.set_ylabel("Angstrom coeff 440-870 nm (calculated)")
-        ax.set_title(data.station_name[0])
-        ax.grid()
-        fig.savefig(os.path.join(SAVE_DIR, 'AeronetV3_{}.png'.format(data.station_name[0])))
-        return ax
     read = ReadAeronetSunV3()
     read.verbosity_level = 'debug'
     
@@ -280,16 +265,7 @@ if __name__=="__main__":
     berlin = read.read_file(files_berlin[0],
                             vars_to_retrieve=['ang4487aer_calc',
                                               'ang4487aer'])
-    print(berlin)
-    
-    ax = plot_angstrom(berlin)
-    
-    for f in read.files[40:50]:
-        data = read.read_file(f, vars_to_retrieve=['ang4487aer_calc',
-                                                   'ang4487aer'])
-                        
-        plot_angstrom(data)
-    
+    print(berlin)    
     
     
     
