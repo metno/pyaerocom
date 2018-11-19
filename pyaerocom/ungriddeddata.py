@@ -72,6 +72,7 @@ class UngriddedData(object):
         :attr:`_VARINDEX`)
     """
     __version__ = '0.15'
+    
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -96,7 +97,7 @@ class UngriddedData(object):
             num_points = self._ROWNO
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([num_points, self._COLNO]) * np.nan
-        self.unit = BrowseDict()
+
         self.metadata = od()
         self.data_revision = od()
         self.meta_idx = od()
@@ -197,6 +198,11 @@ class UngriddedData(object):
     @station_name.setter
     def station_name(self, value):
         raise AttributeError("Station names cannot be changed")
+    
+    @property
+    def unique_station_names(self):
+        """List of unique station names"""
+        return sorted(list(dict.fromkeys(self.station_name)))
     
     @property
     def time(self):
@@ -407,7 +413,7 @@ class UngriddedData(object):
         else:
             start, stop = start_stop(start, stop)
             
-        if len(meta_idx) == 0:
+        if len(meta_idx) == 1:
             return self._metablock_to_stationdata(meta_idx[0], 
                                                   vars_to_convert,  
                                                   start, stop, freq, 
@@ -427,7 +433,8 @@ class UngriddedData(object):
                 stats.append(stat)
             except VarNotAvailableError:
                 pass
-                                      
+        if len(stats) == 0:
+            logger.warn('No data could be retrieved for request')
         return stats
         
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert=None, 
@@ -452,11 +459,16 @@ class UngriddedData(object):
         stat_data['PI'] = val['PI']
         stat_data['dataset_name'] = val['dataset_name']
         stat_data['ts_type_src'] = val['ts_type']
+        
+        stat_data['ts_type'] = val['ts_type']
+        #ts_type = val['ts_type']
         if 'instrument_name' in val:
             stat_data['instrument_name'] = val['instrument_name']
         
         if 'files' in val:
             stat_data['files'] = val['files']
+            
+        stat_data['var_info'] = {}
         
         if vars_to_convert is None:
             vars_to_convert = val['variables']
@@ -500,8 +512,16 @@ class UngriddedData(object):
                     data = data.interpolate().dropna()
                 if freq is not None:
                     from pyaerocom.helpers import resample_timeseries
-                    data = resample_timeseries(data, freq)    
+                    data = resample_timeseries(data, freq) 
+                    stat_data['ts_type'] = freq
+                    stat_data['dtime'] = data.index
             stat_data[var] = data
+            try:
+                stat_data.var_info[var]['unit'] = val['var_info'][var]['unit']
+            except Exception as e:
+                logger.warning('Unit for variable {} is not available'.format(var))
+            if 'var_info' in val and var in val['var_info']:
+                stat_data['var_info'][var] = val['var_info'][var]
         return stat_data
     
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
@@ -799,8 +819,8 @@ class UngriddedData(object):
         new.data_revision[dataset_name] = self.data_revision[dataset_name]
         return new
 
-    def _station_to_json_trends_interface(self, var_name, station_name, 
-                                          freq, **kwargs):
+    def _station_to_json_trends(self, var_name, station_name, 
+                                freq, **kwargs):
         """Convert station data to json file for trends interface
         
         Parameters
@@ -815,6 +835,10 @@ class UngriddedData(object):
             further input arguments that are passed to :func:`to_station_data`
         """
         raise NotImplementedError
+        if not isinstance(station_name, str):
+            raise ValueError('Require station name (or pattern) as string')
+        stat = self.to_station_data(station_name, var_name, freq=freq, **kwargs)
+        
         
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
@@ -912,7 +936,7 @@ class UngriddedData(object):
             new.meta_idx[i] = _meta_idx_new
             new.metadata[i] = _meta_check
         new.var_idx.update(self.var_idx)
-        new.unit = self.unit
+        #new.unit = self.unit
         new.filter_hist.update(self.filter_hist)
         if not new.shape == sh:
             raise Exception('FATAL: Mismatch in shape between initial and '
@@ -952,7 +976,7 @@ class UngriddedData(object):
         if obj.is_empty:
             obj._data = other._data
             obj.metadata = other.metadata
-            obj.unit = other.unit
+            #obj.unit = other.unit
             obj.data_revision = other.data_revision
             obj.meta_idx = other.meta_idx
             obj.var_idx = other.var_idx
@@ -960,14 +984,16 @@ class UngriddedData(object):
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
             data_offset = obj.shape[0]
-            for var, unit in other.unit:
-                if var in obj.unit.items():
-                    if not unit == obj.unit[var]:
-                        raise DataUnitError('Cannot merge other instance of '
-                                        'UngriddedData since units for variable '
-                                        '{} do not match.'.format(var))
-                else:
-                    obj.unit[var]=unit
+# =============================================================================
+#             for var, unit in other.unit:
+#                 if var in obj.unit.items():
+#                     if not unit == obj.unit[var]:
+#                         raise DataUnitError('Cannot merge other instance of '
+#                                         'UngriddedData since units for variable '
+#                                         '{} do not match.'.format(var))
+#                 else:
+#                     obj.unit[var]=unit
+# =============================================================================
                     
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
@@ -1295,7 +1321,7 @@ class UngriddedData(object):
         ts_type : :obj:`str`, optional
             temporal resolution
         **kwargs
-            Addifional keyword args passed to method :func:`to_station_data`
+            Additional keyword args passed to method :func:`to_station_data`
             
         Returns
         -------
