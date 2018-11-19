@@ -126,7 +126,6 @@ class AnalysisSetup(BrowseDict):
         names of frequencies to be analysed (for which colocated data objects
         are created)
     
-    
     Todo
     ----
     Complete docstring

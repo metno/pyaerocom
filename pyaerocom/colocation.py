@@ -156,7 +156,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                           name=gridded_data.var_name, attrs=meta)
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, 
-                               ts_type='daily', start=None, stop=None, 
+                               ts_type=None, start=None, stop=None, 
                                filter_name='WORLD-wMOUNTAINS',
                                var_ref=None, vert_scheme=None,
                                **kwargs):
@@ -229,16 +229,18 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     if var_ref is None:
         var_ref = var
     
-    if gridded_data.var_info.has_unit:
-        if not gridded_data.unit == ungridded_data.unit[var_ref]:
-            try:
-                gridded_data.convert_unit(ungridded_data.unit[var_ref])
-            except:
-                raise DataUnitError('Failed to merge data unit of '
-                                    'gridded data object ({}) to data unit '
-                                    'of ungridded data object ({})'
-                                    .format(gridded_data.unit, 
-                                            ungridded_data.unit[var_ref]))
+# =============================================================================
+#     if gridded_data.var_info.has_unit:
+#         if not gridded_data.unit == ungridded_data.unit[var_ref]:
+#             try:
+#                 gridded_data.convert_unit(ungridded_data.unit[var_ref])
+#             except:
+#                 raise DataUnitError('Failed to merge data unit of '
+#                                     'gridded data object ({}) to data unit '
+#                                     'of ungridded data object ({})'
+#                                     .format(gridded_data.unit, 
+#                                             ungridded_data.unit[var_ref]))
+# =============================================================================
                 
     if not var_ref in ungridded_data.contains_vars:
         raise VarNotAvailableError('Variable {} is not available in ungridded '
@@ -259,6 +261,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     
     grid_ts_type = gridded_data.ts_type
     
+    if ts_type is None:
+        ts_type = grid_ts_type
     if start is None:
         start = grid_start
     else:
@@ -322,7 +326,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     
     
     TIME_IDX = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
-
+    
+    ungridded_unit = None
     ts_type_src_ref = None
     for i, obs_data in enumerate(obs_stat_data):
         if obs_data is not None:
@@ -331,6 +336,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             elif not obs_data['ts_type_src'] == ts_type_src_ref:
                 raise ValueError('Cannot perform colocation. Ungridded data '
                                  'object contains different source frequencies')
+            if ungridded_unit is None:
+                ungridded_unit = obs_data['var_info'][var_ref]['unit']
+                
+            elif not obs_data['var_info'][var_ref]['unit'] == ungridded_unit:
+                raise ValueError('Cannot perform colocation. Ungridded data '
+                                 'object contains different units ({})'.format(var_ref))
             # get observations (Note: the index of the observation time series
             # is already in the specified frequency format, and thus, does not
             # need to be updated, for details (or if errors occur), cf. 
@@ -380,7 +391,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             'ts_type_src_ref'   :   ts_type_src_ref,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'unit'              :   str(gridded_data.unit),
+            'unit'              :   [str(gridded_data.unit),
+                                     ungridded_unit],
             'data_level'        :   'colocated',
             'revision_ref'      :   revision}
 
