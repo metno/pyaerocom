@@ -68,9 +68,12 @@ class EbasColDef(dict):
             raise NotImplementedError('Wavelength definition is not in nm')
         return float(self.wavelength.split('nm')[0].strip())
         
-    def to_dict(self):
+    def to_dict(self, ignore_keys=['is_var', 'is_flag', 'flag_id', 
+                                   'wavelength_nm']):
         d = {}
-        d.update(**self)
+        for k, v in self.items():
+            if not k in ignore_keys:
+                d[k] = v
         return d
             
     def __getattr__(self, key):
