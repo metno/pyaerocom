@@ -94,6 +94,7 @@ from . import analysis
 
 from . import io
 from . import plot
+from . import interactive
 
 
 #from .ungriddeddata import UngriddedData
