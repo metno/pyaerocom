@@ -417,13 +417,15 @@ class Config(object):
             self.logger.warning("Observations base directory {} does not "
                                 "exist".format(self._obsbasedir))
             ok=False
-            
+        
+        out_ok = True
         if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
-            out_ok = True
+            out_ok = False
             try:
                 self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
+                out_ok = True
             except:
-                out_ok = False
+                pass
         
         if not out_ok or not self._write_access(self._outputdir):
             self.log.info('Cannot establish write access to output directory {}'
