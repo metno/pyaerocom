@@ -36,8 +36,9 @@ class StationData(Station):
                              'altitude' : None}
         
         self.dtime = []
-        self.instrument_name = None
-        self.unit = BrowseDict()
+        # dictionary that should be filled with available meta-information 
+        # for each data column appended to this object
+        self.var_info = BrowseDict()
         super(StationData, self).__init__(*args, **kwargs)
         
     def get_data_columns(self):
