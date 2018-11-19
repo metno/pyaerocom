@@ -187,7 +187,8 @@ class ReadUngridded(object):
         raise NetworkNotImplemented("No reading class available yet for dataset "
                                     "{}".format(dataset_to_read))
         
-    def read_dataset(self, dataset_to_read, vars_to_retrieve=None, **kwargs):
+    def read_dataset(self, dataset_to_read, vars_to_retrieve=None, 
+                     **kwargs):
         """Read single dataset into instance of :class:`ReadUngridded`
         
         Note
@@ -208,6 +209,13 @@ class ReadUngridded(object):
         UngriddedData
             data object
         """
+        _caching = None
+        if len(kwargs) > 0:
+            _caching = const.CACHING 
+            const.CACHING = False
+            
+            print_log.info('Received additional reading constraints, '
+                           'ignoring caching')
         if vars_to_retrieve is None:
             # Note: self.vars_to_retrieve may be None as well, then
             # default variables of each network are read
@@ -258,6 +266,8 @@ class ReadUngridded(object):
         if not cache_hit_flag and not self.ignore_cache:
             cache.write(data)
         
+        if _caching is not None:
+            const.CACHING = _caching
         return data
     
     def read(self, datasets_to_read=None, vars_to_retrieve=None,
