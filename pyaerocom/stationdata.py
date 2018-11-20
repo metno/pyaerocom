@@ -39,7 +39,16 @@ class StationData(Station):
         # dictionary that should be filled with available meta-information 
         # for each data column appended to this object
         self.var_info = BrowseDict()
+    
         super(StationData, self).__init__(*args, **kwargs)
+       
+    def compare_meta(self, other, var_name=None):
+        """Compare meta information of this object with other object
+        
+        Parameters
+        """
+        diff = {}
+        raise NotImplementedError('Coming soon')
         
     def get_data_columns(self):
         """List containing all data columns
