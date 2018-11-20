@@ -446,10 +446,17 @@ class UngriddedData(object):
         
         See :func:`to_station_data` for input parameters
         """
+        # may or may not be defined in metadata block
+        check_keys = ['instrument_name', 'filename', 'revision_date',
+                      'station_name_orig']
         stat_data = StationData()
         
         val = self.metadata[meta_idx]
         
+        for k in check_keys:
+            if k in val:
+                stat_data[k] = val[k]
+                
         # do not return anything for stations without data
         # TODO: consider writing stat_lon, stat_lat and stat_alt
         stat_data['station_name'] = val['station_name']
@@ -461,12 +468,6 @@ class UngriddedData(object):
         stat_data['ts_type_src'] = val['ts_type']
         
         stat_data['ts_type'] = val['ts_type']
-        #ts_type = val['ts_type']
-        if 'instrument_name' in val:
-            stat_data['instrument_name'] = val['instrument_name']
-        
-        if 'files' in val:
-            stat_data['files'] = val['files']
             
         stat_data['var_info'] = {}
         
