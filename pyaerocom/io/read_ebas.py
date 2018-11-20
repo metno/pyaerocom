@@ -92,8 +92,8 @@ class ReadEbas(ReadUngriddedBase):
     
     TS_TYPE = 'undefined'
     
-    MERGE_STATIONS = {'Birkenes' : 'Birkenes II',
-                      'Trollhaugen'    : 'Troll'}
+    MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
+                      #'Trollhaugen'    : 'Troll'}
     # TODO: check and redefine 
     #: default variables for read method
     DEFAULT_VARS = ['absc550aer', # light absorption coefficient
@@ -585,6 +585,7 @@ class ReadEbas(ReadUngriddedBase):
         name = meta['station_name']
         if name in self.MERGE_STATIONS:
             data_out['station_name'] = self.MERGE_STATIONS[name]
+            data_out['station_name_orig'] = name
         else:
             data_out['station_name'] = name
         data_out['PI'] = file['data_originator']
@@ -740,6 +741,8 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
             metadata[meta_key]['revision_date'] = station_data['revision_date'] 
             metadata[meta_key]['filename'] = os.path.basename(_file)
+            if 'station_name_orig' in station_data:
+                metadata[meta_key]['station_name_orig'] = station_data['station_name_orig']     
             metadata[meta_key]['var_info'] = od()
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
