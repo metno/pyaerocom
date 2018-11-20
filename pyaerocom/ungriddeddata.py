@@ -63,9 +63,9 @@ class UngriddedData(object):
     mata_idx : dict
         dictionary containing index mapping for each station and variable. Keys
         correspond to metadata key (float -> station, see :attr:`metadata`) and 
-        variables are dictionaries containing keys specifying variable name and 
-        values are arrays or lists, specifying indices (rows) of these 
-        station / variable information in :attr:`_data`.
+        values are dictionaries containing keys specifying variable name and 
+        corresponding values are arrays or lists, specifying indices (rows) of 
+        these station / variable information in :attr:`_data`.
     var_idx : dict
         mapping of variable name (keys, e.g. od550aer) to numerical variable 
         index of this variable in data numpy array (in column specified by
@@ -859,7 +859,7 @@ class UngriddedData(object):
 
         return lats, lons
             
-    def _find_common_meta(self, ignore_keys=['PI', 'var_info']):
+    def _find_common_meta(self, ignore_keys=None):
         """Searches all metadata dictionaries that are the same
         
         Parameters
@@ -875,6 +875,8 @@ class UngriddedData(object):
             - list containing lists with common meta indices
             - list containing corresponding meta dictionaries
         """
+        if ignore_keys is None:
+            ignore_keys = []
         meta_registered = []
         same_indices = []
         for meta_key, meta in self.metadata.items():
@@ -886,10 +888,16 @@ class UngriddedData(object):
             if not found:
                 meta_registered.append(meta)
                 same_indices.append([meta_key])
-        return same_indices, meta_registered
+        
+        return same_indices
     
-    def merge_common_meta(self, ignore_keys=['PI', 'var_info']):
+    def merge_common_meta(self, ignore_keys=None):
         """Merge all meta entries that are the same
+        
+        Note
+        ----
+        If there is an overlap in time between the data, the blocks are not
+        merged
             
         Todo
         ----
@@ -907,19 +915,34 @@ class UngriddedData(object):
         UngriddedData
             merged data object
         """
+        if ignore_keys is None:
+            ignore_keys = []
         sh = self.shape
-        lst_meta_idx, lst_meta = self._find_common_meta()
+        lst_meta_idx = self._find_common_meta(ignore_keys)
         new = UngriddedData(num_points=self.shape[0])
         didx = 0
         for i, idx_lst in enumerate(lst_meta_idx):
-            _meta_check = lst_meta[i]
+            _meta_check = od()
+            # write metadata of first index that matches
+            _meta_check.update(self.metadata[idx_lst[0]])
             _meta_idx_new = od()
-            for meta_idx in idx_lst:
-                meta = self.metadata[meta_idx]
-                if not same_meta_dict(meta, _meta_check,  
-                                      ignore_keys=ignore_keys):
-                    raise ValueError('Unexpected error. Please debug or '
-                                     'contact jonasg@met.no')
+            for j, meta_idx in enumerate(idx_lst):
+                if j > 0: # don't check first against first
+                    meta = self.metadata[meta_idx]
+                    if not same_meta_dict(meta, _meta_check,  
+                                          ignore_keys=ignore_keys):
+                        raise ValueError('Unexpected error. Please debug or '
+                                         'contact jonasg@met.no')
+                    for k in ignore_keys:
+                        if k in meta:
+                            if not k in _meta_check:
+                                _meta_check[k] = meta[k]
+                            else:
+                                if not isinstance(_meta_check[k], list):
+                                    _meta_check[k] = [_meta_check[k]]
+                                if not meta[k] in _meta_check[k]:
+                                    _meta_check[k].append(meta[k])
+                           
                 data_var_idx = self.meta_idx[meta_idx]
                 for var, data_idx in data_var_idx.items():
                     num = len(data_idx)
@@ -1364,9 +1387,15 @@ class UngriddedData(object):
             import matplotlib.pyplot as plt
             from pyaerocom.plot.config import FIGSIZE_DEFAULT
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
-        s = self.get_time_series(station, var_name, start, stop, ts_type)
-        s.plot(ax=ax, **kwargs)
         
+        s = self.get_time_series(station, var_name, start, stop, ts_type)
+        if isinstance(s, StationData):
+            s.plot(ax=ax, **kwargs)
+        else:
+            raise NotImplementedError('Cannot yet plot multiple instances of '
+                                      'StationData into one time-series. '
+                                      'Coming soon...')
+            
         return ax
         
     def plot_station_coordinates(self, var_name=None, 

@@ -61,7 +61,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.08_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.09_" + ReadUngriddedBase.__baseversion__
     
     #: preferred order of data statistics. Some files may contain multiple 
     #: columns for one variable, where each column corresponds to one of the
@@ -92,6 +92,8 @@ class ReadEbas(ReadUngriddedBase):
     
     TS_TYPE = 'undefined'
     
+    MERGE_STATIONS = {'Birkenes' : 'Birkenes II',
+                      'Trollhaugen'    : 'Troll'}
     # TODO: check and redefine 
     #: default variables for read method
     DEFAULT_VARS = ['absc550aer', # light absorption coefficient
@@ -481,7 +483,7 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
             
         file = EbasNasaAmesFile(filename)
-
+    
         var_cols = {}
         all_vars = self.aerocom_vars
         ebas_var_info = {}
@@ -553,7 +555,7 @@ class ReadEbas(ReadUngriddedBase):
     
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out['filename'] = filename
+        #data_out['filename'] = filename
         data_out.dataset_name = self.DATASET_NAME
         
         
@@ -575,11 +577,16 @@ class ReadEbas(ReadUngriddedBase):
         data_alt = stat_alt + meas_height
             
         # file specific meta information
+        #data_out.update(meta)
         data_out['stat_lon'] = float(meta['station_longitude'])
         data_out['stat_lat'] = float(meta['station_latitude'])
         
         data_out['stat_alt'] = stat_alt
-        data_out['station_name'] = meta['station_name']
+        name = meta['station_name']
+        if name in self.MERGE_STATIONS:
+            data_out['station_name'] = self.MERGE_STATIONS[name]
+        else:
+            data_out['station_name'] = name
         data_out['PI'] = file['data_originator']
         data_out['altitude'] = data_alt
         data_out['instrument_name'] = meta['instrument_name']
@@ -587,10 +594,9 @@ class ReadEbas(ReadUngriddedBase):
         
         # NOTE: may be also defined per column in attr. var_defs
         data_out['matrix'] = meta['matrix']
-        
-        
-        
-            
+    
+        data_out['revision_date'] = file['revision_date']
+
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
@@ -664,7 +670,7 @@ class ReadEbas(ReadUngriddedBase):
         -------
         UngriddedData
             data object
-        """
+        """     
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -683,6 +689,7 @@ class ReadEbas(ReadUngriddedBase):
         self.read_failed = []
         
         data_obj = UngriddedData()
+
         meta_key = 0.0
         idx = 0
         
@@ -706,7 +713,7 @@ class ReadEbas(ReadUngriddedBase):
         var_count_glob = -1
         for i, _file in enumerate(files):
             if i%disp_each == 0:
-                print("Reading file {} of {} ({})".format(i, 
+                print("Reading file {} of {} ({})".format(i+1, 
                                  num_files, type(self).__name__))
             vars_to_read = files_contain[i]
             
@@ -731,6 +738,8 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key]['dataset_name'] = self.DATASET_NAME
             metadata[meta_key]['ts_type'] = station_data['ts_type']
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
+            metadata[meta_key]['revision_date'] = station_data['revision_date'] 
+            metadata[meta_key]['filename'] = os.path.basename(_file)
             metadata[meta_key]['var_info'] = od()
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
@@ -796,24 +805,51 @@ class ReadEbas(ReadUngriddedBase):
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj = data_obj.merge_common_meta()
+        data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 'PI',
+                                                           'revision_date'])
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         return data_obj
     
 if __name__=="__main__":
+    import matplotlib.pyplot as plt
+    plt.close('all')
     from pyaerocom import change_verbosity
     change_verbosity('critical')
 
     r = ReadEbas()
-    data = r.read(vars_to_retrieve=['scatc550aer', 'absc550aer'], 
-                  station_names=['Appalachian State University, Boone (NC)',
-                                 'Alert'], 
+    data = r.read(vars_to_retrieve=['absc550aer', 'scatc550aer'],
+                  station_names='Buk*',
                   datalevel=None)
     
     print(data)
-
-    stat = data.to_station_data('Appalachian State*')
     
-    stats = data.to_station_data('Appalachian State University*', 
-                                 vars_to_convert='scatc550aer')
+    data
+    
+    stat = data.to_station_data('Buk*', 'scatc550aer')
+    stat[0].scatc550aer.plot()
+    
+# =============================================================================
+#     META0 = r.META[0]
+#     
+#     DIFF = []
+#     for M in r.META[1:]:
+#         diff = {}
+#         ok = []
+#         for k, v in META0.items():
+#             if not k in M:
+#                 diff[k] = 'Only in first'
+#             elif not v == M[k]:
+#                 diff[k] = [v, M[k]]
+#             else:
+#                ok.append(k) 
+#         for k in M:
+#             if not k in ok and not k in diff:
+#                 diff[k] = 'Not in first'
+#         DIFF.append(diff)
+# =============================================================================
+
+    #stat = data.to_station_data('Appalachian State*')
+    
+    #stats = data.to_station_data('Appalachian State University*', 
+     #                            vars_to_convert='scatc550aer')

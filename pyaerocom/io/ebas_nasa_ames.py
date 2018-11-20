@@ -108,6 +108,14 @@ class EbasColDef(dict):
             s += "{}: {}\n".format(k, v)
         return s
     
+def _readline_ref_and_revision(line):
+    spl = line.strip().split()
+    basedate = np.datetime64(datetime.strptime('{}{}{}'.format(spl[0],
+                                               spl[1], spl[2]), "%Y%m%d"), 's')
+    rev = np.datetime64(datetime.strptime('{}{}{}'.format(spl[3],
+                                               spl[4], spl[5]), "%Y%m%d"), 's')
+    return [basedate, rev]
+
 class NasaAmesHeader(object):
     """Header class for Ebas NASA Ames file
     
@@ -151,7 +159,7 @@ class NasaAmesHeader(object):
                         CONV_STR, #4
                         CONV_STR, #5
                         CONV_MULTIINT, #6
-                        lambda l : [x.strip() for x in l.strip().split("     ")], #7
+                        _readline_ref_and_revision, #7 lambda l : [x.strip() for x in l.strip().split("     ")], #7
                         CONV_FLOAT, #8
                         CONV_STR, #9
                         CONV_INT, #10
@@ -373,8 +381,12 @@ class EbasNasaAmesFile(NasaAmesHeader):
                                  "is not available in file header")
         if not self.timezone.lower() == "utc":
             raise TimeZoneError("Timezones other than UTC are not yet supported")
-        return np.datetime64(datetime.strptime(self.startdate, "%Y%m%d%H%M%S"),
-                             's')
+        return self.ref_date
+# =============================================================================
+#         return np.datetime64(datetime.strptime(self.startdate, "%Y%m%d%H%M%S"),
+#                              's')
+# =============================================================================
+    
     
     @property
     def time_unit(self):
