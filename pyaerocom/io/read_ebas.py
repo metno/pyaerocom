@@ -585,6 +585,12 @@ class ReadEbas(ReadUngriddedBase):
         data_out['instrument_name'] = meta['instrument_name']
         data_out['instrument_type'] = meta['instrument_type']
         
+        # NOTE: may be also defined per column in attr. var_defs
+        data_out['matrix'] = meta['matrix']
+        
+        
+        
+            
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
@@ -601,13 +607,24 @@ class ReadEbas(ReadUngriddedBase):
                                     'values are NaN'.format(var))
                 continue
             data_out[var] = data
-            data_out['var_info'][var] = file.var_defs[colnum]
             _col = file.var_defs[colnum]
             if not 'unit' in _col: #make sure a unit is assigned to data column
-                data_out['var_info'][var]['unit']= file.unit
+                _col['unit']= file.unit
             if 'wavelength' in _col:
-                data_out['var_info'][var]['wavelength_nm'] = _col.get_wavelength_nm() 
+                _col['wavelength_nm'] = _col.get_wavelength_nm() 
+            # TODO: double-check with NILU if this can be assumed
+            if not 'matrix' in _col:
+                _col['matrix'] = meta['matrix']
+            if not 'statistics' in _col:
+                stats = None
+                if 'statistics' in meta:
+                    stats = meta['statistics']
+                _col['statistics'] = stats
+                
+                
+            data_out['var_info'][var] = _col
             contains_vars.append(var)
+            
         
         if len(contains_vars) == 0:
             raise EbasFileError('All data columns of specified input variables '
