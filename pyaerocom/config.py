@@ -349,7 +349,8 @@ class Config(object):
         if 'obsdata' in os.listdir(value): #test dataset
             from pyaerocom import print_log
             print_log.info('Activating test-mode')
-            self.read_config(self._config_ini_testdata, keep_basedirs=True)
+            self.read_config(self._config_ini_testdata, 
+                             keep_basedirs=True)
             self._cachedir = os.path.join('..', '_cache')
         else:
             self.reload()    
