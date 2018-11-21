@@ -315,9 +315,13 @@
 <span class="sd">        True, if longitudes were on 0 -&gt; 360 and have been rolled, else</span>
 <span class="sd">        False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rolling longitudes to -180 -&gt; 180 definition&quot;</span><span class="p">)</span>
-        <span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">))</span>
+    <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">print_log</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cube</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rolling longitudes to -180 -&gt; 180 definition&quot;</span><span class="p">)</span>
+            <span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">print_log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Failed to roll longitudes: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">cube</span></div>
 
 <div class="viewcode-block" id="check_dim_coords_cube"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.iris_io.check_dim_coords_cube">[docs]</a><span class="k">def</span> <span class="nf">check_dim_coords_cube</span><span class="p">(</span><span class="n">cube</span><span class="p">):</span>

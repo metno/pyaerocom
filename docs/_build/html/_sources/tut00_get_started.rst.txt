@@ -39,7 +39,7 @@ observation network is *ungridded*, that is, the data is not available
 in a gridded format such as NetCDF, but, for instance, in the form of
 column seperated text files (as is the case for Aeronet data, which is
 used as an example here and included in the test dataset). For
-``gridded`` observations (e.g. satellite data), the flowchart is
+``gridded`` observations (e.g. satellite data), the flowchart is
 equivalent but with ``ReadGridded`` class and ``GriddedData`` for the
 observation branch (and without caching).
 
@@ -50,11 +50,22 @@ displayed in the flowchart.
 
     import pyaerocom as pya
 
+
+.. parsed-literal::
+
+    Init data paths for lustre
+
+
+.. parsed-literal::
+
+    0.007483482360839844 s
+
+
 Check data directory
 ''''''''''''''''''''
 
 By default, pyaerocom assumes that the AEROCOM database can be accessed
-(cf. top of flowchart), that is, it initiates all data query paths
+(cf. top of flowchart), that is, it initiates all data query paths
 relative to the database server path names.
 
 .. code:: ipython3
@@ -80,14 +91,14 @@ Reading of and working with *gridded* model data (``ReadGridded`` and ``GriddedD
 
 This section illustrates the reading of gridded data as well as some
 features of the ``GriddedData`` class of *pyaerocom*. First, however, we
-have to find a valid model ID for the reading (cf. flow chart).
+have to find a valid model ID for the reading (cf. flow chart).
 
 Find model data
 '''''''''''''''
 
 The database contains data from the CAM53-Oslo model, which is used in
 the following. You can use the ``browse_database`` function of pyaerocom
-to find model ID’s (which can be quite cryptic sometimes) using wildcard
+to find model ID's (which can be quite cryptic sometimes) using wildcard
 pattern search.
 
 .. code:: ipython3
@@ -125,6 +136,151 @@ Import both clear-sky (*cs* in variable name) and all-sky data.
     reader = pya.io.ReadGridded('CAM53-Oslo_7310_MG15CLM45_5feb2017IHK_53OSLO_PD_UNTUNED')
     od550aer = reader.read_var('od550aer')
     od550csaer = reader.read_var('od550csaer')
+
+
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+
 
 Both data objects are instances of class
 `GriddedData <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.griddeddata>`__
@@ -230,7 +386,7 @@ be accessed via the ``time`` attribute of the data class.
            1643., 1674., 1705., 1735., 1766., 1796., 1827., 1858., 1886.,
            1917., 1947., 1978., 2008., 2039., 2070., 2100., 2131., 2161.,
            2192., 2223., 2251., 2282., 2312., 2343., 2373., 2404., 2435.,
-           2465., 2496., 2526.]), standard_name='time', units=Unit('days since 2004-01-01 00:00:00', calendar='standard'))
+           2465., 2496., 2526.]), standard_name='time', units=Unit('days since 2004-01-01 00:00:00', calendar='gregorian'))
 
 
 
@@ -295,7 +451,7 @@ objects. These can be computed using the ``time_stamps()`` method:
 Plotting maps
 '''''''''''''
 
-Maps of individual time stamps can be plotted using the quickplot_map
+Maps of individual time stamps can be plotted using the quickplot\_map
 method.
 
 .. code:: ipython3
@@ -317,7 +473,7 @@ Filtering
 
 Regional filtering can be performed using the
 `Filter <http://aerocom.met.no/pyaerocom/api.html#module-pyaerocom.filter>`__
-class (cf. flowchart above).
+class (cf. flowchart above).
 
 An overview of available default regions can be accessed via:
 
@@ -331,7 +487,7 @@ An overview of available default regions can be accessed via:
     ['WORLD', 'EUROPE', 'ASIA', 'AUSTRALIA', 'CHINA', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
 
 
-Now let’s go for north Africa. Create instance of Filter class:
+Now let's go for north Africa. Create instance of Filter class:
 
 .. code:: ipython3
 
@@ -352,7 +508,7 @@ Now let’s go for north Africa. Create instance of Filter class:
 
 
 
-… and apply to the two data objects (this can be done by calling the
+... and apply to the two data objects (this can be done by calling the
 filter with the corresponding data class as input parameter):
 
 .. code:: ipython3
@@ -391,7 +547,7 @@ Compare shapes:
 
 
 As you can see, the filtered object is reduced in the longitude and
-latitude dimension. Let’s plot the two new objects:
+latitude dimension. Let's plot the two new objects:
 
 .. code:: ipython3
 
@@ -416,7 +572,7 @@ the indices of the time stamps you want to crop, you can simply use
 numpy indexing syntax (remember that we have a 3D array containing time,
 latitude and lonfgitude).
 
-Let’s say we want to filter the **year 2009**.
+Let's say we want to filter the **year 2009**.
 
 Since the time dimension corresponds the first index in the 3D data
 (time, lat, lon), and since we know, that we have monthly data from
@@ -446,8 +602,8 @@ in order to extract the year 2009.
 
 However, this methodology might not always be handy (imagine you have a
 10 year dataset of ``3hourly`` sampled data and want to extract three
-months in the 6th year …). In that case, you can perform the cropping
-using the actual timestamps (for comparibility, let’s stick to 2009
+months in the 6th year ...). In that case, you can perform the cropping
+using the actual timestamps (for comparibility, let's stick to 2009
 here):
 
 .. code:: ipython3
@@ -473,7 +629,7 @@ here):
 Data aggregation
 ''''''''''''''''
 
-Let’s say we want to compute yearly means for each of the 3 years. In
+Let's say we want to compute yearly means for each of the 3 years. In
 this case we can simply call the ``downscale_time`` method:
 
 .. code:: ipython3
@@ -577,7 +733,7 @@ Read Aeronet Sun v3 level 2 data
 
 As illustrated in the flowchart above, ungridded observation data can be
 imported using the ``ReadUngridded`` class. The reading class requires
-an ID for the observation network that is supposed to be read. Let’s
+an ID for the observation network that is supposed to be read. Let's
 find the right ID for these data:
 
 .. code:: ipython3
@@ -591,7 +747,7 @@ find the right ID for these data:
     Dataset name: AeronetSunV3Lev2.daily
     Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed
     Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
-    Last revision: 20180820
+    Last revision: 20181105
     Reading failed for AeronetSunV3Lev2.AP. Error: OSError('Data directory /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed of observation network AeronetSunV3Lev2.AP does not exists',)
     
     Dataset name: AeronetSDAV3Lev2.daily
@@ -625,16 +781,21 @@ observation networks that are available in the AEROCOM database.
     Dataset name: AeronetSunV3Lev2.daily
     Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed
     Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
-    Last revision: 20180820
+    Last revision: 20181105
 
 
-Let’s read the data (you can read a single or multiple variables at the
+Let's read the data (you can read a single or multiple variables at the
 same time). For now, we only read the AOD at 550 nm:
 
 .. code:: ipython3
 
     aeronet_data = obs_reader.read(vars_to_retrieve='od550aer')
     type(aeronet_data) #displays data type
+
+
+.. parsed-literal::
+
+    Found Cache match for AeronetSunV3Lev2.daily
 
 
 
@@ -662,7 +823,7 @@ informative string representation (that can be printed):
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['od550aer']
     Contains instruments: ['sun_photometer']
-    Total no. of stations: 1165
+    Total no. of meta-blocks: 1189
 
 
 Access of individual stations
@@ -677,7 +838,8 @@ Access of individual stations
 
 .. parsed-literal::
 
-    ['AOE_Baotou',
+    ['AAOT',
+     'AOE_Baotou',
      'ARM_Ascension_Is',
      'ARM_Barnstable_MA',
      'ARM_Darwin',
@@ -685,6 +847,7 @@ Access of individual stations
      'ARM_Graciosa',
      'ARM_Highlands_MA',
      'ARM_HyytialaFinland',
+     'ARM_Macquarie_Is',
      'ARM_Manacapuru',
      'ARM_McMurdo',
      'ARM_Nainital',
@@ -755,6 +918,7 @@ Access of individual stations
      'Bandung',
      'Baneasa',
      'Banizoumbou',
+     'Banqiao',
      'Barbados',
      'Barbados_SALTRACE',
      'Barcelona',
@@ -777,6 +941,7 @@ Access of individual stations
      'Bhola',
      'Biarritz',
      'Bidi_Bahn',
+     'Bidur',
      'Big_Meadows',
      'Billerica',
      'Birdsville',
@@ -825,6 +990,7 @@ Access of individual stations
      'CEILAP-Neuquen',
      'CEILAP-RG',
      'CEILAP-UTN',
+     'CENER',
      'CLUJ_UBB',
      'COVE',
      'COVE_SEAPRISM',
@@ -892,6 +1058,7 @@ Access of individual stations
      'Campo_Grande_SONDA',
      'Canberra',
      'Cap_d_En_Font',
+     'Cape_Fuguei_Station',
      'Cape_Romain',
      'Cape_San_Juan',
      'Capo_Verde',
@@ -1082,6 +1249,7 @@ Access of individual stations
      'Dilar',
      'Djougou',
      'Doi_Ang_Khang',
+     'Doi_Inthanon',
      'Dolly_Sods',
      'Donetsk',
      'Dongsha_Island',
@@ -1179,6 +1347,7 @@ Access of individual stations
      'Hangzhou-ZFU',
      'Hangzhou_City',
      'Hankuk_UFS',
+     'Hart_Miller_Island',
      'Harvard_Forest',
      'Hefei',
      'Helgoland',
@@ -1218,6 +1387,7 @@ Access of individual stations
      'Inhaca',
      'Inner_Mongolia',
      'Iqaluit',
+     'Irbe_Lighthouse',
      'Irkutsk',
      'Ispra',
      'Issyk-Kul',
@@ -1260,6 +1430,7 @@ Access of individual stations
      'Kangerlussuaq',
      'Kanpur',
      'Kanzelhohe_Obs',
+     'Kaohsiung',
      'Kaoma',
      'Kapoho',
      'Karachi',
@@ -1281,6 +1452,7 @@ Access of individual stations
      'Kolimbari',
      'Konza',
      'Korea_University',
+     'Kosetice_Inoe',
      'Krasnoyarsk',
      'Kuching',
      'Kuopio',
@@ -1359,6 +1531,7 @@ Access of individual stations
      'Mammoth_Lake',
      'Manaus',
      'Manaus_EMBRAPA',
+     'Mandalay_MTU',
      'Manila_Observatory',
      'Manus',
      'Marambio',
@@ -1446,6 +1619,7 @@ Access of individual stations
      'NEON-HQ',
      'NEON-SoaprootSaddle',
      'NEON17-SJER',
+     'NEON_BARR',
      'NEON_Bartlett',
      'NEON_CLBJ',
      'NEON_CVALLA',
@@ -1462,6 +1636,8 @@ Access of individual stations
      'NEON_LENO',
      'NEON_MLBS',
      'NEON_MOAB',
+     'NEON_NIWO',
+     'NEON_NOGP',
      'NEON_OAES',
      'NEON_ONAQ',
      'NEON_ORNL',
@@ -1469,6 +1645,7 @@ Access of individual stations
      'NEON_RMNP',
      'NEON_SCBI',
      'NEON_SERC',
+     'NEON_SRER',
      'NEON_Sterling',
      'NEON_TALL',
      'NEON_TOOL',
@@ -1491,6 +1668,7 @@ Access of individual stations
      'Ndola',
      'Nes_Ziona',
      'New_Delhi',
+     'New_Delhi_IMD',
      'New_Hampshire_Univ',
      'NhaTrang',
      'Niabrara',
@@ -1615,6 +1793,7 @@ Access of individual stations
      'SANTA_CRUZ_UTEPSA',
      'SDU1',
      'SDU2',
+     'SDU2018',
      'SDU3',
      'SDU4',
      'SEARCH-Centreville',
@@ -1638,6 +1817,7 @@ Access of individual stations
      'Saih_Salam',
      'Saint_Mandrier',
      'Salon_de_Provence',
+     'San_Cristobal_USFQ',
      'San_Giuliano',
      'San_Nicolas',
      'San_Nicolas_Vandal',
@@ -1650,6 +1830,7 @@ Access of individual stations
      'Santiago_Beauchef',
      'Sao_Martinho_SONDA',
      'Sao_Paulo',
+     'Sao_Tome',
      'Saturn_Island',
      'Senanga',
      'Seoul_SNU',
@@ -1657,31 +1838,11 @@ Access of individual stations
      'Sevastopol',
      'Sevilleta',
      'Seysses',
-     'Shagaya_Park',
-     'Shelton',
-     'Shirahama',
-     'Shouxian',
-     'Sigma_Space_Corp',
-     'Silpakorn_Univ',
-     'Simonstown_IMT',
-     'Singapore',
-     'Sinhgad',
-     'Sioux_Falls',
-     'Sioux_Falls_X',
-     'Sir_Bu_Nuair',
-     'Sirmione_Museo_GC',
-     'Skukuza',
-     'Smith_Island_CBF',
-     'Socheongcho',
-     'Sodankyla',
-     'Solar_Village',
-     'Solwezi',
-     'Son_La',
      ...]
 
 
 
-Let’s say you are interested in the city of Leipzig, Germany.
+Let's say you are interested in the city of Leipzig, Germany.
 
 .. code:: ipython3
 
@@ -1715,83 +1876,29 @@ You may print it to see what is in there:
     
     Pyaerocom StationData
     ---------------------
-    instrument_name: sun_photometer
-    unit (<class 'pyaerocom._lowlevel_helpers.BrowseDict'>)
+    var_info ({})
     dataset_name: AeronetSunV3Lev2.daily
     station_name: Leipzig
     PI: Brent_Holben
     stat_lat: nan
     stat_lon: nan
     stat_alt: nan
+    instrument_name: sun_photometer
     ts_type_src: daily
-    od550aer: 2001-05-20 12:00:00    0.190538
-    2001-05-21 12:00:00    0.165246
-    2001-05-22 12:00:00    0.117999
-    2001-05-23 12:00:00    0.067452
-    2001-05-24 12:00:00    0.077793
-    2001-05-30 12:00:00    0.119798
-    2001-06-03 12:00:00    0.121039
-    2001-06-06 12:00:00    0.312110
-    2001-06-07 12:00:00    0.192976
-    2001-06-09 12:00:00    0.558903
-    2001-06-11 12:00:00    0.206287
-    2001-06-12 12:00:00    0.294526
-    2001-06-13 12:00:00    0.333145
-    2001-06-14 12:00:00    0.346363
-    2001-06-15 12:00:00    0.332472
-    2001-06-16 12:00:00    0.220668
-    2001-06-17 12:00:00    0.103815
-    2001-06-19 12:00:00    0.146963
-    2001-06-20 12:00:00    0.149631
-    2001-06-21 12:00:00    0.322529
-    2001-06-23 12:00:00    0.266764
-    2001-06-24 12:00:00    0.148060
-    2001-06-25 12:00:00    0.468637
-    2001-06-26 12:00:00    0.168430
-    2001-06-27 12:00:00    0.224706
-    2001-06-28 12:00:00    0.837737
-    2001-06-29 12:00:00    0.472877
-    2001-06-30 12:00:00    0.421142
-    2001-07-01 12:00:00    0.285850
-    2001-07-02 12:00:00    0.149566
-                             ...   
-    2017-09-20 12:00:00    0.098478
-    2017-09-21 12:00:00    0.285237
-    2017-09-22 12:00:00    0.296735
-    2017-09-23 12:00:00    0.350108
-    2017-09-27 12:00:00    0.336902
-    2017-09-28 12:00:00    0.253596
-    2017-09-29 12:00:00    0.172088
-    2017-09-30 12:00:00    0.173876
-    2017-10-12 12:00:00    0.076930
-    2017-10-14 12:00:00    0.067515
-    2017-10-15 12:00:00    0.039083
-    2017-10-16 12:00:00    0.174384
-    2017-10-17 12:00:00    0.087807
-    2017-10-18 12:00:00    0.178155
-    2017-10-19 12:00:00    0.116929
-    2017-10-22 12:00:00    0.065865
-    2017-10-29 12:00:00    0.124535
-    2017-10-30 12:00:00    0.041524
-    2017-11-02 12:00:00    0.143081
-    2017-11-03 12:00:00    0.158916
-    2017-11-06 12:00:00    0.110552
-    2017-11-17 12:00:00    0.081437
-    2017-11-24 12:00:00    0.055906
-    2017-11-26 12:00:00    0.101109
-    2017-11-27 12:00:00    0.073161
-    2017-11-29 12:00:00    0.063464
-    2017-11-30 12:00:00    0.135819
-    2017-12-01 12:00:00    0.160344
-    2017-12-03 12:00:00    0.109541
-    2017-12-07 12:00:00    0.087100
-    Length: 2713, dtype: float64
+    ts_type: daily
+    
+    Data arrays
+    .................
     dtime (array, 2713 items)
        [numpy.datetime64('2001-05-20T12:00:00')
         numpy.datetime64('2001-05-21T12:00:00')
         ...
         numpy.datetime64('2017-12-03T12:00:00')
         numpy.datetime64('2017-12-07T12:00:00')]
+    
+    Pandas Series
+    .................
+    od550aer (Series, 2713 items)
     
     Data coordinates
     .................
@@ -1821,7 +1928,7 @@ nm. If you like, you can plot this time-series:
 
 
 You can also retrieve the ``StationData`` with specifying more
-constraints using ``to_station_data`` (e.g. in monthly resolution and
+constraints using ``to_station_data`` (e.g. in monthly resolution and
 only for the year 2010). And you can overlay different curves, by
 passing the axes instance returned by the plotting method:
 
@@ -1861,6 +1968,54 @@ bouldering trip, you may call:
 
 .. code:: ipython3
 
+    ts = aeronet_data.to_station_data('Fontainebleau', 'od550aer', 2006, None, 'monthly')
+    ts
+
+
+
+
+.. parsed-literal::
+
+    StationData([('_data_coords',
+                  {'latitude': 48.406666999999985,
+                   'longitude': 2.6802780000000004,
+                   'altitude': 85.0}),
+                 ('dtime',
+                  array(['2006-01-01T00:00:00.000000000', '2006-02-01T00:00:00.000000000',
+                         '2006-03-01T00:00:00.000000000', '2006-04-01T00:00:00.000000000',
+                         '2006-05-01T00:00:00.000000000', '2006-06-01T00:00:00.000000000',
+                         '2006-07-01T00:00:00.000000000', '2006-08-01T00:00:00.000000000',
+                         '2006-09-01T00:00:00.000000000', '2006-10-01T00:00:00.000000000',
+                         '2006-11-01T00:00:00.000000000', '2006-12-01T00:00:00.000000000'],
+                        dtype='datetime64[ns]')),
+                 ('var_info', {}),
+                 ('dataset_name', 'AeronetSunV3Lev2.daily'),
+                 ('station_name', 'Fontainebleau'),
+                 ('PI', 'Brent_Holben'),
+                 ('stat_lat', nan),
+                 ('stat_lon', nan),
+                 ('stat_alt', nan),
+                 ('instrument_name', 'sun_photometer'),
+                 ('ts_type_src', 'daily'),
+                 ('ts_type', 'monthly'),
+                 ('od550aer', 2006-01-01    0.176742
+                  2006-02-01    0.176013
+                  2006-03-01    0.252403
+                  2006-04-01    0.195318
+                  2006-05-01    0.215357
+                  2006-06-01    0.195586
+                  2006-07-01    0.224991
+                  2006-08-01    0.131814
+                  2006-09-01    0.151338
+                  2006-10-01    0.141222
+                  2006-11-01    0.088815
+                  2006-12-01    0.106992
+                  Freq: MS, dtype: float64)])
+
+
+
+.. code:: ipython3
+
     aeronet_data.plot_station_timeseries('Fontainebleau', 'od550aer', ts_type='monthly',
                                          start=2006).set_title('AOD in Fontainebleau, 2006')
 
@@ -1874,7 +2029,7 @@ bouldering trip, you may call:
 
 
 
-.. image:: tut00_get_started/tut00_get_started_74_1.png
+.. image:: tut00_get_started/tut00_get_started_75_1.png
 
 
 Seems like November is a good time (maybe a bit rainy though)
@@ -1896,16 +2051,11 @@ sides.
 
 .. code:: ipython3
 
-    col_all_sky_glob = pya.colocation.colocate_gridded_ungridded_2D(od550aer, aeronet_data, 
+    col_all_sky_glob = pya.colocation.colocate_gridded_ungridded(od550aer, aeronet_data, 
                                                                     ts_type='monthly',
                                                                     start=2010,
                                                                     filter_name='WORLD-noMOUNTAINS')
     type(col_all_sky_glob)
-
-
-.. parsed-literal::
-
-    Old name of function colocate_gridded_ungridded(still works)
 
 
 .. parsed-literal::
@@ -1922,20 +2072,15 @@ sides.
 
 
 
-Let’s do the same for the clear-sky data.
+Let's do the same for the clear-sky data.
 
 .. code:: ipython3
 
-    col_clear_sky_glob = pya.colocation.colocate_gridded_ungridded_2D(od550csaer, aeronet_data, 
+    col_clear_sky_glob = pya.colocation.colocate_gridded_ungridded(od550csaer, aeronet_data, 
                                                                       ts_type='monthly',
                                                                       start=2010,
                                                                       filter_name='WORLD-noMOUNTAINS')
     type(col_clear_sky_glob)
-
-
-.. parsed-literal::
-
-    Old name of function colocate_gridded_ungridded(still works)
 
 
 .. parsed-literal::
@@ -1967,7 +2112,7 @@ Let’s do the same for the clear-sky data.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_81_1.png
+.. image:: tut00_get_started/tut00_get_started_82_1.png
 
 
 .. code:: ipython3
@@ -1985,10 +2130,10 @@ Let’s do the same for the clear-sky data.
 
 
 
-.. image:: tut00_get_started/tut00_get_started_82_1.png
+.. image:: tut00_get_started/tut00_get_started_83_1.png
 
 
-… or for EUROPE:
+... or for EUROPE:
 
 .. code:: ipython3
 
@@ -2013,10 +2158,10 @@ Let’s do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f3cd223cf98>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f3e675eb2b0>
 
 
 
 
-.. image:: tut00_get_started/tut00_get_started_84_3.png
+.. image:: tut00_get_started/tut00_get_started_85_3.png
 

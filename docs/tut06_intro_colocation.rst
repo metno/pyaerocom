@@ -25,6 +25,17 @@ Import setup and imports
     MODEL_ID = "ECMWF_CAMS_REAN"
     OBS_ID = 'AeronetSunV3Lev2.daily'
 
+
+.. parsed-literal::
+
+    Init data paths for lustre
+
+
+.. parsed-literal::
+
+    0.007446765899658203 s
+
+
 Import of model data
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -45,7 +56,7 @@ there.
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
     Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
-    Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 9999]
+    Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 9999]
     Available time resolutions ['daily', 'monthly']
 
 
@@ -56,6 +67,14 @@ Since we are only interested in a single year we can use the method
     model_data = model_reader.read_var(VAR, start=YEAR)
     #model_data = read_result[VAR][YEAR]
     print(model_data)
+
+
+.. parsed-literal::
+
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
 
 .. parsed-literal::
@@ -100,15 +119,20 @@ located at altitudes between 0 and 1000 m.
 
 .. parsed-literal::
 
+    Found Cache match for AeronetSunV3Lev2.daily
+
+
+.. parsed-literal::
+
     
     Pyaerocom UngriddedData
     -----------------------
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['ang4487aer', 'od550aer']
     Contains instruments: ['sun_photometer']
-    Total no. of stations: 985
+    Total no. of meta-blocks: 1006
     Filters that were applied:
-     Filter time log: 20181018161623
+     Filter time log: 20181121163558
     	stat_alt: [0, 1000]
 
 
@@ -134,45 +158,27 @@ then (on top of that in green), plot all stations that provide AODs in
 .. image:: tut06_intro_colocation/tut06_intro_colocation_11_0.png
 
 
-Plotting stations interactively
-'''''''''''''''''''''''''''''''
-
-.. code:: ipython3
-
-    from ipywidgets import interact, fixed
-    
-    interact(obs_data.plot_station_coordinates, var_name=obs_data.contains_vars,
-             filter_name=pya.region.get_all_default_region_ids(),
-             start=np.arange(2000, 2019), stop=fixed(None), ts_type=fixed(None),
-             color=fixed('lime'))
-
-
-
-.. image:: tut06_intro_colocation/tut06_intro_colocation_13_0.png
-
-
-
-.. parsed-literal::
-
-    <cartopy.mpl.geoaxes.GeoAxes at 0x7fe4b28f0cc0>
-
-
-
-
-.. parsed-literal::
-
-    <function ipywidgets.widgets.interaction._InteractFactory.__call__.<locals>.<lambda>(*args, **kwargs)>
-
-
-
 Now perform collocation and plot corresponding scatter plots with statistical values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2010 monthly World no mountains
 '''''''''''''''''''''''''''''''
 
-Colocate 2010 data in monthly resolution using (cf. green dots in
+Colocate 2010 data in monthly resolution using (cf. green dots in
 station plot above).
+
+.. code:: ipython3
+
+    obs_data
+
+
+
+
+.. parsed-literal::
+
+    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['ang4487aer', 'od550aer']; instruments: ['sun_photometer'];No. of stations: 1006
+
+
 
 .. code:: ipython3
 
@@ -220,9 +226,9 @@ station plot above).
         ts_type_src_ref:  daily
         start_str:        20100101
         stop_str:         20101231
-        unit:             1
+        unit:             ['1', None]
         data_level:       colocated
-        revision_ref:     20180820
+        revision_ref:     20181105
         region:           WORLD
         lon_range:        [-180, 180]
         lat_range:        [-90, 90]
@@ -239,12 +245,12 @@ station plot above).
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fe4b262a8d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f89f45d9c50>
 
 
 
 
-.. image:: tut06_intro_colocation/tut06_intro_colocation_17_1.png
+.. image:: tut06_intro_colocation/tut06_intro_colocation_16_1.png
 
 
 2010 daily Europe no mountains
@@ -264,12 +270,12 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <cartopy.mpl.geoaxes.GeoAxes at 0x7fe4b2650358>
+    <cartopy.mpl.geoaxes.GeoAxes at 0x7f89f44cff98>
 
 
 
 
-.. image:: tut06_intro_colocation/tut06_intro_colocation_19_1.png
+.. image:: tut06_intro_colocation/tut06_intro_colocation_18_1.png
 
 
 .. code:: ipython3
@@ -323,9 +329,9 @@ Now perform colocation only over Europe. Starting with a station plot.
         ts_type_src_ref:  daily
         start_str:        20100101
         stop_str:         20101231
-        unit:             1
+        unit:             ['1', None]
         data_level:       colocated
-        revision_ref:     20180820
+        revision_ref:     20181105
         region:           EUROPE
         lon_range:        [-20, 70]
         lat_range:        [30, 80]
@@ -342,10 +348,10 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fe4b249cb00>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f89f46d67f0>
 
 
 
 
-.. image:: tut06_intro_colocation/tut06_intro_colocation_21_1.png
+.. image:: tut06_intro_colocation/tut06_intro_colocation_20_1.png
 

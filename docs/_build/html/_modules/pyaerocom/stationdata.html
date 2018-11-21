@@ -168,6 +168,7 @@
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">VerticalProfile</span><span class="p">,</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">list_to_shortstr</span><span class="p">,</span> <span class="n">BrowseDict</span>
 
+
 <div class="viewcode-block" id="StationData"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData">[docs]</a><span class="k">class</span> <span class="nc">StationData</span><span class="p">(</span><span class="n">Station</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Dict-like base class for single station data</span>
 <span class="sd">    </span>
@@ -197,12 +198,21 @@
                              <span class="s1">&#39;altitude&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">dtime</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">instrument_name</span><span class="o">=</span><span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">BrowseDict</span><span class="p">()</span>
+        <span class="c1"># dictionary that should be filled with available meta-information </span>
+        <span class="c1"># for each data column appended to this object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_info</span> <span class="o">=</span> <span class="n">BrowseDict</span><span class="p">()</span>
+    
         <span class="nb">super</span><span class="p">(</span><span class="n">StationData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+       
+<div class="viewcode-block" id="StationData.compare_meta"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.compare_meta">[docs]</a>    <span class="k">def</span> <span class="nf">compare_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare meta information of this object with other object</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Coming soon&#39;</span><span class="p">)</span></div>
         
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">data_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StationData.get_data_columns"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.get_data_columns">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;List containing all data columns</span>
 <span class="sd">        </span>
 <span class="sd">        Iterates over all key / value pairs and finds all values that are </span>
@@ -231,7 +241,7 @@
                 <span class="n">cols</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cols</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;No datacolumns could be found&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">cols</span>
+        <span class="k">return</span> <span class="n">cols</span></div>
     
 <div class="viewcode-block" id="StationData.check_dtime"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.check_dtime">[docs]</a>    <span class="k">def</span> <span class="nf">check_dtime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Checks if dtime attribute is array or list&quot;&quot;&quot;</span>
@@ -248,7 +258,7 @@
 <span class="sd">        ``time``)</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtime</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_data_columns</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtime</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="StationData.to_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.stationdata.StationData.to_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">to_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resample_how</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get pandas.Series object for one of the data columns</span>
@@ -329,7 +339,7 @@
         <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">resample_how</span><span class="p">)</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ax</span></div>
-    
+            
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">NAMES_STAT_COORDS</span><span class="p">:</span>
             <span class="c1"># no special treatment</span>
@@ -364,10 +374,12 @@
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
                     <span class="n">s_data</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> (array, </span><span class="si">{}</span><span class="s2"> items)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
                     <span class="n">s_data</span> <span class="o">+=</span> <span class="n">list_to_shortstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+                    <span class="n">s_data</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> (Series, </span><span class="si">{}</span><span class="s2"> items)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">s_data</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s_data</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Data coordinates</span><span class="se">\n</span><span class="s1">.................&#39;</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Data coordinates</span><span class="se">\n</span><span class="s1">.................&#39;</span>
             <span class="n">s</span> <span class="o">+=</span> <span class="n">s_data</span>
         <span class="k">return</span> <span class="n">s</span></div>
     

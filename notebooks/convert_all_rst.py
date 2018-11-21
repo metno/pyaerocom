@@ -55,8 +55,8 @@ def execute_and_save_notebook(file):
             nbformat.write(nb, f)
         print("Success!")
         return True
-    except:
-        print("Failed!")
+    except Exception as e:
+        print("Failed: {}".format(repr(e)))
         return False
     
 
@@ -115,8 +115,8 @@ if __name__=="__main__":
     
             writer.write(body, resources, os.path.splitext(file)[0])
             print("Converted notebook {}".format(name))
-        except:
-            print("Failed to convert {}".format(name))
+        except Exception as e:
+            print("Failed to convert {} (Error: {})".format(name, repr(e)))
     
     
     

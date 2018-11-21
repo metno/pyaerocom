@@ -418,21 +418,6 @@
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
     
-    <span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="s1">&#39;../../dev_scripts/out/anstrom_analysis/&#39;</span>
-    
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
-        
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">plot_angstrom</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">SAVE_DIR</span><span class="p">):</span>
-        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ang4487aer</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">ang4487aer_calc</span><span class="p">,</span> <span class="s1">&#39; *&#39;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Angstrom coeff 440-870 nm (from data)&quot;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Angstrom coeff 440-870 nm (calculated)&quot;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">station_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s1">&#39;AeronetV3_</span><span class="si">{}</span><span class="s1">.png&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">station_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
-        <span class="k">return</span> <span class="n">ax</span>
     <span class="n">read</span> <span class="o">=</span> <span class="n">ReadAeronetSunV3</span><span class="p">()</span>
     <span class="n">read</span><span class="o">.</span><span class="n">verbosity_level</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span>
     
@@ -442,16 +427,7 @@
     <span class="n">berlin</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">files_berlin</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                             <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ang4487aer_calc&#39;</span><span class="p">,</span>
                                               <span class="s1">&#39;ang4487aer&#39;</span><span class="p">])</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">berlin</span><span class="p">)</span>
-    
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_angstrom</span><span class="p">(</span><span class="n">berlin</span><span class="p">)</span>
-    
-    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">50</span><span class="p">]:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ang4487aer_calc&#39;</span><span class="p">,</span>
-                                                   <span class="s1">&#39;ang4487aer&#39;</span><span class="p">])</span>
-                        
-        <span class="n">plot_angstrom</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    
+    <span class="nb">print</span><span class="p">(</span><span class="n">berlin</span><span class="p">)</span>    
     
     
     

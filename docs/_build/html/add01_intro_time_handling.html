@@ -185,13 +185,13 @@ using <em>pyaerocom</em>. It The
 class of <em>pyaerocom</em> was introduced in a previous tutorial.</p>
 <p>Here, we illustrate how <em>pyaerocom</em> handles time. In particular, how
 <em>pyaerocom</em> performs the conversion of CF conform numerical time stamps
-with a defined unit (i.e.&nbsp;basedate and calendar, see e.g.
+with a defined unit (i.e. basedate and calendar, see e.g.
 <a class="reference external" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate">here</a>
 for details) into datetime-like objects that can be interpreted by tools
 such as <a class="reference external" href="https://pandas.pydata.org/">Pandas</a>.</p>
 <p>The easiest way to work with time stamps in model data is, to simply
 work on the internal numerical indices, avoiding the necessity to
-convert them into actual datetime objects. However, sometimes (e.g.&nbsp;if
+convert them into actual datetime objects. However, sometimes (e.g. if
 we want to extract and analyse a time-series of global average Aerosol
 optical densities), we wish to use third party libraries such as Pandas,
 which require the timestamps to be datetime-like objects.</p>
@@ -216,20 +216,62 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
 <span class="n">fpath_aatsr</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s1">&#39;models&#39;</span><span class="p">][</span><span class="s1">&#39;aatsr_su_v4.3&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Init</span> <span class="n">data</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">lustre</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.009135961532592773</span> <span class="n">s</span>
+</pre></div>
+</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;longitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;longitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550bc&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;longitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550so4&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1808</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;longitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;longitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;longitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
 </pre></div>
 </div>
 <p>Note that, if the longitudes are defined on a 0 -&gt; 360 degree grid, they
@@ -288,7 +330,7 @@ conversion for us, that is, using the <code class="docutils literal notranslate"
 corresponding <code class="docutils literal notranslate"><span class="pre">index</span></code>) of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code> class in combination with
 the <code class="docutils literal notranslate"><span class="pre">cells()</span></code> iterator method. However, as we shall see below, this is
 not only the slowest solution but it is also prone to errors in case the
-calendar is not standard (e.g.&nbsp;Julian).</p>
+calendar is not standard (e.g. Julian).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0_ecmwf</span> <span class="o">=</span> <span class="n">times_ecmwf</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="n">t0_aatsr</span> <span class="o">=</span> <span class="n">times_aatsr</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;First time stamp ECMWF </span><span class="si">%s</span><span class="s2"> (data type: </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">t0_ecmwf</span><span class="p">)))</span>
@@ -296,7 +338,7 @@ calendar is not standard (e.g.&nbsp;Julian).</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>First time stamp ECMWF 2018-01-01 00:00:00 (data type: &lt;class &#39;datetime.datetime&#39;&gt;)
-First time stamp AATSR 2008-01-01 00:00:00 (data type: &lt;class &#39;netcdftime._netcdftime.DatetimeJulian&#39;&gt;)
+First time stamp AATSR 2008-01-01 00:00:00 (data type: &lt;class &#39;cftime._cftime.DatetimeJulian&#39;&gt;)
 </pre></div>
 </div>
 <p>As you can see, the <code class="docutils literal notranslate"><span class="pre">cell</span></code> method returns different datatypes,
@@ -314,7 +356,7 @@ while the latter is not.</p>
     <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Cannot convert input [2008-01-01 00:00:00] of type &lt;class &#39;netcdftime._netcdftime.DatetimeJulian&#39;&gt; to Timestamp&quot;</span><span class="p">,)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Cannot convert input [2008-01-01 00:00:00] of type &lt;class &#39;cftime._cftime.DatetimeJulian&#39;&gt; to Timestamp&quot;</span><span class="p">,)</span>
 </pre></div>
 </div>
 <p>Nontheless, numpy is easier in that sense, since it understands both
@@ -349,7 +391,7 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
 
-<span class="p">[</span><span class="n">netcdftime</span><span class="o">.</span><span class="n">_netcdftime</span><span class="o">.</span><span class="n">DatetimeJulian</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">netcdftime</span><span class="o">.</span><span class="n">_netcdftime</span><span class="o">.</span><span class="n">DatetimeJulian</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+<span class="p">[</span><span class="n">cftime</span><span class="o">.</span><span class="n">DatetimeJulian</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">cftime</span><span class="o">.</span><span class="n">DatetimeJulian</span><span class="p">(</span><span class="mi">2008</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>This worked, but however, is it fast?</p>
@@ -357,14 +399,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>118 ms ± 797 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>128 ms ± 4.51 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 574 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 848 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -375,14 +417,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>120 ms ± 660 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>121 ms ± 1.17 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 344 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>103 ms ± 635 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -401,7 +443,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.68 ms ± 38.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.64 ms ± 73.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -422,122 +464,60 @@ some features from the <code class="docutils literal notranslate"><span class="p
 that translates the numerical timestamps into <code class="docutils literal notranslate"><span class="pre">datetime64</span></code> objects
 based on the information encoded in the units string(e.g. <em>day since
 2018-01-01 00:00:00.00000000 UTC</em>) and the corresponding calendar (e.g.
-“gregorian”).</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cf_units</span> <span class="k">import</span> <span class="n">Unit</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">MINYEAR</span><span class="p">,</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">asarray</span><span class="p">,</span> <span class="n">datetime64</span>
-<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="k">import</span> <span class="p">(</span><span class="n">microsec_units</span><span class="p">,</span> <span class="n">millisec_units</span><span class="p">,</span> <span class="n">sec_units</span><span class="p">,</span> <span class="n">min_units</span><span class="p">,</span>
-                    <span class="n">hr_units</span><span class="p">,</span> <span class="n">day_units</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">netCDF4._netCDF4</span> <span class="k">import</span> <span class="n">_dateparse</span>
-<span class="c1"># Start of the gregorian calendar</span>
-<span class="c1"># adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx</span>
-<span class="n">GREGORIAN_BASE</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">1582</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">cftime_to_datetime64</span><span class="p">(</span><span class="n">timesnum</span><span class="p">,</span> <span class="n">cfunit</span><span class="p">,</span> <span class="n">calendar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert numerical timestamps with epoch to numpy datetime64</span>
-
-<span class="sd">    This method was designed to enhance the performance of datetime conversions</span>
-<span class="sd">    and is based on the corresponding information provided in the cftime</span>
-<span class="sd">    package (`see here &lt;https://github.com/Unidata/cftime/blob/master/cftime/</span>
-<span class="sd">    _cftime.pyx&gt;`__). Particularly, this object does, what the :func:`num2date`</span>
-<span class="sd">    therein does, but faster, in case the time stamps are not defined on a non</span>
-<span class="sd">    standard calendar.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    timesnum : :obj:`list` or :obj:`ndarray`</span>
-<span class="sd">        array containing numerical time stamps (relative to basedate of</span>
-<span class="sd">        ``cfunit``). Can also be a single number.</span>
-<span class="sd">    cfunit : :obj:`str` or :obj:`Unit`</span>
-<span class="sd">        CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or</span>
-<span class="sd">        unit</span>
-<span class="sd">    calendar : :obj:`str`, optional</span>
-<span class="sd">        string specifying calendar (only required if ``cfunit`` is of type</span>
-<span class="sd">        ``str``).</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ndarray</span>
-<span class="sd">        numpy array containing timestamps as datetime64 objects</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        if cfunit is ``str`` and calendar is not provided or invalid, or if</span>
-<span class="sd">        the cfunit string is invalid</span>
-
-<span class="sd">    Example</span>
-<span class="sd">    -------</span>
-
-<span class="sd">    &gt;&gt;&gt; cfunit_str = &#39;day since 2018-01-01 00:00:00.00000000 UTC&#39;</span>
-<span class="sd">    &gt;&gt;&gt; cftime_to_datetime64(10, cfunit_str, &quot;gregorian&quot;)</span>
-<span class="sd">    array([&#39;2018-01-11T00:00:00.000000&#39;], dtype=&#39;datetime64[us]&#39;)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="nb">len</span><span class="p">(</span><span class="n">timesnum</span><span class="p">)</span>
-    <span class="k">except</span><span class="p">:</span>
-        <span class="n">timesnum</span> <span class="o">=</span> <span class="p">[</span><span class="n">timesnum</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">calendar</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Require specification of calendar for &quot;</span>
-                             <span class="s2">&quot;conversion into datetime64 objects&quot;</span><span class="p">)</span>
-        <span class="n">cfunit</span> <span class="o">=</span> <span class="n">Unit</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="n">calendar</span><span class="p">)</span> <span class="c1">#raises Error if calendar is invalid</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cfunit</span><span class="p">,</span> <span class="n">Unit</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide cfunit either as instance of class &quot;</span>
-                         <span class="s2">&quot;cf_units.Unit or as a string&quot;</span><span class="p">)</span>
-    <span class="n">cfu_str</span><span class="p">,</span> <span class="n">calendar</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">calendar</span>
-    <span class="n">basedate</span> <span class="o">=</span> <span class="n">_dateparse</span><span class="p">(</span><span class="n">cfu_str</span><span class="p">)</span>
-    <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
-    <span class="n">basedate</span> <span class="o">=</span> <span class="n">_dateparse</span><span class="p">(</span><span class="n">cfu_str</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">((</span><span class="n">calendar</span> <span class="o">==</span> <span class="s1">&#39;proleptic_gregorian&#39;</span> <span class="ow">and</span> <span class="n">basedate</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="n">MINYEAR</span><span class="p">)</span> <span class="ow">or</span>
-        <span class="p">(</span><span class="n">calendar</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gregorian&#39;</span><span class="p">,</span><span class="s1">&#39;standard&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">basedate</span> <span class="o">&gt;</span> <span class="n">GREGORIAN_BASE</span><span class="p">)):</span>
-        <span class="n">cfu_str</span> <span class="o">=</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">cfu_str</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">microsec_units</span><span class="p">:</span>
-            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span>
-        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">millisec_units</span><span class="p">:</span>
-            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span>
-        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">sec_units</span><span class="p">:</span>
-            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span>
-        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">min_units</span><span class="p">:</span>
-            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
-        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">hr_units</span><span class="p">:</span>
-            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;h&quot;</span>
-        <span class="k">elif</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">day_units</span><span class="p">:</span>
-            <span class="n">tstr</span> <span class="o">=</span> <span class="s2">&quot;D&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;unsupported time units&#39;</span><span class="p">)</span>
-
-        <span class="n">basedate</span> <span class="o">=</span> <span class="n">datetime64</span><span class="p">(</span><span class="n">basedate</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">basedate</span> <span class="o">+</span> <span class="n">asarray</span><span class="p">(</span><span class="n">timesnum</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;timedelta64[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span><span class="k">tstr</span>)
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">asarray</span><span class="p">([</span><span class="n">datetime64</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">cfunit</span><span class="o">.</span><span class="n">num2date</span><span class="p">(</span><span class="n">timesnum</span><span class="p">)])</span>
-</pre></div>
-</div>
-<p>Now let’s see how this one performs.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
-cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>54.8 µs ± 291 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="how-pya-does-it">
-<h2>How pya does it<a class="headerlink" href="#how-pya-does-it" title="Permalink to this headline">¶</a></h2>
-<p>Due to this significant increase in performance for standard calendars
-(compared to the methods used in netCDF4), the above method was
-implemented in the pya package (<a class="reference external" href="aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64">see
-here</a>).</p>
+“gregorian”). THis function is included in <strong>pyaerocom</strong> and can be
+accessed via:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">cftime_to_datetime64</span> <span class="k">as</span> <span class="n">pya_tconversion</span>
+<span class="n">help</span><span class="p">(</span><span class="n">pya_tconversion</span><span class="p">)</span>
 </pre></div>
 </div>
+<pre class="literal-block">
+Help on function cftime_to_datetime64 in module pyaerocom.helpers:
+
+cftime_to_datetime64(times, cfunit=None, calendar=None)
+    Convert numerical timestamps with epoch to numpy datetime64
+
+    This method was designed to enhance the performance of datetime conversions
+    and is based on the corresponding information provided in the cftime
+    package (<a class="reference external" href="https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx">see here</a>). Particularly, this object does, what the <code class="xref py py-func docutils literal notranslate"><span class="pre">num2date()</span></code>
+    therein does, but faster, in case the time stamps are not defined on a non
+    standard calendar.
+
+    Parameters
+    ----------
+    times : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">iris.coords.DimCoord</span></code>
+        array containing numerical time stamps (relative to basedate of
+        <code class="docutils literal notranslate"><span class="pre">cfunit</span></code>). Can also be a single number.
+    cfunit : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">Unit</span></code>, optional
+        CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
+        unit. Required if <cite>times</cite> is not an instance of
+        <code class="xref py py-class docutils literal notranslate"><span class="pre">iris.coords.DimCoord</span></code>
+    calendar : <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional
+        string specifying calendar (only required if <code class="docutils literal notranslate"><span class="pre">cfunit</span></code> is of type
+        <code class="docutils literal notranslate"><span class="pre">str</span></code>).
+
+    Returns
+    -------
+    ndarray
+        numpy array containing timestamps as datetime64 objects
+
+    Raises
+    ------
+    ValueError
+        if cfunit is <code class="docutils literal notranslate"><span class="pre">str</span></code> and calendar is not provided or invalid, or if
+        the cfunit string is invalid
+
+    Example
+    -------
+
+    &gt;&gt;&gt; cfunit_str = 'day since 2018-01-01 00:00:00.00000000 UTC'
+    &gt;&gt;&gt; cftime_to_datetime64(10, cfunit_str, &quot;gregorian&quot;)
+    array(['2018-01-11T00:00:00.000000'], dtype='datetime64[us]')
+</pre>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>330 µs ± 2.34 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>340 µs ± 7.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -546,11 +526,11 @@ pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 pya_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.06 ms ± 15.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.98 ms ± 25.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
-iris interface (i.e.&nbsp;iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
+iris interface (i.e. iterating over <code class="docutils literal notranslate"><span class="pre">cells</span></code> of the <code class="docutils literal notranslate"><span class="pre">DimCoord</span></code>), for
 conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.</p>
@@ -560,15 +540,16 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>374 µs ± 4.59 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>380 µs ± 4.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.1 ms ± 31.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.02 ms ± 40.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
+</div>
 </div>
 </div>
 </div>

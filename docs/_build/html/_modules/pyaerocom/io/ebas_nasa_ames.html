@@ -214,7 +214,7 @@
 <span class="sd">        ``name`` of flag column that corresponds to this data colum (only</span>
 <span class="sd">        relevant if :attr:`is_var` is True)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">is_var</span><span class="p">,</span> <span class="n">is_flag</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flag_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">is_var</span><span class="p">,</span> <span class="n">is_flag</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">flag_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_var</span> <span class="o">=</span> <span class="n">is_var</span>
@@ -230,9 +230,12 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Wavelength definition is not in nm&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;nm&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span></div>
         
-<div class="viewcode-block" id="EbasColDef.to_dict"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="EbasColDef.to_dict"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;is_var&#39;</span><span class="p">,</span> <span class="s1">&#39;is_flag&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_id&#39;</span><span class="p">,</span> 
+                                   <span class="s1">&#39;wavelength_nm&#39;</span><span class="p">]):</span>
         <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ignore_keys</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">return</span> <span class="n">d</span></div>
             
     <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -241,6 +244,19 @@
     <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
     
+<div class="viewcode-block" id="EbasColDef.to_str"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_str">[docs]</a>    <span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;wavelength&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">nm&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_wavelength_nm</span><span class="p">())</span>
+        <span class="k">if</span> <span class="s1">&#39;matrix&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;statistics&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;data_level&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;_L</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_level</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+            
+            
     <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -254,6 +270,14 @@
             <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">s</span></div>
     
+<span class="k">def</span> <span class="nf">_readline_ref_and_revision</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="n">spl</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">basedate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                               <span class="n">spl</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">spl</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+    <span class="n">rev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spl</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                                               <span class="n">spl</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">spl</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">basedate</span><span class="p">,</span> <span class="n">rev</span><span class="p">]</span>
+
 <div class="viewcode-block" id="NasaAmesHeader"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.NasaAmesHeader">[docs]</a><span class="k">class</span> <span class="nc">NasaAmesHeader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Header class for Ebas NASA Ames file</span>
 <span class="sd">    </span>
@@ -297,7 +321,7 @@
                         <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#4</span>
                         <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#5</span>
                         <span class="n">CONV_MULTIINT</span><span class="p">,</span> <span class="c1">#6</span>
-                        <span class="k">lambda</span> <span class="n">l</span> <span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;     &quot;</span><span class="p">)],</span> <span class="c1">#7</span>
+                        <span class="n">_readline_ref_and_revision</span><span class="p">,</span> <span class="c1">#7 lambda l : [x.strip() for x in l.strip().split(&quot;     &quot;)], #7</span>
                         <span class="n">CONV_FLOAT</span><span class="p">,</span> <span class="c1">#8</span>
                         <span class="n">CONV_STR</span><span class="p">,</span> <span class="c1">#9</span>
                         <span class="n">CONV_INT</span><span class="p">,</span> <span class="c1">#10</span>
@@ -453,6 +477,9 @@
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">TIMEUNIT2SECFAC</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">days</span> <span class="o">=</span> <span class="mi">3600</span><span class="o">*</span><span class="mi">24</span><span class="p">)</span>
+    
+    <span class="n">ERR_LOW_STATS</span> <span class="o">=</span> <span class="s1">&#39;percentile:15.87&#39;</span>
+    <span class="n">ERR_HIGH_STATS</span> <span class="o">=</span> <span class="s1">&#39;percentile:84.13&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">only_head</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">replace_invalid_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">convert_timestamps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">decode_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
                  <span class="n">quality_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -463,6 +490,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span> <span class="o">=</span> <span class="kc">None</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
         
         <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
@@ -514,8 +543,12 @@
                                  <span class="s2">&quot;is not available in file header&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;utc&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TimeZoneError</span><span class="p">(</span><span class="s2">&quot;Timezones other than UTC are not yet supported&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startdate</span><span class="p">,</span> <span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S&quot;</span><span class="p">),</span>
-                             <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_date</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         return np.datetime64(datetime.strptime(self.startdate, &quot;%Y%m%d%H%M%S&quot;),</span>
+<span class="c1">#                              &#39;s&#39;)</span>
+<span class="c1"># =============================================================================</span>
+    
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">time_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -567,14 +600,194 @@
 <span class="c1">#         elif not self.var_defs[colnum].is_flag:</span>
 <span class="c1">#             raise IndexError(&quot;Provided column number is not a flag column&quot;)</span>
 <span class="c1"># =============================================================================</span>
-        
-            
-<div class="viewcode-block" id="EbasNasaAmesFile.to_dataframe"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert table to dataframe&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">col_nums_vars</span><span class="p">],</span>
-                            <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span>
-                            <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names_vars</span><span class="p">)</span></div>
     
+<div class="viewcode-block" id="EbasNasaAmesFile.get_colnames_unique"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.get_colnames_unique">[docs]</a>    <span class="k">def</span> <span class="nf">get_colnames_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a list of unique column names&quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">colinfo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">colinfo</span><span class="o">.</span><span class="n">to_str</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;(Col</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">names</span></div>
+       
+    <span class="k">def</span> <span class="nf">_find_col_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wavelength_nm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">statistics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find indices of columns that match input constraints</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : :obj:`str`, optional</span>
+<span class="sd">            EBAS variable name (e.g. aerosol_light_scattering_coefficient). </span>
+<span class="sd">            If specified, only columns corresponding to this variable name </span>
+<span class="sd">            will be extracted into the dataframe</span>
+<span class="sd">        wavelength_nm : :obj:`int`, :obj:`tuple`, optional</span>
+<span class="sd">            wavelength (or wavelength range -&gt; list or tuple input) in nm. If</span>
+<span class="sd">            specified, only columns containing wavelength dependent data as</span>
+<span class="sd">            specified are extracted and put into the Dataframe</span>
+<span class="sd">        statistics : :obj:`str`, optional</span>
+<span class="sd">            specify column statistics (e.g. arithmetic mean)</span>
+<span class="sd">        data_level : float</span>
+<span class="sd">            data level of column</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span> <span class="c1">#statistics is defined globally</span>
+            <span class="n">stats_glob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statistics</span> 
+        <span class="k">except</span><span class="p">:</span> <span class="c1">#statistics is not defined globally</span>
+            <span class="n">stats_glob</span> <span class="o">=</span> <span class="kc">None</span>
+            
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wavelength_nm</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wavelength needs to be integer or float or range&quot;</span>
+                             <span class="s2">&quot;(i.e. 2-element tuple or list)&quot;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">wavelength_nm</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span>
+            <span class="n">wvl_rng</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">wvl_rng</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="k">if</span> <span class="n">statistics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">statistics</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span> <span class="c1"># input for statistics is string, else ...</span>
+                <span class="n">stats_str</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c1"># ... input for statistics is assumed to be tuple or list of strings</span>
+                <span class="n">stats_str</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">data_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data_level_glob</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_level</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">data_level_glob</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span> <span class="c1">#is undefined</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">data_level_glob</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">colinfo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">var_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">colinfo</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">var_name</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">wavelength_nm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span> <span class="c1">#column contains wavalength information</span>
+                    <span class="n">wvl</span> <span class="o">=</span> <span class="n">colinfo</span><span class="o">.</span><span class="n">get_wavelength_nm</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">wvl_rng</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">wavelength_nm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">wvl</span> <span class="o">&lt;=</span> <span class="n">wavelength_nm</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="k">continue</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">wvl</span> <span class="o">==</span> <span class="n">wavelength_nm</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                <span class="k">except</span><span class="p">:</span> <span class="c1">#column does not contain wavelength information (skip)</span>
+                    <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">statistics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;statistics&#39;</span> <span class="ow">in</span> <span class="n">colinfo</span><span class="p">:</span>
+                    <span class="n">col_stats</span> <span class="o">=</span> <span class="n">colinfo</span><span class="p">[</span><span class="s1">&#39;statistics&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">col_stats</span> <span class="o">=</span> <span class="n">stats_glob</span>
+                <span class="k">if</span> <span class="n">col_stats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># no statistics info available for column</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">stats_str</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">col_stats</span> <span class="o">==</span> <span class="n">statistics</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="n">col_stats</span> <span class="ow">in</span> <span class="n">statistics</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">data_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;data_level&#39;</span> <span class="ow">in</span> <span class="n">colinfo</span><span class="p">:</span>
+                    <span class="n">col_lev</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">colinfo</span><span class="o">.</span><span class="n">data_level</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">col_lev</span> <span class="o">=</span> <span class="n">data_level_glob</span>
+                <span class="k">if</span> <span class="n">col_lev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">col_lev</span> <span class="o">==</span> <span class="n">data_level</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="n">cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cols</span>
+    
+    <span class="k">def</span> <span class="nf">_find_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="s1">&#39;arithmetic mean&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_col_matches</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="n">statistics</span><span class="p">,</span> 
+                                     <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1">#cols = self.get_colnames_unique()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No matches could be found for input specs&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Multiple matches found for input variable, please specify &#39;</span>
+                   <span class="s1">&#39;further constraints. The following column matches were &#39;</span>
+                   <span class="s1">&#39;found:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_idx</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">[</span><span class="n">_idx</span><span class="p">])</span>
+        
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="EbasNasaAmesFile.to_dataframe"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wavelength_nm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">statistics</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert table to dataframe</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : :obj:`str`, optional</span>
+<span class="sd">            EBAS variable name (e.g. aerosol_light_scattering_coefficient). </span>
+<span class="sd">            If specified, only columns corresponding to this variable name </span>
+<span class="sd">            will be extracted into the dataframe</span>
+<span class="sd">        wavelength_nm : :obj:`int`, :obj:`tuple`, optional</span>
+<span class="sd">            wavelength (or wavelength range -&gt; list or tuple input) in nm. If</span>
+<span class="sd">            specified, only columns containing wavelength dependent data as</span>
+<span class="sd">            specified are extracted and put into the Dataframe</span>
+<span class="sd">        statistics : :obj:`str`, optional</span>
+<span class="sd">            specify column statistics (e.g. arithmetic mean)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_colnames_unique</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">x</span> <span class="o">==</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">wavelength_nm</span><span class="p">,</span> <span class="n">statistics</span><span class="p">)]):</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                                <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span>
+                                <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_col_matches</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">wavelength_nm</span><span class="p">,</span>
+                                             <span class="n">statistics</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No column matches could be found for input &#39;</span>
+                                 <span class="s1">&#39;specs&#39;</span><span class="p">)</span>
+            <span class="n">_cols</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="n">_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cols</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="n">matches</span><span class="p">],</span>
+                                <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">,</span>
+                                <span class="n">columns</span><span class="o">=</span><span class="n">_cols</span><span class="p">)</span></div>
+            
+<div class="viewcode-block" id="EbasNasaAmesFile.plot_var"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.plot_var">[docs]</a>    <span class="k">def</span> <span class="nf">plot_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="s1">&#39;arithmetic mean&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot time series of one column</span>
+<span class="sd">        </span>
+<span class="sd">        If percentiles are available, they will be plotted as shaded area</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : str</span>
+<span class="sd">            EBAS variable name</span>
+<span class="sd">        statistics : str</span>
+<span class="sd">            statistics specifications</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_col</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="s1">&#39;arithmetic mean&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">colinfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">try</span> <span class="p">:</span>
+            <span class="n">idx_err_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_col</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
+                                         <span class="n">statistics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ERR_LOW_STATS</span><span class="p">,</span>
+                                         <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">idx_err_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_col</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> 
+                                          <span class="n">statistics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ERR_HIGH_STATS</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">idx_err_high</span><span class="p">,</span> <span class="n">idx_err_low</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Could not find percentile columns&#39;</span><span class="p">)</span>
+            
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_stamps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;All values are NaN in column </span><span class="si">{}</span><span class="s1"> are NaN&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">colinfo</span><span class="p">)))</span>
+        
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ax</span></div>
+        
 <div class="viewcode-block" id="EbasNasaAmesFile.init_flags"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.init_flags">[docs]</a>    <span class="k">def</span> <span class="nf">init_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_defs</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_flag</span><span class="p">:</span>
@@ -647,9 +860,10 @@
         <span class="n">IN_DATA</span> <span class="o">=</span> <span class="kc">False</span> 
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">_insert_invalid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">nasa_ames_file</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">nasa_ames_file</span><span class="p">):</span>
             <span class="c1">#print(lc, _NUM_FIXLINES, line)</span>
-            <span class="k">if</span> <span class="n">IN_DATA</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">IN_DATA</span><span class="p">:</span> <span class="c1">#in data block (end of file)</span>
                 <span class="k">if</span> <span class="n">dc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -660,7 +874,7 @@
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to read data row </span><span class="si">{}</span><span class="s2">. &quot;</span>
                                    <span class="s2">&quot;Error msg: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dc</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
                 <span class="n">dc</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">elif</span> <span class="n">lc</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NUM_FIXLINES</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">lc</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NUM_FIXLINES</span><span class="p">:</span> <span class="c1">#in header section (before column definitions)</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_H_FIXLINES_CONV</span><span class="p">[</span><span class="n">lc</span><span class="p">](</span><span class="n">line</span><span class="p">)</span>
                     <span class="n">attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_H_FIXLINES_YIELD</span><span class="p">[</span><span class="n">lc</span><span class="p">]</span>
@@ -676,9 +890,9 @@
                         <span class="k">raise</span> <span class="n">NasaAmesReadError</span><span class="p">(</span><span class="s2">&quot;Fatal: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">else</span><span class="p">:</span> <span class="c1"># behind header section and before data definition (contains column defs and meta info)</span>
                 <span class="n">_flagmap_idx</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">if</span> <span class="n">mc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># still in column definition</span>
                     <span class="n">END_VAR_DEF</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NUM_FIXLINES</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cols_dependent</span> <span class="o">-</span> <span class="mi">1</span>
                     <span class="n">NUM_HEAD_LINES</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_head_lines</span>
                     <span class="k">try</span><span class="p">:</span>
@@ -781,7 +995,7 @@
                     <span class="n">sub</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="n">idf</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sub</span><span class="p">]</span>
-                        <span class="n">data</span><span class="p">[</span><span class="n">idf</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">val</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">idf</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">val</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not interpret part of column &quot;</span>
                                        <span class="s2">&quot;definition in EBAS NASA Ames file: &quot;</span>
@@ -830,6 +1044,16 @@
 <span class="c1"># =============================================================================</span>
     <span class="n">alert</span> <span class="o">=</span> <span class="n">EbasNasaAmesFile</span><span class="p">(</span><span class="n">DIR_MC</span> <span class="o">+</span> <span class="n">FILES_MC</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">alert</span><span class="p">)</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">alert</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+    
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">alert</span><span class="o">.</span><span class="n">_find_col_matches</span><span class="p">(</span><span class="s1">&#39;aerosol_absorption_coefficient&#39;</span><span class="p">,</span>
+                                  <span class="n">statistics</span><span class="o">=</span><span class="s1">&#39;arithmetic mean&#39;</span><span class="p">)</span>
+    
+    
+    
+    <span class="n">alert</span><span class="o">.</span><span class="n">plot_var</span><span class="p">(</span><span class="s1">&#39;aerosol_absorption_coefficient&#39;</span><span class="p">,</span> <span class="n">data_level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    
 </pre></div>
 
            </div>

@@ -175,6 +175,46 @@
 <span class="c1">### LAMBDA FUNCTIONS</span>
 <span class="n">in_range</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">:</span> <span class="n">low</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">high</span>
 
+<div class="viewcode-block" id="haversine"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.haversine">[docs]</a><span class="k">def</span> <span class="nf">haversine</span><span class="p">(</span><span class="n">lon0</span><span class="p">,</span> <span class="n">lat0</span><span class="p">,</span> <span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">6371.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Haversine formula</span>
+<span class="sd">    </span>
+<span class="sd">    Approximate horizontal distance between 2 points assuming a spherical </span>
+<span class="sd">    earth using haversine formula. </span>
+<span class="sd">    </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    This code was copied from geonum library (date 12/11/2018, J. Gliss)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lon0 : float</span>
+<span class="sd">        longitude of first point in decimal degrees</span>
+<span class="sd">    lat0 : float</span>
+<span class="sd">        latitude of first point in decimal degrees</span>
+<span class="sd">    lon1 : float</span>
+<span class="sd">        longitude of second point in decimal degrees</span>
+<span class="sd">    lat1 : float </span>
+<span class="sd">        latitude of second point in decimal degrees</span>
+<span class="sd">    radius : float </span>
+<span class="sd">        average earth radius in km, defaults to 6371.0</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    float</span>
+<span class="sd">        horizontal distance in km</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hav</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d_theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">d_theta</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    
+    <span class="n">d_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon1</span> <span class="o">-</span> <span class="n">lon0</span><span class="p">)</span>
+    <span class="n">d_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat1</span> <span class="o">-</span> <span class="n">lat0</span><span class="p">)</span>
+    <span class="n">lat0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span>
+    <span class="n">lat1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span>
+ 
+    <span class="n">a</span> <span class="o">=</span> <span class="n">hav</span><span class="p">(</span><span class="n">d_lat</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span> <span class="o">*</span> <span class="n">hav</span><span class="p">(</span><span class="n">d_lon</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+ 
+    <span class="k">return</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">c</span></div>
+
 <span class="c1">### OTHER FUNCTIONS</span>
 <div class="viewcode-block" id="calc_statistics"><a class="viewcode-back" href="../../api.html#pyaerocom.mathutils.calc_statistics">[docs]</a><span class="k">def</span> <span class="nf">calc_statistics</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ref_data</span><span class="p">,</span> <span class="n">lowlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">highlim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Calc statistical properties from two data arrays</span>

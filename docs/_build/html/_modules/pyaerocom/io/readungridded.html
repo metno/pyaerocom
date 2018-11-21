@@ -225,9 +225,11 @@
                  <span class="n">ReadEbas</span><span class="p">]</span>
     
     <span class="c1"># when this file exists, an existing cache file is not read</span>
-    <span class="n">_DONOTCACHEFILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">OBSDATACACHEDIR</span><span class="p">,</span> <span class="s1">&#39;DONOTCACHE&#39;</span><span class="p">)</span>
+    <span class="n">_DONOTCACHEFILE</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_cachedir</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">_cachedir</span><span class="p">):</span>
+        <span class="n">_DONOTCACHEFILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">const</span><span class="o">.</span><span class="n">OBSDATACACHEDIR</span><span class="p">,</span> <span class="s1">&#39;DONOTCACHE&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasets_to_read</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasets_to_read</span><span class="o">=</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L2_AOD_DAILY_NAME</span><span class="p">,</span>
                  <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         
         <span class="c1">#will be assigned in setter method of dataset_to_read</span>
@@ -347,14 +349,8 @@
         <span class="k">raise</span> <span class="n">NetworkNotImplemented</span><span class="p">(</span><span class="s2">&quot;No reading class available yet for dataset &quot;</span>
                                     <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span></div>
         
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1">#raise NotImplementedError(&quot;Requires review after API changes&quot;)</span>
-        <span class="n">s</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
-        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_reader</span><span class="p">(</span><span class="n">ds</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">s</span>
-        
-<div class="viewcode-block" id="ReadUngridded.read_dataset"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">read_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadUngridded.read_dataset"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">read_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_to_read</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                     <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read single dataset into instance of :class:`ReadUngridded`</span>
 <span class="sd">        </span>
 <span class="sd">        Note</span>
@@ -375,6 +371,13 @@
 <span class="sd">        UngriddedData</span>
 <span class="sd">            data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_caching</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">_caching</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">CACHING</span> 
+            <span class="n">const</span><span class="o">.</span><span class="n">CACHING</span> <span class="o">=</span> <span class="kc">False</span>
+            
+            <span class="n">print_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Received additional reading constraints, &#39;</span>
+                           <span class="s1">&#39;ignoring caching&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">vars_to_retrieve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Note: self.vars_to_retrieve may be None as well, then</span>
             <span class="c1"># default variables of each network are read</span>
@@ -395,7 +398,6 @@
         
         <span class="c1"># read the data sets</span>
         <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">False</span>
-        
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_cache</span><span class="p">:</span>
             <span class="c1"># initate cache handler</span>
             <span class="n">cache</span> <span class="o">=</span> <span class="n">CacheHandlerUngridded</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">vars_available</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -406,17 +408,19 @@
                         <span class="n">all_avail</span> <span class="o">=</span> <span class="kc">False</span>
                         <span class="k">break</span>
                 <span class="k">if</span> <span class="n">all_avail</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found Cache match for </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
+                    <span class="n">print_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found Cache match for </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
                     <span class="n">cache_hit_flag</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">data</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">loaded_data</span>
             
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_hit_flag</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No Cache match found for </span><span class="si">{}</span><span class="s1">. Reading from files (this &#39;</span>
+            <span class="n">print_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No Cache match found for </span><span class="si">{}</span><span class="s1">. Reading from files (this &#39;</span>
                         <span class="s1">&#39;may take a while)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_to_read</span><span class="p">))</span>
             <span class="n">_loglevel</span> <span class="o">=</span> <span class="n">print_log</span><span class="o">.</span><span class="n">level</span>
             <span class="n">print_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_available</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">print_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">_loglevel</span><span class="p">)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">revision</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">data_revision</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span><span class="p">[</span><span class="n">dataset_to_read</span><span class="p">]</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">__version__</span>
         
@@ -424,6 +428,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_hit_flag</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_cache</span><span class="p">:</span>
             <span class="n">cache</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         
+        <span class="k">if</span> <span class="n">_caching</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">const</span><span class="o">.</span><span class="n">CACHING</span> <span class="o">=</span> <span class="n">_caching</span>
         <span class="k">return</span> <span class="n">data</span></div>
     
 <div class="viewcode-block" id="ReadUngridded.read"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.readungridded.ReadUngridded.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasets_to_read</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vars_to_retrieve</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -465,7 +471,14 @@
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">supported_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUPPORTED_DATASETS</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#raise NotImplementedError(&quot;Requires review after API changes&quot;)</span>
+        <span class="n">s</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets_to_read</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_reader</span><span class="p">(</span><span class="n">ds</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span></div>
     
 <span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
 

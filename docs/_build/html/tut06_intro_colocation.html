@@ -199,6 +199,12 @@ online interface (see e.g.
 <span class="n">OBS_ID</span> <span class="o">=</span> <span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span>
 </pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Init</span> <span class="n">data</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">lustre</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.007446765899658203</span> <span class="n">s</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="import-of-model-data">
 <h2>Import of model data<a class="headerlink" href="#import-of-model-data" title="Permalink to this headline">¶</a></h2>
@@ -213,7 +219,7 @@ there.</p>
 <span class="n">Model</span> <span class="n">ID</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
 <span class="n">Data</span> <span class="n">directory</span><span class="p">:</span> <span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">storeA</span><span class="o">/</span><span class="n">project</span><span class="o">/</span><span class="n">aerocom</span><span class="o">/</span><span class="n">aerocom</span><span class="o">-</span><span class="n">users</span><span class="o">-</span><span class="n">database</span><span class="o">/</span><span class="n">ECMWF</span><span class="o">/</span><span class="n">ECMWF_CAMS_REAN</span><span class="o">/</span><span class="n">renamed</span>
 <span class="n">Available</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od440aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550bc&#39;</span><span class="p">,</span> <span class="s1">&#39;od550dust&#39;</span><span class="p">,</span> <span class="s1">&#39;od550oa&#39;</span><span class="p">,</span> <span class="s1">&#39;od550so4&#39;</span><span class="p">,</span> <span class="s1">&#39;od550ss&#39;</span><span class="p">,</span> <span class="s1">&#39;od865aer&#39;</span><span class="p">]</span>
-<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
+<span class="n">Available</span> <span class="n">years</span><span class="p">:</span> <span class="p">[</span><span class="mi">2003</span><span class="p">,</span> <span class="mi">2004</span><span class="p">,</span> <span class="mi">2005</span><span class="p">,</span> <span class="mi">2006</span><span class="p">,</span> <span class="mi">2007</span><span class="p">,</span> <span class="mi">2008</span><span class="p">,</span> <span class="mi">2009</span><span class="p">,</span> <span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">2017</span><span class="p">,</span> <span class="mi">9999</span><span class="p">]</span>
 <span class="n">Available</span> <span class="n">time</span> <span class="n">resolutions</span> <span class="p">[</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span> <span class="s1">&#39;monthly&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -221,6 +227,12 @@ there.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_data</span> <span class="o">=</span> <span class="n">model_reader</span><span class="o">.</span><span class="n">read_var</span><span class="p">(</span><span class="n">VAR</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">YEAR</span><span class="p">)</span>
 <span class="c1">#model_data = read_result[VAR][YEAR]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;lat&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;lon&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
+  <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">:</span> <span class="n">ECMWF_CAMS_REAN</span>
@@ -253,14 +265,17 @@ located at altitudes between 0 and 1000 m.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">obs_data</span><span class="p">)</span>
 </pre></div>
 </div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Found</span> <span class="n">Cache</span> <span class="n">match</span> <span class="k">for</span> <span class="n">AeronetSunV3Lev2</span><span class="o">.</span><span class="n">daily</span>
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">UngriddedData</span>
 <span class="o">-----------------------</span>
 <span class="n">Contains</span> <span class="n">networks</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">]</span>
 <span class="n">Contains</span> <span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
 <span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">]</span>
-<span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">985</span>
+<span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">meta</span><span class="o">-</span><span class="n">blocks</span><span class="p">:</span> <span class="mi">1006</span>
 <span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
- <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181018161623</span>
+ <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181121163558</span>
     <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -280,31 +295,19 @@ then (on top of that in green), plot all stations that provide AODs in
 </pre></div>
 </div>
 <img alt="_images/tut06_intro_colocation_11_0.png" src="_images/tut06_intro_colocation_11_0.png" />
-<div class="section" id="plotting-stations-interactively">
-<h3>Plotting stations interactively<a class="headerlink" href="#plotting-stations-interactively" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ipywidgets</span> <span class="k">import</span> <span class="n">interact</span><span class="p">,</span> <span class="n">fixed</span>
-
-<span class="n">interact</span><span class="p">(</span><span class="n">obs_data</span><span class="o">.</span><span class="n">plot_station_coordinates</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="n">obs_data</span><span class="o">.</span><span class="n">contains_vars</span><span class="p">,</span>
-         <span class="n">filter_name</span><span class="o">=</span><span class="n">pya</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">get_all_default_region_ids</span><span class="p">(),</span>
-         <span class="n">start</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2019</span><span class="p">),</span> <span class="n">stop</span><span class="o">=</span><span class="n">fixed</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">ts_type</span><span class="o">=</span><span class="n">fixed</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span>
-         <span class="n">color</span><span class="o">=</span><span class="n">fixed</span><span class="p">(</span><span class="s1">&#39;lime&#39;</span><span class="p">))</span>
-</pre></div>
-</div>
-<img alt="_images/tut06_intro_colocation_13_0.png" src="_images/tut06_intro_colocation_13_0.png" />
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">cartopy</span><span class="o">.</span><span class="n">mpl</span><span class="o">.</span><span class="n">geoaxes</span><span class="o">.</span><span class="n">GeoAxes</span> <span class="n">at</span> <span class="mh">0x7fe4b28f0cc0</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">function</span> <span class="n">ipywidgets</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">interaction</span><span class="o">.</span><span class="n">_InteractFactory</span><span class="o">.</span><span class="fm">__call__</span><span class="o">.&lt;</span><span class="nb">locals</span><span class="o">&gt;.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-</div>
 </div>
 <div class="section" id="now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values">
 <h2>Now perform collocation and plot corresponding scatter plots with statistical values<a class="headerlink" href="#now-perform-collocation-and-plot-corresponding-scatter-plots-with-statistical-values" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="monthly-world-no-mountains">
 <h3>2010 monthly World no mountains<a class="headerlink" href="#monthly-world-no-mountains" title="Permalink to this headline">¶</a></h3>
-<p>Colocate 2010 data in monthly resolution using (cf.&nbsp;green dots in
+<p>Colocate 2010 data in monthly resolution using (cf. green dots in
 station plot above).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs_data</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UngriddedData</span> <span class="o">&lt;</span><span class="n">networks</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">];</span> <span class="nb">vars</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ang4487aer&#39;</span><span class="p">,</span> <span class="s1">&#39;od550aer&#39;</span><span class="p">];</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">];</span><span class="n">No</span><span class="o">.</span> <span class="n">of</span> <span class="n">stations</span><span class="p">:</span> <span class="mi">1006</span>
+</pre></div>
+</div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">,</span>
                                                        <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;WORLD-noMOUNTAINS&#39;</span><span class="p">)</span>
 <span class="n">data_coloc</span>
@@ -343,9 +346,9 @@ station plot above).</p>
     <span class="n">ts_type_src_ref</span><span class="p">:</span>  <span class="n">daily</span>
     <span class="n">start_str</span><span class="p">:</span>        <span class="mi">20100101</span>
     <span class="n">stop_str</span><span class="p">:</span>         <span class="mi">20101231</span>
-    <span class="n">unit</span><span class="p">:</span>             <span class="mi">1</span>
+    <span class="n">unit</span><span class="p">:</span>             <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
     <span class="n">data_level</span><span class="p">:</span>       <span class="n">colocated</span>
-    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20180820</span>
+    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20181105</span>
     <span class="n">region</span><span class="p">:</span>           <span class="n">WORLD</span>
     <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">]</span>
     <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
@@ -355,10 +358,10 @@ station plot above).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe4b262a8d0</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f89f45d9c50</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/tut06_intro_colocation_17_1.png" src="_images/tut06_intro_colocation_17_1.png" />
+<img alt="_images/tut06_intro_colocation_16_1.png" src="_images/tut06_intro_colocation_16_1.png" />
 </div>
 <div class="section" id="daily-europe-no-mountains">
 <h3>2010 daily Europe no mountains<a class="headerlink" href="#daily-europe-no-mountains" title="Permalink to this headline">¶</a></h3>
@@ -369,10 +372,10 @@ station plot above).</p>
                                   <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Aeronet V3 stations&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">cartopy</span><span class="o">.</span><span class="n">mpl</span><span class="o">.</span><span class="n">geoaxes</span><span class="o">.</span><span class="n">GeoAxes</span> <span class="n">at</span> <span class="mh">0x7fe4b2650358</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">cartopy</span><span class="o">.</span><span class="n">mpl</span><span class="o">.</span><span class="n">geoaxes</span><span class="o">.</span><span class="n">GeoAxes</span> <span class="n">at</span> <span class="mh">0x7f89f44cff98</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/tut06_intro_colocation_19_1.png" src="_images/tut06_intro_colocation_19_1.png" />
+<img alt="_images/tut06_intro_colocation_18_1.png" src="_images/tut06_intro_colocation_18_1.png" />
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">colocation</span><span class="o">.</span><span class="n">colocate_gridded_ungridded_2D</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;daily&#39;</span><span class="p">,</span>
                                                              <span class="n">filter_name</span><span class="o">=</span><span class="s1">&#39;EUROPE-noMOUNTAINS&#39;</span><span class="p">)</span>
 <span class="n">data_coloc</span>
@@ -414,9 +417,9 @@ station plot above).</p>
     <span class="n">ts_type_src_ref</span><span class="p">:</span>  <span class="n">daily</span>
     <span class="n">start_str</span><span class="p">:</span>        <span class="mi">20100101</span>
     <span class="n">stop_str</span><span class="p">:</span>         <span class="mi">20101231</span>
-    <span class="n">unit</span><span class="p">:</span>             <span class="mi">1</span>
+    <span class="n">unit</span><span class="p">:</span>             <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
     <span class="n">data_level</span><span class="p">:</span>       <span class="n">colocated</span>
-    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20180820</span>
+    <span class="n">revision_ref</span><span class="p">:</span>     <span class="mi">20181105</span>
     <span class="n">region</span><span class="p">:</span>           <span class="n">EUROPE</span>
     <span class="n">lon_range</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">]</span>
     <span class="n">lat_range</span><span class="p">:</span>        <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">80</span><span class="p">]</span>
@@ -426,10 +429,10 @@ station plot above).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7fe4b249cb00</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f89f46d67f0</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/tut06_intro_colocation_21_1.png" src="_images/tut06_intro_colocation_21_1.png" />
+<img alt="_images/tut06_intro_colocation_20_1.png" src="_images/tut06_intro_colocation_20_1.png" />
 </div>
 </div>
 </div>

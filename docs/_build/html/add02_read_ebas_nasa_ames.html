@@ -203,7 +203,11 @@ started</a></p>
 <span class="nb">print</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pyaerocom</span> <span class="n">EbasNasaAmesFile</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Init</span> <span class="n">data</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">lustre</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.006913661956787109</span> <span class="n">s</span>
+<span class="n">Pyaerocom</span> <span class="n">EbasNasaAmesFile</span>
 <span class="o">--------------------------</span>
 
    <span class="n">num_head_lines</span><span class="p">:</span> <span class="mi">60</span>
@@ -214,8 +218,8 @@ started</a></p>
    <span class="n">project_association</span><span class="p">:</span> <span class="n">EUSAAR</span> <span class="n">GAW</span><span class="o">-</span><span class="n">WDCA</span>
    <span class="n">vol_num</span><span class="p">:</span> <span class="mi">1</span>
    <span class="n">vol_totnum</span><span class="p">:</span> <span class="mi">1</span>
-   <span class="n">ref_date</span><span class="p">:</span> <span class="mi">2008</span> <span class="mi">01</span> <span class="mi">01</span> <span class="mi">2016</span> <span class="mi">07</span> <span class="mi">08</span>
-   <span class="n">revision_date</span><span class="p">:</span> <span class="n">nan</span>
+   <span class="n">ref_date</span><span class="p">:</span> <span class="mi">2008</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+   <span class="n">revision_date</span><span class="p">:</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">08</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
    <span class="n">freq</span><span class="p">:</span> <span class="mf">0.041667</span>
    <span class="n">descr_time_unit</span><span class="p">:</span> <span class="n">days</span> <span class="kn">from</span> <span class="nn">file</span> <span class="n">reference</span> <span class="n">point</span>
    <span class="n">num_cols_dependent</span><span class="p">:</span> <span class="mi">11</span>
@@ -257,7 +261,7 @@ started</a></p>
    <span class="n">set_type_code</span><span class="p">:</span> <span class="n">TU</span>
    <span class="n">timezone</span><span class="p">:</span> <span class="n">UTC</span>
    <span class="n">file_name</span><span class="p">:</span> <span class="n">DE0043G</span><span class="o">.</span><span class="mf">20080101000000.20160708144500</span><span class="o">.</span><span class="n">nephelometer</span><span class="o">..</span><span class="n">aerosol</span><span class="o">.</span><span class="mi">1</span><span class="n">y</span><span class="o">.</span><span class="mi">1</span><span class="n">h</span><span class="o">.</span><span class="n">DE09L_tsi_neph_3563</span><span class="o">.</span><span class="n">DE09L_nephelometer</span><span class="o">.</span><span class="n">lev2</span><span class="o">.</span><span class="n">nas</span>
-   <span class="n">file_creation</span><span class="p">:</span> <span class="mi">20180101031050</span>
+   <span class="n">file_creation</span><span class="p">:</span> <span class="mi">20181001025156</span>
    <span class="n">startdate</span><span class="p">:</span> <span class="mi">20080101000000</span>
    <span class="n">revision_date</span><span class="p">:</span> <span class="mi">20160708144500</span>
    <span class="n">statistics</span><span class="p">:</span> <span class="n">arithmetic</span> <span class="n">mean</span>
@@ -432,7 +436,7 @@ started</a></p>
 </div>
 <p>You can see that all variable columns were assigned the same flag
 column, since there is only one. This would be different if there were
-multiple flag columns (e.g.&nbsp;one for each variable).</p>
+multiple flag columns (e.g. one for each variable).</p>
 </div>
 <div class="section" id="access-flag-information">
 <h2>Access flag information<a class="headerlink" href="#access-flag-information" title="Permalink to this headline">¶</a></h2>
@@ -442,7 +446,7 @@ of the file.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s1">&#39;numflag&#39;</span><span class="p">,</span>
-              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7fd542191390</span><span class="o">&gt;</span><span class="p">)])</span>
+              <span class="o">&lt;</span><span class="n">pyaerocom</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ebas_nasa_ames</span><span class="o">.</span><span class="n">EbasFlagCol</span> <span class="n">at</span> <span class="mh">0x7f05c1e6d0f0</span><span class="o">&gt;</span><span class="p">)])</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flagcol</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s2">&quot;numflag&quot;</span><span class="p">]</span>
@@ -502,20 +506,25 @@ the total number of timestamps.</p>
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>aerosol_light_backscattering_coefficient</th>
-      <th>aerosol_light_backscattering_coefficient</th>
-      <th>aerosol_light_backscattering_coefficient</th>
-      <th>aerosol_light_scattering_coefficient</th>
-      <th>aerosol_light_scattering_coefficient</th>
-      <th>aerosol_light_scattering_coefficient</th>
-      <th>pressure</th>
-      <th>relative_humidity</th>
-      <th>temperature</th>
+      <th>starttime_days</th>
+      <th>endtime_days</th>
+      <th>aerosol_light_backscattering_coefficient_1/Mm_450.0nm</th>
+      <th>aerosol_light_backscattering_coefficient_1/Mm_550.0nm</th>
+      <th>aerosol_light_backscattering_coefficient_1/Mm_700.0nm</th>
+      <th>aerosol_light_scattering_coefficient_1/Mm_450.0nm</th>
+      <th>aerosol_light_scattering_coefficient_1/Mm_550.0nm</th>
+      <th>aerosol_light_scattering_coefficient_1/Mm_700.0nm</th>
+      <th>pressure_hPa</th>
+      <th>relative_humidity_%</th>
+      <th>temperature_K</th>
+      <th>numflag_no unit</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>2008-01-01 00:30:00</th>
+      <td>0.000000</td>
+      <td>0.041667</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -525,9 +534,12 @@ the total number of timestamps.</p>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>0.394999</td>
     </tr>
     <tr>
       <th>2008-01-01 01:29:59</th>
+      <td>0.041667</td>
+      <td>0.083333</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -537,9 +549,12 @@ the total number of timestamps.</p>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>0.394999</td>
     </tr>
     <tr>
       <th>2008-01-01 02:29:59</th>
+      <td>0.083333</td>
+      <td>0.125000</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -549,9 +564,12 @@ the total number of timestamps.</p>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>0.394999</td>
     </tr>
     <tr>
       <th>2008-01-01 03:30:00</th>
+      <td>0.125000</td>
+      <td>0.166667</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -561,9 +579,12 @@ the total number of timestamps.</p>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>0.394999</td>
     </tr>
     <tr>
       <th>2008-01-01 04:29:59</th>
+      <td>0.166667</td>
+      <td>0.208333</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -573,10 +594,18 @@ the total number of timestamps.</p>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>0.394999</td>
     </tr>
   </tbody>
 </table>
-</div></div>
+</div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mc</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">(</span><span class="s1">&#39;aerosol_light_scattering_coefficient&#39;</span><span class="p">,</span> <span class="n">statistics</span><span class="o">=</span><span class="s1">&#39;arithmetic mean&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f0593976b70</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<img alt="_images/add02_read_ebas_nasa_ames_15_1.png" src="_images/add02_read_ebas_nasa_ames_15_1.png" />
+</div>
 </div>
 
 

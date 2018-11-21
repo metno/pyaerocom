@@ -9,14 +9,14 @@ class of *pyaerocom* was introduced in a previous tutorial.
 
 Here, we illustrate how *pyaerocom* handles time. In particular, how
 *pyaerocom* performs the conversion of CF conform numerical time stamps
-with a defined unit (i.e. basedate and calendar, see e.g.
+with a defined unit (i.e. basedate and calendar, see e.g.
 `here <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#time-coordinate>`__
 for details) into datetime-like objects that can be interpreted by tools
 such as `Pandas <https://pandas.pydata.org/>`__.
 
 The easiest way to work with time stamps in model data is, to simply
 work on the internal numerical indices, avoiding the necessity to
-convert them into actual datetime objects. However, sometimes (e.g. if
+convert them into actual datetime objects. However, sometimes (e.g. if
 we want to extract and analyse a time-series of global average Aerosol
 optical densities), we wish to use third party libraries such as Pandas,
 which require the timestamps to be datetime-like objects.
@@ -46,6 +46,17 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
     fpath_ecmwf = files['models']['ecmwf_osuite']
     fpath_aatsr = files['models']['aatsr_su_v4.3']
 
+
+.. parsed-literal::
+
+    Init data paths for lustre
+
+
+.. parsed-literal::
+
+    0.009135961532592773 s
+
+
 .. code:: ipython3
 
     data_ecmwf = pya.GriddedData(fpath_ecmwf, var_name="od550aer", name="ECMWF_OSUITE")
@@ -54,16 +65,52 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1808: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
       warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
 
 Note that, if the longitudes are defined on a 0 -> 360 degree grid, they
@@ -137,7 +184,7 @@ conversion for us, that is, using the ``cell(index)`` method (with the
 corresponding ``index``) of the ``DimCoord`` class in combination with
 the ``cells()`` iterator method. However, as we shall see below, this is
 not only the slowest solution but it is also prone to errors in case the
-calendar is not standard (e.g. Julian).
+calendar is not standard (e.g. Julian).
 
 .. code:: ipython3
 
@@ -150,7 +197,7 @@ calendar is not standard (e.g. Julian).
 .. parsed-literal::
 
     First time stamp ECMWF 2018-01-01 00:00:00 (data type: <class 'datetime.datetime'>)
-    First time stamp AATSR 2008-01-01 00:00:00 (data type: <class 'netcdftime._netcdftime.DatetimeJulian'>)
+    First time stamp AATSR 2008-01-01 00:00:00 (data type: <class 'cftime._cftime.DatetimeJulian'>)
 
 
 As you can see, the ``cell`` method returns different datatypes,
@@ -173,7 +220,7 @@ while the latter is not.
 
 .. parsed-literal::
 
-    TypeError("Cannot convert input [2008-01-01 00:00:00] of type <class 'netcdftime._netcdftime.DatetimeJulian'> to Timestamp",)
+    TypeError("Cannot convert input [2008-01-01 00:00:00] of type <class 'cftime._cftime.DatetimeJulian'> to Timestamp",)
 
 
 Nontheless, numpy is easier in that sense, since it understands both
@@ -218,7 +265,7 @@ be done using the ``cells()`` iterator of the ``DimCoord`` class.
 
     [datetime.datetime(2018, 1, 1, 0, 0), datetime.datetime(2018, 1, 2, 0, 0)]
     
-    [netcdftime._netcdftime.DatetimeJulian(2008, 1, 1, 0, 0, 0, 0, -1, 1), netcdftime._netcdftime.DatetimeJulian(2008, 1, 2, 0, 0, 0, 0, -1, 1)]
+    [cftime.DatetimeJulian(2008, 1, 1, 0, 0, 0, 0, -1, 1), cftime.DatetimeJulian(2008, 1, 2, 0, 0, 0, 0, -1, 1)]
 
 
 This worked, but however, is it fast?
@@ -231,7 +278,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    118 ms ± 797 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    128 ms ± 4.51 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -242,7 +289,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    103 ms ± 574 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    105 ms ± 848 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -258,7 +305,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    120 ms ± 660 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    121 ms ± 1.17 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -269,7 +316,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    103 ms ± 344 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    103 ms ± 635 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -294,7 +341,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.68 ms ± 38.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    1.64 ms ± 73.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -320,22 +367,21 @@ some features from the ``netCDF4`` package and by defining a function,
 that translates the numerical timestamps into ``datetime64`` objects
 based on the information encoded in the units string(e.g. *day since
 2018-01-01 00:00:00.00000000 UTC*) and the corresponding calendar (e.g.
-“gregorian”).
+"gregorian"). THis function is included in **pyaerocom** and can be
+accessed via:
 
 .. code:: ipython3
 
-    from cf_units import Unit
-    from datetime import MINYEAR, datetime
-    from numpy import asarray, datetime64
-    from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
-                        hr_units, day_units)
-    from netCDF4._netCDF4 import _dateparse
-    # Start of the gregorian calendar
-    # adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
-    GREGORIAN_BASE = datetime(1582, 10, 15)
+    from pyaerocom.helpers import cftime_to_datetime64 as pya_tconversion
+    help(pya_tconversion)
+
+
+.. parsed-literal::
+
+    Help on function cftime_to_datetime64 in module pyaerocom.helpers:
     
-    def cftime_to_datetime64(timesnum, cfunit, calendar=None):
-        """Convert numerical timestamps with epoch to numpy datetime64
+    cftime_to_datetime64(times, cfunit=None, calendar=None)
+        Convert numerical timestamps with epoch to numpy datetime64
         
         This method was designed to enhance the performance of datetime conversions
         and is based on the corresponding information provided in the cftime 
@@ -346,12 +392,13 @@ based on the information encoded in the units string(e.g. *day since
         
         Parameters
         ----------
-        timesnum : :obj:`list` or :obj:`ndarray`
+        times : :obj:`list` or :obj:`ndarray` or :obj:`iris.coords.DimCoord`
             array containing numerical time stamps (relative to basedate of 
             ``cfunit``). Can also be a single number.
-        cfunit : :obj:`str` or :obj:`Unit`
+        cfunit : :obj:`str` or :obj:`Unit`, optional
             CF unit string (e.g. day since 2018-01-01 00:00:00.00000000 UTC) or
-            unit
+            unit. Required if `times` is not an instance of 
+            :class:`iris.coords.DimCoord`
         calendar : :obj:`str`, optional
             string specifying calendar (only required if ``cfunit`` is of type
             ``str``).
@@ -373,71 +420,8 @@ based on the information encoded in the units string(e.g. *day since
         >>> cfunit_str = 'day since 2018-01-01 00:00:00.00000000 UTC'
         >>> cftime_to_datetime64(10, cfunit_str, "gregorian")
         array(['2018-01-11T00:00:00.000000'], dtype='datetime64[us]')
-        """
-        try:
-            len(timesnum)
-        except:
-            timesnum = [timesnum]
-        if isinstance(cfunit, str):
-            if calendar is None:
-                raise ValueError("Require specification of calendar for "
-                                 "conversion into datetime64 objects")
-            cfunit = Unit(cfunit, calendar) #raises Error if calendar is invalid
-        if not isinstance(cfunit, Unit):
-            raise ValueError("Please provide cfunit either as instance of class "
-                             "cf_units.Unit or as a string")
-        cfu_str, calendar = cfunit.name, cfunit.calendar
-        basedate = _dateparse(cfu_str)
-        cfu_str = cfunit.name
-        basedate = _dateparse(cfu_str)  
-        if ((calendar == 'proleptic_gregorian' and basedate.year >= MINYEAR) or 
-            (calendar in ['gregorian','standard'] and basedate > GREGORIAN_BASE)):
-            cfu_str = cfunit.name
-            res = cfu_str.split()[0].lower()
-            if res in microsec_units:
-                tstr = "us"
-            elif res in millisec_units:
-                tstr = "ms"
-            elif res in sec_units:
-                tstr = "s"
-            elif res in min_units:
-                tstr = "m"
-            elif res in hr_units:
-                tstr = "h"
-            elif res in day_units:
-                tstr = "D"
-            else:
-                raise ValueError('unsupported time units')
-            
-            basedate = datetime64(basedate)
-            return basedate + asarray(timesnum, dtype="timedelta64[%s]" %tstr)
-        else:
-            return asarray([datetime64(t) for t in cfunit.num2date(timesnum)])
+    
 
-Now let’s see how this one performs.
-
-.. code:: ipython3
-
-    %%timeit
-    cftime_to_datetime64(times_ecmwf.points, times_ecmwf.units)
-
-
-.. parsed-literal::
-
-    54.8 µs ± 291 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
-
-
-How pya does it
-^^^^^^^^^^^^^^^
-
-Due to this significant increase in performance for standard calendars
-(compared to the methods used in netCDF4), the above method was
-implemented in the pya package (`see
-here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
-
-.. code:: ipython3
-
-    from pyaerocom.helpers import cftime_to_datetime64 as pya_tconversion
 
 .. code:: ipython3
 
@@ -447,7 +431,7 @@ here <aerocom.met.no/pya/api.html#pya.helpers.cftime_to_datetime64>`__).
 
 .. parsed-literal::
 
-    330 µs ± 2.34 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    340 µs ± 7.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -461,11 +445,11 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    2.06 ms ± 15.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    1.98 ms ± 25.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
-iris interface (i.e. iterating over ``cells`` of the ``DimCoord``), for
+iris interface (i.e. iterating over ``cells`` of the ``DimCoord``), for
 conversion of 365 time stamps, we ended up with the order of 10
 microseconds. And at the same time the new method ensures that we have
 them in a format that also pandas understands.
@@ -481,7 +465,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    374 µs ± 4.59 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    380 µs ± 4.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -492,5 +476,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.1 ms ± 31.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.02 ms ± 40.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

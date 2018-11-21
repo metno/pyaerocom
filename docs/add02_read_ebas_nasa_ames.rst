@@ -33,6 +33,12 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
+    Init data paths for lustre
+
+
+.. parsed-literal::
+
+    0.006913661956787109 s
     Pyaerocom EbasNasaAmesFile
     --------------------------
     
@@ -44,8 +50,8 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
        project_association: EUSAAR GAW-WDCA
        vol_num: 1
        vol_totnum: 1
-       ref_date: 2008 01 01 2016 07 08
-       revision_date: nan
+       ref_date: 2008-01-01T00:00:00
+       revision_date: 2016-07-08T00:00:00
        freq: 0.041667
        descr_time_unit: days from file reference point
        num_cols_dependent: 11
@@ -87,7 +93,7 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
        set_type_code: TU
        timezone: UTC
        file_name: DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas
-       file_creation: 20180101031050
+       file_creation: 20181001025156
        startdate: 20080101000000
        revision_date: 20160708144500
        statistics: arithmetic mean
@@ -268,7 +274,7 @@ Column information
 
 You can see that all variable columns were assigned the same flag
 column, since there is only one. This would be different if there were
-multiple flag columns (e.g. one for each variable).
+multiple flag columns (e.g. one for each variable).
 
 Access flag information
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -286,7 +292,7 @@ of the file.
 .. parsed-literal::
 
     OrderedDict([('numflag',
-                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7fd542191390>)])
+                  <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f05c1e6d0f0>)])
 
 
 
@@ -379,20 +385,25 @@ The conversion does currently exclude all flag columns
       <thead>
         <tr style="text-align: right;">
           <th></th>
-          <th>aerosol_light_backscattering_coefficient</th>
-          <th>aerosol_light_backscattering_coefficient</th>
-          <th>aerosol_light_backscattering_coefficient</th>
-          <th>aerosol_light_scattering_coefficient</th>
-          <th>aerosol_light_scattering_coefficient</th>
-          <th>aerosol_light_scattering_coefficient</th>
-          <th>pressure</th>
-          <th>relative_humidity</th>
-          <th>temperature</th>
+          <th>starttime_days</th>
+          <th>endtime_days</th>
+          <th>aerosol_light_backscattering_coefficient_1/Mm_450.0nm</th>
+          <th>aerosol_light_backscattering_coefficient_1/Mm_550.0nm</th>
+          <th>aerosol_light_backscattering_coefficient_1/Mm_700.0nm</th>
+          <th>aerosol_light_scattering_coefficient_1/Mm_450.0nm</th>
+          <th>aerosol_light_scattering_coefficient_1/Mm_550.0nm</th>
+          <th>aerosol_light_scattering_coefficient_1/Mm_700.0nm</th>
+          <th>pressure_hPa</th>
+          <th>relative_humidity_%</th>
+          <th>temperature_K</th>
+          <th>numflag_no unit</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>2008-01-01 00:30:00</th>
+          <td>0.000000</td>
+          <td>0.041667</td>
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
@@ -402,9 +413,12 @@ The conversion does currently exclude all flag columns
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
+          <td>0.394999</td>
         </tr>
         <tr>
           <th>2008-01-01 01:29:59</th>
+          <td>0.041667</td>
+          <td>0.083333</td>
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
@@ -414,9 +428,12 @@ The conversion does currently exclude all flag columns
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
+          <td>0.394999</td>
         </tr>
         <tr>
           <th>2008-01-01 02:29:59</th>
+          <td>0.083333</td>
+          <td>0.125000</td>
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
@@ -426,9 +443,12 @@ The conversion does currently exclude all flag columns
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
+          <td>0.394999</td>
         </tr>
         <tr>
           <th>2008-01-01 03:30:00</th>
+          <td>0.125000</td>
+          <td>0.166667</td>
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
@@ -438,9 +458,12 @@ The conversion does currently exclude all flag columns
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
+          <td>0.394999</td>
         </tr>
         <tr>
           <th>2008-01-01 04:29:59</th>
+          <td>0.166667</td>
+          <td>0.208333</td>
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
@@ -450,9 +473,27 @@ The conversion does currently exclude all flag columns
           <td>NaN</td>
           <td>NaN</td>
           <td>NaN</td>
+          <td>0.394999</td>
         </tr>
       </tbody>
     </table>
     </div>
 
+
+
+.. code:: ipython3
+
+    mc.to_dataframe('aerosol_light_scattering_coefficient', statistics='arithmetic mean').plot(figsize=(16,8))
+
+
+
+
+.. parsed-literal::
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f0593976b70>
+
+
+
+
+.. image:: add02_read_ebas_nasa_ames/add02_read_ebas_nasa_ames_15_1.png
 

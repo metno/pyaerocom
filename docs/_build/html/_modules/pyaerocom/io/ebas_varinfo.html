@@ -217,7 +217,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">requires</span> <span class="o">=</span> <span class="kc">None</span>
         
         <span class="c1">#: scale factor for conversion to Aerocom units</span>
-        
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="kc">None</span>
         
         <span class="c1">#imports default information and, on top, variable information (if </span>
@@ -300,8 +299,21 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">aliases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">old_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="EbasVarInfo.make_sql_request"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.make_sql_request">[docs]</a>    <span class="k">def</span> <span class="nf">make_sql_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create an SQL request for the specifications in this object&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EbasVarInfo.make_sql_request"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.ebas_varinfo.EbasVarInfo.make_sql_request">[docs]</a>    <span class="k">def</span> <span class="nf">make_sql_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">constraints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an SQL request for the specifications in this object</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **constraints</span>
+<span class="sd">            request constraints deviating from default. For details on </span>
+<span class="sd">            parameters see :class:`EbasSQLRequest`</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        EbasSQLRequest</span>
+<span class="sd">            the SQL request object that can be used to retrieve corresponding </span>
+<span class="sd">            file names using instance of :func:`EbasFileIndex.get_file_names`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">requires</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Cannot create SQL request for variables &#39;</span>
                                       <span class="s1">&#39;that depend on other variables&#39;</span><span class="p">)</span>
@@ -309,9 +321,12 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;At least one component (Ebas variable name) &#39;</span>
                                  <span class="s1">&#39;must be specified for retrieval of variable &#39;</span>
                                  <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span> <span class="n">matrices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
+        <span class="c1"># default request</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">EbasSQLRequest</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">component</span><span class="p">,</span> <span class="n">matrices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
                               <span class="n">instrument_types</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span>
-                              <span class="n">statistics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">)</span></div>
+                              <span class="n">statistics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">statistics</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">constraints</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span></div>
         
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>

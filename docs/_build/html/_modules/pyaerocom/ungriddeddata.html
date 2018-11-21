@@ -166,6 +166,7 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span> <span class="k">as</span> <span class="n">od</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">BrowseDict</span>
@@ -173,10 +174,12 @@
                                   <span class="n">TimeMatchError</span><span class="p">,</span> <span class="n">DataCoverageError</span><span class="p">,</span>
                                   <span class="n">MetaDataError</span><span class="p">,</span> <span class="n">DataUnitError</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">StationData</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">haversine</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">CoordinateError</span>
 <span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">dict_to_str</span><span class="p">,</span> <span class="n">list_to_shortstr</span>
 <span class="kn">from</span> <span class="nn">pyaerocom.mathutils</span> <span class="k">import</span> <span class="n">in_range</span>
-<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">to_pandas_timestamp</span><span class="p">,</span> <span class="n">same_meta_dict</span><span class="p">,</span> 
-                               <span class="n">TS_TYPE_TO_PANDAS_FREQ</span><span class="p">,</span> <span class="n">start_stop_str</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">same_meta_dict</span><span class="p">,</span> 
+                               <span class="n">start_stop_str</span><span class="p">,</span>
                                <span class="n">start_stop</span><span class="p">)</span>
 
 <div class="viewcode-block" id="UngriddedData"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData">[docs]</a><span class="k">class</span> <span class="nc">UngriddedData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -222,15 +225,16 @@
 <span class="sd">    mata_idx : dict</span>
 <span class="sd">        dictionary containing index mapping for each station and variable. Keys</span>
 <span class="sd">        correspond to metadata key (float -&gt; station, see :attr:`metadata`) and </span>
-<span class="sd">        variables are dictionaries containing keys specifying variable name and </span>
-<span class="sd">        values are arrays or lists, specifying indices (rows) of these </span>
-<span class="sd">        station / variable information in :attr:`_data`.</span>
+<span class="sd">        values are dictionaries containing keys specifying variable name and </span>
+<span class="sd">        corresponding values are arrays or lists, specifying indices (rows) of </span>
+<span class="sd">        these station / variable information in :attr:`_data`.</span>
 <span class="sd">    var_idx : dict</span>
 <span class="sd">        mapping of variable name (keys, e.g. od550aer) to numerical variable </span>
 <span class="sd">        index of this variable in data numpy array (in column specified by</span>
 <span class="sd">        :attr:`_VARINDEX`)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.15&#39;</span>
+    
     <span class="n">_METADATAKEYINDEX</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">_TIMEINDEX</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">_LATINDEX</span> <span class="o">=</span> <span class="mi">2</span>
@@ -255,7 +259,7 @@
             <span class="n">num_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ROWNO</span>
         <span class="c1">#keep private, this is not supposed to be used by the user</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="n">num_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COLNO</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">BrowseDict</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_revision</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">meta_idx</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
@@ -340,7 +344,7 @@
         
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">altitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Alttudes of stations&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Altitudes of stations&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">stat</span><span class="p">[</span><span class="s1">&#39;stat_alt&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
 
     <span class="nd">@altitude</span><span class="o">.</span><span class="n">setter</span>
@@ -356,6 +360,11 @@
     <span class="nd">@station_name</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">station_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Station names cannot be changed&quot;</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unique_station_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of unique station names&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">station_name</span><span class="p">)))</span>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -494,6 +503,16 @@
                 <span class="k">return</span> <span class="n">out_data</span></div>
                     
     
+    <span class="k">def</span> <span class="nf">_find_station_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station_pattern</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">],</span> <span class="n">station_pattern</span><span class="p">):</span>
+                <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No station available in UngriddedData that &#39;</span>
+                             <span class="s1">&#39;matches pattern </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station_pattern</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">idx</span>
+    
     <span class="c1"># TODO: see docstring</span>
 <div class="viewcode-block" id="UngriddedData.to_station_data"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.to_station_data">[docs]</a>    <span class="k">def</span> <span class="nf">to_station_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meta_idx</span><span class="p">,</span> <span class="n">vars_to_convert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                         <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interp_nans</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
@@ -533,15 +552,21 @@
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        StationData</span>
-<span class="sd">            data of this station (can be used like dictionary if desired)</span>
+<span class="sd">        StationData or list</span>
+<span class="sd">            StationData object(s) containing results. list is only returned if </span>
+<span class="sd">            input for meta_idx is station name and multiple matches are </span>
+<span class="sd">            detected for that station (e.g. data from different instruments), </span>
+<span class="sd">            else single instance of StationData</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># user asks explicitely for station name, find all meta indices</span>
+            <span class="c1"># that match this station</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">meta_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">station_name</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">)</span>
+                <span class="n">meta_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_station_indices</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No such station </span><span class="si">{}</span><span class="s1"> in UngriddedData&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">))</span>
-                
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">meta_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">meta_idx</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vars_to_convert</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">vars_to_convert</span> <span class="o">=</span> <span class="p">[</span><span class="n">vars_to_convert</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -549,10 +574,51 @@
             <span class="n">stop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2200&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">start_stop</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metablock_to_stationdata</span><span class="p">(</span><span class="n">meta_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> 
+                                                  <span class="n">vars_to_convert</span><span class="p">,</span>  
+                                                  <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> 
+                                                  <span class="n">interp_nans</span><span class="p">,</span> 
+                                                  <span class="n">min_coverage_interp</span><span class="p">,</span> 
+                                                  <span class="n">data_as_series</span><span class="p">)</span>
         
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">meta_idx</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">stat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metablock_to_stationdata</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> 
+                                                      <span class="n">vars_to_convert</span><span class="p">,</span>  
+                                                      <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> 
+                                                      <span class="n">interp_nans</span><span class="p">,</span> 
+                                                      <span class="n">min_coverage_interp</span><span class="p">,</span> 
+                                                      <span class="n">data_as_series</span><span class="p">)</span>
+                <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">VarNotAvailableError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No data could be retrieved for request&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stats</span></div>
+        
+    <span class="k">def</span> <span class="nf">_metablock_to_stationdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meta_idx</span><span class="p">,</span> <span class="n">vars_to_convert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                                  <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                                  <span class="n">interp_nans</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                                  <span class="n">min_coverage_interp</span><span class="o">=</span><span class="mf">0.68</span><span class="p">,</span> 
+                                  <span class="n">data_as_series</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert one metadata index to StationData (helper method)</span>
+<span class="sd">        </span>
+<span class="sd">        See :func:`to_station_data` for input parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># may or may not be defined in metadata block</span>
+        <span class="n">check_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="s1">&#39;revision_date&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;station_name_orig&#39;</span><span class="p">]</span>
         <span class="n">stat_data</span> <span class="o">=</span> <span class="n">StationData</span><span class="p">()</span>
+        
         <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">]</span>
         
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">check_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
+                <span class="n">stat_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                
         <span class="c1"># do not return anything for stations without data</span>
         <span class="c1"># TODO: consider writing stat_lon, stat_lat and stat_alt</span>
         <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">]</span>
@@ -562,22 +628,22 @@
         <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">]</span>
         <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span>
         <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;ts_type_src&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;instrument_name&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
-            <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;instrument_name&#39;</span><span class="p">]</span>
         
-        <span class="k">if</span> <span class="s1">&#39;files&#39;</span> <span class="ow">in</span> <span class="n">val</span><span class="p">:</span>
-            <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;files&#39;</span><span class="p">]</span>
+        <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span>
+            
+        <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;var_info&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         
         <span class="k">if</span> <span class="n">vars_to_convert</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">vars_to_convert</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]</span>
         <span class="n">vars_to_convert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">vars_to_convert</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">])</span> 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_to_convert</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">VarNotAvailableError</span><span class="p">(</span><span class="s1">&#39;None of the input variables matches, &#39;</span>
-                                       <span class="s1">&#39;or station does not contain data&#39;</span><span class="p">)</span>
+                                       <span class="s1">&#39;or station does not contain data. </span><span class="si">{}</span><span class="s1">&#39;</span>
+                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]))</span>
         <span class="n">first_var</span> <span class="o">=</span> <span class="n">vars_to_convert</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">indices_first</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">][</span><span class="n">first_var</span><span class="p">]</span>
         <span class="n">dtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">indices_first</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMEINDEX</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[s]&#39;</span><span class="p">)</span>
-        <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dtime</span>
+        
         <span class="n">overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">dtime</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span> <span class="n">dtime</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">overlap</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TimeMatchError</span><span class="p">(</span><span class="s1">&#39;No data available for station </span><span class="si">{}</span><span class="s1"> (</span><span class="si">{}</span><span class="s1">) in &#39;</span>
@@ -586,6 +652,7 @@
                                          <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">],</span>
                                          <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">))</span>
         <span class="n">dtime</span> <span class="o">=</span> <span class="n">dtime</span><span class="p">[</span><span class="n">overlap</span><span class="p">]</span>
+        <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dtime</span>
         <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vars_to_convert</span><span class="p">:</span>
             <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">overlap</span><span class="p">]</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DATAINDEX</span><span class="p">]</span>
@@ -608,9 +675,17 @@
                     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">interpolate</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">freq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="kn">from</span> <span class="nn">pyaerocom.helpers</span> <span class="k">import</span> <span class="n">resample_timeseries</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">resample_timeseries</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>    
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">resample_timeseries</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span> 
+                    <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;ts_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">freq</span>
+                    <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;dtime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span>
             <span class="n">stat_data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">return</span> <span class="n">stat_data</span></div>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">stat_data</span><span class="o">.</span><span class="n">var_info</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;var_info&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="s1">&#39;unit&#39;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Unit for variable </span><span class="si">{}</span><span class="s1"> is not available&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s1">&#39;var_info&#39;</span> <span class="ow">in</span> <span class="n">val</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;var_info&#39;</span><span class="p">]:</span>
+                <span class="n">stat_data</span><span class="p">[</span><span class="s1">&#39;var_info&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;var_info&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">stat_data</span>
     
 <div class="viewcode-block" id="UngriddedData.to_station_data_all"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.to_station_data_all">[docs]</a>    <span class="k">def</span> <span class="nf">to_station_data_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_convert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                             <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interp_nans</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
@@ -858,9 +933,7 @@
 <div class="viewcode-block" id="UngriddedData.extract_dataset"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.extract_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">extract_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Extract single dataset into new instance of :class:`UngriddedData`</span>
 <span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        Beta version. Please doublecheck correctness.</span>
+<span class="sd">        Calls :func:`filter_by_meta`.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -874,48 +947,63 @@
 <span class="sd">            input network</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Extracting dataset </span><span class="si">{}</span><span class="s1"> from data object&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Dataset </span><span class="si">{}</span><span class="s1"> is not contained in this data &#39;</span>
-                                 <span class="s1">&#39;object&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">))</span>
-        <span class="n">new</span> <span class="o">=</span> <span class="n">UngriddedData</span><span class="p">()</span>
-        <span class="n">meta_idx_new</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">data_idx_new</span> <span class="o">=</span> <span class="mi">0</span>
-        
-        <span class="k">for</span> <span class="n">meta_idx</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">dataset_name</span><span class="p">:</span>
-                <span class="n">new</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">meta_idx_new</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span>
-                <span class="n">new</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_idx_new</span><span class="p">]</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]:</span>
-                    <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
-                    <span class="n">totnum</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="n">data_idx_new</span> <span class="o">+</span> <span class="n">totnum</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">new</span><span class="o">.</span><span class="n">_ROWNO</span><span class="p">:</span>
-                    <span class="c1">#if totnum &lt; data_obj._CHUNKSIZE, then the latter is used</span>
-                        <span class="n">new</span><span class="o">.</span><span class="n">add_chunk</span><span class="p">(</span><span class="n">totnum</span><span class="p">)</span>
-                    <span class="n">stop</span> <span class="o">=</span> <span class="n">data_idx_new</span> <span class="o">+</span> <span class="n">totnum</span>
-                    
-                    <span class="n">new</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">data_idx_new</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="p">:]</span>
-                    <span class="n">new</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_idx_new</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data_idx_new</span><span class="p">,</span>
-                                                                <span class="n">stop</span><span class="p">)</span>
-                    <span class="n">data_idx_new</span> <span class="o">+=</span> <span class="n">totnum</span>
-                
-                <span class="n">meta_idx_new</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">meta_idx_new</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">data_idx_new</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">DataExtractionError</span><span class="p">(</span><span class="s1">&#39;Filtering results in empty data object&#39;</span><span class="p">)</span>
-        <span class="n">new</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">new</span><span class="o">.</span><span class="n">_data</span><span class="p">[:</span><span class="n">data_idx_new</span><span class="p">]</span>
-        <span class="n">time_str</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span>
-        <span class="n">new</span><span class="o">.</span><span class="n">filter_hist</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">time_str</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dataset_name&#39;</span> <span class="p">:</span> <span class="n">dataset_name</span><span class="p">}</span>
-        <span class="n">new</span><span class="o">.</span><span class="n">data_revision</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_revision</span><span class="p">[</span><span class="n">dataset_name</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">new</span></div>
-        
-<div class="viewcode-block" id="UngriddedData.station_data_to_ascii"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.station_data_to_ascii">[docs]</a>    <span class="k">def</span> <span class="nf">station_data_to_ascii</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vars_to_convert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                              <span class="n">freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interp_nans</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
-                              <span class="n">min_coverage_interp</span><span class="o">=</span><span class="mf">0.68</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        TODO</span>
-<span class="sd">        ----</span>
-<span class="sd">        Write docstring</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_by_meta</span><span class="p">(</span><span class="n">dataset_name</span><span class="o">=</span><span class="n">dataset_name</span><span class="p">)</span></div>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#         logger.info(&#39;Extracting dataset {} from data object&#39;.format(dataset_name))</span>
+<span class="c1">#         if not dataset_name in self.contains_datasets:</span>
+<span class="c1">#             raise AttributeError(&#39;Dataset {} is not contained in this data &#39;</span>
+<span class="c1">#                                  &#39;object&#39;.format(dataset_name))</span>
+<span class="c1">#         new = UngriddedData()</span>
+<span class="c1">#         meta_idx_new = 0.0</span>
+<span class="c1">#         data_idx_new = 0</span>
+<span class="c1">#         </span>
+<span class="c1">#         for meta_idx, meta in self.metadata.items():</span>
+<span class="c1">#             if meta[&#39;dataset_name&#39;] == dataset_name:</span>
+<span class="c1">#                 new.metadata[meta_idx_new] = meta</span>
+<span class="c1">#                 new.meta_idx[meta_idx_new] = od()</span>
+<span class="c1">#                 for var in meta[&#39;variables&#39;]:</span>
+<span class="c1">#                     indices = self.meta_idx[meta_idx][var]</span>
+<span class="c1">#                     totnum = len(indices)</span>
+<span class="c1">#                     if (data_idx_new + totnum) &gt;= new._ROWNO:</span>
+<span class="c1">#                     #if totnum &lt; data_obj._CHUNKSIZE, then the latter is used</span>
+<span class="c1">#                         new.add_chunk(totnum)</span>
+<span class="c1">#                     stop = data_idx_new + totnum</span>
+<span class="c1">#                     </span>
+<span class="c1">#                     new._data[data_idx_new:stop, :] = self._data[indices, :]</span>
+<span class="c1">#                     new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,</span>
+<span class="c1">#                                                                 stop)</span>
+<span class="c1">#                     data_idx_new += totnum</span>
+<span class="c1">#                 </span>
+<span class="c1">#                 meta_idx_new += 1</span>
+<span class="c1">#         if meta_idx_new == 0 or data_idx_new == 0:</span>
+<span class="c1">#             raise DataExtractionError(&#39;Filtering results in empty data object&#39;)</span>
+<span class="c1">#         new._data = new._data[:data_idx_new]</span>
+<span class="c1">#         time_str = datetime.now().strftime(&#39;%Y%m%d%H%M%S&#39;)</span>
+<span class="c1">#         new.filter_hist[int(time_str)] = {&#39;dataset_name&#39; : dataset_name}</span>
+<span class="c1">#         new.data_revision[dataset_name] = self.data_revision[dataset_name]</span>
+<span class="c1">#         return new</span>
+<span class="c1"># =============================================================================</span>
+
+    <span class="k">def</span> <span class="nf">_station_to_json_trends</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">station_name</span><span class="p">,</span> 
+                                <span class="n">freq</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert station data to json file for trends interface</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        var_name : str</span>
+<span class="sd">            variable name (e.g. od550aer)</span>
+<span class="sd">        station_name : str</span>
+<span class="sd">            name (or wildcard pattern) that specifies station</span>
+<span class="sd">        freq : str</span>
+<span class="sd">            temporal resolution</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            further input arguments that are passed to :func:`to_station_data`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Require station name (or pattern) as string&#39;</span><span class="p">)</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="n">station_name</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
         
 <div class="viewcode-block" id="UngriddedData.code_lat_lon_in_float"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.code_lat_lon_in_float">[docs]</a>    <span class="k">def</span> <span class="nf">code_lat_lon_in_float</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;method to code lat and lon in a single number so that we can use np.unique to</span>
@@ -936,8 +1024,7 @@
 
         <span class="k">return</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span></div>
             
-
-    <span class="k">def</span> <span class="nf">_find_common_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">,</span> <span class="s1">&#39;var_info&#39;</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">_find_common_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Searches all metadata dictionaries that are the same</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -953,6 +1040,8 @@
 <span class="sd">            - list containing lists with common meta indices</span>
 <span class="sd">            - list containing corresponding meta dictionaries</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ignore_keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ignore_keys</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">meta_registered</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">same_indices</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">meta_key</span><span class="p">,</span> <span class="n">meta</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -964,16 +1053,22 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
                 <span class="n">meta_registered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
                 <span class="n">same_indices</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">meta_key</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">same_indices</span><span class="p">,</span> <span class="n">meta_registered</span>
+        
+        <span class="k">return</span> <span class="n">same_indices</span>
     
-<div class="viewcode-block" id="UngriddedData.merge_common_meta"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.merge_common_meta">[docs]</a>    <span class="k">def</span> <span class="nf">merge_common_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PI&#39;</span><span class="p">,</span> <span class="s1">&#39;var_info&#39;</span><span class="p">]):</span>
+<div class="viewcode-block" id="UngriddedData.merge_common_meta"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.merge_common_meta">[docs]</a>    <span class="k">def</span> <span class="nf">merge_common_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merge all meta entries that are the same</span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        If there is an overlap in time between the data, the blocks are not</span>
+<span class="sd">        merged</span>
 <span class="sd">            </span>
 <span class="sd">        Todo</span>
 <span class="sd">        ----</span>
 <span class="sd">        Keep mapping of ``var_info`` (if defined in ``metadata``) to data </span>
 <span class="sd">        points (e.g. EBAS), since the data sources may be at different </span>
-<span class="sd">        wavelengths</span>
+<span class="sd">        wavelengths.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -985,23 +1080,40 @@
 <span class="sd">        UngriddedData</span>
 <span class="sd">            merged data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lst_meta_idx</span><span class="p">,</span> <span class="n">lst_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_common_meta</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ignore_keys</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ignore_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">lst_meta_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_common_meta</span><span class="p">(</span><span class="n">ignore_keys</span><span class="p">)</span>
         <span class="n">new</span> <span class="o">=</span> <span class="n">UngriddedData</span><span class="p">(</span><span class="n">num_points</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">didx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">idx_lst</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lst_meta_idx</span><span class="p">):</span>
-            <span class="n">_meta_check</span> <span class="o">=</span> <span class="n">lst_meta</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">_meta_check</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
+            <span class="c1"># write metadata of first index that matches</span>
+            <span class="n">_meta_check</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">idx_lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
             <span class="n">_meta_idx_new</span> <span class="o">=</span> <span class="n">od</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">meta_idx</span> <span class="ow">in</span> <span class="n">idx_lst</span><span class="p">:</span>
-                <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">]</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">same_meta_dict</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">_meta_check</span><span class="p">,</span>  
-                                      <span class="n">ignore_keys</span><span class="o">=</span><span class="n">ignore_keys</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected error. Please debug or &#39;</span>
-                                     <span class="s1">&#39;contact jonasg@met.no&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">meta_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx_lst</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># don&#39;t check first against first</span>
+                    <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">same_meta_dict</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">_meta_check</span><span class="p">,</span>  
+                                          <span class="n">ignore_keys</span><span class="o">=</span><span class="n">ignore_keys</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected error. Please debug or &#39;</span>
+                                         <span class="s1">&#39;contact jonasg@met.no&#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ignore_keys</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">meta</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_meta_check</span><span class="p">:</span>
+                                <span class="n">_meta_check</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_meta_check</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                                    <span class="n">_meta_check</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_meta_check</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">meta</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">in</span> <span class="n">_meta_check</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                                    <span class="n">_meta_check</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                           
                 <span class="n">data_var_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">meta_idx</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">data_idx</span> <span class="ow">in</span> <span class="n">data_var_idx</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_idx</span><span class="p">)</span>
                     <span class="n">stop</span> <span class="o">=</span> <span class="n">didx</span> <span class="o">+</span> <span class="n">num</span>
                     <span class="n">new</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">didx</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">data_idx</span><span class="p">]</span>
+                    <span class="n">new</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">didx</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">_meta_idx_new</span><span class="p">:</span>
                         <span class="n">_meta_idx_new</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">didx</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -1012,8 +1124,11 @@
             <span class="n">new</span><span class="o">.</span><span class="n">meta_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_meta_idx_new</span>
             <span class="n">new</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_meta_check</span>
         <span class="n">new</span><span class="o">.</span><span class="n">var_idx</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_idx</span><span class="p">)</span>
-        <span class="n">new</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span>
+        <span class="c1">#new.unit = self.unit</span>
         <span class="n">new</span><span class="o">.</span><span class="n">filter_hist</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_hist</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">new</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">sh</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;FATAL: Mismatch in shape between initial and &#39;</span>
+                            <span class="s1">&#39;and final object. Developers: please check&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">new</span></div>
         
 <div class="viewcode-block" id="UngriddedData.merge"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">new_obj</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -1049,7 +1164,7 @@
         <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_empty</span><span class="p">:</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_data</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">metadata</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">unit</span>
+            <span class="c1">#obj.unit = other.unit</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">data_revision</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">data_revision</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">meta_idx</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">meta_idx</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">var_idx</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">var_idx</span>
@@ -1057,14 +1172,16 @@
             <span class="c1"># get offset in metadata index</span>
             <span class="n">meta_offset</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">data_offset</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">unit</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">unit</span> <span class="o">==</span> <span class="n">obj</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
-                        <span class="k">raise</span> <span class="n">DataUnitError</span><span class="p">(</span><span class="s1">&#39;Cannot merge other instance of &#39;</span>
-                                        <span class="s1">&#39;UngriddedData since units for variable &#39;</span>
-                                        <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> do not match.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">obj</span><span class="o">.</span><span class="n">unit</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">=</span><span class="n">unit</span>
+<span class="c1"># =============================================================================</span>
+<span class="c1">#             for var, unit in other.unit:</span>
+<span class="c1">#                 if var in obj.unit.items():</span>
+<span class="c1">#                     if not unit == obj.unit[var]:</span>
+<span class="c1">#                         raise DataUnitError(&#39;Cannot merge other instance of &#39;</span>
+<span class="c1">#                                         &#39;UngriddedData since units for variable &#39;</span>
+<span class="c1">#                                         &#39;{} do not match.&#39;.format(var))</span>
+<span class="c1">#                 else:</span>
+<span class="c1">#                     obj.unit[var]=unit</span>
+<span class="c1"># =============================================================================</span>
                     
             <span class="c1"># add this offset to indices of meta dictionary in input data object</span>
             <span class="k">for</span> <span class="n">meta_idx_other</span><span class="p">,</span> <span class="n">meta_other</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1392,19 +1509,26 @@
 <span class="sd">        ts_type : :obj:`str`, optional</span>
 <span class="sd">            temporal resolution</span>
 <span class="sd">        **kwargs</span>
-<span class="sd">            Addifional keyword args passed to method :func:`to_station_data`</span>
+<span class="sd">            Additional keyword args passed to method :func:`to_station_data`</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        pandas.Series</span>
 <span class="sd">            time series data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> 
-                                    <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">ts_type</span><span class="p">,</span>
-                                    <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span></div>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> 
+                                     <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">ts_type</span><span class="p">,</span>
+                                     <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">StationData</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Multiple matches found for </span><span class="si">{}</span><span class="s1">. Cannot &#39;</span>
+                                      <span class="s1">&#39;yet merge multiple instances &#39;</span>
+                                      <span class="s1">&#39;of StationData into one single &#39;</span>
+                                      <span class="s1">&#39;timeseries. Coming soon...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">to_timeseries</span><span class="p">(</span><span class="n">var_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="UngriddedData.plot_station_timeseries"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.plot_station_timeseries">[docs]</a>    <span class="k">def</span> <span class="nf">plot_station_timeseries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                                <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                                <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                                <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot time series of station and variable</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -1430,8 +1554,15 @@
 <span class="sd">            matplotlib axes instance</span>
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_time_series</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> 
-                                    <span class="n">stop</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+            <span class="kn">from</span> <span class="nn">pyaerocom.plot.config</span> <span class="k">import</span> <span class="n">FIGSIZE_DEFAULT</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">FIGSIZE_DEFAULT</span><span class="p">)</span>
+        
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_time_series</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">ts_type</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">ax</span></div>
         
 <div class="viewcode-block" id="UngriddedData.plot_station_coordinates"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.UngriddedData.plot_station_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">plot_station_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                                  <span class="n">filter_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -1583,6 +1714,7 @@
                         <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)))</span>
         
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_station_data</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
     
     <span class="k">def</span> <span class="nf">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
@@ -1609,7 +1741,7 @@
         <span class="n">s</span> <span class="o">+=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Contains networks: </span><span class="si">{}</span><span class="s1">&#39;</span>
               <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Contains variables: </span><span class="si">{}</span><span class="s1">&#39;</span>
               <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Contains instruments: </span><span class="si">{}</span><span class="s1">&#39;</span>
-              <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Total no. of stations: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">,</span>
+              <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Total no. of meta-blocks: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contains_datasets</span><span class="p">,</span>
                                                    <span class="bp">self</span><span class="o">.</span><span class="n">contains_vars</span><span class="p">,</span>
                                                    <span class="bp">self</span><span class="o">.</span><span class="n">contains_instruments</span><span class="p">,</span>
                                                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)))</span>
@@ -1621,27 +1753,6 @@
                     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="n">s</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n\t</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
                     
-        <span class="k">return</span> <span class="n">s</span>
-    <span class="k">def</span> <span class="nf">__str__OLD</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;Pyaerocom </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">head</span><span class="p">)</span><span class="o">*</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
-        <span class="n">arrays</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-                <span class="n">s</span> <span class="o">=</span> <span class="n">dict_to_str</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> (list, </span><span class="si">{}</span><span class="s2"> items)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-                <span class="n">s</span> <span class="o">+=</span> <span class="n">list_to_shortstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">arrays</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> (array, </span><span class="si">{}</span><span class="s2"> items)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
-                <span class="n">arrays</span> <span class="o">+=</span> <span class="n">list_to_shortstr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-                <span class="n">arrays</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2"> (array, shape </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-                <span class="n">arrays</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="n">arrays</span>
         <span class="k">return</span> <span class="n">s</span></div>
 
 <div class="viewcode-block" id="reduce_array_closest"><a class="viewcode-back" href="../../api.html#pyaerocom.ungriddeddata.reduce_array_closest">[docs]</a><span class="k">def</span> <span class="nf">reduce_array_closest</span><span class="p">(</span><span class="n">arr_nominal</span><span class="p">,</span> <span class="n">arr_to_be_reduced</span><span class="p">):</span>
@@ -1655,39 +1766,14 @@
         
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     
-    <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">change_verbosity</span>
-    <span class="kn">from</span> <span class="nn">pyaerocom.io</span> <span class="k">import</span> <span class="n">ReadAeronetSunV2</span><span class="p">,</span> <span class="n">ReadAeronetSunV3</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">pyaerocom</span> <span class="k">as</span> <span class="nn">pya</span>
     
-    <span class="n">change_verbosity</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">)</span>
-    <span class="n">read_v2</span> <span class="o">=</span> <span class="n">ReadAeronetSunV2</span><span class="p">()</span>
-    <span class="n">read_v3</span> <span class="o">=</span> <span class="n">ReadAeronetSunV3</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ReadUngridded</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">([</span><span class="n">pya</span><span class="o">.</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V2L2_AOD_DAILY_NAME</span><span class="p">,</span>
+                                        <span class="n">pya</span><span class="o">.</span><span class="n">const</span><span class="o">.</span><span class="n">AERONET_SUN_V3L2_AOD_DAILY_NAME</span><span class="p">],</span>
+            <span class="p">[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span> <span class="s1">&#39;ang4487aer&#39;</span><span class="p">],</span> <span class="n">last_file</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
     
-    <span class="n">read_v2</span><span class="o">.</span><span class="n">read_first_file</span><span class="p">()</span>
+    <span class="n">v3</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">extract_dataset</span><span class="p">(</span><span class="s1">&#39;AeronetSunV3Lev2.daily&#39;</span><span class="p">)</span>
     
-    <span class="n">data_v2</span> <span class="o">=</span> <span class="n">read_v2</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">read_v2</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">,</span> 
-                           <span class="n">last_file</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-    <span class="n">data_v3</span> <span class="o">=</span> <span class="n">read_v3</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">vars_to_retrieve</span><span class="o">=</span><span class="n">read_v3</span><span class="o">.</span><span class="n">PROVIDES_VARIABLES</span><span class="p">,</span> 
-                           <span class="n">last_file</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-    
-    <span class="n">od550aer_all_v2</span> <span class="o">=</span> <span class="n">data_v2</span><span class="o">.</span><span class="n">all_datapoints_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
-    <span class="n">od550aer_all_v3</span> <span class="o">=</span> <span class="n">data_v3</span><span class="o">.</span><span class="n">all_datapoints_var</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
-    
-    <span class="c1">#t0common_stats = data_v2.find_common_stations(data_v3)</span>
-    <span class="n">dates</span><span class="p">,</span> <span class="n">data_this</span><span class="p">,</span> <span class="n">data_other</span> <span class="o">=</span> <span class="n">data_v2</span><span class="o">.</span><span class="n">find_common_data_points</span><span class="p">(</span><span class="n">data_v3</span><span class="p">,</span> 
-                                                                   <span class="s1">&#39;od550aer&#39;</span><span class="p">)</span>
-    
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data_this</span><span class="p">,</span> <span class="n">data_other</span><span class="p">,</span> <span class="s1">&#39; *g&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;AOD 550 nm, Aeronet Sun V2&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;AOD 550 nm, Aeronet Sun V3&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">8</span><span class="p">])</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">8</span><span class="p">])</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>  
-    
-    <span class="n">data_monthly</span> <span class="o">=</span> <span class="n">data_v3</span><span class="o">.</span><span class="n">get_variable_data</span><span class="p">(</span><span class="s1">&#39;od550aer&#39;</span><span class="p">,</span><span class="n">ts_type</span><span class="o">=</span><span class="s1">&#39;monthly&#39;</span><span class="p">)[</span><span class="s1">&#39;od550aer&#39;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">data_monthly</span><span class="p">)</span>
-    <span class="c1">#t0_red = reduce_array_closest(t1, t0)</span>
     
     
 </pre></div>

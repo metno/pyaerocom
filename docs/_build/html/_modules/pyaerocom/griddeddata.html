@@ -1240,6 +1240,8 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheme</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">scheme</span> <span class="o">=</span> <span class="n">str_to_iris</span><span class="p">(</span><span class="n">scheme</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">_check_lonlat_bounds</span><span class="p">()</span>
         <span class="n">data_rg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">regrid</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">scheme</span><span class="p">)</span>
         <span class="n">suppl</span> <span class="o">=</span> <span class="n">od</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">suppl_info</span><span class="p">)</span>
         <span class="n">suppl</span><span class="p">[</span><span class="s1">&#39;regridded&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>

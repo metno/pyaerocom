@@ -1076,9 +1076,9 @@ corresponding dictionaries containing station information.</p>
 <code class="descname">mata_idx</code><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.mata_idx" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>dict</em> – dictionary containing index mapping for each station and variable. Keys
 correspond to metadata key (float -&gt; station, see <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData.metadata" title="pyaerocom.ungriddeddata.UngriddedData.metadata"><code class="xref py py-attr docutils literal notranslate"><span class="pre">metadata</span></code></a>) and
-variables are dictionaries containing keys specifying variable name and
-values are arrays or lists, specifying indices (rows) of these
-station / variable information in <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData._data" title="pyaerocom.ungriddeddata.UngriddedData._data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_data</span></code></a>.</p>
+values are dictionaries containing keys specifying variable name and
+corresponding values are arrays or lists, specifying indices (rows) of
+these station / variable information in <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData._data" title="pyaerocom.ungriddeddata.UngriddedData._data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_data</span></code></a>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1149,13 +1149,19 @@ index of this variable in data numpy array (in column specified by
 <dl class="attribute">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.altitude">
 <code class="descname">altitude</code><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.altitude" title="Permalink to this definition">¶</a></dt>
-<dd><p>Alttudes of stations</p>
+<dd><p>Altitudes of stations</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.station_name">
 <code class="descname">station_name</code><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.station_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latitudes of data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.ungriddeddata.UngriddedData.unique_station_names">
+<code class="descname">unique_station_names</code><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.unique_station_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of unique station names</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1258,10 +1264,13 @@ roughly corresponding to 1 sigma)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">data of this station (can be used like dictionary if desired)</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">StationData object(s) containing results. list is only returned if
+input for meta_idx is station name and multiple matches are
+detected for that station (e.g. data from different instruments),
+else single instance of StationData</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyaerocom.stationdata.StationData" title="pyaerocom.stationdata.StationData">StationData</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pyaerocom.stationdata.StationData" title="pyaerocom.stationdata.StationData">StationData</a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
 </td>
 </tr>
 </tbody>
@@ -1374,10 +1383,7 @@ stat_lon, stat_lat, stat_alt, ts_type)</p>
 <dt id="pyaerocom.ungriddeddata.UngriddedData.extract_dataset">
 <code class="descname">extract_dataset</code><span class="sig-paren">(</span><em>dataset_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.extract_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.extract_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract single dataset into new instance of <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData" title="pyaerocom.ungriddeddata.UngriddedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code></a></p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Beta version. Please doublecheck correctness.</p>
-</div>
+<p>Calls <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData.filter_by_meta" title="pyaerocom.ungriddeddata.UngriddedData.filter_by_meta"><code class="xref py py-func docutils literal notranslate"><span class="pre">filter_by_meta()</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1391,15 +1397,6 @@ input network</td>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyaerocom.ungriddeddata.UngriddedData.station_data_to_ascii">
-<code class="descname">station_data_to_ascii</code><span class="sig-paren">(</span><em>vars_to_convert=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>freq=None</em>, <em>interp_nans=False</em>, <em>min_coverage_interp=0.68</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.station_data_to_ascii"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.station_data_to_ascii" title="Permalink to this definition">¶</a></dt>
-<dd><div class="admonition-todo admonition" id="index-6">
-<p class="first admonition-title">Todo</p>
-<p class="last">Write docstring</p>
-</div>
 </dd></dl>
 
 <dl class="method">
@@ -1417,13 +1414,18 @@ determine single locations</p>
 
 <dl class="method">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.merge_common_meta">
-<code class="descname">merge_common_meta</code><span class="sig-paren">(</span><em>ignore_keys=['PI', 'var_info']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.merge_common_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.merge_common_meta" title="Permalink to this definition">¶</a></dt>
+<code class="descname">merge_common_meta</code><span class="sig-paren">(</span><em>ignore_keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.merge_common_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.merge_common_meta" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge all meta entries that are the same</p>
-<div class="admonition-todo admonition" id="index-7">
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If there is an overlap in time between the data, the blocks are not
+merged</p>
+</div>
+<div class="admonition-todo admonition" id="index-6">
 <p class="first admonition-title">Todo</p>
 <p class="last">Keep mapping of <code class="docutils literal notranslate"><span class="pre">var_info</span></code> (if defined in <code class="docutils literal notranslate"><span class="pre">metadata</span></code>) to data
 points (e.g. EBAS), since the data sources may be at different
-wavelengths</p>
+wavelengths.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1622,7 +1624,7 @@ station in the other object</p>
 then only the corresponding year inferred from start time will be
 considered</li>
 <li><strong>ts_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – temporal resolution</li>
-<li><strong>**kwargs</strong> – Addifional keyword args passed to method <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data" title="pyaerocom.ungriddeddata.UngriddedData.to_station_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_station_data()</span></code></a></li>
+<li><strong>**kwargs</strong> – Additional keyword args passed to method <a class="reference internal" href="#pyaerocom.ungriddeddata.UngriddedData.to_station_data" title="pyaerocom.ungriddeddata.UngriddedData.to_station_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_station_data()</span></code></a></li>
 </ul>
 </td>
 </tr>
@@ -1638,7 +1640,7 @@ considered</li>
 
 <dl class="method">
 <dt id="pyaerocom.ungriddeddata.UngriddedData.plot_station_timeseries">
-<code class="descname">plot_station_timeseries</code><span class="sig-paren">(</span><em>station</em>, <em>var_name</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.plot_station_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.plot_station_timeseries" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot_station_timeseries</code><span class="sig-paren">(</span><em>station</em>, <em>var_name</em>, <em>start=None</em>, <em>stop=None</em>, <em>ts_type=None</em>, <em>vmin=None</em>, <em>vmax=None</em>, <em>ax=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/ungriddeddata.html#UngriddedData.plot_station_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.ungriddeddata.UngriddedData.plot_station_timeseries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot time series of station and variable</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2005,7 +2007,7 @@ and methods that use the latter (e.g. <a class="reference internal" href="#pyaer
 <dt id="pyaerocom.colocateddata.ColocatedData.from_csv">
 <code class="descname">from_csv</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocateddata.html#ColocatedData.from_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocateddata.ColocatedData.from_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read data from CSV file</p>
-<div class="admonition-todo admonition" id="index-8">
+<div class="admonition-todo admonition" id="index-7">
 <p class="first admonition-title">Todo</p>
 <p class="last">Complete docstring</p>
 </div>
@@ -2163,9 +2165,16 @@ in attr. <code class="docutils literal notranslate"><span class="pre">COORD_MAX_
 <code class="descname">NAMES_STAT_COORDS</code><em class="property"> = {'altitude': 'stat_alt', 'latitude': 'stat_lat', 'longitude': 'stat_lon'}</em><a class="headerlink" href="#pyaerocom.stationdata.StationData.NAMES_STAT_COORDS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="pyaerocom.stationdata.StationData.data_columns">
-<code class="descname">data_columns</code><a class="headerlink" href="#pyaerocom.stationdata.StationData.data_columns" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="pyaerocom.stationdata.StationData.compare_meta">
+<code class="descname">compare_meta</code><span class="sig-paren">(</span><em>other</em>, <em>var_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/stationdata.html#StationData.compare_meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.stationdata.StationData.compare_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare meta information of this object with other object</p>
+<p>Parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.stationdata.StationData.get_data_columns">
+<code class="descname">get_data_columns</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/stationdata.html#StationData.get_data_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.stationdata.StationData.get_data_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>List containing all data columns</p>
 <p>Iterates over all key / value pairs and finds all values that are
 lists or numpy arrays that match the length of the time-stamp array
@@ -2334,7 +2343,7 @@ is provided, i.e. if resampling is applied)</li>
 <dt id="pyaerocom.colocation.colocate_gridded_gridded">
 <code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_gridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>gridded_data_ref</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name=None</em>, <em>regrid_scheme='areaweighted'</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_gridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_gridded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colocate 2 gridded data objects</p>
-<div class="admonition-todo admonition" id="index-9">
+<div class="admonition-todo admonition" id="index-8">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Complete docstring</li>
@@ -2345,7 +2354,7 @@ is provided, i.e. if resampling is applied)</li>
 
 <dl class="function">
 <dt id="pyaerocom.colocation.colocate_gridded_ungridded">
-<code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_ungridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>ungridded_data</em>, <em>ts_type='daily'</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>var_ref=None</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_ungridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_ungridded" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pyaerocom.colocation.</code><code class="descname">colocate_gridded_ungridded</code><span class="sig-paren">(</span><em>gridded_data</em>, <em>ungridded_data</em>, <em>ts_type=None</em>, <em>start=None</em>, <em>stop=None</em>, <em>filter_name='WORLD-wMOUNTAINS'</em>, <em>var_ref=None</em>, <em>vert_scheme=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/colocation.html#colocate_gridded_ungridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.colocation.colocate_gridded_ungridded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Colocate gridded with ungridded data of 2D data</p>
 <p>2D means, that the vertical direction is only sampled at one altitude or
 the variable is of integrated nature (or averaged) so that the dimensionality
@@ -2542,7 +2551,7 @@ searched using <a class="reference internal" href="#pyaerocom.io.readgridded.Rea
 
 <dl class="attribute">
 <dt id="pyaerocom.io.readgridded.ReadGridded.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f2957cc2488&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function compute_angstrom_coeff_cubes at 0x7f5e66c3f1e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.readgridded.ReadGridded.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -3032,7 +3041,7 @@ variables is available in this object</li>
 number of models and specific for a certain time interval (that can be
 defined, but must not be defined). Largely based on
 <a class="reference internal" href="#pyaerocom.io.readgridded.ReadGridded" title="pyaerocom.io.readgridded.ReadGridded"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReadGridded</span></code></a>.</p>
-<div class="admonition-todo admonition" id="index-10">
+<div class="admonition-todo admonition" id="index-9">
 <p class="first admonition-title">Todo</p>
 <p class="last">Sub-class from ReadGridded</p>
 </div>
@@ -3217,7 +3226,7 @@ variables is available in this object</li>
 <span id="factory-class-high-level"></span><h4>Factory class (high level)<a class="headerlink" href="#module-pyaerocom.io.readungridded" title="Permalink to this headline">¶</a></h4>
 <dl class="class">
 <dt id="pyaerocom.io.readungridded.ReadUngridded">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.readungridded.</code><code class="descname">ReadUngridded</code><span class="sig-paren">(</span><em>datasets_to_read='AeronetSunV2Lev2.daily'</em>, <em>vars_to_retrieve=None</em>, <em>ignore_cache=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungridded.html#ReadUngridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.readungridded.</code><code class="descname">ReadUngridded</code><span class="sig-paren">(</span><em>datasets_to_read='AeronetSunV3Lev2.daily'</em>, <em>vars_to_retrieve=None</em>, <em>ignore_cache=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/readungridded.html#ReadUngridded"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.readungridded.ReadUngridded" title="Permalink to this definition">¶</a></dt>
 <dd><p>Factory class for reading of ungridded data based on obsnetwork ID</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.readungridded.ReadUngridded.SUPPORTED">
@@ -3783,7 +3792,7 @@ to read all files from this station into data object.</p>
 <p class="first admonition-title">See also</p>
 <p class="last">Base classes <code class="xref py py-class docutils literal notranslate"><span class="pre">ReadAeronetBase</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">ReadUngriddedBase</span></code></p>
 </div>
-<div class="admonition-todo admonition" id="index-11">
+<div class="admonition-todo admonition" id="index-10">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check level 1.5 data and include</p>
 </div>
@@ -3843,7 +3852,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f2957cc2158&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f5e66c43e18&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f5e66c43ea0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv2.ReadAeronetSunV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4184,7 +4193,7 @@ to read all files from this station into data object.</p>
 <em class="property">class </em><code class="descclassname">pyaerocom.io.read_aeronet_sdav2.</code><code class="descname">ReadAeronetSdaV2</code><span class="sig-paren">(</span><em>dataset_to_read=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_aeronet_sdav2.html#ReadAeronetSdaV2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyaerocom.io.readaeronetbase.ReadAeronetBase" title="pyaerocom.io.readaeronetbase.ReadAeronetBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyaerocom.io.readaeronetbase.ReadAeronetBase</span></code></a></p>
 <p>Interface for reading Aeronet Sun V2 Level 2 data</p>
-<div class="admonition-todo admonition" id="index-12">
+<div class="admonition-todo admonition" id="index-11">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check if also level 1.5 works and include</p>
 </div>
@@ -4244,7 +4253,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f2957cc2158&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f2957cc22f0&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f2957cc2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer': &lt;function calc_ang4487aer at 0x7f5e66c43e18&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f5e66c43ea0&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f5e66c3f048&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f5e66c3f0d0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav2.ReadAeronetSdaV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -4650,7 +4659,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f2957cc2268&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f5e66c43f28&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f5e66c43ea0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv2.ReadAeronetInvV2.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5074,7 +5083,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f2957cc2158&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'ang4487aer_calc': &lt;function calc_ang4487aer at 0x7f5e66c43e18&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f5e66c43ea0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sunv3.ReadAeronetSunV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5472,7 +5481,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f2957cc22f0&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f2957cc2378&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'od550aer': &lt;function calc_od550aer at 0x7f5e66c43ea0&gt;, 'od550gt1aer': &lt;function calc_od550gt1aer at 0x7f5e66c3f048&gt;, 'od550lt1aer': &lt;function calc_od550lt1aer at 0x7f5e66c3f0d0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_sdav3.ReadAeronetSdaV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -5866,7 +5875,7 @@ by the original data but computed on import)</p>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS">
-<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f2957cc2268&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f2957cc21e0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
+<code class="descname">AUX_FUNS</code><em class="property"> = {'abs550aer': &lt;function calc_abs550aer at 0x7f5e66c43f28&gt;, 'od550aer': &lt;function calc_od550aer at 0x7f5e66c43ea0&gt;}</em><a class="headerlink" href="#pyaerocom.io.read_aeronet_invv3.ReadAeronetInvV3.AUX_FUNS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Functions that are used to compute additional variables (i.e. one
 for each variable defined in AUX_REQUIRES)</p>
 </dd></dl>
@@ -6562,7 +6571,7 @@ in <code class="docutils literal notranslate"><span class="pre">SUPPORTED_DATASE
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-13">
+<div class="admonition-todo admonition" id="index-12">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check for negative values vs. detection limit</p>
 </div>
@@ -6577,6 +6586,11 @@ what statistics to use (and in which preferred order, if appicable).
 Reading preferences for all Ebas variables are specified in the file
 ebas_config.ini in the data directory of pyaerocom</p>
 </dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_ebas.ReadEbas.PREFER_LEVEL">
+<code class="descname">PREFER_LEVEL</code><em class="property"> = 2</em><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.PREFER_LEVEL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="pyaerocom.io.read_ebas.ReadEbas.IGNORE_STATISTICS">
@@ -6607,6 +6621,11 @@ e.g. if 50 and for variable at 550nm, accept everything in interval
 <dl class="attribute">
 <dt id="pyaerocom.io.read_ebas.ReadEbas.TS_TYPE">
 <code class="descname">TS_TYPE</code><em class="property"> = 'undefined'</em><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.TS_TYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.read_ebas.ReadEbas.MERGE_STATIONS">
+<code class="descname">MERGE_STATIONS</code><em class="property"> = {'Birkenes': 'Birkenes II'}</em><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.MERGE_STATIONS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -6662,7 +6681,7 @@ AllVariables)</p>
 
 <dl class="method">
 <dt id="pyaerocom.io.read_ebas.ReadEbas.get_file_list">
-<code class="descname">get_file_list</code><span class="sig-paren">(</span><em>vars_to_retrieve=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_ebas.html#ReadEbas.get_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.get_file_list" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_file_list</code><span class="sig-paren">(</span><em>vars_to_retrieve=None</em>, <em>**constraints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_ebas.html#ReadEbas.get_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.get_file_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get list of files for all variables to retrieve</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -6679,12 +6698,22 @@ pm1, pm10 …)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vars_to_retrieve</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list of variables that are supposed to be loaded</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vars_to_retrieve</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a>) – list of variables that are supposed to be loaded</li>
+<li><strong>**constraints</strong> – further EBAS request constraints deviating from default (default
+info for each AEROCOM variable can be found in <a href="#id35"><span class="problematic" id="id36">`ebas_config.ini &lt;
+https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
+ebas_config.ini&gt;`__</span></a>). For details on possible input parameters
+see <code class="xref py py-class docutils literal notranslate"><span class="pre">EbasSQLRequest</span></code> (or <a class="reference external" href="http://aerocom.met.no/pyaerocom/tutorials.html#ebas-file-query-and-database-browser">this tutorial</a>)</li>
+</ul>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">unified list of file paths each containing either of the specified
-variables</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">unified list of file paths each containing either of the specified
+variables</p>
+</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -6694,7 +6723,7 @@ variables</td>
 <dt id="pyaerocom.io.read_ebas.ReadEbas.read_file">
 <code class="descname">read_file</code><span class="sig-paren">(</span><em>filename</em>, <em>vars_to_retrieve=None</em>, <em>_vars_to_read=None</em>, <em>_vars_to_compute=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_ebas.html#ReadEbas.read_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.read_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read Aeronet file containing results from v2 inversion algorithm</p>
-<div class="admonition-todo admonition" id="index-14">
+<div class="admonition-todo admonition" id="index-13">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Introduce unit check</li>
@@ -6727,7 +6756,7 @@ settings are used</li>
 
 <dl class="method">
 <dt id="pyaerocom.io.read_ebas.ReadEbas.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>vars_to_retrieve=None</em>, <em>first_file=None</em>, <em>last_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_ebas.html#ReadEbas.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>vars_to_retrieve=None</em>, <em>first_file=None</em>, <em>last_file=None</em>, <em>**constraints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/read_ebas.html#ReadEbas.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.read_ebas.ReadEbas.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method that reads list of files as instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">UngriddedData</span></code></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -6740,6 +6769,11 @@ all variables in <a class="reference internal" href="#pyaerocom.io.read_ebas.Rea
 file in the list is used</li>
 <li><strong>last_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional) – index of last file in list to read. If None, the very last file
 in the list is used</li>
+<li><strong>**constraints</strong> – further EBAS request constraints deviating from default (default
+info for each AEROCOM variable can be found in <a href="#id35"><span class="problematic" id="id37">`ebas_config.ini &lt;
+https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
+ebas_config.ini&gt;`__</span></a>). For details on possible input parameters
+see <code class="xref py py-class docutils literal notranslate"><span class="pre">EbasSQLRequest</span></code> (or <a class="reference external" href="http://aerocom.met.no/pyaerocom/tutorials.html#ebas-file-query-and-database-browser">this tutorial</a>)</li>
 </ul>
 </td>
 </tr>
@@ -7292,7 +7326,7 @@ to read all files from this station into data object.</p>
 
 <dl class="class">
 <dt id="pyaerocom.io.ebas_nasa_ames.EbasColDef">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.ebas_nasa_ames.</code><code class="descname">EbasColDef</code><span class="sig-paren">(</span><em>name</em>, <em>is_var</em>, <em>is_flag</em>, <em>unit=''</em>, <em>flag_id=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasColDef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasColDef" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.ebas_nasa_ames.</code><code class="descname">EbasColDef</code><span class="sig-paren">(</span><em>name</em>, <em>is_var</em>, <em>is_flag</em>, <em>unit='1'</em>, <em>flag_id=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasColDef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasColDef" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dict-like object for EBAS NASA Ames column definitions</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_nasa_ames.EbasColDef.name">
@@ -7349,7 +7383,12 @@ relevant if <a class="reference internal" href="#pyaerocom.io.ebas_nasa_ames.Eba
 
 <dl class="method">
 <dt id="pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict">
-<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasColDef.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_dict</code><span class="sig-paren">(</span><em>ignore_keys=['is_var', 'is_flag', 'flag_id', 'wavelength_nm']</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasColDef.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.ebas_nasa_ames.EbasColDef.to_str">
+<code class="descname">to_str</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasColDef.to_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasColDef.to_str" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -7473,6 +7512,16 @@ base class</li>
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.ERR_LOW_STATS">
+<code class="descname">ERR_LOW_STATS</code><em class="property"> = 'percentile:15.87'</em><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.ERR_LOW_STATS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.ERR_HIGH_STATS">
+<code class="descname">ERR_HIGH_STATS</code><em class="property"> = 'percentile:84.13'</em><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.ERR_HIGH_STATS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.data">
 <code class="descname">data</code><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.data" title="Permalink to this definition">¶</a></dt>
 <dd><p>2D numpy array containing data table</p>
@@ -7552,9 +7601,51 @@ seconds</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.get_colnames_unique">
+<code class="descname">get_colnames_unique</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasNasaAmesFile.get_colnames_unique"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.get_colnames_unique" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of unique column names</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe">
-<code class="descname">to_dataframe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasNasaAmesFile.to_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_dataframe</code><span class="sig-paren">(</span><em>var_name=None</em>, <em>wavelength_nm=None</em>, <em>statistics=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasNasaAmesFile.to_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.to_dataframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert table to dataframe</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – EBAS variable name (e.g. aerosol_light_scattering_coefficient).
+If specified, only columns corresponding to this variable name
+will be extracted into the dataframe</li>
+<li><strong>wavelength_nm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a>, optional) – wavelength (or wavelength range -&gt; list or tuple input) in nm. If
+specified, only columns containing wavelength dependent data as
+specified are extracted and put into the Dataframe</li>
+<li><strong>statistics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional) – specify column statistics (e.g. arithmetic mean)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.plot_var">
+<code class="descname">plot_var</code><span class="sig-paren">(</span><em>var_name</em>, <em>statistics='arithmetic mean'</em>, <em>ax=None</em>, <em>style=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_nasa_ames.html#EbasNasaAmesFile.plot_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_nasa_ames.EbasNasaAmesFile.plot_var" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot time series of one column</p>
+<p>If percentiles are available, they will be plotted as shaded area</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – EBAS variable name</li>
+<li><strong>statistics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – statistics specifications</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -7610,7 +7701,7 @@ point representation to 3 integers, e.g.
 
 <span class="target" id="module-pyaerocom.io.ebas_file_index"></span><dl class="class">
 <dt id="pyaerocom.io.ebas_file_index.EbasSQLRequest">
-<em class="property">class </em><code class="descclassname">pyaerocom.io.ebas_file_index.</code><code class="descname">EbasSQLRequest</code><span class="sig-paren">(</span><em>variables=None</em>, <em>start_date=None</em>, <em>stop_date=None</em>, <em>station_names=None</em>, <em>matrices=None</em>, <em>altitude_range=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>instrument_types=None</em>, <em>statistics=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_file_index.html#EbasSQLRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasSQLRequest" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pyaerocom.io.ebas_file_index.</code><code class="descname">EbasSQLRequest</code><span class="sig-paren">(</span><em>variables=None</em>, <em>start_date=None</em>, <em>stop_date=None</em>, <em>station_names=None</em>, <em>matrices=None</em>, <em>altitude_range=None</em>, <em>lon_range=None</em>, <em>lat_range=None</em>, <em>instrument_types=None</em>, <em>statistics=None</em>, <em>datalevel=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_file_index.html#EbasSQLRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasSQLRequest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Low level dictionary like object for EBAS sqlite queries</p>
 <dl class="attribute">
 <dt id="pyaerocom.io.ebas_file_index.EbasSQLRequest.variables">
@@ -7891,6 +7982,16 @@ other</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyaerocom.io.ebas_file_index.EbasFileIndex.table_names">
+<code class="descname">table_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_file_index.html#EbasFileIndex.table_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasFileIndex.table_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyaerocom.io.ebas_file_index.EbasFileIndex.table_columns">
+<code class="descname">table_columns</code><span class="sig-paren">(</span><em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_file_index.html#EbasFileIndex.table_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasFileIndex.table_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="pyaerocom.io.ebas_file_index.EbasFileIndex.execute_request">
 <code class="descname">execute_request</code><span class="sig-paren">(</span><em>request</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_file_index.html#EbasFileIndex.execute_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_file_index.EbasFileIndex.execute_request" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connect to database and retrieve data for input request</p>
@@ -7987,6 +8088,12 @@ default variables.</p>
 <dd><p>list of additional variable required for retrieval of this variable</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="pyaerocom.io.ebas_varinfo.EbasVarInfo.scale_factor">
+<code class="descname">scale_factor</code><em class="property"> = None</em><a class="headerlink" href="#pyaerocom.io.ebas_varinfo.EbasVarInfo.scale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>scale factor for conversion to Aerocom units</p>
+</dd></dl>
+
 <dl class="staticmethod">
 <dt id="pyaerocom.io.ebas_varinfo.EbasVarInfo.PROVIDES_VARIABLES">
 <em class="property">static </em><code class="descname">PROVIDES_VARIABLES</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_varinfo.html#EbasVarInfo.PROVIDES_VARIABLES"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_varinfo.EbasVarInfo.PROVIDES_VARIABLES" title="Permalink to this definition">¶</a></dt>
@@ -8027,8 +8134,22 @@ file)</li>
 
 <dl class="method">
 <dt id="pyaerocom.io.ebas_varinfo.EbasVarInfo.make_sql_request">
-<code class="descname">make_sql_request</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_varinfo.html#EbasVarInfo.make_sql_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_varinfo.EbasVarInfo.make_sql_request" title="Permalink to this definition">¶</a></dt>
+<code class="descname">make_sql_request</code><span class="sig-paren">(</span><em>**constraints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/io/ebas_varinfo.html#EbasVarInfo.make_sql_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.io.ebas_varinfo.EbasVarInfo.make_sql_request" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an SQL request for the specifications in this object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**constraints</strong> – request constraints deviating from default. For details on
+parameters see <code class="xref py py-class docutils literal notranslate"><span class="pre">EbasSQLRequest</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the SQL request object that can be used to retrieve corresponding
+file names using instance of <code class="xref py py-func docutils literal notranslate"><span class="pre">EbasFileIndex.get_file_names()</span></code>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyaerocom.io.ebas_file_index.EbasSQLRequest" title="pyaerocom.io.ebas_file_index.EbasSQLRequest">EbasSQLRequest</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -8807,7 +8928,7 @@ the <a class="reference external" href="https://github.com/metno/pyaerocom/blob/
 <p class="first admonition-title">Note</p>
 <p class="last">BETA version (currently being tested)</p>
 </div>
-<div class="admonition-todo admonition" id="index-15">
+<div class="admonition-todo admonition" id="index-14">
 <p class="first admonition-title">Todo</p>
 <p class="last">Include also temporal filtering and other filter options (e.g. variable,
 etc.)</p>
@@ -9293,7 +9414,7 @@ deprecated, but will continue to work)</li>
 <dt id="pyaerocom.plot.plotscatter.plotscatter">
 <code class="descclassname">pyaerocom.plot.plotscatter.</code><code class="descname">plotscatter</code><span class="sig-paren">(</span><em>model_name</em>, <em>model_data=None</em>, <em>obs_data=None</em>, <em>opts=None</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/plot/plotscatter.html#plotscatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.plot.plotscatter.plotscatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Method to plot scatterplots</p>
-<div class="admonition-todo admonition" id="index-16">
+<div class="admonition-todo admonition" id="index-15">
 <p class="first admonition-title">Todo</p>
 <p class="last">Complete docstring, review code</p>
 </div>
@@ -9314,7 +9435,7 @@ an example)</p>
 <p class="first admonition-title">Note</p>
 <p class="last">This is a beta version and thus, might undergo major changes</p>
 </div>
-<div class="admonition-todo admonition" id="index-17">
+<div class="admonition-todo admonition" id="index-16">
 <p class="first admonition-title">Todo</p>
 <ul class="last simple">
 <li>Review y axis limits (default variable info)</li>
@@ -10043,6 +10164,39 @@ containing the pandas timeseries</p>
 <dt id="pyaerocom.mathutils.in_range">
 <code class="descclassname">pyaerocom.mathutils.</code><code class="descname">in_range</code><span class="sig-paren">(</span><em>x</em>, <em>low</em>, <em>high</em><span class="sig-paren">)</span><a class="headerlink" href="#pyaerocom.mathutils.in_range" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="pyaerocom.mathutils.haversine">
+<code class="descclassname">pyaerocom.mathutils.</code><code class="descname">haversine</code><span class="sig-paren">(</span><em>lon0</em>, <em>lat0</em>, <em>lon1</em>, <em>lat1</em>, <em>radius=6371.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyaerocom/mathutils.html#haversine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyaerocom.mathutils.haversine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Haversine formula</p>
+<p>Approximate horizontal distance between 2 points assuming a spherical
+earth using haversine formula.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This code was copied from geonum library (date 12/11/2018, J. Gliss)</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lon0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – longitude of first point in decimal degrees</li>
+<li><strong>lat0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – latitude of first point in decimal degrees</li>
+<li><strong>lon1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – longitude of second point in decimal degrees</li>
+<li><strong>lat1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – latitude of second point in decimal degrees</li>
+<li><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – average earth radius in km, defaults to 6371.0</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">horizontal distance in km</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="pyaerocom.mathutils.calc_statistics">
