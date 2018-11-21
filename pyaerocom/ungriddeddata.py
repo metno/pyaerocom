@@ -515,7 +515,7 @@ class UngriddedData(object):
                     from pyaerocom.helpers import resample_timeseries
                     data = resample_timeseries(data, freq) 
                     stat_data['ts_type'] = freq
-                    stat_data['dtime'] = data.index
+                    stat_data['dtime'] = data.index.values
             stat_data[var] = data
             try:
                 stat_data.var_info[var]['unit'] = val['var_info'][var]['unit']
@@ -1354,9 +1354,15 @@ class UngriddedData(object):
         pandas.Series
             time series data
         """
-        return self.to_station_data(station, var_name, 
-                                    start, stop, freq=ts_type,
-                                    **kwargs).to_timeseries(var_name)
+        data = self.to_station_data(station, var_name, 
+                                     start, stop, freq=ts_type,
+                                     **kwargs) 
+        if not isinstance(data, StationData):
+            raise NotImplementedError('Multiple matches found for {}. Cannot '
+                                      'yet merge multiple instances '
+                                      'of StationData into one single '
+                                      'timeseries. Coming soon...'.format(station))
+        return data.to_timeseries(var_name)
 
     def plot_station_timeseries(self, station, var_name, start=None, 
                                 stop=None, ts_type=None, vmin=None, 
@@ -1392,12 +1398,7 @@ class UngriddedData(object):
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
         
         s = self.get_time_series(station, var_name, start, stop, ts_type)
-        if isinstance(s, StationData):
-            s.plot(ax=ax, **kwargs)
-        else:
-            raise NotImplementedError('Cannot yet plot multiple instances of '
-                                      'StationData into one time-series. '
-                                      'Coming soon...')
+        s.plot(ax=ax, **kwargs)
             
         return ax
         
