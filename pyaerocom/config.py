@@ -358,7 +358,7 @@ class Config(object):
     @property
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""
-        return bool(self.check_output_dirs() * self.check_data_dirs())
+        return bool(self.check_directories())
     
     @property
     def EBASMC_SQL_DATABASE(self):
