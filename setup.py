@@ -21,7 +21,8 @@ setup(
     package_dir =   {'pyaerocom'      :   'pyaerocom'},
     packages    =   ['pyaerocom',
                      'pyaerocom.io',
-                     'pyaerocom.plot'], #find_packages(exclude=['contrib', 'docs', 'tests*']),
+                     'pyaerocom.plot',
+                     'pyaerocom.interactive'], #find_packages(exclude=['contrib', 'docs', 'tests*']),
     #include_package_data = True,            
     package_data=   {'pyaerocom'    :   ['data/*']},
 
