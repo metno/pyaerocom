@@ -337,9 +337,16 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
                 raise ValueError('Cannot perform colocation. Ungridded data '
                                  'object contains different source frequencies')
             if ungridded_unit is None:
-                ungridded_unit = obs_data['var_info'][var_ref]['unit']
-                
-            elif not obs_data['var_info'][var_ref]['unit'] == ungridded_unit:
+                try:
+                    ungridded_unit = obs_data['var_info'][var_ref]['unit']
+                except KeyError as e: #variable information or unit is not defined
+                    from pyaerocom import logger
+                    logger.exception(repr(e))
+            try:
+                unit = obs_data['var_info'][var_ref]['unit']
+            except:
+                unit = None
+            if not unit == ungridded_unit:
                 raise ValueError('Cannot perform colocation. Ungridded data '
                                  'object contains different units ({})'.format(var_ref))
             # get observations (Note: the index of the observation time series
