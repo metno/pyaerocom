@@ -771,9 +771,7 @@ class UngriddedData(object):
     def extract_dataset(self, dataset_name):
         """Extract single dataset into new instance of :class:`UngriddedData`
         
-        Note
-        ----
-        Beta version. Please doublecheck correctness.
+        Calls :func:`filter_by_meta`.
         
         Parameters
         -----------
@@ -787,38 +785,42 @@ class UngriddedData(object):
             input network
         """
         logger.info('Extracting dataset {} from data object'.format(dataset_name))
-        if not dataset_name in self.contains_datasets:
-            raise AttributeError('Dataset {} is not contained in this data '
-                                 'object'.format(dataset_name))
-        new = UngriddedData()
-        meta_idx_new = 0.0
-        data_idx_new = 0
-        
-        for meta_idx, meta in self.metadata.items():
-            if meta['dataset_name'] == dataset_name:
-                new.metadata[meta_idx_new] = meta
-                new.meta_idx[meta_idx_new] = od()
-                for var in meta['variables']:
-                    indices = self.meta_idx[meta_idx][var]
-                    totnum = len(indices)
-                    if (data_idx_new + totnum) >= new._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                        new.add_chunk(totnum)
-                    stop = data_idx_new + totnum
-                    
-                    new._data[data_idx_new:stop, :] = self._data[indices, :]
-                    new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-                                                                stop)
-                    data_idx_new += totnum
-                
-                meta_idx_new += 1
-        if meta_idx_new == 0 or data_idx_new == 0:
-            raise DataExtractionError('Filtering results in empty data object')
-        new._data = new._data[:data_idx_new]
-        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
-        new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
-        new.data_revision[dataset_name] = self.data_revision[dataset_name]
-        return new
+        return self.filter_by_meta(dataset_name=dataset_name)
+# =============================================================================
+#         logger.info('Extracting dataset {} from data object'.format(dataset_name))
+#         if not dataset_name in self.contains_datasets:
+#             raise AttributeError('Dataset {} is not contained in this data '
+#                                  'object'.format(dataset_name))
+#         new = UngriddedData()
+#         meta_idx_new = 0.0
+#         data_idx_new = 0
+#         
+#         for meta_idx, meta in self.metadata.items():
+#             if meta['dataset_name'] == dataset_name:
+#                 new.metadata[meta_idx_new] = meta
+#                 new.meta_idx[meta_idx_new] = od()
+#                 for var in meta['variables']:
+#                     indices = self.meta_idx[meta_idx][var]
+#                     totnum = len(indices)
+#                     if (data_idx_new + totnum) >= new._ROWNO:
+#                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
+#                         new.add_chunk(totnum)
+#                     stop = data_idx_new + totnum
+#                     
+#                     new._data[data_idx_new:stop, :] = self._data[indices, :]
+#                     new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+#                                                                 stop)
+#                     data_idx_new += totnum
+#                 
+#                 meta_idx_new += 1
+#         if meta_idx_new == 0 or data_idx_new == 0:
+#             raise DataExtractionError('Filtering results in empty data object')
+#         new._data = new._data[:data_idx_new]
+#         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+#         new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
+#         new.data_revision[dataset_name] = self.data_revision[dataset_name]
+#         return new
+# =============================================================================
 
     def _station_to_json_trends(self, var_name, station_name, 
                                 freq, **kwargs):
@@ -1549,6 +1551,7 @@ class UngriddedData(object):
                         len(self.metadata)))
         
     def __getitem__(self, key):
+        
         return self.to_station_data(key)
     
     def __and__(self, other):
@@ -1588,27 +1591,6 @@ class UngriddedData(object):
                         s += '\n\t{}: {}'.format(key, val)
                     
         return s
-    def __str__OLD(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}".format(head, len(head)*"-")
-        arrays = ''
-        for k, v in self.metadata.items():
-            if isinstance(v, dict):
-                s += "\n{} ({})".format(k, type(v))
-                s = dict_to_str(v, s)
-            elif isinstance(v, list):
-                s += "\n{} (list, {} items)".format(k, len(v))
-                s += list_to_shortstr(v)
-            elif isinstance(v, np.ndarray) and v.ndim==1:
-                arrays += "\n{} (array, {} items)".format(k, len(v))
-                arrays += list_to_shortstr(v)
-            elif isinstance(v, np.ndarray):
-                arrays += "\n{} (array, shape {})".format(k, v.shape)
-                arrays += "\n{}".format(v)
-            else:
-                s += "\n%s: %s" %(k,v)
-        s += arrays
-        return s
 
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     test = sorted(arr_to_be_reduced)
@@ -1621,38 +1603,13 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
         
 if __name__ == "__main__":
     
-    from pyaerocom import change_verbosity
-    from pyaerocom.io import ReadAeronetSunV2, ReadAeronetSunV3
-    import matplotlib.pyplot as plt
-    plt.close('all')
+    import pyaerocom as pya
     
-    change_verbosity('debug')
-    read_v2 = ReadAeronetSunV2()
-    read_v3 = ReadAeronetSunV3()
+    data = pya.io.ReadUngridded().read([pya.const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
+                                        pya.const.AERONET_SUN_V3L2_AOD_DAILY_NAME],
+            ['od550aer', 'ang4487aer'], last_file=10)
     
-    read_v2.read_first_file()
+    v3 = data.extract_dataset('AeronetSunV3Lev2.daily')
     
-    data_v2 = read_v2.read(vars_to_retrieve=read_v2.PROVIDES_VARIABLES, 
-                           last_file=20)
-    data_v3 = read_v3.read(vars_to_retrieve=read_v3.PROVIDES_VARIABLES, 
-                           last_file=20)
-    
-    od550aer_all_v2 = data_v2.all_datapoints_var('od550aer')
-    od550aer_all_v3 = data_v3.all_datapoints_var('od550aer')
-    
-    #t0common_stats = data_v2.find_common_stations(data_v3)
-    dates, data_this, data_other = data_v2.find_common_data_points(data_v3, 
-                                                                   'od550aer')
-    
-    plt.plot(data_this, data_other, ' *g')
-    plt.xlabel('AOD 550 nm, Aeronet Sun V2')
-    plt.ylabel('AOD 550 nm, Aeronet Sun V3')
-    plt.xlim([0,8])
-    plt.ylim([0,8])
-    plt.grid()  
-    
-    data_monthly = data_v3.get_variable_data('od550aer',ts_type='monthly')['od550aer']
-    print(data_monthly)
-    #t0_red = reduce_array_closest(t1, t0)
     
     
