@@ -7,6 +7,7 @@ with open('README.rst') as file:
 
 with open('VERSION.md') as f:
     version = f.readline()
+    print(version)
     f.close()
 
 
