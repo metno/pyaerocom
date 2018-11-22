@@ -118,3 +118,6 @@ pyaerocom/helpers_DEV.py
 
 # development notebooks
 notebooks/_*.ipynb
+
+# files that include OLD in their filename
+*OLD*
