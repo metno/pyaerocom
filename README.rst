@@ -31,6 +31,8 @@ This will install the latest release of pyaerocom. Alternatively, you may instal
 
 **PLEASE NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
 
+You can skip the following lines and go straight to *Getting started* section if you have installed via conda as described above.
+
 Requirements
 ============
 
