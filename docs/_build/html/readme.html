@@ -90,9 +90,11 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#website-and-code-documentation">Website and code documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation-using-conda">Installation using conda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-requirements-using-provided-pyaerocom-env-yml-file">Installing requirements using provided <em>pyaerocom_env.yml</em> file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-of-pyaerocom-from-source">Installation of pyaerocom from source</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#access-to-users-database">Access to users database</a></li>
@@ -200,15 +202,6 @@
 <p><a class="reference external" href="http://aerocom.met.no/pyaerocom">http://aerocom.met.no/pyaerocom</a></p>
 <p>if you are not already <em>here</em> anyways ;)</p>
 </div>
-<div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<p>If you use <a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a> as package manager, the easiest way to install pyaerocom (and all requirements, see below) via the <em>nordicesmhub</em> conda channel:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">nordicesmhub</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pyaerocom</span>
-</pre></div>
-</div>
-<p>This will install the latest release of pyaerocom. Alternatively, you may install from source as described in the following.</p>
-<p><strong>PLEASE NOTE</strong>: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue <a class="reference external" href="https://github.com/metno/pyaerocom/issues">here</a>).</p>
-</div>
 <div class="section" id="requirements">
 <h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
 <p>The following Python packages are required for the installation of pyaerocom. To install the requirements,
@@ -234,16 +227,33 @@ we recommend using <a class="reference external" href="https://www.continuum.io/
 </li>
 </ul>
 <p>By installing iris, some of the further listed dependencies will be installed automatically (e.g. numpy, pandas, cf_units, netcdf4 and matplotlib).</p>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>You have several options to install pyaerocom, the first one is the easiest.</p>
+<div class="section" id="installation-using-conda">
+<h2>Installation using conda<a class="headerlink" href="#installation-using-conda" title="Permalink to this headline">¶</a></h2>
+<p>If you use <a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a> as package manager, the easiest way to install pyaerocom (and all requirements, see previous section) using the build provided in the <em>nordicesmhub</em> conda channel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">nordicesmhub</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pyaerocom</span>
+</pre></div>
+</div>
+<p>This will install the latest release of pyaerocom. Alternatively, you may install from source as described in the following.</p>
+<p><strong>PLEASE NOTE</strong>: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue <a class="reference external" href="https://github.com/metno/pyaerocom/issues">here</a>).</p>
+<p>You can skip the following lines and go straight to <em>Getting started</em> section if you have installed via conda as described above.</p>
+</div>
 <div class="section" id="installing-requirements-using-provided-pyaerocom-env-yml-file">
 <h2>Installing requirements using provided <em>pyaerocom_env.yml</em> file<a class="headerlink" href="#installing-requirements-using-provided-pyaerocom-env-yml-file" title="Permalink to this headline">¶</a></h2>
-<p>If you use Anaconda as a package manager, you can install all requirements into a new environment using the provided <em>pyaerocom_env.yml</em> file:</p>
+<p>If you use Anaconda as a package manager, you can install all requirements (specified in previous section) into a new environment using the provided <em>pyaerocom_env.yml</em> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">pyaerocom_env</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
+<p>After this, you can install pyaerocom from source as described in the next section.</p>
 <p>Make sure to <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment">activate the newly created environment</a> before installing pyaerocom.
-For more information about conda environments, <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">see here</a>.
-Make sure to have all requirements installed (see prev. section). You may install the requirements using the provided <em>pyaerocom_env.yml</em> file as described at the end of the previous section (note that this ONLY installs he requirements and not pyaerocom itself).</p>
-<p>To install pyaerocom, please download and extract the <a class="reference external" href="https://github.com/metno/pyaerocom/releases">latest release</a> (or clone this repository) and install from source tree folder (that contains a file <em>setup.py</em>) either using:</p>
+For more information about conda environments, <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">see here</a>.</p>
+</div>
+<div class="section" id="installation-of-pyaerocom-from-source">
+<h2>Installation of pyaerocom from source<a class="headerlink" href="#installation-of-pyaerocom-from-source" title="Permalink to this headline">¶</a></h2>
+<p>To install pyaerocom from source, please download and extract the <a class="reference external" href="https://github.com/metno/pyaerocom/releases">latest release</a> (or clone this repository) and install from source tree folder (that contains a file <em>setup.py</em>) either using:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>

@@ -20,19 +20,6 @@ http://aerocom.met.no/pyaerocom
 
 if you are not already *here* anyways ;)
 
-Installation
-============
-
-If you use `Anaconda <https://www.continuum.io/downloads>`_ as package manager, the easiest way to install pyaerocom (and all requirements, see below) via the *nordicesmhub* conda channel::
-
-	conda install -c nordicesmhub -c conda-forge pyaerocom
-
-This will install the latest release of pyaerocom. Alternatively, you may install from source as described in the following.
-
-**PLEASE NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
-
-You can skip the following lines and go straight to *Getting started* section if you have installed via conda as described above.
-
 Requirements
 ============
 
@@ -54,18 +41,40 @@ we recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package m
 
 By installing iris, some of the further listed dependencies will be installed automatically (e.g. numpy, pandas, cf_units, netcdf4 and matplotlib).
 
+Installation
+============
+
+You have several options to install pyaerocom, the first one is the easiest.
+
+Installation using conda
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you use `Anaconda <https://www.continuum.io/downloads>`_ as package manager, the easiest way to install pyaerocom (and all requirements, see previous section) using the build provided in the *nordicesmhub* conda channel::
+
+	conda install -c nordicesmhub -c conda-forge pyaerocom
+
+This will install the latest release of pyaerocom. Alternatively, you may install from source as described in the following.
+
+**PLEASE NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
+
+You can skip the following lines and go straight to *Getting started* section if you have installed via conda as described above.
+
 Installing requirements using provided *pyaerocom_env.yml* file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you use Anaconda as a package manager, you can install all requirements into a new environment using the provided *pyaerocom_env.yml* file::
+If you use Anaconda as a package manager, you can install all requirements (specified in previous section) into a new environment using the provided *pyaerocom_env.yml* file::
 
 	conda env create -f pyaerocom_env.yml
 
+After this, you can install pyaerocom from source as described in the next section. 
+
 Make sure to `activate the newly created environment <https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment>`__ before installing pyaerocom.
 For more information about conda environments, `see here <https://conda.io/docs/user-guide/tasks/manage-environments.html>`__.
-Make sure to have all requirements installed (see prev. section). You may install the requirements using the provided *pyaerocom_env.yml* file as described at the end of the previous section (note that this ONLY installs he requirements and not pyaerocom itself). 
 
-To install pyaerocom, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone this repository) and install from source tree folder (that contains a file *setup.py*) either using::
+Installation of pyaerocom from source
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install pyaerocom from source, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone this repository) and install from source tree folder (that contains a file *setup.py*) either using::
 
 	python setup.py install
 
