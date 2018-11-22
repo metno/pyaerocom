@@ -1,0 +1,5 @@
+include notebooks/*ipynb
+include README.rst
+include VERSION.md
+include CHANGELOG.md
+include pyaerocom_env.yml
