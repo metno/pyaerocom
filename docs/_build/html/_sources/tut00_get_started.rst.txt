@@ -58,7 +58,7 @@ displayed in the flowchart.
 
 .. parsed-literal::
 
-    0.007483482360839844 s
+    0.007822275161743164 s
 
 
 Check data directory
@@ -142,8 +142,6 @@ Import both clear-sky (*cs* in variable name) and all-sky data.
 
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
@@ -279,6 +277,8 @@ Import both clear-sky (*cs* in variable name) and all-sky data.
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
 
@@ -1919,7 +1919,7 @@ nm. If you like, you can plot this time-series:
 
 .. parsed-literal::
 
-    Text(0.5,1,'Leipzig AOD all times')
+    Text(0.5, 1.0, 'Leipzig AOD all times')
 
 
 
@@ -1952,7 +1952,7 @@ passing the axes instance returned by the plotting method:
 
 .. parsed-literal::
 
-    Text(0.5,1,'Leipzig AODs 2010')
+    Text(0.5, 1.0, 'Leipzig AODs 2010')
 
 
 
@@ -2024,7 +2024,7 @@ bouldering trip, you may call:
 
 .. parsed-literal::
 
-    Text(0.5,1,'AOD in Fontainebleau, 2006')
+    Text(0.5, 1.0, 'AOD in Fontainebleau, 2006')
 
 
 
@@ -2107,7 +2107,7 @@ Let's do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    Text(0.5,1,'All sky (2010, monthly)')
+    Text(0.5, 1.0, 'All sky (2010, monthly)')
 
 
 
@@ -2125,7 +2125,7 @@ Let's do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    Text(0.5,1,'Clear sky (2010, monthly)')
+    Text(0.5, 1.0, 'Clear sky (2010, monthly)')
 
 
 
@@ -2158,7 +2158,7 @@ Let's do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f3e675eb2b0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fe3bdc838d0>
 
 
 

@@ -43,7 +43,7 @@ E.g.:
 
 .. parsed-literal::
 
-    0.007140636444091797 s
+    0.007673978805541992 s
     
     Pyaerocom EbasSQLRequest
     ------------------------
