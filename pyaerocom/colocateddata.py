@@ -132,10 +132,11 @@ class ColocatedData(object):
     @property
     def time(self):
         """Array containing time stamps"""
-        if not 'time' in self.data:
+        if not 'time' in self.data.dims:
             raise AttributeError('ColocatedData does not include time'
-                                 'coordinate')
+                                 ' coordinate')
         return self.data.time
+            
     
     @property
     def start(self):
