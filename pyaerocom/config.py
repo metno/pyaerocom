@@ -346,12 +346,23 @@ class Config(object):
             
         self._obsbasedir = value
         self._modelbasedir = value
-        if 'obsdata' in os.listdir(value): #test dataset
-            from pyaerocom import print_log
-            print_log.info('Activating test-mode')
+        
+        subdirs = os.listdir(value)
+        from pyaerocom import print_log
+        if 'aerocom0' in subdirs:
+            print_log.info('Initiating directories for lustre')
+            self.read_config(self._config_ini, 
+                             keep_basedirs=True)
+        elif 'obsdata' in subdirs: #test dataset
+            
+            print_log.info('Initiating directories for pyaerocom testdataset')
             self.read_config(self._config_ini_testdata, 
                              keep_basedirs=True)
             self._cachedir = os.path.join('..', '_cache')
+        elif 'AMAP' in subdirs:
+            print_log.info('Initiating directories for AEROCOM users database')
+            self.read_config(self._config_ini_user_server, 
+                             keep_basedirs=True)
         else:
             self.reload()    
         
@@ -468,7 +479,7 @@ class Config(object):
         ----------
         database_name : str
             name of path environment for database. To see available database
-            ID's use :func:`DATABASE_IDS`
+            ID's use :attr:`ALL_DATABASE_IDS`
         keep_root : bool
             if True, :attr:`BASEDIR` remains unchanged and paths in
             corresponding ini files are set relative to current :attr:`BASEDIR`.
@@ -491,6 +502,7 @@ class Config(object):
             raise IOError("Configuration file paths.ini at %s does not exist "
                           "or is not a file"
                           %config_file)
+        self.OBSCONFIG = od()
         cr = ConfigParser()
         cr.read(config_file)
         if cr.has_section('outputfolders'):
@@ -523,43 +535,37 @@ class Config(object):
             self._init_obsconfig(cr)
         except Exception as e:
             from pyaerocom import print_log
-            print_log.exception('Failed to initiate obs congig. Error: {}'
+            print_log.exception('Failed to initiate obs config. Error: {}'
                                 .format(repr(e)))
         cr.clear()
         self.check_directories()
     
-# =============================================================================
-#     def check_directories(self):
-#         """Check access to data and output directories
-#         
-#         Calls :func:`check_data_dirs` and :func:`check_output_dirs`
-#         
-#         Returns
-#         -------
-#         Bool
-#             True if all is good, else if something is wrong (in the latter 
-#             case, see output for more info)
-#         """
-#         d_ok = self.check_data_dirs()
-#         o_ok = self.check_output_dirs()
-#         ok = bool(d_ok * o_ok)
-#         if not ok:
-#             self.print_log.warning("WARNING: Failed to initiate directories")
-#         return ok
-# =============================================================================
-     
+    def _add_obsname(self, name):
+        name_str = '{}_NAME'.format(name.upper())
+        self[name_str] =  name
+        return name_str
+        
+    def _add_obsnames_config(self, cr):
+        names_cfg = []
+        for obsname, ID in cr['obsnames'].items():
+            name_str = '{}_NAME'.format(obsname.upper())
+            self[name_str] =  ID
+            names_cfg.append(name_str)
+        return names_cfg
+            
     def _init_obsconfig(self, cr):
         
-        # read obs network names from ini file
-        # Aeronet V2
-        for obsname, ID in cr['obsnames'].items():
-            self['{}_NAME'.format(obsname.upper())] =  ID
+        names_cfg = self._add_obsnames_config(cr)
         
         OBSCONFIG = self.OBSCONFIG
         for obsname, path in cr['obsfolders'].items():
-            NAME = '{}_NAME'.format(obsname.upper())
-            if NAME in self.__dict__:
-                ID = self.__dict__[NAME]    
+            if obsname.lower() == 'basedir':
+                continue
+            name_str = '{}_NAME'.format(obsname.upper())
+            if name_str in names_cfg:
+                ID = self.__dict__[name_str]    
+            else:
+                ID = self._add_obsname(obsname)
             OBSCONFIG[ID] = {}
             p = path.replace('${BASEDIR}', self._obsbasedir)
             p = p.replace('$HOME', os.path.expanduser('~'))
@@ -569,11 +575,36 @@ class Config(object):
             NAME = '{}_NAME'.format(obsname.upper())
             if NAME in self.__dict__:
                 ID = self.__dict__[NAME]
-            if NAME in OBSCONFIG.keys():
-                OBSCONFIG[ID]['START_YEAR'] = year
+                if ID in OBSCONFIG.keys():
+                    OBSCONFIG[ID]['START_YEAR'] = year
         
         self.OBSCONFIG = OBSCONFIG
+     
+    def add_data_source(self, data_dir, name=None):
+        """Add a network to the data search structure
         
+        Parameters
+        ----------
+        name : str
+            name of network 
+        data_dir : str
+            directory where data files are stored
+        
+        Raises
+        ------
+        AttributeError
+            if the network name is already reserved 
+        ValueError
+            if the data directory does not exist
+        """
+        raise NotImplementedError('Coming soon... need some refactoring before')
+        name_str = '{}_NAME'.format(name.upper())
+        if name_str in self.__dict__.keys():
+            raise AttributeError('Network with ID {} does already exist'.format(name_str))
+        elif not os.path.exists(data_dir):
+            raise ValueError('Input data directory does not exist')
+        self[name_str] =  name
+        self.OBSCONFIG[name] = {'PATH' : data_dir}
 # =============================================================================
 #         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME] = {}
 #         OBSCONFIG[self.AERONET_SUN_V2L15_AOD_DAILY_NAME]['PATH'] =\
@@ -861,10 +892,7 @@ class GridIO(object):
                                       dict_to_str(self.to_dict())))
         
 if __name__=="__main__":
-    import pyaerocom 
-    config = Config()
+    import pyaerocom as pya
+    pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
     
-    print(config.short_str())
-    
-    #config.BASEDIR = '/home/'
-    print(config.short_str())
+    pya.browse_database('Aeronet*')
