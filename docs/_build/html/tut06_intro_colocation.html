@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#access-to-users-database">Access to users database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#getting-started">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html#further-tutorials-in-depth">Further tutorials (in-depth)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
@@ -203,7 +204,7 @@ online interface (see e.g.
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Init</span> <span class="n">data</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">lustre</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.007582187652587891</span> <span class="n">s</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.006044864654541016</span> <span class="n">s</span>
 </pre></div>
 </div>
 </div>
@@ -276,7 +277,7 @@ located at altitudes between 0 and 1000 m.</p>
 <span class="n">Contains</span> <span class="n">instruments</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sun_photometer&#39;</span><span class="p">]</span>
 <span class="n">Total</span> <span class="n">no</span><span class="o">.</span> <span class="n">of</span> <span class="n">meta</span><span class="o">-</span><span class="n">blocks</span><span class="p">:</span> <span class="mi">1006</span>
 <span class="n">Filters</span> <span class="n">that</span> <span class="n">were</span> <span class="n">applied</span><span class="p">:</span>
- <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181122162259</span>
+ <span class="n">Filter</span> <span class="n">time</span> <span class="n">log</span><span class="p">:</span> <span class="mi">20181123145344</span>
     <span class="n">stat_alt</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -359,7 +360,7 @@ station plot above).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f1958518e10</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f1094073ba8</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_intro_colocation_16_1.png" src="_images/tut06_intro_colocation_16_1.png" />
@@ -373,7 +374,7 @@ station plot above).</p>
                                   <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Aeronet V3 stations&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">cartopy</span><span class="o">.</span><span class="n">mpl</span><span class="o">.</span><span class="n">geoaxes</span><span class="o">.</span><span class="n">GeoAxes</span> <span class="n">at</span> <span class="mh">0x7f1958429978</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">cartopy</span><span class="o">.</span><span class="n">mpl</span><span class="o">.</span><span class="n">geoaxes</span><span class="o">.</span><span class="n">GeoAxes</span> <span class="n">at</span> <span class="mh">0x7f1094478828</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_intro_colocation_18_1.png" src="_images/tut06_intro_colocation_18_1.png" />
@@ -430,7 +431,7 @@ station plot above).</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_coloc</span><span class="o">.</span><span class="n">plot_scatter</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f195845bcc0</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">_subplots</span><span class="o">.</span><span class="n">AxesSubplot</span> <span class="n">at</span> <span class="mh">0x7f1072ff9198</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/tut06_intro_colocation_20_1.png" src="_images/tut06_intro_colocation_20_1.png" />

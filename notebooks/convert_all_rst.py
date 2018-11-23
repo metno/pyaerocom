@@ -83,7 +83,7 @@ if __name__=="__main__":
         raise IOError("Specified output directory {} does not exist".format(out_dir))
     
     if args.clear_old:
-        matches = fnmatch.filter(os.listdir(out_dir), "tut[0-9][0-9]_*")
+        matches = fnmatch.filter(os.listdir(out_dir), "tut[0-9][0-9]*")
         old = [os.path.join(out_dir, x) for x in matches]
         for item in old:
             try:

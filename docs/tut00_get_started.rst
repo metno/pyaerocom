@@ -58,7 +58,7 @@ displayed in the flowchart.
 
 .. parsed-literal::
 
-    0.007822275161743164 s
+    0.007709980010986328 s
 
 
 Check data directory
@@ -77,7 +77,7 @@ relative to the database server path names.
 
 .. parsed-literal::
 
-    '/lustre/storeA/project/aerocom/'
+    '/lustre/storeA/project/aerocom'
 
 
 
@@ -142,14 +142,6 @@ Import both clear-sky (*cs* in variable name) and all-sky data.
 
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
@@ -279,6 +271,14 @@ Import both clear-sky (*cs* in variable name) and all-sky data.
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2036: UserWarning: Gracefully filling 'time' dimension coordinate masked bounds
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
 
@@ -2158,7 +2158,7 @@ Let's do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fe3bdc838d0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f5fc7f7b940>
 
 
 

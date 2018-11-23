@@ -28,7 +28,7 @@ Starting with some imports...
 
 .. parsed-literal::
 
-    0.007930994033813477 s
+    0.00875997543334961 s
 
 
 Let's get a test file to load
@@ -158,7 +158,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550oa', 'od550dust', 'od550aer', 'od550bc', 'od550so4']",)
+    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550dust', 'od550so4', 'od550bc', 'od550oa', 'od550aer']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -268,7 +268,7 @@ Retrieve area weighted mean from data
 
 .. parsed-literal::
 
-    <matplotlib.legend.Legend at 0x7f4dbff74668>
+    <matplotlib.legend.Legend at 0x7f9bc3875400>
 
 
 

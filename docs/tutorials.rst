@@ -3,10 +3,6 @@ Tutorials (Jupyter Notebooks)
 
 In this section you can find example tutorial notebooks for Pyaerocom.
 
-.. note::
-
-	Under development
-	
 .. include:: tut00_get_started.rst
 
 .. include:: tut01_intro_regions.rst
@@ -21,7 +17,9 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 
 
 Further tutorials (in-depth)
-----------------------------
+============================
+
+.. include:: tut001_setup_userserver.rst
 
 .. include:: add01_intro_time_handling.rst
 

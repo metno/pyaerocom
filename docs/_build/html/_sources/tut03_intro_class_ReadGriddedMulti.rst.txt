@@ -27,7 +27,7 @@ read multiple models at once.
 
 .. parsed-literal::
 
-    0.010354757308959961 s
+    0.006604909896850586 s
 
 
 Define two models (this list can contain as many models as you like)

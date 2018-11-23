@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#access-to-users-database">Access to users database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../readme.html#getting-started">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html#further-tutorials-in-depth">Further tutorials (in-depth)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../config_files.html">Configuration files</a></li>
@@ -174,6 +175,7 @@
 <span class="kn">import</span> <span class="nn">fnmatch</span>
 <span class="kn">from</span> <span class="nn">pyaerocom</span> <span class="k">import</span> <span class="n">const</span><span class="p">,</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyaerocom._lowlevel_helpers</span> <span class="k">import</span> <span class="n">BrowseDict</span>
+<span class="kn">from</span> <span class="nn">pyaerocom.exceptions</span> <span class="k">import</span> <span class="n">DataSearchError</span>
 
 <div class="viewcode-block" id="AerocomBrowser"><a class="viewcode-back" href="../../../api.html#pyaerocom.io.aerocom_browser.AerocomBrowser">[docs]</a><span class="k">class</span> <span class="nc">AerocomBrowser</span><span class="p">(</span><span class="n">BrowseDict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Interface for browsing all Aerocom data direcories</span>
@@ -224,7 +226,7 @@
 <span class="sd">            </span>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        IOError</span>
+<span class="sd">        DataSearchError</span>
 <span class="sd">            if no match or no unique match can be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pattern</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">)</span>
@@ -307,14 +309,14 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">warning</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;No matches could be found for search pattern &#39;</span>
+            <span class="k">raise</span> <span class="n">DataSearchError</span><span class="p">(</span><span class="s1">&#39;No matches could be found for search pattern &#39;</span>
                           <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">return_if_match</span><span class="p">:</span> 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found exactly one match for search pattern &quot;</span>
                             <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">_candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">_candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Found multiple matches for search pattern </span><span class="si">{}</span><span class="s1">. &#39;</span>
+            <span class="k">raise</span> <span class="n">DataSearchError</span><span class="p">(</span><span class="s1">&#39;Found multiple matches for search pattern </span><span class="si">{}</span><span class="s1">. &#39;</span>
                           <span class="s1">&#39;Please choose from </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> 
                                               <span class="n">_candidates</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">_candidates</span>
@@ -336,7 +338,7 @@
 <span class="sd">            </span>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        IOError</span>
+<span class="sd">        DataSearchError</span>
 <span class="sd">            if no matches or no unique match can be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">name_or_pattern</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
@@ -364,7 +366,7 @@
 <span class="sd">            </span>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        IOError</span>
+<span class="sd">        DataSearchError</span>
 <span class="sd">            if no matches can be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_browse</span><span class="p">(</span><span class="n">name_or_pattern</span><span class="p">,</span> <span class="n">ignorecase</span><span class="o">=</span><span class="n">ignorecase</span><span class="p">,</span>
@@ -382,7 +384,7 @@
 <span class="c1"># =============================================================================</span>
 <span class="c1">#     try:</span>
 <span class="c1">#         data_dir = browser.find_data_dir(&#39;*Cam5.3-Oslo*&#39;)</span>
-<span class="c1">#     except IOError as e:</span>
+<span class="c1">#     except DataSearchError as e:</span>
 <span class="c1">#         print(repr(e))</span>
 <span class="c1">#     </span>
 <span class="c1">#     </span>

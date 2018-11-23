@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html#access-to-users-database">Access to users database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="readme.html#getting-started">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials (Jupyter Notebooks)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html#further-tutorials-in-depth">Further tutorials (in-depth)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_testsuite.html">Tests (for developers)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_files.html">Configuration files</a></li>
@@ -220,14 +221,14 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Init</span> <span class="n">data</span> <span class="n">paths</span> <span class="k">for</span> <span class="n">lustre</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.009661197662353516</span> <span class="n">s</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">0.008147239685058594</span> <span class="n">s</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_ecmwf</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_ecmwf</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ECMWF_OSUITE&quot;</span><span class="p">)</span>
 <span class="n">data_aatsr</span> <span class="o">=</span> <span class="n">pya</span><span class="o">.</span><span class="n">GriddedData</span><span class="p">(</span><span class="n">fpath_aatsr</span><span class="p">,</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;od550aer&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;AATSR&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
@@ -251,7 +252,7 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550oa&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
@@ -259,7 +260,7 @@ datatype of <code class="docutils literal notranslate"><span class="pre">Gridded
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;time&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
-<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550dust&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
+<span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1932</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Ignoring</span> <span class="n">netCDF</span> <span class="n">variable</span> <span class="s1">&#39;od550aer&#39;</span> <span class="n">invalid</span> <span class="n">units</span> <span class="s1">&#39;~&#39;</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">jonasg</span><span class="o">/</span><span class="n">anaconda3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">iris</span><span class="o">/</span><span class="n">fileformats</span><span class="o">/</span><span class="n">_pyke_rules</span><span class="o">/</span><span class="n">compiled_krb</span><span class="o">/</span><span class="n">fc_rules_cf_fc</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">2029</span><span class="p">:</span> <span class="ne">UserWarning</span><span class="p">:</span> <span class="n">Gracefully</span> <span class="n">filling</span> <span class="s1">&#39;latitude&#39;</span> <span class="n">dimension</span> <span class="n">coordinate</span> <span class="n">masked</span> <span class="n">points</span>
   <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cf_coord_var</span><span class="o">.</span><span class="n">cf_name</span><span class="p">)))</span>
@@ -400,14 +401,14 @@ be done using the <code class="docutils literal notranslate"><span class="pre">c
 [t.point for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>123 ms ± 6.28 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>123 ms ± 9.66 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [t.point for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>110 ms ± 10.2 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>104 ms ± 929 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -418,14 +419,14 @@ conversion (if we want).</p>
 [np.datetime64(t.point) for t in times_ecmwf.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>127 ms ± 7.86 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>122 ms ± 3.89 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 [np.datetime64(t.point) for t in times_aatsr.cells()]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>107 ms ± 3.32 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>105 ms ± 2.14 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 </pre></div>
 </div>
 <p>That looks okay, since it does not lead to a notable decrease in the
@@ -444,7 +445,7 @@ and the <code class="docutils literal notranslate"><span class="pre">cells()</sp
 [np.datetime64(t) for t in times_ecmwf.units.num2date(times_ecmwf.points)]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.9 ms ± 191 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.61 ms ± 5.35 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>This is quite an improvement. But if we dig a little deeper, we can
@@ -518,7 +519,7 @@ cftime_to_datetime64(times, cfunit=None, calendar=None)
 pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>331 µs ± 6.44 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>334 µs ± 1.95 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>For the AATSR data, the method is slower, since here, the slower
@@ -527,7 +528,7 @@ pya_tconversion(times_ecmwf.points, times_ecmwf.units)
 pya_tconversion(times_aatsr.points, times_aatsr.units)
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.08 ms ± 119 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.98 ms ± 17.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <p>Now this is an improvement. Starting with around 100ms when using the
@@ -541,14 +542,14 @@ them in a format that also pandas understands.</p>
 data_ecmwf.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>399 µs ± 43.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>375 µs ± 2.56 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">timeit</span>
 data_aatsr.time_stamps()
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2.12 ms ± 124 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1.98 ms ± 11.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 </pre></div>
 </div>
 </div>
