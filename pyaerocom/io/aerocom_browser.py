@@ -11,6 +11,7 @@ from os.path import isdir,join
 import fnmatch
 from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.exceptions import DataSearchError
 
 class AerocomBrowser(BrowseDict):
     """Interface for browsing all Aerocom data direcories
@@ -61,7 +62,7 @@ class AerocomBrowser(BrowseDict):
             
         Raises
         ------
-        IOError
+        DataSearchError
             if no match or no unique match can be found
         """
         pattern = fnmatch.translate(name_or_pattern)
@@ -144,14 +145,14 @@ class AerocomBrowser(BrowseDict):
             logger.warning(warning)
         
         if len(_candidates) == 0:
-            raise IOError('No matches could be found for search pattern '
+            raise DataSearchError('No matches could be found for search pattern '
                           '{}'.format(name_or_pattern))
         if return_if_match: 
             if len(_candidates) == 1:
                 logger.info("Found exactly one match for search pattern "
                             "{}: {}".format(name_or_pattern, _candidates[0]))
                 return self[_candidates[0]]
-            raise IOError('Found multiple matches for search pattern {}. '
+            raise DataSearchError('Found multiple matches for search pattern {}. '
                           'Please choose from {}'.format(name_or_pattern, 
                                               _candidates))
         return _candidates
@@ -173,7 +174,7 @@ class AerocomBrowser(BrowseDict):
             
         Raises
         ------
-        IOError
+        DataSearchError
             if no matches or no unique match can be found
         """
         if name_or_pattern in self:
@@ -201,7 +202,7 @@ class AerocomBrowser(BrowseDict):
             
         Raises
         ------
-        IOError
+        DataSearchError
             if no matches can be found
         """
         return self._browse(name_or_pattern, ignorecase=ignorecase,
@@ -219,7 +220,7 @@ if __name__ == "__main__":
 # =============================================================================
 #     try:
 #         data_dir = browser.find_data_dir('*Cam5.3-Oslo*')
-#     except IOError as e:
+#     except DataSearchError as e:
 #         print(repr(e))
 #     
 #     
