@@ -44,10 +44,13 @@ class DataUnitError(ValueError):
 class DimensionOrderError(DataDimensionError):
     pass
 
-class NDimError(DataDimensionError):
+class DataExtractionError(ValueError):
     pass
 
-class DataExtractionError(ValueError):
+class DataSearchError(IOError):
+    pass
+
+class NDimError(DataDimensionError):
     pass
 
 class EbasFileError(ValueError):
