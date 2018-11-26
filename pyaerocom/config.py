@@ -409,6 +409,13 @@ class Config(object):
     
     @staticmethod
     def _write_access(path):
+        test = os.path.join(path, '_tmp')
+        try:
+            os.mkdir(test)
+            os.rmdir(test)
+            return True
+        except:
+            return False
         return os.access(path, os.W_OK)
     
     @staticmethod
@@ -544,7 +551,6 @@ class Config(object):
                     warn('Failed to init output and colocated data directory '
                          'from config file. Error: {}'.format(repr(e)))
                     
-        
         
         #init base directories for Model data
         if not keep_basedirs or not self.dir_exists(self._modelbasedir):
