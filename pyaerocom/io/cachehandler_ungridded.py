@@ -148,9 +148,13 @@ class CacheHandlerUngridded(object):
         return True
     
     def check_and_load(self):
-        if not os.path.isfile(self.file_path):
-            logger.info('No cache file available for query of dataset '
-                        '{}'.format(self.dataset_to_read))
+        try:
+            if not os.path.isfile(self.file_path):
+                logger.info('No cache file available for query of dataset '
+                            '{}'.format(self.dataset_to_read))
+                return False
+        except IOError as e:
+            logger.warning(repr(e))
             return False
         
         delete_existing = False

@@ -526,13 +526,24 @@ class Config(object):
                     cachedir = cr['outputfolders']['CACHEDIR']
                     if not self._write_access(cachedir):
                         raise PermissionError('Cannot write to {}'.format(cachedir))
+                    self._cachedir = cr['outputfolders']['CACHEDIR']
                 except Exception as e:
                     warn('Failed to init cache directory from config '
                          'file. Error: {}'.format(repr(e)))
-                self._cachedir = cr['outputfolders']['CACHEDIR']
+                
             if not keep_basedirs or not self.dir_exists(self._outputdir):
-                self._outputdir = outdir =cr['outputfolders']['OUTPUTDIR']
-                self._colocateddatadir = os.path.join(outdir, 'colocated_data')
+                try:
+                    outdir = cr['outputfolders']['OUTPUTDIR']
+                    if not self._write_access(outdir):
+                        raise PermissionError('Cannot write to {}'.format(outdir))
+                        
+                    self._outputdir = outdir
+                    self._colocateddatadir = os.path.join(outdir, 
+                                                          'colocated_data')
+                except Exception as e:
+                    warn('Failed to init output and colocated data directory '
+                         'from config file. Error: {}'.format(repr(e)))
+                    
         
         
         #init base directories for Model data
