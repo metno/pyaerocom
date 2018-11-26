@@ -173,17 +173,20 @@ class Config(object):
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
         self.DONOTCACHEFILE = None
-         
+        
         if config_file is not None:
+            
+            keep_basedirs = False
+            if self.dir_exists(model_base_dir) and self.dir_exists(obs_base_dir):
+                keep_basedirs=True
             try:
-                # only overwrites above defined directories if they do not exist
-                # (which is the default case, since they are None on default input)
-                self.read_config(config_file)
+                self.read_config(config_file, keep_basedirs)
+                
             except Exception as e:
                 from traceback import format_exc
+                self.init_outputdirs()
                 print(format_exc())
                 print("Failed to init config. Error: %s" %repr(e))
-        
         
     def _infer_config_file(self):
         """Infer the database configuration to be loaded"""
@@ -265,7 +268,7 @@ class Config(object):
             return chk_make_subdir(self._cachedir, getpass.getuser())
         except Exception as e:
             from pyaerocom import print_log
-            print_log.info('Failed to access CACHEDIR: {}'
+            print_log.info('Failed to access CACHEDIR: {}\n'
                            'Deactivating caching'.format(repr(e)))
             self._caching_active = False
             
@@ -430,6 +433,19 @@ class Config(object):
                                 "exist".format(self._obsbasedir))
             ok=False
         
+        return self.init_outputdirs() * ok
+    
+    def init_outputdirs(self):
+        """Initiate output directories based on current configuration
+        
+        Checks, and if applicable, writes / creates required output directories
+        (i.e. :attrs:`OUTPUTDIR, CACHEDIR, COLOCATEDDATADIR`).
+        
+        Returns
+        -------
+        bool
+            True, if everything is okay, False if not
+        """
         out_ok = True
         if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
             out_ok = False
@@ -437,7 +453,8 @@ class Config(object):
                 self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
                 out_ok = True
             except:
-                pass
+                warn('Failed to create {} directory in home directory'
+                     .format(self._outhomename))
         
         if not out_ok or not self._write_access(self._outputdir):
             self.log.info('Cannot establish write access to output directory {}'
@@ -454,9 +471,8 @@ class Config(object):
         
         # if this file exists no cache file is read
         # used to ease debugging
-        if self.OBSDATACACHEDIR and os.path.exists(self.OBSDATACACHEDIR):
-            self.DONOTCACHEFILE = os.path.join(self.OBSDATACACHEDIR, 
-                                               'DONOTCACHE')
+        if self.CACHEDIR is not None and os.path.exists(self.CACHEDIR):
+            self.DONOTCACHEFILE = os.path.join(self.CACHEDIR, 'DONOTCACHE')
             if os.path.exists(self.DONOTCACHEFILE):
                 self._caching_active=False
         
@@ -465,8 +481,7 @@ class Config(object):
                              'directory {}. Deactivating caching of files'
                              .format(self._cachedir))
             self._caching_active = False
-            ok = False
-        return ok
+        return out_ok
     
     def add_model_dir(self, dirname):
         """Add new model directory"""
@@ -507,6 +522,13 @@ class Config(object):
         cr.read(config_file)
         if cr.has_section('outputfolders'):
             if not keep_basedirs or not self.dir_exists(self._cachedir):
+                try:
+                    cachedir = cr['outputfolders']['CACHEDIR']
+                    if not self._write_access(cachedir):
+                        raise PermissionError('Cannot write to {}'.format(cachedir))
+                except Exception as e:
+                    warn('Failed to init cache directory from config '
+                         'file. Error: {}'.format(repr(e)))
                 self._cachedir = cr['outputfolders']['CACHEDIR']
             if not keep_basedirs or not self.dir_exists(self._outputdir):
                 self._outputdir = outdir =cr['outputfolders']['OUTPUTDIR']
@@ -893,6 +915,8 @@ class GridIO(object):
         
 if __name__=="__main__":
     import pyaerocom as pya
-    pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
-    
-    pya.browse_database('Aeronet*')
+# =============================================================================
+#     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
+#     
+#     pya.browse_database('Aeronet*')
+# =============================================================================
