@@ -52,7 +52,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     _FILEMASK = '*.lev30'
     
     #: version log of this class (for caching)
-    __version__ = '0.06_' + ReadAeronetBase.__baseversion__
+    __version__ = '0.07_' + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
@@ -72,7 +72,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
     DEFAULT_VARS = ['od550aer']
     
     #: value corresponding to invalid measurement
-    NAN_VAL = -9999.
+    #NAN_VAL = -9999.
+    NAN_VAL = -999.
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
@@ -218,11 +219,13 @@ class ReadAeronetSunV3(ReadAeronetBase):
                 
                 data_out['dtime'].append(np.datetime64(datestring))
 
-                # copy the data fields 
+                # TODO: remove elif if ensured that it works
                 for var, idx in vars_available.items():
                     val = np.float_(dummy_arr[idx])
                     if val == self.NAN_VAL: 
                         val = np.nan
+                    elif val < self.NAN_VAL:
+                        raise Exception('Developers: please debug')
                     data_out[var].append(val)
 
         # convert all lists to numpy arrays
@@ -257,7 +260,9 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     
     read = ReadAeronetSunV3()
-    read.verbosity_level = 'debug'
+    #read.verbosity_level = 'debug'
+    
+    data = read.read()
     
     first_ten = read.read(last_file=10)
     

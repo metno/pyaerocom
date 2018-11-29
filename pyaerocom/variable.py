@@ -138,6 +138,16 @@ class Variable(BrowseDict):
         AEROCOM variable name (see e.g. `AEROCOM protocol 
         <http://aerocom.met.no/protocol_table.html>`__ for a list of 
         available variables)
+    var_name_alt : str
+        Alternative variable name that is searched for in variables.ini file
+        to find variable information. Is e.g. set to scatc550aer if input 
+        is scatc550dryaer. This means, that if scatc550dryaer is not explictely
+        defined in
+    is_3d : bool
+        flag that indicates if variable is 3D
+    is_dry : bool
+        flag that is set based on filename that indicates if variable data
+        corresponds to dry conditions.
     unit : str
         unit of variable (None if no unit)
     aliases : list
@@ -191,17 +201,27 @@ class Variable(BrowseDict):
                 'map_cbar_levels': literal_eval_list,
                 'map_cbar_ticks': literal_eval_list}
     
+    RH_MAX_DRY = 0.4
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         self._var_name = var_name #save orig. input for whatever reasons
         self.is_3d = False
+        self.is_dry = False
         
         var_name = var_name.lower()
+        
         if '3d' in var_name:
             logger.info('Variable name {} contains 3d. Activating flag is_3d '
                         'and removing from var_name string'.format(var_name))
             var_name = var_name.replace('3d','')
             self.is_3d = True
+        if 'dry' in var_name:
+            self.is_dry = True
+            var_name_alt = var_name.replace('dry', '')
+        else:
+            var_name_alt = var_name
+            
         self.var_name = var_name
+        self.var_name_alt = var_name_alt #alternative var_name that is searched for 
         self.standard_name = None
         self.unit = 1
         self.aliases = []
@@ -209,9 +229,9 @@ class Variable(BrowseDict):
         self.dimensions = None
         self.minimum = -9e30
         self.maximum = 9e30
+
         self.description = None
         self.comments_and_purpose = None
-        
         
         # parameters for reading of obsdata
         
@@ -235,7 +255,8 @@ class Variable(BrowseDict):
         # imports default information and, on top, variable information (if 
         # applicable)
         if init:
-            self.parse_from_ini(var_name, cfg) 
+            self.parse_from_ini(var_name, var_name_alt=self.var_name_alt,
+                                cfg=cfg) 
         
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
@@ -280,17 +301,18 @@ class Variable(BrowseDict):
     def var_name_info(self):
         return VarNameInfo(self.var_name)
         
-    def parse_from_ini(self, var_name=None, cfg=None):
+    def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
         
         Parameters
         ----------
         var_name : str
-            strind ID of region (must be specified in `regions.ini <https://
-            github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ 
-            file)
+            variable name
+        var_name_alt : str
+            alternative variable name that is used if variable name is not
+            available
         cfg : ConfigParser
-            open and read config parser object
+            open config parser object
             
         Returns
         -------
@@ -301,26 +323,26 @@ class Variable(BrowseDict):
         ------
         IOError
             if regions.ini file does not exist
-
-        
         """
         if cfg is None:
             cfg = self.read_config()
-        
-        var_info = {}
+        var_info = {} 
         if var_name is not None and var_name != 'DEFAULT':
             if var_name in cfg:
                 logger.info("Found default configuration for variable "
                             "{}".format(var_name))
                 var_info = cfg[var_name]
-                self.var_name = var_name
+                #self.var_name = var_name
+            elif isinstance(var_name_alt, str) and var_name_alt in cfg:
+                var_info = cfg[var_name_alt]
             else:
                 aliases = _read_alias_ini()
                 if var_name in aliases:
                     var_info = cfg[aliases[var_name]]
                 else:
                     logger.warning("No default configuration available for "
-                                   "variable {}. Using DEFAULT settings".format(var_name))
+                                   "variable {}. Using DEFAULT settings"
+                                   .format(var_name))
             
         default = cfg['DEFAULT']
         
@@ -361,6 +383,7 @@ class Variable(BrowseDict):
                 s += list_to_shortstr(v)
             else:
                 s += "\n%s: %s" %(k,v)
+         
         s += arrays
         return s
 
@@ -441,7 +464,8 @@ class AllVariables(object):
         """
         #make sure to be in the right namespace
         
-        check = var_name.lower().replace('3d','')
+        check = var_name.lower().replace('3d','').replace('dry', '')
+        
         if not check in self:
             raise VariableDefinitionError("No default configuration available "
                                           "for variable {}".format(var_name))
@@ -453,6 +477,7 @@ class AllVariables(object):
         s = '\n{}\n{}\n{}'.format(len(head)*"-", head, len(head)*"-")
         for v in self.all_vars:
             s += '\n{}'.format(v)
+       
         return s   
   
 def get_variable(var_name):
@@ -478,24 +503,5 @@ def all_var_names():
 
 if __name__=="__main__":
     
-    
-    v = Variable("od550aer", the_answer=42)
-    print(v)
-    
-    names = all_var_names()
-    print(names)
-    
     all_vars = AllVariables()
-    print(all_vars)
-    
-    print(Variable('od550aer'))
-    
-    
-    vi = VarNameInfo('od567aer')
-    print(vi.is_optical_density) 
-    
-    print(VarNameInfo('od440lt1aer').is_optical_density)
-    
-    print(get_variable('ec550dryaer'))
-    print(Variable('ang4487aer'))
-    
+    v = all_vars['scatc550DRY3daer']
