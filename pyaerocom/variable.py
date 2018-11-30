@@ -107,7 +107,7 @@ def _read_alias_ini():
     aliases = {}
     items = parser['aliases']
     for var_name in items:
-        _aliases = [x for x in items[var_name].strip().split(',')]
+        _aliases = [x.strip() for x in items[var_name].strip().split(',')]
         for alias in _aliases:
             aliases[alias] = var_name
     return aliases
@@ -196,6 +196,7 @@ class Variable(BrowseDict):
                 'scat_ylim': literal_eval_list,
                 'scat_loglog': str2bool,
                 'scat_scale_factor': float,
+                'dry_rh_max':float,
                 'map_vmin': float,
                 'map_vmax': float,
                 'map_cbar_levels': literal_eval_list,
@@ -226,6 +227,7 @@ class Variable(BrowseDict):
         self.unit = 1
         self.aliases = []
         self.wavelength_nm = None
+        self.dry_rh_max = None
         self.dimensions = None
         self.minimum = -9e30
         self.maximum = 9e30
@@ -504,4 +506,4 @@ def all_var_names():
 if __name__=="__main__":
     
     all_vars = AllVariables()
-    v = all_vars['scatc550DRY3daer']
+    v = all_vars['abscrh']
