@@ -36,7 +36,7 @@ from copy import deepcopy
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
-from pyaerocom.variable import VarNameInfo
+from pyaerocom.mathutils import compute_scatc550dryaer, compute_absc550dryaer
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData
 from pyaerocom import UngriddedData
@@ -44,7 +44,7 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex
 from pyaerocom.io import EbasNasaAmesFile
 from pyaerocom.exceptions import (VariableDefinitionError, NotInFileError,
-                                  EbasFileError, DataUnitError)
+                                  EbasFileError)
 
 class ReadEbas(ReadUngriddedBase):
     """Interface for reading EBAS data
@@ -107,6 +107,14 @@ class ReadEbas(ReadUngriddedBase):
                      '1d'   :   'daily',
                      '1mo'  :   'monthly'}
     
+    
+    AUX_REQUIRES = {'scatc550dryaer'    :   ['scatc550aer',
+                                             'scatcrh'],
+                    'absc550dryaer'     :   ['absc550aer',
+                                             'abscrh']}
+    
+    AUX_FUNS = {'scatc550dryaer'    :   compute_scatc550dryaer,
+                'absc550dryaer'     :   compute_absc550dryaer}
     # list of all available resolution codes (extracted from SQL database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
@@ -114,10 +122,24 @@ class ReadEbas(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     def __init__(self, dataset_to_read=None):
+        #: EBAS I/O variable information
+        self._ebas_vars = EbasVarInfo.PROVIDES_VARIABLES()
+    
         super(ReadEbas, self).__init__(dataset_to_read)
+        
         #: loaded instances of aerocom variables (instances of 
         #: :class:`Variable` object, is written in get_file_list
         self.loaded_aerocom_vars = {}
+        
+        #: loaded instances of variables in EBAS namespace (instances of 
+        #: :class:`EbasVarInfo` object, is updated in read_file
+        self.loaded_ebas_vars = {}
+        
+        
+        
+        #: SQL database interface class used to retrieve file paths for vars
+        self.file_index = EbasFileIndex()
+        self.last_sql_request = None
         
         #: original file lists retrieved for each variable individually using
         #: SQL request. Since some of the files in the lists for each variable
@@ -133,17 +155,6 @@ class ReadEbas(ReadUngriddedBase):
         #: to be read from each file
         self.files_contain = []
         
-        #: Interface to access aerocom variable information (instance of class
-        #: AllVariables)
-        self.aerocom_vars = const.VAR_PARAM
-        
-        #: EBAS I/O variable information
-        self._ebas_vars = EbasVarInfo.PROVIDES_VARIABLES()
-        
-        #: SQL database interface class used to retrieve file paths for vars
-        self.file_index = EbasFileIndex()
-        self.last_sql_request = None
-        
     @property
     def _FILEMASK(self):
         raise AttributeError("Irrelevant for EBAS implementation, since SQL "
@@ -157,7 +168,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def PROVIDES_VARIABLES(self):
         """List of variables provided by the interface"""
-        return self._ebas_vars
+        return list(self._ebas_vars) + list(self.AUX_REQUIRES.keys())
 
     def _merge_lists(self, lists_per_var):
         """Merge dictionary of lists for each variable into one list
@@ -198,9 +209,19 @@ class ReadEbas(ReadUngriddedBase):
         files, files_contain = [], []
         for path, contains_vars in mapping.items():
             files.append(path)
+            
+# =============================================================================
+#             contains = []
+#             for var in contains_vars:
+#                 if var in self.AUX_REQUIRES:
+#                     contains.extend(self.AUX_REQUIRES[var])
+#                 else:
+#                     contains.append(var)
+# =============================================================================
             files_contain.append(contains_vars)
         self.files = files
         self.files_contain = files_contain
+        
         return files
     
     def get_file_list(self, vars_to_retrieve=None, **constraints):
@@ -250,10 +271,13 @@ class ReadEbas(ReadUngriddedBase):
             if not var in self.PROVIDES_VARIABLES:
                 raise AttributeError('No such variable {}'.format(var))
             info = EbasVarInfo(var)
-            if info.requires is not None:
-                raise NotImplementedError('Auxiliary variables can not yet '
-                                          'be handled / retrieved')
-                
+            self.loaded_ebas_vars[var] = info
+# =============================================================================
+#             if info.requires is not None:
+#                 raise NotImplementedError('Auxiliary variables can not yet '
+#                                           'be handled / retrieved')
+#                 
+# =============================================================================
             if 'station_names' in constraints:
                 val = constraints['station_names']
                 contains_wildcards = False
@@ -318,18 +342,16 @@ class ReadEbas(ReadUngriddedBase):
         
         Returns
         -------
-        dict
-            key value pairs specifying all matches of input variable, where 
-            keys are the column index and values are instances of
-            :class:`EbasColDef` specifying further information such as unit, 
-            or sampling wavelength.
+        list
+            list specifying column matches
         
         Raises
         ------
         NotInFileError
             if no column in file matches variable specifications
         """
-        
+        if ebas_var_info.component is None:
+            raise NotInFileError
         col_matches = []
         
         check_matrix = False if ebas_var_info['matrix'] is None else True
@@ -449,7 +471,7 @@ class ReadEbas(ReadUngriddedBase):
 #                                         result_col))
 # =============================================================================
         return result_col
-                    
+
     def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
                   _vars_to_compute=None):
         """Read Aeronet file containing results from v2 inversion algorithm
@@ -481,26 +503,32 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         else:
             vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
+        
+        for var in vars_to_read:
+            if not var in self.loaded_ebas_vars:
+                self.loaded_ebas_vars[var] = EbasVarInfo(var)
+            
+            if self.loaded_ebas_vars[var].requires is not None:
+                for aux_var in self.loaded_ebas_vars[var].requires:
+                    if not aux_var in self.loaded_ebas_vars:
+                        self.loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
             
         file = EbasNasaAmesFile(filename)
-    
         var_cols = {}
-        all_vars = self.aerocom_vars
-        ebas_var_info = {}
         for var in vars_to_read:
+            ebas_var_info = self.loaded_ebas_vars[var]
             if not var in self.loaded_aerocom_vars:
-                self.loaded_aerocom_vars[var] = all_vars[var]
-            var_info = self.loaded_aerocom_vars[var]
-            var_info_ebas = EbasVarInfo(var)
-            
+                self.loaded_aerocom_vars[var] = var_info = const.VAR_PARAM[var]
+            else:
+                var_info = self.loaded_aerocom_vars[var]
 # =============================================================================
-#             if var_info_ebas['matrix'] is not None:
-#                 if not file.matrix in var_info_ebas['matrix']:
+#             if ebas_var_info['matrix'] is not None:
+#                 if not file.matrix in ebas_var_info['matrix']:
 #                     continue
 # =============================================================================
-            ebas_var_info[var] = var_info_ebas
+            
             try:
-                col_matches = self._get_var_cols(var_info_ebas, file)
+                col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
                 continue
             # init helper variable for finding closest wavelength (if 
@@ -533,9 +561,11 @@ class ReadEbas(ReadUngriddedBase):
                         elif wvl_diff == min_diff_wvl:
                             matches.append(colnum)
                 
-                elif 'location' in colinfo:
-                    raise NotImplementedError('For developers, please '
-                                              'check!')
+# =============================================================================
+#                 elif 'location' in colinfo:
+#                     raise NotImplementedError('For developers, please '
+#                                               'check!')
+# =============================================================================
                 else:
                     matches.append(colnum)
             if matches:
@@ -549,7 +579,8 @@ class ReadEbas(ReadUngriddedBase):
         
         for var, cols in var_cols.items():
             if len(cols) > 1:
-                col = self._find_best_data_column(cols, ebas_var_info[var],
+                col = self._find_best_data_column(cols, 
+                                                  self.loaded_ebas_vars[var],
                                                   file)
                 var_cols[var] = col
     
@@ -603,16 +634,16 @@ class ReadEbas(ReadUngriddedBase):
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
         contains_vars = []
-        totnum = file.data.shape[0]
+        #totnum = file.data.shape[0]
         for var, colnums  in var_cols.items():
             if len(colnums) != 1:
                 raise Exception('Something went wrong...please debug')
             colnum = colnums[0]
             data = file.data[:, colnum]
-            if np.isnan(data).sum() == totnum:
-                self.logger.warning('Ignoring data column of variable {}. All '
-                                    'values are NaN'.format(var))
-                continue
+# =============================================================================
+#             if np.isnan(data).sum() == totnum:
+#                 self.logger.warning('All values are NaN'.format(var))
+# =============================================================================   
             data_out[var] = data
             _col = file.var_defs[colnum]
             if not 'unit' in _col: #make sure a unit is assigned to data column
@@ -628,7 +659,6 @@ class ReadEbas(ReadUngriddedBase):
                     stats = meta['statistics']
                 _col['statistics'] = stats
                 
-                
             data_out['var_info'][var] = _col
             contains_vars.append(var)
             
@@ -638,7 +668,12 @@ class ReadEbas(ReadUngriddedBase):
                                 'are NaN in {}'.format(filename))
         data_out['dtime'] = file.time_stamps
         # compute additional variables (if applicable)
-        #data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        for var in vars_to_compute:
+            data_out.var_info[var] = self.loaded_ebas_vars[var]
+            
+        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        
+            
         contains_vars.extend(vars_to_compute)
         data_out['contains_vars'] = contains_vars
         
@@ -676,7 +711,7 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-           
+        
         self.get_file_list(vars_to_retrieve, **constraints)
         files = self.files
     
@@ -705,7 +740,7 @@ class ReadEbas(ReadUngriddedBase):
             
         # note: check_vars_to_retrieve is implemented in template base 
         # class ReadUngriddedBase (module readungriddedbase.py)
-        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        #vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
         self.files_failed = []
         
@@ -716,11 +751,9 @@ class ReadEbas(ReadUngriddedBase):
             if i%disp_each == 0:
                 print("Reading file {} of {} ({})".format(i+1, 
                                  num_files, type(self).__name__))
-            vars_to_read = files_contain[i]
-            
             try:
-                station_data = self.read_file(_file, _vars_to_read=vars_to_read,
-                                              _vars_to_compute=vars_to_compute)
+                station_data = self.read_file(_file, 
+                                              vars_to_retrieve=files_contain[i])
             except (NotInFileError, EbasFileError) as e:
                 self.files_failed.append(_file)
                 self.logger.warning('Failed to read file {}. '
@@ -755,21 +788,18 @@ class ReadEbas(ReadUngriddedBase):
             # since all Aerocom data files are of type timeseries)
             times = np.float64(station_data['dtime'])
             
-            totnum = num_times * len(station_data.contains_vars)
+            append_vars = [x for x in np.intersect1d(vars_to_retrieve, 
+                                          station_data.contains_vars)]
+            
+            totnum = num_times * len(append_vars)
             
             #check if size of data object needs to be extended
             if (idx + totnum) >= data_obj._ROWNO:
                 #if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
                 
-            vars_avail = station_data.contains_vars
-            for var_count, var in enumerate(vars_avail):
-# =============================================================================
-#                 if not var in data_obj.unit:
-#                     data_obj.unit[var] = station_data.unit[var]
-#                 elif station_data.unit[var] != data_obj.unit[var]:
-#                     raise DataUnitError("Unit mismatch")
-# =============================================================================
+            for var_count, var in enumerate(append_vars):
+                
                 values = station_data[var]
                 start = idx + var_count * num_times
                 stop = start + num_times
@@ -802,7 +832,7 @@ class ReadEbas(ReadUngriddedBase):
                 metadata[meta_key]['var_info'][var] = var_info.to_dict()
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
-            metadata[meta_key]['variables'] = vars_avail
+            metadata[meta_key]['variables'] = append_vars
             idx += totnum  
             meta_key = meta_key + 1.
         
@@ -821,38 +851,18 @@ if __name__=="__main__":
     change_verbosity('critical')
 
     r = ReadEbas()
-    data = r.read(vars_to_retrieve=['absc550aer', 'scatc550aer'],
-                  station_names='Buk*',
-                  datalevel=None)
+    data = r.read(vars_to_retrieve=['absc550dryaer'],
+                  station_names=['Zep*'])
     
-    print(data)
+    stats = data.to_station_data_all('absc550dryaer', keep_na=True)
     
-    data
+    for i, stat in enumerate(stats):
+        try:
+            data = stat.absc550dryaer
+            if np.isnan(data).sum() == len(data):
+                raise ValueError('All values are NaN')
+            data.plot()
+        except Exception as e:
+            print(repr(e))
     
-    stat = data.to_station_data('Buk*', 'scatc550aer')
-    stat[0].scatc550aer.plot()
     
-# =============================================================================
-#     META0 = r.META[0]
-#     
-#     DIFF = []
-#     for M in r.META[1:]:
-#         diff = {}
-#         ok = []
-#         for k, v in META0.items():
-#             if not k in M:
-#                 diff[k] = 'Only in first'
-#             elif not v == M[k]:
-#                 diff[k] = [v, M[k]]
-#             else:
-#                ok.append(k) 
-#         for k in M:
-#             if not k in ok and not k in diff:
-#                 diff[k] = 'Not in first'
-#         DIFF.append(diff)
-# =============================================================================
-
-    #stat = data.to_station_data('Appalachian State*')
-    
-    #stats = data.to_station_data('Appalachian State University*', 
-     #                            vars_to_convert='scatc550aer')
