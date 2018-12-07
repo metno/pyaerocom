@@ -413,6 +413,7 @@ class UngriddedData(object):
         else:
             start, stop = start_stop(start, stop)
             
+        start, stop = np.datetime64(start), np.datetime64(stop)
         if len(meta_idx) == 1:
             return self._metablock_to_stationdata(meta_idx[0], 
                                                   vars_to_convert,  
@@ -437,8 +438,8 @@ class UngriddedData(object):
             logger.warn('No data could be retrieved for request')
         return stats
         
-    def _metablock_to_stationdata(self, meta_idx, vars_to_convert=None, 
-                                  start=None, stop=None, freq=None, 
+    def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
+                                  start, stop, freq=None, 
                                   interp_nans=False, 
                                   min_coverage_interp=0.68, 
                                   data_as_series=True):
@@ -482,7 +483,9 @@ class UngriddedData(object):
         indices_first = self.meta_idx[meta_idx][first_var]
         dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
         
+        # TODO: remove try except block
         overlap = np.logical_and(dtime >= start, dtime <= stop)
+  
         if overlap.sum() == 0:
             raise TimeMatchError('No data available for station {} ({}) in '
                                  'time interval {} - {}'
@@ -680,7 +683,56 @@ class UngriddedData(object):
                                       'numbers'.format(list(val), key))
         return (str_f, list_f, range_f)
     
-    # TODO: check, confirm and remove Beta version note in docstring                   
+    # TODO: check, confirm and remove Beta version note in docstring   
+
+# =============================================================================
+#     def remove_outliers(self, **var_ranges):
+#         """Method that can be used to remove outliers from data
+#         
+#         Returns new instance of :class:`UngriddedData` that has all outliers
+#         removed.
+#         """
+#         new = UngriddedData()
+#         removed = UngriddedData()
+#         meta_idx_new = 0.0
+#         data_idx_new = 0
+#         
+#         _vars = {}
+#         for meta_idx, meta in self.metadata.items():
+#                 
+#                 new.metadata[meta_idx_new] = meta
+#                 new.meta_idx[meta_idx_new] = od()
+#                 for var in meta['variables']:
+#                     indices = self.meta_idx[meta_idx][var]
+#                     
+#                     totnum = len(indices)
+#                     if (data_idx_new + totnum) >= new._ROWNO:
+#                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
+#                         new.add_chunk(totnum)
+#                     stop = data_idx_new + totnum
+#                     
+#                     new._data[data_idx_new:stop, :] = self._data[indices, :]
+#                     new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+#                                                                 stop)
+#                     new.var_idx[var] = self.var_idx[var]
+#                     data_idx_new += totnum
+#                 
+#                 meta_idx_new += 1
+#             else:
+#                 logger.debug('{} does not match filter and will be ignored'
+#                              .format(meta))
+#         if meta_idx_new == 0 or data_idx_new == 0:
+#             raise DataExtractionError('Filtering results in empty data object')
+#         new._data = new._data[:data_idx_new]
+#         # write history of filtering applied 
+#         new.filter_hist.update(self.filter_hist)
+#         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+#         new.filter_hist[int(time_str)] = filter_attributes
+#         new.data_revision.update(self.data_revision)
+#         
+#         return new
+# =============================================================================
+                
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
         
@@ -885,9 +937,12 @@ class UngriddedData(object):
         for meta_key, meta in self.metadata.items():
             found = False
             for idx, meta_reg in enumerate(meta_registered):
-                if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
-                    same_indices[idx].append(meta_key)
-                    found = True
+                try:
+                    if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
+                        same_indices[idx].append(meta_key)
+                        found = True
+                except:
+                    print()
             if not found:
                 meta_registered.append(meta)
                 same_indices.append([meta_key])
@@ -1606,11 +1661,11 @@ if __name__ == "__main__":
     
     import pyaerocom as pya
     
-    data = pya.io.ReadUngridded().read([pya.const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-                                        pya.const.AERONET_SUN_V3L2_AOD_DAILY_NAME],
-            ['od550aer', 'ang4487aer'], last_file=10)
+    data = pya.io.ReadUngridded().read('EBASMC', 'scatc550aer')
     
-    v3 = data.extract_dataset('AeronetSunV3Lev2.daily')
+    subset = data.remove_outliers()
+    
+    
     
     
     
