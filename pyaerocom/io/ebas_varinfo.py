@@ -136,7 +136,17 @@ class EbasVarInfo(BrowseDict):
         
         if self.old_name is not None:
             self.aliases.append(self.old_name)
-
+    
+    def to_dict(self):
+        """Convert into dictionary"""
+        use_keys = ['var_name', 'component', 'matrix', 'instrument', 
+                    'statistics', 'requires']
+        d = {}
+        for k in use_keys:
+            if self[k] is not None:
+                d[k] = self[k]
+        return d
+    
     def make_sql_request(self, **constraints):
         """Create an SQL request for the specifications in this object
         
@@ -152,17 +162,24 @@ class EbasVarInfo(BrowseDict):
             the SQL request object that can be used to retrieve corresponding 
             file names using instance of :func:`EbasFileIndex.get_file_names`.
         """
+        variables = []
+        if self.component is not None:
+            variables.extend(self.component)
         if self.requires is not None:
-            raise NotImplementedError('Cannot create SQL request for variables '
-                                      'that depend on other variables')
-        elif self.component is None:
+            for aux_var in self.requires:
+                variables.extend(EbasVarInfo(aux_var).component)
+        
+        if len(variables) == 0:
             raise AttributeError('At least one component (Ebas variable name) '
-                                 'must be specified for retrieval of variable '
-                                 '{}'.format(self.var_name))
+                             'must be specified for retrieval of variable '
+                             '{}'.format(self.var_name))
+    
         # default request
-        req = EbasSQLRequest(variables=self.component, matrices=self.matrix,
+        req = EbasSQLRequest(variables=variables, matrices=self.matrix,
                               instrument_types=self.instrument,
                               statistics=self.statistics)
+        
+            
         req.update(**constraints)
         return req
         
