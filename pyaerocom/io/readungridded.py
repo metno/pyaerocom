@@ -252,8 +252,10 @@ class ReadUngridded(object):
                     data = cache.loaded_data
             
         if not cache_hit_flag:
-            print_log.info('No Cache match found for {}. Reading from files (this '
-                        'may take a while)'.format(dataset_to_read))
+            print_log.info('No Cache match found for {} in {}. '
+                           'Reading from files (this '
+                           'may take a while)'.format(dataset_to_read,
+                                                      const.CACHEDIR))
             _loglevel = print_log.level
             print_log.setLevel(logging.INFO)
             data = reader.read(vars_available, **kwargs)

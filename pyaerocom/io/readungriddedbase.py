@@ -424,6 +424,7 @@ class ReadUngriddedBase(abc.ABC):
                                     "more of the required variables {} is "
                                     "missing in data. Filling with NaNs"
                                     .format(var, required))
+        #data.var_info[var] = dict(computed_from=required)
         return data
     
     def find_in_file_list(self, pattern=None):
