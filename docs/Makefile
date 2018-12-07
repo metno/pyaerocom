@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = pyaerocom
 SOURCEDIR     = .
-BUILDDIR      = _build
+BUILDDIR      = ../../pyaerocom-docs/_build
 
 # Put it first so that "make" without argument is like "make help".
 help:

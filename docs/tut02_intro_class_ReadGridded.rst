@@ -92,13 +92,13 @@ Or the same in hourly resolution:
 
 .. parsed-literal::
 
-    0.00810694694519043 s
+    0.005434751510620117 s
     
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008]
     Available time resolutions ['daily', 'monthly']
 
@@ -121,7 +121,7 @@ by printing the string representation, as shown in the cell above).
 .. parsed-literal::
 
     Detected variables for model ECMWF_CAMS_REAN:
-     ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+     ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
 
 
 .. code:: ipython3
@@ -305,7 +305,7 @@ Now let's double check if all variables have been imported.
     ---------------------
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008]
     Available time resolutions ['daily', 'monthly']
     

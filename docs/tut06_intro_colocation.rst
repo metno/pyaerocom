@@ -33,7 +33,7 @@ Import setup and imports
 
 .. parsed-literal::
 
-    0.006044864654541016 s
+    0.009348154067993164 s
 
 
 Import of model data
@@ -132,7 +132,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of meta-blocks: 1006
     Filters that were applied:
-     Filter time log: 20181123145344
+     Filter time log: 20181127115648
     	stat_alt: [0, 1000]
 
 
@@ -245,7 +245,7 @@ station plot above).
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1094073ba8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8fe27f25f8>
 
 
 
@@ -270,7 +270,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <cartopy.mpl.geoaxes.GeoAxes at 0x7f1094478828>
+    <cartopy.mpl.geoaxes.GeoAxes at 0x7f8fe2c358d0>
 
 
 
@@ -348,7 +348,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f1072ff9198>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8fe2b1e400>
 
 
 
