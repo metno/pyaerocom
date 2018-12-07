@@ -469,6 +469,80 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     
     return result
 
+def compute_scatc550dryaer(data):
+    """Compute dry scattering coefficent applying RH threshold
+    
+    Cf. :func:`_compute_dry_helper`
+    
+    Parameters
+    ----------
+    dict
+        data object containing scattering and RH data
+    
+    Returns
+    -------
+    dict 
+        modified data object containing new column scatc550dryaer
+    
+    """
+    rh_max= const.VAR_PARAM['scatc550dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='scatc550aer', 
+                               rh_colname='scatcrh', 
+                               rh_max_percent=rh_max)
+    
+def compute_absc550dryaer(data):
+    """Compute aerosol dry absorption coefficent applying RH threshold
+    
+    Cf. :func:`_compute_dry_helper`
+    
+    Parameters
+    ----------
+    dict
+        data object containing scattering and RH data
+    
+    Returns
+    -------
+    dict 
+        modified data object containing new column scatc550dryaer
+    
+    """
+    rh_max= const.VAR_PARAM['absc550dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='absc550aer', 
+                               rh_colname='abscrh', 
+                               rh_max_percent=rh_max)
+    
+def _compute_dry_helper(data, data_colname, rh_colname, 
+                        rh_max_percent):
+    """Compute new column that contains data where RH is smaller than ...
+    
+    All values in original data columns are set to NaN, where RH exceeds a 
+    certain threshold or where RH is NaN.
+    
+    Parameters
+    ----------
+    data : dict-like
+        dictionary-like object that contains data
+    data_colname : str
+        column name of variable data that is supposed to be filtered
+    rh_colname : str
+        column name of RH data
+    rh_max_percent : int
+        maximum relative humitdity
+        
+    Returns
+    -------
+    dict
+        modified data dictionary with new dry data column 
+    """
+    vals = np.array(data[data_colname], copy=True)
+    rh = data[rh_colname]
+    
+    vals[rh>rh_max_percent] = np.nan
+    vals[np.isnan(rh)] =np.nan
+    
+    #data[var_name] = vals
+    return vals
+    
 def exponent(num):
     """Get exponent of input number
         
