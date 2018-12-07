@@ -132,12 +132,14 @@ class NasaAmesHeader(object):
     
     #conversion methods for first 13 header lines of
     CONV_STR = lambda l : str(l.strip())
+    CONV_PI = lambda l : '; '.join([x.strip() for x in l.split(';')])
     CONV_MULTIINT = lambda l : [int(x) for x in l.strip().split()]
     CONV_MULTIFLOAT = lambda l : [float(x) for x in l.strip().split()]
     CONV_INT = lambda l : int(l.strip())
     CONV_FLOAT = lambda l : float(l.strip())
     _STARTDATE_FMT = "%Y%m%d%H%M%S"
 
+    # the parameters that are always in the beginning of the file
     _H_FIXLINES_YIELD = [["num_head_lines", "num_head_fmt"], #line 1
                          "data_originator", #line 2
                          "sponsor_organisation", #3
@@ -152,9 +154,9 @@ class NasaAmesHeader(object):
                          "vals_invalid", #12
                          "descr_first_col", #13
                          ]
-    
+    # conversion methods are defined above
     _H_FIXLINES_CONV = [CONV_MULTIINT, #1 -> yields 2
-                        CONV_STR, #2
+                        CONV_PI, #2
                         CONV_STR, #3
                         CONV_STR, #4
                         CONV_STR, #5
