@@ -1543,10 +1543,12 @@ class UngriddedData(object):
             if len(stat_data) == 0:
                 raise DataCoverageError('No stations could be found for input '
                                         'specs (var, start, stop, freq)')
-            lons, lats = [], []
+            lons, lats, stat_names = [], [], []
             for stat in stat_data:
-                lons.append(stat['longitude'])
-                lats.append(stat['latitude'])
+                if not stat.station_name in stat_names:
+                    stat_names.append(stat.station_name)
+                    lons.append(stat['longitude'])
+                    lats.append(stat['latitude'])
                 
         if not 'label' in kwargs:
             kwargs['label'] = info_str
