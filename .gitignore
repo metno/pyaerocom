@@ -124,3 +124,6 @@ notebooks/_*.ipynb
 
 # Documentation HTML pages
 docs/_build
+
+# Sorted out directory
+pyaerocom/_sorted_out
