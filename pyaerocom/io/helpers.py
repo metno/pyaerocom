@@ -28,6 +28,44 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
+def read_ebas_flags_file(ebas_flags_csv):
+    """Reads file ebas_flags.csv
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    dict
+        dict 
+    """
+    from pyaerocom._lowlevel_helpers import BrowseDict
+    valid = BrowseDict()
+    values = BrowseDict()
+    info = BrowseDict()
+    with open(ebas_flags_csv) as fio:
+        for line in fio:
+            spl = line.strip().split(',')
+            num = int(spl[0].strip())
+            try:
+                val_str = spl[-1][1:-1]
+            except:
+                raise IOError('Failed to read flag information in row {} (Check if entries in ebas_flags.csv are quoted)'.format(line))
+            info_str = ','.join(spl[1:-1])
+            try:
+                info_str = info_str[1:-1]
+            except:
+                raise IOError('Failed to read flag information in row {} (Check if entries in ebas_flags.csv are quoted)'.format(line))
+            isvalid = True if val_str == 'V' else False
+            valid[num] = isvalid
+            values[num] = val_str
+            info[num] = info_str
+    result = BrowseDict()
+    result.valid = valid
+    result.info = info
+    result.vals = values
+    return result
+
 def add_file_to_log(filepath, err_msg):
     
     try:
