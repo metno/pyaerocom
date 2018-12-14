@@ -34,8 +34,8 @@ class EbasColDef(dict):
         True if column corresponds to variable data, False if not
     is_flag : bool
         True, if column corresponds to Flag column, False if not
-    flag_id : str
-        ``name`` of flag column that corresponds to this data colum (only
+    flag_col : int
+        column number of flag column that corresponds to this data column (only
         relevant if :attr:`is_var` is True)
         
     Parameters
@@ -48,16 +48,16 @@ class EbasColDef(dict):
         True, if column corresponds to Flag column, False if not
     unit : :obj:`str`, optional
         unit of data in column (if applicable)
-    flag_id : :obj:`str`, optional
+    flag_col : :obj:`str`, optional
         ``name`` of flag column that corresponds to this data colum (only
         relevant if :attr:`is_var` is True)
     """
-    def __init__(self, name, is_var, is_flag, unit="1", flag_id=""):
+    def __init__(self, name, is_var, is_flag, unit="1"):
         self.name = name
         self.unit = unit
         self.is_var = is_var
         self.is_flag = is_flag
-        self.flag_id = flag_id
+        self.flag_col = None
         
     def get_wavelength_nm(self):
         """Try to access wavelength information in nm (as float)"""
@@ -68,7 +68,7 @@ class EbasColDef(dict):
             raise NotImplementedError('Wavelength definition is not in nm')
         return float(self.wavelength.split('nm')[0].strip())
         
-    def to_dict(self, ignore_keys=['is_var', 'is_flag', 'flag_id', 
+    def to_dict(self, ignore_keys=['is_var', 'is_flag', 'flag_col', 
                                    'wavelength_nm']):
         d = {}
         for k, v in self.items():
@@ -249,33 +249,73 @@ class NasaAmesHeader(object):
         return s
 
 class EbasFlagCol(object):
-    def __init__(self, raw_data, info, decode_on_init=True):
+    """Simple helper class to decode and interpret EBAS flag columns
+    
+    Attributes
+    ----------
+    info : EbasColDef
+        EBAS column definition information for flag column (from file header)
+    raw_data : ndarray
+        raw flag column (containing X-digit floating point numbers)
+    decoded : ndarray
+        
+    """
+    from pyaerocom import const
+    FLAG_INFO = const.EBAS_FLAG_INFO
+    def __init__(self, raw_data, info, interpret_on_init=True):
         if not raw_data.ndim == 1:
             raise AttributeError("Need one dimensional numpy array for flag "
                                  "column")
         self.info = info
         self.raw_data = raw_data
         
-        self.flags = None
+        self._decoded = None
+        self._valid = None
         
-        if decode_on_init:
+        if interpret_on_init:
             self.decode()
             
+    @property
+    def decoded(self):
+        """Nx3 numpy array containing decoded flag columns"""
+        if self._decoded is None:
+            self.decode()
+        return self._decoded
+    
+    @property
+    def valid(self):
+        """Boolean array specifying valid and invalid measurements"""
+        if self._valid is None:
+            self.decode()
+        return self._valid
+    
     def decode(self):
+        """Decode raw flag column"""
         flags = np.zeros((len(self.raw_data), 3)).astype(int)
         mask = self.raw_data.astype(bool)
+        valid = np.ones_like(self.raw_data).astype(bool)
         not_ok = self.raw_data[mask]
         if len(not_ok) > 0:
             decoded = []
+            invalid = []
             for flag in not_ok:
                 item = "{:.9f}".format(flag).split(".")[1]
-                decoded.append([int(item[:3]), int(item[3:6]), int(item[6:9])])
+                vals = [int(item[:3]), int(item[3:6]), int(item[6:9])]
+                _invalid = False
+                for val in vals:
+                    if val in self.FLAG_INFO.valid and not self.FLAG_INFO.valid: #is invalid
+                        _invalid = True
+                        break
+                decoded.append(vals)
+                invalid.append(_invalid)
+        
             try:
                 flags[mask] = np.asarray(decoded)
+                valid[mask] = invalid
             except:
                 logger.exception('Failed to decode flag')
-        self.flags = flags
-        
+        self._valid = valid
+        self._decoded = flags
         
 class EbasNasaAmesFile(NasaAmesHeader):
     """EBAS NASA Ames file interface
@@ -304,7 +344,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
     convert_timestamps : bool
         compute array of numpy datetime64 timestamps from numeric timestamps
         in data
-    decode_flags : bool
+    evaluate_flags : bool
         if True, all flags in all flag columns are decoded from floating 
         point representation to 3 integers, e.g. 
         0.111222333 -> 111 222 333
@@ -321,7 +361,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
     ERR_LOW_STATS = 'percentile:15.87'
     ERR_HIGH_STATS = 'percentile:84.13'
     def __init__(self, file=None, only_head=False, replace_invalid_nan=True,
-                 convert_timestamps=True, decode_flags=True, 
+                 convert_timestamps=True, evaluate_flags=False, 
                  quality_check=True, **kwargs):
         super(EbasNasaAmesFile, self).__init__(**kwargs)
         self._data_header = [] #Header line of data block
@@ -329,7 +369,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         
         self.time_stamps = None
         
-        self.flags = od()
+        self.flag_col_info = od()
         
         self.file = None
         
@@ -337,7 +377,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             if not os.path.exists(file):
                 raise IOError("File {} does not exists".format(file))
             self.read_file(file, only_head, replace_invalid_nan, 
-                           convert_timestamps, decode_flags,
+                           convert_timestamps, evaluate_flags,
                            quality_check)
  
     @property
@@ -628,15 +668,43 @@ class EbasNasaAmesFile(NasaAmesHeader):
         s.plot(style=style, ax=ax)
         return ax
         
-    def init_flags(self, decode=True):
+    def assign_flagcols(self):
+        _prev = 0
+        for (idx, item) in enumerate(self.var_defs):
+            if item.is_flag:
+                for _idx in range(_prev, idx):
+                    self.var_defs[_idx].flag_col=idx
+                _prev = idx + 1
+        
+            
+    def init_flags(self, evaluate=True):
+        """Decode flag columns and store info in :attr:`flags`
+        """
         for (idx, item) in enumerate(self.var_defs):
             if item.is_flag:
                 data = self.data[:, idx]
                 flag = EbasFlagCol(raw_data=data,
                                    info=item, 
-                                   decode_on_init=decode)
-                self.flags[item.name] = flag
-                
+                                   interpret_on_init=evaluate)
+                self.flag_col_info[idx] = flag
+    
+    
+    def _set_invalid_flags_nan_col(self, colnum):
+        
+        info = self.var_defs[colnum]
+        flag_col = info.flag_col
+        if flag_col is None:
+            raise ValueError('No flag column is assigned to data column {}\n{}'
+                             .format(colnum, info))
+        
+        
+    def set_invalid_flags_nan(self, colnum=None):
+        """Use flag column information to identify and remove invalid measurements"""
+        if len(self.flag_col_info) == 0:
+            self.init_flags()
+        raise NotImplementedError
+        
+        
                 
     def compute_time_stamps(self):
         offs = self.base_date
@@ -666,9 +734,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
                        quality_check=quality_check)
         
     def read_file(self, nasa_ames_file, only_head=False, 
-                  replace_invalid_nan=True,
-                  convert_timestamps=True, decode_flags=True, 
-                  quality_check=True):
+                  replace_invalid_nan=True, convert_timestamps=True, 
+                  evaluate_flags=False, quality_check=False):
         """Read NASA Ames file
         
         Parameters
@@ -684,10 +751,12 @@ class EbasNasaAmesFile(NasaAmesHeader):
         convert_timestamps : bool
             compute array of numpy datetime64 timestamps from numeric timestamps
             in data
-        decode_flags : bool
-            if True, all flags in all flag columns are decoded from floating 
-            point representation to 3 integers, e.g. 
-            0.111222333 -> 111 222 333
+        evaluate_flags : bool
+            if True, all data columns get assigned their corresponding flag
+            column, the flags in all flag columns are decoded from floating 
+            point representation to 3 integers, e.g. 0.111222333 -> 111 222 333
+            and if input ```replace_invalid_nan==True```, then the invalid 
+            measurements in each column are replaced with NaN's.
         quality_check : bool
             perform quality check after import (for details see 
             :func:`_quality_check`)
@@ -731,7 +800,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     else:
                         logger.warning(msg)
             else: # behind header section and before data definition (contains column defs and meta info)
-                _flagmap_idx = 0
                 if mc == 0: # still in column definition
                     END_VAR_DEF = self._NUM_FIXLINES + self.num_cols_dependent - 1
                     NUM_HEAD_LINES = self.num_head_lines
@@ -741,20 +809,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         logger.warning(repr(e))
                            
                 elif lc < END_VAR_DEF:
-                    var = self._read_vardef_line(line)
-                    #if variable corresponds to flag column, assign this 
-                    #flag column to all previously read variables
-                    if var.is_flag:
-                        for _var in self.var_defs[_flagmap_idx:]:
-                            _var.flag_id = var.name
-                    self.var_defs.append(var)
-                    _flagmap_idx = len(self.var_defs)
-                    try:
-                        pass
-                        #self.var_defs.append(var)
-                    except Exception as e:
-                        logger.warning(repr(e))
-    
+                    self.var_defs.append(self._read_vardef_line(line))
+                    
                 elif lc == NUM_HEAD_LINES - 1:
                     IN_DATA = True
                     self._data_header = h = [x.strip() for x in line.split()]
@@ -788,6 +844,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
                 mc += 1
             lc += 1
         
+        
+        
         data = np.asarray(data) 
         
         data[:, 1:] = data[:, 1:] * np.asarray(self.mul_factors)
@@ -804,7 +862,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                 except:
                     logger.warning("Failed to replace invalid values with "
                                    "NaNs in column {}".format(self.col_names[i+1]))
-            data[:, 1:] =dep_dat
+            data[:, 1:] = dep_dat
         self._data = data
         
         if convert_timestamps:
@@ -813,7 +871,10 @@ class EbasNasaAmesFile(NasaAmesHeader):
             except Exception as e:
                 logger.warning("Failed to compute time stamps.\n"
                                "Error message: {}".format(repr(e)))
-        self.init_flags(decode_flags)
+        
+        self.assign_flagcols()
+        self.init_flags(evaluate=evaluate_flags)
+        
         if quality_check:
             self._quality_check()
             
@@ -826,7 +887,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                           is_var=False,
                           unit=spl[1])
         
-        if name != "numflag":    
+        if not "numflag" in name:    
             data.is_var = True
             data.is_flag = False
             for item in spl[2:]:
