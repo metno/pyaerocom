@@ -174,6 +174,8 @@ class Config(object):
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
         self.DONOTCACHEFILE = None
         
+        self._ebas_flag_info = None
+        
         if config_file is not None:
             
             keep_basedirs = False
@@ -384,8 +386,13 @@ class Config(object):
     @property
     def EBASMC_DATA_DIR(self):
         """Data directory of EBAS multicolumn files"""
-        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 'data')
-                            
+        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 'data/')
+    
+    @property
+    def EBAS_FLAGS_FILE(self):
+        from pyaerocom import __dir__
+        return os.path.join(__dir__, 'data', 'ebas_flags.csv')
+    
     @property
     def OBSDIRS(self):
         """Direcories of observation networks"""
@@ -517,7 +524,20 @@ class Config(object):
     def reload(self, keep_basedirs=True):
         """Reload config file (for details see :func:`read_config`)"""
         self.read_config(self._config_ini, keep_basedirs)
+
+    @property    
+    def EBAS_FLAG_INFO(self):
+        """Information about EBAS flags
         
+        Dictionary containing 3 dictionaries (keys: ```valid, values, info```) 
+        that contain information about validity of each flag (```valid```), 
+        their actual values (```values```, e.g. V, M, I)
+        """
+        if self._ebas_flag_info is None:
+            from pyaerocom.io.helpers import read_ebas_flags_file
+            self._ebas_flag_info = read_ebas_flags_file(self.EBAS_FLAGS_FILE)
+        return self._ebas_flag_info
+    
     def read_config(self, config_file, keep_basedirs=True):
         """Read and import form paths.ini"""
         if not os.path.isfile(config_file):
@@ -618,7 +638,7 @@ class Config(object):
                     OBSCONFIG[ID]['START_YEAR'] = year
         
         self.OBSCONFIG = OBSCONFIG
-     
+    
     def add_data_source(self, data_dir, name=None):
         """Add a network to the data search structure
         
