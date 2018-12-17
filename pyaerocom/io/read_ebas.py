@@ -45,7 +45,47 @@ from pyaerocom.io.ebas_file_index import EbasFileIndex
 from pyaerocom.io import EbasNasaAmesFile
 from pyaerocom.exceptions import (VariableDefinitionError, NotInFileError,
                                   EbasFileError)
+from pyaerocom._lowlevel_helpers import BrowseDict
 
+class ReadEbasOptions(BrowseDict):
+    """Options for EBAS reading routine
+    
+    Attributes
+    ----------
+    PREFER_STATISTICS : list
+        preferred order of data statistics. Some files may contain multiple 
+        columns for one variable, where each column corresponds to one of the
+        here defined statistics that where applied to the data. This attribute
+        is only considered for ebas variables, that have not explicitely defined
+        what statistics to use (and in which preferred order, if appicable).
+        Reading preferences for all Ebas variables are specified in the file
+        ebas_config.ini in the data directory of pyaerocom.
+    IGNORE_STATISTICS : list
+        columns that have either of these statistics applied are ignored for 
+        variable data reading.
+    WAVELENGTH_TOL_NM : int
+        Wavelength tolerance in nm for reading of (wavelength dependent) 
+        variables. If multiple matches occur (e.g. query -> variable at 550nm
+        but file contains 3 columns of that variable, e.g. at 520, 530 and 
+        540 nm), then the closest wavelength to the queried wavelength is used
+        within the specified tolerance level.
+    REMOVE_INVALID_FLAGS : bool
+        If True, the flag columns in the NASA Ames files are read and decoded 
+        (using :func:`EbasFlagCol.decode`) and the (up to 3 flags for each 
+        measurement) are evaluated as valid / invalid using the information 
+        stored in against the 
+    """
+    
+    def __init__(self):
+        
+        self.PREFER_STATISTICS = ['arithmetic mean', 'median']
+        self.IGNORE_STATISTICS = ['percentile:15.87',
+                                  'percentile:84.13']
+        
+        self.WAVELENGTH_TOL_NM = 50
+        
+        self.REMOVE_INVALID_FLAGS = False
+        
 class ReadEbas(ReadUngriddedBase):
     """Interface for reading EBAS data
 
@@ -61,27 +101,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.09_" + ReadUngriddedBase.__baseversion__
-    
-    #: preferred order of data statistics. Some files may contain multiple 
-    #: columns for one variable, where each column corresponds to one of the
-    #: here defined statistics that where applied to the data. This attribute
-    #: is only considered for ebas variables, that have not explicitely defined
-    #: what statistics to use (and in which preferred order, if appicable).
-    #: Reading preferences for all Ebas variables are specified in the file
-    #: ebas_config.ini in the data directory of pyaerocom
-    PREFER_STATISTICS = ['arithmetic mean',
-                         'median']
-    
-    PREFER_LEVEL=2
-    
-    IGNORE_STATISTICS = ['percentile:15.87',
-                         'percentile:84.13']
-    #: Wavelength tolerance in nm for reading of variables. If multiple matches
-    #: occure, the closest wavelength to the desired wavelength is chosen
-    #: e.g. if 50 and for variable at 550nm, accept everything in interval
-    #: {500, 600}
-    WAVELENGTH_TOL_NM = 50
+    __version__ = "0.11_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATASET_NAME = const.EBAS_MULTICOLUMN_NAME
@@ -97,10 +117,7 @@ class ReadEbas(ReadUngriddedBase):
     # TODO: check and redefine 
     #: default variables for read method
     DEFAULT_VARS = ['absc550aer', # light absorption coefficient
-                    'absc550lt1aer',
-                    'scatc550aer',
-                    'scatc550lt1aer',
-                    ] # light scattering coefficient
+                    'scatc550aer'] # light scattering coefficient
     
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1h'   :   'hourly',
@@ -127,6 +144,10 @@ class ReadEbas(ReadUngriddedBase):
     
         super(ReadEbas, self).__init__(dataset_to_read)
         
+        #ReadUngriddedBase.__init__(self, dataset_to_read)
+        self.opts = ReadEbasOptions()
+        
+        #self.opts = ReadEbasOptions()
         #: loaded instances of aerocom variables (instances of 
         #: :class:`Variable` object, is written in get_file_list
         self.loaded_aerocom_vars = {}
@@ -135,11 +156,12 @@ class ReadEbas(ReadUngriddedBase):
         #: :class:`EbasVarInfo` object, is updated in read_file
         self.loaded_ebas_vars = {}
         
-        
+        self.logtofile = False
+        self._filelog = None
         
         #: SQL database interface class used to retrieve file paths for vars
         self.file_index = EbasFileIndex()
-        self.last_sql_request = None
+        self.sql_requests = []
         
         #: original file lists retrieved for each variable individually using
         #: SQL request. Since some of the files in the lists for each variable
@@ -154,7 +176,21 @@ class ReadEbas(ReadUngriddedBase):
         #: this is filled in method get_file_list and specifies variables 
         #: to be read from each file
         self.files_contain = []
-        
+      
+    @property
+    def filelog(self):
+        """File logger"""
+        if self._filelog is None:
+            import logging
+            logdir = const.LOGFILESDIR
+            logfile = os.path.join(logdir, 'ReadEbas_{}.log'.format(self.__version__))
+            fh = logging.FileHandler(logfile)
+            logger = logging.getLogger('ebas_io')
+            logger.setLevel(logging.DEBUG)
+            logger.addHandler(fh)
+            self._filelog = logger
+        return self._filelog
+    
     @property
     def _FILEMASK(self):
         raise AttributeError("Irrelevant for EBAS implementation, since SQL "
@@ -169,6 +205,26 @@ class ReadEbas(ReadUngriddedBase):
     def PROVIDES_VARIABLES(self):
         """List of variables provided by the interface"""
         return list(self._ebas_vars) + list(self.AUX_REQUIRES.keys())
+    
+    @property
+    def PREFER_STATISTICS(self):
+        """List containing preferred statistics columns"""
+        return self.opts.PREFER_STATISTICS
+    
+    @property
+    def IGNORE_STATISTICS(self):
+        """List containing column statistics keys to be ignored"""
+        return self.opts.IGNORE_STATISTICS
+    
+    @property
+    def WAVELENGTH_TOL_NM(self):
+        """Wavelength tolerance in nm for columns"""
+        return self.opts.WAVELENGTH_TOL_NM
+    
+    @property
+    def REMOVE_INVALID_FLAGS(self):
+        """Boolean specifying whether to use EBAS flag columns"""
+        return self.opts.REMOVE_INVALID_FLAGS
 
     def _merge_lists(self, lists_per_var):
         """Merge dictionary of lists for each variable into one list
@@ -303,10 +359,10 @@ class ReadEbas(ReadUngriddedBase):
                                     stats.append(stat)
                     constraints['station_names'] = stats
                                     
-            self.last_sql_request = req = info.make_sql_request(**constraints)
+            req = info.make_sql_request(**constraints)
             
             filenames = db.get_file_names(req)
-            
+            self.sql_requests.append(req)
             paths = []
             for file in filenames:
                 paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
@@ -639,13 +695,16 @@ class ReadEbas(ReadUngriddedBase):
             if len(colnums) != 1:
                 raise Exception('Something went wrong...please debug')
             colnum = colnums[0]
-            data = file.data[:, colnum]
-# =============================================================================
-#             if np.isnan(data).sum() == totnum:
-#                 self.logger.warning('All values are NaN'.format(var))
-# =============================================================================   
-            data_out[var] = data
             _col = file.var_defs[colnum]
+            data = file.data[:, colnum]
+            
+            if self.REMOVE_INVALID_FLAGS:
+                invalid = ~file.flag_col_info[_col.flag_col].valid
+                data[invalid] = np.nan
+                
+                
+            data_out[var] = data
+            
             if not 'unit' in _col: #make sure a unit is assigned to data column
                 _col['unit']= file.unit
             if 'wavelength' in _col:
@@ -673,7 +732,6 @@ class ReadEbas(ReadUngriddedBase):
             
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
         
-            
         contains_vars.extend(vars_to_compute)
         data_out['contains_vars'] = contains_vars
         
@@ -706,7 +764,12 @@ class ReadEbas(ReadUngriddedBase):
         -------
         UngriddedData
             data object
-        """     
+        """    
+        
+        for k in list(constraints):
+            if k in self.opts:
+                self.opts[k] = constraints.pop(k)
+
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -723,7 +786,7 @@ class ReadEbas(ReadUngriddedBase):
         files = files[first_file:last_file]
         files_contain = self.files_contain[first_file:last_file]
         self.read_failed = []
-        
+            
         data_obj = UngriddedData()
 
         meta_key = 0.0
@@ -760,7 +823,6 @@ class ReadEbas(ReadUngriddedBase):
                                     'Error: {}'.format(os.path.basename(_file),
                                                        repr(e)))
                 continue
-                
             
             # Fill the metatdata dict
             # the location in the data set is time step dependent!
@@ -842,27 +904,52 @@ class ReadEbas(ReadUngriddedBase):
                                                            'revision_date'])
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
+        
         return data_obj
     
+# =============================================================================
+#     def __contains__(self, key):
+#         '''Options
+#         
+#         Used 
+#         '''
+#         return True if key in ReadEbasOptions().keys() else False
+# =============================================================================
+    
+# =============================================================================
+#     def __dir__(self):
+#         
+#         _dir = super(ReadEbas, self).__dir__()
+#         _dir.extend(self.opts.keys())
+#         return _dir
+#     
+#     def __setattr__(self, key, val):
+#         if key in self.opts:
+#             self.opts.__setattr__(key, val)
+#         super(ReadEbas, self).__setattr__(key, val)
+#         
+#     def __getattr__(self, key):
+#         if key in self.opts:
+#             return self.opts[key]
+#         return super(ReadEbas, self).__getattr__(key)
+# =============================================================================
+    
 if __name__=="__main__":
+    
+    r = ReadEbas()
+    r.read()
+    
+    raise Exception
     import matplotlib.pyplot as plt
     plt.close('all')
     from pyaerocom import change_verbosity
     change_verbosity('critical')
 
     r = ReadEbas()
-    data = r.read(vars_to_retrieve=['absc550dryaer'],
-                  station_names=['Zep*'])
+    data_all = r.read('scatc550aer', last_file=10)
     
-    stats = data.to_station_data_all('absc550dryaer', keep_na=True)
+    r.REMOVE_INVALID_FLAGS=True
     
-    for i, stat in enumerate(stats):
-        try:
-            data = stat.absc550dryaer
-            if np.isnan(data).sum() == len(data):
-                raise ValueError('All values are NaN')
-            data.plot()
-        except Exception as e:
-            print(repr(e))
+    data_clean = r.read('scatc550aer', last_file=10)
     
     
