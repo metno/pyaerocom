@@ -726,6 +726,7 @@ class ReadEbas(ReadUngriddedBase):
             raise EbasFileError('All data columns of specified input variables '
                                 'are NaN in {}'.format(filename))
         data_out['dtime'] = file.time_stamps
+        
         # compute additional variables (if applicable)
         for var in vars_to_compute:
             data_out.var_info[var] = self.loaded_ebas_vars[var]
