@@ -331,9 +331,9 @@ class ReadEarlinet(ReadUngriddedBase):
                 for var_idx, var in enumerate(station_data.contains_vars):
                     val = station_data[var]
                     if isinstance(val, VerticalProfile):
-                        add = len(val)
                         altitude = val.altitude
                         data = val.data
+                        add = len(data)
                     else:
                         add = 1
                         altitude = np.nan
@@ -369,9 +369,11 @@ class ReadEarlinet(ReadUngriddedBase):
                     if not var in data_obj.var_idx:
                         data_obj.var_idx[var] = var_idx
                     idx += add
-            except:
+            except Exception as e:
                 self.read_failed.append(_file)
-                self.logger.exception('Failed to read file {}'.format(os.path.basename(_file)))
+                self.logger.exception('Failed to read file {} (ERR: {})'
+                                      .format(os.path.basename(_file),
+                                              repr(e)))
                 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]

@@ -3,10 +3,10 @@
 """Collection of station data classes
 """
 import numpy as np
-from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
+from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 
-class VerticalProfile(BrowseDict):
-    """Dict-like object for single variable profile data
+class VerticalProfile(object):
+    """Object for single variable profile data
     
     .. seealso::
         
@@ -32,6 +32,10 @@ class VerticalProfile(BrowseDict):
         
         self.update(**location_info)
       
+    def update(self, **kwargs):
+        for k, v in kwargs.items():
+            self.__dict__[k] = v
+            
     @property
     def data(self):
         """Array containing data values corresponding to data"""
