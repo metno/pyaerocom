@@ -467,7 +467,6 @@ class UngriddedData(object):
         stat_data['PI'] = val['PI']
         stat_data['dataset_name'] = val['dataset_name']
         stat_data['ts_type_src'] = val['ts_type']
-        
         stat_data['ts_type'] = val['ts_type']
             
         stat_data['var_info'] = {}
@@ -495,13 +494,17 @@ class UngriddedData(object):
         dtime = dtime[overlap]
         stat_data['dtime'] = dtime
         for var in vars_to_convert:
+            stat_data.var_info[var] = {}
             indices = self.meta_idx[meta_idx][var][overlap]
             data = self._data[indices, self._DATAINDEX]
-            if data_as_series:
+            if not data_as_series:
+                idx = pd.DatetimeIndex(dtime)
+            else:
                 data = pd.Series(data, dtime)
                 if not data.index.is_monotonic:
                     data = data.sort_index()
                 data = data[start:stop]
+                idx = data.index
                 if interp_nans:
                     coverage = 1 - data.isnull().sum() / len(data)
                     if coverage < min_coverage_interp:
@@ -522,10 +525,18 @@ class UngriddedData(object):
             stat_data[var] = data
             try:
                 stat_data.var_info[var]['unit'] = val['var_info'][var]['unit']
-            except Exception as e:
+            except:
                 logger.warning('Unit for variable {} is not available'.format(var))
             if 'var_info' in val and var in val['var_info']:
                 stat_data['var_info'][var] = val['var_info'][var]
+            
+            if len(idx) == len(idx.unique()):
+                stat_data.var_info[var]['overlap'] = False  
+            else:
+                stat_data.var_info[var]['overlap'] = True
+        # there is overlapping data
+        
+        
         return stat_data
     
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
