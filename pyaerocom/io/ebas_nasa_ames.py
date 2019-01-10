@@ -292,28 +292,29 @@ class EbasFlagCol(object):
     def decode(self):
         """Decode raw flag column"""
         flags = np.zeros((len(self.raw_data), 3)).astype(int)
-        mask = self.raw_data.astype(bool)
+        mask = self.raw_data.astype(bool) # rmooves all points that are 0, i.e. that contain no flag (valid measurements)
         valid = np.ones_like(self.raw_data).astype(bool)
-        not_ok = self.raw_data[mask]
+        not_ok = self.raw_data[mask] 
         if len(not_ok) > 0:
-            decoded = []
-            invalid = []
+            _decoded = []
+            _valid = []
             for flag in not_ok:
                 item = "{:.9f}".format(flag).split(".")[1]
                 vals = [int(item[:3]), int(item[3:6]), int(item[6:9])]
                 _invalid = False
                 for val in vals:
-                    if val in self.FLAG_INFO.valid and not self.FLAG_INFO.valid: #is invalid
+                    if val == 100:
+                        _invalid = False
+                        break # since all other flags are irrelevant if 100 is flagged
+                    elif val in self.FLAG_INFO.valid and not self.FLAG_INFO.valid[val]: #is invalid
                         _invalid = True
-                        break
-                decoded.append(vals)
-                invalid.append(_invalid)
-        
-            try:
-                flags[mask] = np.asarray(decoded)
-                valid[mask] = invalid
-            except:
-                logger.exception('Failed to decode flag')
+                        
+                _decoded.append(vals)
+                _valid.append(not _invalid)
+            
+            flags[mask] = np.asarray(_decoded)
+            valid[mask] = _valid
+
         self._valid = valid
         self._decoded = flags
         
