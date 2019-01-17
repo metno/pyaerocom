@@ -19,7 +19,14 @@ from pyaerocom.colocateddata import ColocatedData
 
 
 class Colocator(object):
-    """Helper / factory class for performing colocation of data"""
+    """Helper / factory class for performing colocation of data
+    
+    Note
+    ----
+    
+    This class is not functional yet
+    
+    """
     SUPPORTED = (GriddedData, UngriddedData)
     
     def __init__(self, data_ref):
