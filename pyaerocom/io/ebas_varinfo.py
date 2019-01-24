@@ -139,12 +139,14 @@ class EbasVarInfo(BrowseDict):
     
     def to_dict(self):
         """Convert into dictionary"""
-        use_keys = ['var_name', 'component', 'matrix', 'instrument', 
-                    'statistics', 'requires']
+# =============================================================================
+#         use_keys = ['var_name', 'component', 'matrix', 'instrument', 
+#                     'statistics', 'requires']
+# =============================================================================
         d = {}
-        for k in use_keys:
-            if self[k] is not None:
-                d[k] = self[k]
+        for k, v in self.items():
+            if v is not None:
+                d[k] = v
         return d
     
     def make_sql_request(self, **constraints):
