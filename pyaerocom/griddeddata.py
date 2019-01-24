@@ -110,6 +110,7 @@ class GriddedData(object):
                              region         = None)
         
         
+        self.flags = od(unit_ok=True)
         #attribute used to store area weights (if applicable, see method
         #area_weights)
         self._area_weights = None
@@ -119,15 +120,17 @@ class GriddedData(object):
             if k in self.suppl_info:
                 self.suppl_info[k] = v
                 
-        if convert_unit_on_init:
-            try:
-                var = self.var_info
-                if var.has_unit and var.unit != self.unit:
-                    logger.info('Converting unit of data')
+        try:
+            var = self.var_info
+            if var.has_unit and var.unit != self.unit:
+                logger.info('Converting unit of data')
+                self.flags['unit_ok'] = False
+                if convert_unit_on_init:
                     self.convert_unit(var.unit)
-            except (VariableDefinitionError, MemoryError):
-                pass
-    
+                    self.flags['unit_ok'] = True
+        except (VariableDefinitionError, MemoryError, ValueError):
+            self.flags['unit_ok'] = False
+
     @property
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
