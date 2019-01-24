@@ -31,7 +31,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.04'
+    __baseversion__ = '0.05'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -407,12 +407,19 @@ class ReadUngriddedBase(abc.ABC):
         Parameters
         ----------
         data : dict-like
-            data object containing imported results
+            data object containing data vectors for variables that are required
+            for computation (cf. input param ``vars_to_compute``)
+        vars_to_compute : list
+            list of variable names that are supposed to be computed. 
+            Variables that are required for the computation of the variables
+            need to be specified in :attr:`AUX_VARS` and need to be 
+            available as data vectors in the provided data dictionary (key is
+            the corresponding variable name of the required variable).
         
         Returns
         -------
         dict
-            updated data object
+            updated data object now containing also computed variables
         """
         for var in vars_to_compute:
             required = self.AUX_REQUIRES[var]
@@ -440,6 +447,38 @@ class ReadUngriddedBase(abc.ABC):
 #                                     .format(var, required))
 # =============================================================================
         #data.var_info[var] = dict(computed_from=required)
+        return data
+    
+    def remove_outliers(self, data, vars_to_retrieve, **valid_rng_vars):
+        """Remove outliers from data
+        
+        Parameters
+        ----------
+        data : dict-like
+            data object containing data vectors for variables that are required
+            for computation (cf. input param ``vars_to_compute``)
+        vars_to_retrieve : list
+            list of variable names for which outliers will be removed from 
+            data
+        **valid_rng_vars 
+            additional keyword args specifying variable name and corresponding
+            min / max interval (list or tuple) that specifies valid range 
+            for the variable. For each variable that is not explicitely defined
+            here, the default minimum / maximum value is used (accessed via
+            ``pyaerocom.const.VAR_PARAM[var_name]``)
+        """
+        for var in vars_to_retrieve:
+            if var in data:
+                if var in valid_rng_vars:
+                    rng = valid_rng_vars[var]
+                    low, high =  rng[0], rng[1]
+                else:
+                    var_info = const.VAR_PARAM[var]
+                    low, high = var_info['minimum'], var_info['maximum']
+                vals = data[var]
+                mask = np.logical_or(vals < low, vals > high)
+                vals[mask] = np.nan
+                data[var] = vals
         return data
     
     def find_in_file_list(self, pattern=None):
