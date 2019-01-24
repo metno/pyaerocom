@@ -73,7 +73,11 @@ class ReadEbasOptions(BrowseDict):
         If True, the flag columns in the NASA Ames files are read and decoded 
         (using :func:`EbasFlagCol.decode`) and the (up to 3 flags for each 
         measurement) are evaluated as valid / invalid using the information 
-        stored in against the 
+        in the flags CSV file
+    LOG_READ_STATS : bool
+        It True, the number of data points that is removed per station (
+        dependent on other constraints) is logged in the attribute 
+        _read_stats_log
     """
     
     def __init__(self):
@@ -85,6 +89,22 @@ class ReadEbasOptions(BrowseDict):
         self.WAVELENGTH_TOL_NM = 50
         
         self.REMOVE_INVALID_FLAGS = False
+        
+        self.LOG_READ_STATS = False
+        
+        self.MERGE_META = True
+        
+# =============================================================================
+# class _ReadEbasVarLog(BrowseDict):
+#     """Dict-like object for logging variable reading info"""
+#     def __init__(self, var_name):
+#         self.var_name = var_name
+#         self.num_meas_total = 0
+#         self.num_nan = 0
+#         self.num_valid = 0
+#         self.num_flag_invalid = 0
+#         self.num_flag_invalid_isnan = 0
+# =============================================================================
         
 class ReadEbas(ReadUngriddedBase):
     """Interface for reading EBAS data
@@ -130,9 +150,16 @@ class ReadEbas(ReadUngriddedBase):
                     'absc550dryaer'     :   ['absc550aer',
                                              'abscrh']}
     
+    # Specifies which metainformation is supposed to be migrated to computed
+    # variable
+    AUX_USE_META = {'scatc550dryaer'    :   'scatc550aer',
+                    'absc550dryaer'     :   'absc550aer'}
+    
     AUX_FUNS = {'scatc550dryaer'    :   compute_scatc550dryaer,
                 'absc550dryaer'     :   compute_absc550dryaer}
-    # list of all available resolution codes (extracted from SQL database)
+    
+    
+    # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
     #: List of variables that are provided by this dataset (will be extended 
@@ -156,8 +183,10 @@ class ReadEbas(ReadUngriddedBase):
         #: :class:`EbasVarInfo` object, is updated in read_file
         self.loaded_ebas_vars = {}
         
-        self.logtofile = False
         self._filelog = None
+        
+        self.files_failed = []
+        self._read_stats_log = BrowseDict()
         
         #: SQL database interface class used to retrieve file paths for vars
         self.file_index = EbasFileIndex()
@@ -220,6 +249,16 @@ class ReadEbas(ReadUngriddedBase):
     def WAVELENGTH_TOL_NM(self):
         """Wavelength tolerance in nm for columns"""
         return self.opts.WAVELENGTH_TOL_NM
+    
+    @property
+    def LOG_READ_STATS(self):
+        """Option: if True, then reading info will be logged during read"""
+        return self.opts.LOG_READ_STATS
+    
+    @property
+    def MERGE_META(self):
+        """Option: if True, then common meta-data blocks are merged on reading"""
+        return self.opts.MERGE_META
     
     @property
     def REMOVE_INVALID_FLAGS(self):
@@ -363,6 +402,7 @@ class ReadEbas(ReadUngriddedBase):
             
             filenames = db.get_file_names(req)
             self.sql_requests.append(req)
+            
             paths = []
             for file in filenames:
                 paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
@@ -530,11 +570,7 @@ class ReadEbas(ReadUngriddedBase):
 
     def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
                   _vars_to_compute=None):
-        """Read Aeronet file containing results from v2 inversion algorithm
-
-        Todo
-        ----
-        - Introduce unit check
+        """Read EBAS NASA Ames file
         
         Parameters
         ----------
@@ -570,6 +606,9 @@ class ReadEbas(ReadUngriddedBase):
                         self.loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
             
         file = EbasNasaAmesFile(filename)
+        meta = file.meta
+        name = meta['station_name']
+        
         var_cols = {}
         for var in vars_to_read:
             ebas_var_info = self.loaded_ebas_vars[var]
@@ -645,8 +684,6 @@ class ReadEbas(ReadUngriddedBase):
         #data_out['filename'] = filename
         data_out.dataset_name = self.DATASET_NAME
         
-        
-        meta = file.meta
         # write meta information
         tres_code = meta['resolution_code']
         try:
@@ -669,7 +706,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out['stat_lat'] = float(meta['station_latitude'])
         
         data_out['stat_alt'] = stat_alt
-        name = meta['station_name']
+        
         if name in self.MERGE_STATIONS:
             data_out['station_name'] = self.MERGE_STATIONS[name]
             data_out['station_name_orig'] = name
@@ -682,26 +719,31 @@ class ReadEbas(ReadUngriddedBase):
         
         # NOTE: may be also defined per column in attr. var_defs
         data_out['matrix'] = meta['matrix']
-    
+        data_out['datalevel'] = meta['data_level']
         data_out['revision_date'] = file['revision_date']
-
         
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
-        contains_vars = []
+        data_out['contains_vars'] = []
         #totnum = file.data.shape[0]
         for var, colnums  in var_cols.items():
+            
             if len(colnums) != 1:
                 raise Exception('Something went wrong...please debug')
             colnum = colnums[0]
             _col = file.var_defs[colnum]
             data = file.data[:, colnum]
             
+            notnan_invalid, invalid = None, None
             if self.REMOVE_INVALID_FLAGS:
+                # get rows that are marked as invalid
                 invalid = ~file.flag_col_info[_col.flag_col].valid
-                data[invalid] = np.nan
                 
+                # now get all invalid rows where data is not already set NaN
+                notnan_invalid = ~np.isnan(data) * invalid
+                
+                data[notnan_invalid] = np.nan
                 
             data_out[var] = data
             
@@ -719,25 +761,50 @@ class ReadEbas(ReadUngriddedBase):
                 _col['statistics'] = stats
                 
             data_out['var_info'][var] = _col
-            contains_vars.append(var)
+            data_out['contains_vars'].append(var)
             
+            if self.LOG_READ_STATS:
+                info = data_out['var_info'][var]
+                info['numtot'] = len(data)
+                info['numnans'] = np.isnan(data).sum()
+            
+                if notnan_invalid is not None:
+                    info['num_notnan_flag_invalid'] = notnan_invalid.sum()
+                    info['num_flag_invalid'] = invalid.sum()
         
-        if len(contains_vars) == 0:
+        if len(data_out['contains_vars']) == 0:
             raise EbasFileError('All data columns of specified input variables '
                                 'are NaN in {}'.format(filename))
         data_out['dtime'] = file.time_stamps
         
         # compute additional variables (if applicable)
         for var in vars_to_compute:
+            if not var in self.loaded_ebas_vars:
+                self.loaded_ebas_vars[var] = EbasVarInfo(var)
             data_out.var_info[var] = self.loaded_ebas_vars[var]
             
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
+
+        for var in vars_to_compute:
+            if var in self.AUX_USE_META and var in data_out:
+                to_dict = data_out['var_info'][var]
+                from_var = self.AUX_USE_META[var]
+                if from_var in data_out:
+                    from_dict = data_out['var_info'][from_var]
+                    for k, v in from_dict.items():
+                        if not k in to_dict or to_dict[k] is None:
+                            to_dict[k] = v
+                    if self.LOG_READ_STATS:
+                        # determines the additional number of points that were set 
+                        # to NaN while computing the variable. If
+                        to_dict['num_nan_diff'] = (np.isnan(data_out[var]).sum() 
+                                                   - np.isnan(data_out[from_var]).sum())
         
-        contains_vars.extend(vars_to_compute)
-        data_out['contains_vars'] = contains_vars
+        
         
         return data_out
     
+        
     def read(self, vars_to_retrieve=None, first_file=None, 
              last_file=None, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
@@ -766,7 +833,6 @@ class ReadEbas(ReadUngriddedBase):
         UngriddedData
             data object
         """    
-        
         for k in list(constraints):
             if k in self.opts:
                 self.opts[k] = constraints.pop(k)
@@ -786,7 +852,6 @@ class ReadEbas(ReadUngriddedBase):
         
         files = files[first_file:last_file]
         files_contain = self.files_contain[first_file:last_file]
-        self.read_failed = []
             
         data_obj = UngriddedData()
 
@@ -806,7 +871,7 @@ class ReadEbas(ReadUngriddedBase):
         # class ReadUngriddedBase (module readungriddedbase.py)
         #vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
-        self.files_failed = []
+        
         
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
@@ -818,6 +883,7 @@ class ReadEbas(ReadUngriddedBase):
             try:
                 station_data = self.read_file(_file, 
                                               vars_to_retrieve=files_contain[i])
+                
             except (NotInFileError, EbasFileError) as e:
                 self.files_failed.append(_file)
                 self.logger.warning('Failed to read file {}. '
@@ -854,6 +920,9 @@ class ReadEbas(ReadUngriddedBase):
             append_vars = [x for x in np.intersect1d(vars_to_retrieve, 
                                           station_data.contains_vars)]
             
+            for var in vars_to_retrieve:
+                var_info = station_data['var_info'][var]
+                metadata[meta_key]['var_info'][var] = var_info.to_dict()
             totnum = num_times * len(append_vars)
             
             #check if size of data object needs to be extended
@@ -862,8 +931,10 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj.add_chunk(totnum)
                 
             for var_count, var in enumerate(append_vars):
-                
+
                 values = station_data[var]
+
+
                 start = idx + var_count * num_times
                 stop = start + num_times
                 
@@ -890,9 +961,11 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
                 meta_idx[meta_key][var] = np.arange(start, stop)
-                
-                var_info = station_data['var_info'][var]
-                metadata[meta_key]['var_info'][var] = var_info.to_dict()
+                #
+# =============================================================================
+#                 var_info = station_data['var_info'][var]
+#                 metadata[meta_key]['var_info'][var] = var_info.to_dict()
+# =============================================================================
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
             metadata[meta_key]['variables'] = append_vars
@@ -901,8 +974,9 @@ class ReadEbas(ReadUngriddedBase):
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 'PI',
-                                                           'revision_date'])
+        if self.MERGE_META:
+            data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 'PI',
+                                                               'revision_date'])
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
@@ -937,20 +1011,12 @@ class ReadEbas(ReadUngriddedBase):
     
 if __name__=="__main__":
     
-    r = ReadEbas()
-    r.read()
-    
-    raise Exception
-    import matplotlib.pyplot as plt
-    plt.close('all')
     from pyaerocom import change_verbosity
     change_verbosity('critical')
 
     r = ReadEbas()
-    data_all = r.read('scatc550aer', last_file=10)
-    
-    r.REMOVE_INVALID_FLAGS=True
-    
-    data_clean = r.read('scatc550aer', last_file=10)
+    data = r.read('scatc550dryaer', station_names=['Melpitz'],
+                            REMOVE_INVALID_FLAGS=True, LOG_READ_STATS=True,
+                            MERGE_META=False)
     
     
