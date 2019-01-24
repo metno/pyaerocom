@@ -416,14 +416,29 @@ class ReadUngriddedBase(abc.ABC):
         """
         for var in vars_to_compute:
             required = self.AUX_REQUIRES[var]
-            if all([req_var in data for req_var in required]):
+            missing = []
+            for req in required:
+                if not req in data:
+                    missing.append(req)
+                    
+            if len(missing) == 0:
                 data[var] = self.AUX_FUNS[var](data)
+                try:
+                    data['contains_vars'].append(var)
+                except KeyError:
+                    data['contains_vars'] = [var]
             else:
-                data[var] = np.ones(len(data['dtime']))*np.nan
-                self.logger.warning("Could not compute variable {}. One or "
-                                    "more of the required variables {} is "
-                                    "missing in data. Filling with NaNs"
-                                    .format(var, required))
+                data['var_info'][var]['missing'] = {'num' : len(data.dtime),
+                                                    'vars': missing}
+                
+# =============================================================================
+#             else:
+#                 data[var] = np.ones(len(data['dtime']))*np.nan
+#                 self.logger.warning("Could not compute variable {}. One or "
+#                                     "more of the required variables {} is "
+#                                     "missing in data. Filling with NaNs"
+#                                     .format(var, required))
+# =============================================================================
         #data.var_info[var] = dict(computed_from=required)
         return data
     
