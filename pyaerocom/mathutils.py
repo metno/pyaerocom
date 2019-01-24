@@ -527,7 +527,7 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     rh_colname : str
         column name of RH data
     rh_max_percent : int
-        maximum relative humitdity
+        maximum relative humidity
         
     Returns
     -------
@@ -535,12 +535,14 @@ def _compute_dry_helper(data, data_colname, rh_colname,
         modified data dictionary with new dry data column 
     """
     vals = np.array(data[data_colname], copy=True)
+
     rh = data[rh_colname]
     
-    vals[rh>rh_max_percent] = np.nan
-    vals[np.isnan(rh)] =np.nan
+    high_rh = rh > rh_max_percent
     
-    #data[var_name] = vals
+    vals[high_rh] = np.nan
+    vals[np.isnan(rh)] = np.nan
+    
     return vals
     
 def exponent(num):
