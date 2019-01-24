@@ -14,6 +14,7 @@ from ReadUngriddedBase class. The code is not functional at the moment.
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 
 class ReadAirBase(ReadUngriddedBase):
+    """Reading class for AirBase data"""
     DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AIRBASE/'
     DATASET_NAME = 'AirBase'
     _FILEMASK = '*.nc'
