@@ -275,70 +275,72 @@ class UngriddedData(object):
         raise NotImplementedError
         
     # TODO: review docstring        
-    def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
-                      freq=None):
-        """Convert this object into individual pandas.Series objects
-
-        Parameters
-        ----------
-        station_name : :obj:`tuple` or :obj:`str:`, optional
-            station_name or list of station_names to return
-        start_date, end_date : :obj:`str:`, optional
-            date strings with start and end date to return
-        freq : obj:`str:`, optional
-            frequency to resample to using the pandas resample method
-            us the offset aliases as noted in
-            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
-
-        Returns
-        -------
-        list or dictionary
-            station_names is a string: dictionary with station data
-            station_names is list or None: list of dictionaries with station data
-
-        Example
-        -------
-        >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
-        >>> obj.read()
-        >>> pdseries = obj.to_timeseries()
-        >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
-        """
-        from warnings import warn
-        msg = ('This method does currently not work due to recent API changes, '
-               'and is therefore a wrapper for method to_station_data or '
-               'to_station_data_all dependent on whether a station name is '
-               'provided or not.')
-        warn(DeprecationWarning(msg))
-        if station_name is None:
-            return self.to_station_data_all(start=start_date, stop=end_date,
-                                            freq=freq)
-        if isinstance(station_name, str):
-            station_name = [station_name]
-        if isinstance(station_name, list):
-            indices = []
-            for meta_idx, info in self.metadata.items():
-                if info['station_name'] in station_name:
-                    indices.append(meta_idx)
-            if len(indices) == 0:
-                raise MetaDataError('No such station(s): {}'.format(station_name))
-            elif len(indices) == 1:
-                # return single dictionary, like before 
-                # TODO: maybe change this after clarification
-                return self.to_station_data(start=start_date, stop=end_date,
-                                            freq=freq)
-            else:
-                out_data = []
-                for meta_idx in indices:
-                    try:
-                        out_data.append(self.to_station_data(start=start_date, 
-                                                             stop=end_date,
-                                                             freq=freq))
-                    except (VarNotAvailableError, TimeMatchError, 
-                            DataCoverageError) as e:
-                        logger.warning('Failed to convert to StationData '
-                               'Error: {}'.format(repr(e)))
-                return out_data
+# =============================================================================
+#     def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
+#                       freq=None):
+#         """Convert this object into individual pandas.Series objects
+# 
+#         Parameters
+#         ----------
+#         station_name : :obj:`tuple` or :obj:`str:`, optional
+#             station_name or list of station_names to return
+#         start_date, end_date : :obj:`str:`, optional
+#             date strings with start and end date to return
+#         freq : obj:`str:`, optional
+#             frequency to resample to using the pandas resample method
+#             us the offset aliases as noted in
+#             http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+# 
+#         Returns
+#         -------
+#         list or dictionary
+#             station_names is a string: dictionary with station data
+#             station_names is list or None: list of dictionaries with station data
+# 
+#         Example
+#         -------
+#         >>> import pyaerocom.io.readobsdata
+#         >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
+#         >>> obj.read()
+#         >>> pdseries = obj.to_timeseries()
+#         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
+#         """
+#         from warnings import warn
+#         msg = ('This method does currently not work due to recent API changes, '
+#                'and is therefore a wrapper for method to_station_data or '
+#                'to_station_data_all dependent on whether a station name is '
+#                'provided or not.')
+#         warn(DeprecationWarning(msg))
+#         if station_name is None:
+#             return self.to_station_data_all(start=start_date, stop=end_date,
+#                                             freq=freq)
+#         if isinstance(station_name, str):
+#             station_name = [station_name]
+#         if isinstance(station_name, list):
+#             indices = []
+#             for meta_idx, info in self.metadata.items():
+#                 if info['station_name'] in station_name:
+#                     indices.append(meta_idx)
+#             if len(indices) == 0:
+#                 raise MetaDataError('No such station(s): {}'.format(station_name))
+#             elif len(indices) == 1:
+#                 # return single dictionary, like before 
+#                 # TODO: maybe change this after clarification
+#                 return self.to_station_data(start=start_date, stop=end_date,
+#                                             freq=freq)
+#             else:
+#                 out_data = []
+#                 for meta_idx in indices:
+#                     try:
+#                         out_data.append(self.to_station_data(start=start_date, 
+#                                                              stop=end_date,
+#                                                              freq=freq))
+#                     except (VarNotAvailableError, TimeMatchError, 
+#                             DataCoverageError) as e:
+#                         logger.warning('Failed to convert to StationData '
+#                                'Error: {}'.format(repr(e)))
+#                 return out_data
+# =============================================================================
                     
     
     def _find_station_indices(self, station_pattern):
@@ -1394,6 +1396,97 @@ class UngriddedData(object):
                 v.append(meta_item[k])
         return meta
     
+    def to_timeseries(self, station, var_name, start=None, stop=None,
+                      ts_type=None, **kwargs):
+        """Get variable timeseries data for a certain station
+        
+        Parameters
+        ----------
+        station : :obj:`str` or :obj:`int`
+            station name or index of station in metadata dict
+        var_name : str
+            name of variable to be retrieved
+        start 
+            start time (optional)
+        stop 
+            stop time (optional). If start time is provided and stop time not, 
+            then only the corresponding year inferred from start time will be 
+            considered
+        ts_type : :obj:`str`, optional
+            temporal resolution
+        **kwargs
+            Additional keyword args passed to method :func:`to_station_data`
+            
+        Returns
+        -------
+        pandas.Series
+            time series data
+        """
+        stats = self.to_station_data(station, var_name, 
+                                     data_as_series=True, **kwargs)
+
+        # in case single instance of StationData was returned
+        if isinstance(stats, pya.StationData):
+            return stats[var_name]
+        if len(stats) == 0:
+            raise pya.exceptions.VarNotAvailableError('No data available for {} ({})'
+                                                      .format(station, 
+                                                              var_name))
+        
+        raise NotImplementedError
+            
+        if len(index) == 0:
+            raise pya.exceptions.VarNotAvailableError('No data available for station {} and variable {}'
+                             .format(station_name, var_name))
+        # Read and merge meta information
+        for stat in stats:
+            if 'overlap_removed' in stat:
+                vardata.data_overlap = True
+            if 'var_info' in stat and var_name in stat['var_info']:
+                var_info =  stat['var_info'][var_name]
+            else:
+                var_info = {}
+            for k, v in keymap.items():
+                try: # longitude, latitude and altitude are @property decorators in StationData
+                    vardata = _write(vardata, v, stat[k])
+                except:   
+                    if k in var_info:
+                        vardata = _write(vardata, v, var_info[k])
+        # fill up missing keys
+        for v in keymap.values():
+            if not v in vardata:
+                vardata[v] = None
+                
+        meta_keys = list(keymap.values())
+        for k, v in vardata.items():
+            if k in meta_keys and isinstance(v, (list, tuple)):
+                if k == 'PI':
+                    vardata[k] = '; '.join(list(dict.fromkeys(vardata[k])))
+                else:    
+                    vardata[k] = ', '.join(list(dict.fromkeys(vardata[k])))
+        
+        if ',' in vardata.lat: # merged from multiple stations with different lat coordinates
+            lats = [float(x) for x in vardata.lat.split(',')]
+            lat0 = lats[0]
+            for lat in lats[1:]:
+                if (abs(lat0-lat) > LONLATTOL):
+                    raise pya.exceptions.CoordinateError('Merged station latitudes '
+                                                         'are not within tolerance '
+                                                         'range {}'.format(LONLATTOL))
+            vardata.lat = '{:.3f}'.format(lat0)
+        if ',' in vardata.lon: # merged from multiple stations with different lon coordinates
+            lons = [float(x) for x in vardata.lon.split(',')]
+            lon0 = lons[0]
+            for lon in lons[1:]:
+                if (abs(lon0-lon) > LONLATTOL):
+                    raise pya.exceptions.CoordinateError('Merged station longitudes '
+                                                         'are not within tolerance '
+                                                         'range {}'.format(LONLATTOL))
+            vardata.lon = '{:.3f}'.format(lon0)
+        
+        # create pandas Series of raw data    
+        s = pd.Series(values, index)
+        
     def get_time_series(self, station, var_name, start=None, stop=None, 
                         ts_type=None, **kwargs):
         """Get time series of station variable
@@ -1420,6 +1513,8 @@ class UngriddedData(object):
         pandas.Series
             time series data
         """
+        logger.warn(DeprecationWarning('Outdated method, please use to_timeseries'))
+        
         data = self.to_station_data(station, var_name, 
                                      start, stop, freq=ts_type,
                                      **kwargs) 
