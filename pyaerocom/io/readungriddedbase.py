@@ -23,7 +23,7 @@ class ReadUngriddedBase(abc.ABC):
         variables are required to perform the computation and the latter 
         specifies functions used to perform the computations of the auxiliary 
         variables. 
-        See, for instance, the class :class:`ReadAeronetSunV2`, which includes 
+        See, for instance, the class :class:`ReadAeronetSunV3`, which includes 
         the computation of the AOD at 550nm and the Angstrom coefficient 
         (in 440-870 nm range) from AODs measured at other wavelengths.
     """
@@ -168,8 +168,11 @@ class ReadUngriddedBase(abc.ABC):
         
         Returns
         -------
-        :obj:`dict` or :obj:`TimeSeriesFileData` or :obj:`StationData`
-            imported data
+        :obj:`dict` or :obj:`StationData`, or other...
+            imported data in a suitable format that can be handled by 
+            :func:`read` which is supposed to append the loaded results from 
+            this method (which reads one datafile) to an instance of 
+            :class:`UngriddedData` for all files.
         """
         pass
     
@@ -196,7 +199,7 @@ class ReadUngriddedBase(abc.ABC):
         Returns
         -------
         UngriddedData
-            data object
+            instance of ungridded data object containing data from all files.
         """
         pass
 
