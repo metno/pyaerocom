@@ -205,7 +205,7 @@ class ReadEbas(ReadUngriddedBase):
         #: this is filled in method get_file_list and specifies variables 
         #: to be read from each file
         self.files_contain = []
-      
+    
     @property
     def filelog(self):
         """File logger"""
@@ -821,7 +821,7 @@ class ReadEbas(ReadUngriddedBase):
             index of last file in list to read. If None, the very last file 
             in the list is used
         **constraints
-            further EBAS request constraints deviating from default (default 
+            further reading constraints deviating from default (default 
             info for each AEROCOM variable can be found in `ebas_config.ini <
             https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
             ebas_config.ini>`__). For details on possible input parameters 
@@ -920,7 +920,7 @@ class ReadEbas(ReadUngriddedBase):
             append_vars = [x for x in np.intersect1d(vars_to_retrieve, 
                                           station_data.contains_vars)]
             
-            for var in vars_to_retrieve:
+            for var in append_vars:
                 var_info = station_data['var_info'][var]
                 metadata[meta_key]['var_info'][var] = var_info.to_dict()
             totnum = num_times * len(append_vars)
@@ -1015,6 +1015,8 @@ if __name__=="__main__":
     change_verbosity('critical')
 
     r = ReadEbas()
+    absc = r.read(['absc550aer', 'scatc550dryaer'])
+    
     data = r.read('scatc550dryaer', station_names=['Melpitz'],
                             REMOVE_INVALID_FLAGS=True, LOG_READ_STATS=True,
                             MERGE_META=False)
