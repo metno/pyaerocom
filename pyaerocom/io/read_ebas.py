@@ -92,7 +92,7 @@ class ReadEbasOptions(BrowseDict):
         
         self.LOG_READ_STATS = False
         
-        self.MERGE_META = True
+        self.MERGE_META = False
         
 # =============================================================================
 # class _ReadEbasVarLog(BrowseDict):
@@ -977,7 +977,8 @@ class ReadEbas(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         if self.MERGE_META:
-            data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 'PI'])
+            data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 
+                                                               'PI'])
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
