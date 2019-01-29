@@ -833,6 +833,10 @@ class ReadEbas(ReadUngriddedBase):
         UngriddedData
             data object
         """    
+        data_obj = UngriddedData()
+        data_obj._add_to_filter_history(constraints)
+        #data_obj.filter_hist.update(constraints)
+        
         for k in list(constraints):
             if k in self.opts:
                 self.opts[k] = constraints.pop(k)
@@ -852,8 +856,6 @@ class ReadEbas(ReadUngriddedBase):
         
         files = files[first_file:last_file]
         files_contain = self.files_contain[first_file:last_file]
-            
-        data_obj = UngriddedData()
 
         meta_key = 0.0
         idx = 0
@@ -975,8 +977,7 @@ class ReadEbas(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         if self.MERGE_META:
-            data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 'PI',
-                                                               'revision_date'])
+            data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 'PI'])
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
