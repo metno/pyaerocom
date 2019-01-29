@@ -13,48 +13,9 @@ from pyaerocom.helpers import (to_pandas_timestamp,
                                TS_TYPE_TO_PANDAS_FREQ,
                                TS_TYPE_TO_NUMPY_FREQ,
                                to_datestring_YYYYMMDD)
+
 from pyaerocom.filter import Filter
-from pyaerocom import GriddedData, UngriddedData
 from pyaerocom.colocateddata import ColocatedData
-
-
-class Colocator(object):
-    """Helper / factory class for performing colocation of data
-    
-    Note
-    ----
-    
-    This class is not functional yet
-    
-    """
-    SUPPORTED = (GriddedData, UngriddedData)
-    
-    def __init__(self, data_ref):
-        raise NotImplementedError('Coming soon...')
-        if not isinstance(data_ref, self.SUPPORTED):
-            raise ValueError('Cannot instantiate colocation class. Need '
-                             'either of the supported data types {} as '
-                             'reference dataset'.format(self.SUPPORTED))
-        self.data_ref = data_ref
-        
-    def run(self, data, ts_type=None, start=None, stop=None, filter_name=None,
-            **add_args):
-        if not isinstance(data, self.SUPPORTED):
-            raise ValueError('Cannot instantiate colocation class. Need '
-                             'either of the supported data types {} as '
-                             'reference dataset'.format(self.SUPPORTED))
-        if isinstance(self.data_ref, UngriddedData):
-            if isinstance(data, GriddedData):
-                return colocate_gridded_ungridded_2D(data, self.data_ref,
-                                                      ts_type=ts_type,
-                                                      start=start,
-                                                      stop=stop,
-                                                      filter_name=filter_name,
-                                                      **add_args)
-        elif isinstance(self.data_ref, GriddedData):
-            if isinstance(data, GriddedData):
-                pass
-        raise NotImplementedError
         
 def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                               start=None, stop=None, filter_name=None, 
@@ -441,6 +402,46 @@ def colocate_gridded_ungridded_2D(*args, **kwargs):
                              '(still works)'))
     return colocate_gridded_ungridded(*args, **kwargs)
 
+# =============================================================================
+# class Colocator(object):
+#     """Helper / factory class for performing colocation of data
+#     
+#     Note
+#     ----
+#     
+#     This class is not functional yet
+#     
+#     """
+#     SUPPORTED = (GriddedData, UngriddedData)
+#     
+#     def __init__(self, data_ref):
+#         raise NotImplementedError('Coming soon...')
+#         if not isinstance(data_ref, self.SUPPORTED):
+#             raise ValueError('Cannot instantiate colocation class. Need '
+#                              'either of the supported data types {} as '
+#                              'reference dataset'.format(self.SUPPORTED))
+#         self.data_ref = data_ref
+#         
+#     def run(self, data, ts_type=None, start=None, stop=None, filter_name=None,
+#             **add_args):
+#         if not isinstance(data, self.SUPPORTED):
+#             raise ValueError('Cannot instantiate colocation class. Need '
+#                              'either of the supported data types {} as '
+#                              'reference dataset'.format(self.SUPPORTED))
+#         if isinstance(self.data_ref, UngriddedData):
+#             if isinstance(data, GriddedData):
+#                 return colocate_gridded_ungridded_2D(data, self.data_ref,
+#                                                       ts_type=ts_type,
+#                                                       start=start,
+#                                                       stop=stop,
+#                                                       filter_name=filter_name,
+#                                                       **add_args)
+#         elif isinstance(self.data_ref, GriddedData):
+#             if isinstance(data, GriddedData):
+#                 pass
+#         raise NotImplementedError
+# =============================================================================
+    
 if __name__=='__main__':
     import pyaerocom as pya
     
