@@ -47,7 +47,7 @@ class ReadUngriddedBase(abc.ABC):
                 "Data directory: {}\n"
                 "Supported variables: {}\n"
                 "Last revision: {}"
-                .format(self.DATASET_NAME, self.DATASET_PATH,
+                .format(self.DATA_ID, self.DATASET_PATH,
                         self.PROVIDES_VARIABLES, self.data_revision))
     
     @abc.abstractproperty
@@ -105,7 +105,7 @@ class ReadUngriddedBase(abc.ABC):
         pass
     
     @abc.abstractproperty
-    def DATASET_NAME(self):
+    def DATA_ID(self):
         """Name of dataset (OBS_ID)
         
         Note
@@ -125,7 +125,7 @@ class ReadUngriddedBase(abc.ABC):
         ----
         
         - best practice to specify in header of class definition
-        - needless to mention that :attr:`DATASET_NAME` needs to be in this list
+        - needless to mention that :attr:`DATA_ID` needs to be in this list
         """
         pass
     
@@ -148,11 +148,11 @@ class ReadUngriddedBase(abc.ABC):
     def DATASET_PATH(self):
         """Path to datafiles of specified dataset 
         
-        Is retrieved automatically based on network ID (:attr:`DATASET_NAME`)
+        Is retrieved automatically based on network ID (:attr:`DATA_ID`)
         using :func:`get_obsnetwork_dir` (which uses the information in 
         ``pyaerocom.const``).
         """
-        return get_obsnetwork_dir(self.DATASET_NAME)
+        return get_obsnetwork_dir(self.DATA_ID)
         
     @abc.abstractmethod
     def read_file(self, filename, vars_to_retrieve=None):
@@ -223,7 +223,7 @@ class ReadUngriddedBase(abc.ABC):
             if not dataset_to_read in self.SUPPORTED_DATASETS:
                 raise AttributeError("Dataset {} not supported by this "
                                      "interface".format(dataset_to_read))
-            self.DATASET_NAME = dataset_to_read
+            self.DATA_ID = dataset_to_read
     
     @property
     def REVISION_FILE(self):
@@ -241,7 +241,7 @@ class ReadUngriddedBase(abc.ABC):
     
     @property
     def dataset_to_read(self):
-        return self.DATASET_NAME
+        return self.DATA_ID
     
     @property
     def data_revision(self):
@@ -592,14 +592,14 @@ if __name__=="__main__":
 
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
         _FILEMASK = ".txt"
-        DATASET_NAME = "Blaaa"
+        DATA_ID = "Blaaa"
         __version__ = "0.01"
         PROVIDES_VARIABLES = ["od550aer"]
         REVISION_FILE = const.REVISION_FILE
         
         def __init__(self, dataset_to_read=None):
             if dataset_to_read is not None:
-                self.DATASET_NAME = dataset_to_read
+                self.DATA_ID = dataset_to_read
         
         def read(self):
             raise NotImplementedError
