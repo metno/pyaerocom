@@ -45,10 +45,6 @@ Colocated data
 Other data classes
 ^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.station
-   :members:
-   :undoc-members:
-   
 .. automodule:: pyaerocom.stationdata
    :members:
    :undoc-members:
