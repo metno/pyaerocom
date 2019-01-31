@@ -54,7 +54,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
     _FILEMASK = '*.all'
     
     #: version log of this class (for caching)
-    __version__ = "0.02_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.03_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_INV_V3L2_DAILY_NAME

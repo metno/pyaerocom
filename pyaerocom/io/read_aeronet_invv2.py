@@ -54,7 +54,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
     _FILEMASK = '*.dubovikday'
     
     #: version log of this class (for caching)
-    __version__ = "0.07_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.08_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_INV_V2L2_DAILY_NAME

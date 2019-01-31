@@ -62,7 +62,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
     _FILEMASK = '*.lev20'
     
     #: version log of this class (for caching)
-    __version__ = "0.15_" + ReadAeronetBase.__baseversion__
+    __version__ = "0.16_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_SUN_V2L2_AOD_DAILY_NAME
