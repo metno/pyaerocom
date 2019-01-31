@@ -238,18 +238,23 @@ class ReadUngridded(object):
         cache_hit_flag = False
         if not self.ignore_cache:
             # initate cache handler
-            cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
-            if cache.check_and_load():
-                all_avail = True
-                for var in vars_available:
-                    if not var in cache.loaded_data:
-                        all_avail = False
-                        break
-                if all_avail:
-                    print_log.info('Found Cache match for {}'
-                                   .format(dataset_to_read))
-                    cache_hit_flag = True
-                    data = cache.loaded_data
+            try:
+                cache = CacheHandlerUngridded(reader, vars_available, **kwargs)
+                if cache.check_and_load():
+                    all_avail = True
+                    for var in vars_available:
+                        if not var in cache.loaded_data:
+                            all_avail = False
+                            break
+                    if all_avail:
+                        print_log.info('Found Cache match for {}'
+                                       .format(dataset_to_read))
+                        cache_hit_flag = True
+                        data = cache.loaded_data
+            except:
+                self.logger.exception('Fatal: compatibility error between old '
+                                      'cache file and current version of code ')
+                cache_hit_flag = False
             
         if not cache_hit_flag:
             print_log.info('No Cache match found for {} in {}. '
@@ -327,13 +332,17 @@ class ReadUngridded(object):
     
 if __name__=="__main__":
 
-    reader = ReadUngridded(ignore_cache=True)
+    reader = ReadUngridded('AeronetSunV3Lev2.daily', ignore_cache=True)
     
-    data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-                        const.AERONET_SUN_V3L2_AOD_DAILY_NAME], 
-                    vars_to_retrieve='od550aer', 
-                    last_file=10)
+    data =reader.read(vars_to_retrieve='od550aer')
     
+# =============================================================================
+#     data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
+#                         const.AERONET_SUN_V3L2_AOD_DAILY_NAME], 
+#                     vars_to_retrieve='od550aer', 
+#                     last_file=10)
+#     
+# =============================================================================
     
     
     
