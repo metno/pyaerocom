@@ -60,7 +60,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     def TS_TYPE(self):
         """Default implementation of string for temporal resolution"""
         try:
-            return self.TS_TYPES[self.DATASET_NAME]      
+            return self.TS_TYPES[self.DATA_ID]
         except KeyError:
             return 'undefined'
         
@@ -303,7 +303,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
-            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key]['data_id'] = self.DATA_ID
             metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve
             if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
@@ -338,11 +338,11 @@ class ReadAeronetBase(ReadUngriddedBase):
                 #write common meta info for this station (data lon, lat and 
                 #altitude are set to station locations)
                 data_obj._data[start:stop, 
-                               data_obj._LATINDEX] = station_data['stat_lat']
+                               data_obj._LATINDEX] = station_data['latitude']
                 data_obj._data[start:stop, 
-                               data_obj._LONINDEX] = station_data['stat_lat']
+                               data_obj._LONINDEX] = station_data['latitude']
                 data_obj._data[start:stop, 
-                               data_obj._ALTITUDEINDEX] = station_data['stat_alt']
+                               data_obj._ALTITUDEINDEX] = station_data['altitude']
                 data_obj._data[start:stop, 
                                data_obj._METADATAKEYINDEX] = meta_key
                                
@@ -361,7 +361,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
+        data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
         return data_obj
     
@@ -369,14 +369,14 @@ class ReadAeronetBase(ReadUngriddedBase):
 if __name__=="__main__":
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
         _FILEMASK = ".txt"
-        DATASET_NAME = "Blaaa"
+        DATA_ID = "Blaaa"
         SUPPORTED_DATASETS = ['Blaaa', 'Blub']
         __version__ = "0.01"
         PROVIDES_VARIABLES = ["od550aer"]
         
         def __init__(self, dataset_to_read=None):
             if dataset_to_read is not None:
-                self.DATASET_NAME = dataset_to_read
+                self.DATA_ID = dataset_to_read
         
         @property
         def col_index(self):
