@@ -85,7 +85,7 @@ def plot_series_year(obs_data, model_data, var_name, savefig=True,
                 bbox=dict(boxstyle='square', facecolor='none',
                           edgecolor='black'))
     
-    ax.annotate('Obs: {}'.format(obs_data['dataset_name']),
+    ax.annotate('Obs: {}'.format(obs_data['data_id']),
                 xy=(0.97, 0.1),
                 xycoords='figure fraction',
                 rotation='vertical',
@@ -108,7 +108,7 @@ def plot_series_year(obs_data, model_data, var_name, savefig=True,
                 fontsize=16, 
                 color='r')
     
-    ax.annotate('Obs: {}'.format(obs_data['dataset_name']), 
+    ax.annotate('Obs: {}'.format(obs_data['data_id']),
                 xy=(0.945, 0.89),
                 xycoords='figure fraction',
                 horizontalalignment='right', 
@@ -130,7 +130,7 @@ def plot_series_year(obs_data, model_data, var_name, savefig=True,
                                                           idx[0].year,
                                                           idx.freqstr,
                                                           obs_data['station_name'],
-                                                          obs_data['dataset_name'])
+                                                          obs_data['data_id'])
         fig.savefig(os.path.join(save_dir, name))
         
     return ax
