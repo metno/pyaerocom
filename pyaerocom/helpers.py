@@ -67,8 +67,79 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'monthly'    : '%b %Y',
                          'yearly'    : '%Y'}
 
-NUM_KEYS_META = ['stat_lon', 'stat_lat', 'stat_alt',
-                 'longitude', 'latitude', 'altitude']
+NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
+
+def station_data_to_timeseries(stats, var_name, pref_attr=None, 
+                               sort_by_largest=True):
+    """Order stations based on their significance and resolve conflicts"""
+    # first sort based on number of data points (ignor NaNs)
+    from pyaerocom import StationData
+    
+    # make sure the data is provided as pandas.Series object
+    for stat in stats:
+        if not isinstance(stat[var_name], pd.Series):
+            raise ValueError('Data needs to be provided as pandas Series in '
+                             'individual station data objects')
+        
+    merged = StationData()
+    
+    if pref_attr is not None:
+        stats.sort(key=lambda s: s[pref_attr])
+    else:
+        stats.sort(key=lambda s: len(s[var_name].dropna()))
+    
+    if sort_by_largest:
+        stats = stats[::-1]
+        
+    vals_merged, idx_merged = [], []
+    vals_removed, idx_removed = [], []
+    
+    
+    for i, stat in enumerate(stats):
+        s = stat[var_name].dropna()
+        info = stat.var_info[var_name]
+        if info['overlap']:
+            raise NotImplementedError('Coming soon...')
+# =============================================================================
+#             s = s.groupby(s.index).mean()
+#             stat.overlap_removed = True
+# =============================================================================
+        
+        if len(s) > 0: #there is data
+            if len(idx_merged) > 0: # we're not in the first station
+                overlap = np.intersect1d(idx_merged, s.index)
+                # there is an overlap ignore data from this station (we have sorted 
+                # above by significance based on total no. of datapoints)
+                if len(overlap) > 0: 
+                    s.drop(index=overlap, inplace=True)
+                    removed = s[overlap]
+                    idx_removed.extend(removed.index)
+                    vals_removed.extend(removed.values)
+                    
+            if len(s) > 0:
+                vals_merged.extend(s.values)
+                idx_merged.extend(s.index)
+                
+                # make sure each timestamp only occurs once 
+                # TODO: this may be removed if functionality is tested
+                pdidx = pd.DatetimeIndex(idx_merged)
+                if len(pdidx) != len(pdidx.unique()):
+                    raise ValueError('Please debug')
+            
+            if not var_name in merged.var_info:
+                merged.var_info[var_name] = info
+            else:
+                merged.merge_var_info(stat, var_name)
+            merged.merge_meta(stat)
+            
+    ts = pd.Series(vals_merged, idx_merged)
+    overlap = pd.Series(vals_removed, idx_removed)
+    
+    merged.dtime = idx_merged
+    merged[var_name] = ts
+    merged['{}_overlap'.format(var_name)] = overlap
+    
+    return (merged)
 
 def resample_timeseries(s, freq, how='mean'):
     """Resample a timeseries (pandas.Series)
