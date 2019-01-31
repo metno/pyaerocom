@@ -151,11 +151,7 @@ class StationData(StationMetaData):
                 continue
             
             val = self[key]
-            if force_single_value and not isinstance(val, str):
-                if not any([isinstance(val, x) for x in [list, np.ndarray]]):
-                    raise AttributeError("Invalid value encountered for meta "
-                                         "key {}, need str, list or ndarray, "
-                                         "got {}".format(key, type(val)))
+            if force_single_value and isinstance(val, (list, tuple, np.ndarray)):
                 if quality_check and not all([x == val[0] for x in val]):
                     logger.debug("Performing quality check for meta data")
                     raise MetaDataError("Inconsistencies in meta parameter {} "
