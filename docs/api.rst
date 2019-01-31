@@ -53,6 +53,13 @@ Other data classes
    :members:
    :undoc-members:
 
+Metadata and vocabulary standards
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.metastandards
+   :members:
+   :undoc-members:
+   
 Colocation of data
 -------------------
 
