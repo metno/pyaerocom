@@ -127,3 +127,6 @@ docs/_build
 
 # Sorted out directory
 pyaerocom/_sorted_out
+
+# Issues directory
+issues/
