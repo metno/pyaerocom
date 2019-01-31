@@ -79,6 +79,7 @@ from .config import Config
 
 const = Config()
     
+from . import metastandards
 from . import mathutils
 from . import multiproc
 from . import vert_coords
