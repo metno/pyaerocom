@@ -13,6 +13,8 @@ from scipy.stats import pearsonr, spearmanr, kendalltau
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
+### OTHER FUNCTIONS
+
 def haversine(lon0, lat0, lon1, lat1, radius=6371.0):
     """Haversine formula
     
@@ -53,7 +55,40 @@ def haversine(lon0, lat0, lon1, lat1, radius=6371.0):
  
     return radius * c
 
-### OTHER FUNCTIONS
+def is_within_radius_km(lon0, lat0, alt0, lon1, lat1, alt1, maxdist_km):
+    """Checks if two lon/lat coordinates are within a certain distance to each other
+    
+    Parameters
+    ----------
+    lon0 : float
+        longitude of first point in decimal degrees
+    lat0 : float
+        latitude of first point in decimal degrees
+    alt0 : float
+        altitude of first point in m
+    lon1 : float
+        longitude of second point in decimal degrees
+    lat1 : float 
+        latitude of second point in decimal degrees
+    alt1 : float
+        altitude of second point in m
+    maxdist_km : float 
+        maximum distance between two points in km
+        
+    Returns
+    -------
+    bool
+        True, if coordinates are within specified distance to each other, else
+        False
+        
+    """
+    hordist = haversine(lon0, lat0, lon1, lat1)
+    dist = np.linalg.norm((hordist, (alt0 - alt1)/1000))
+    
+    if dist <= maxdist_km:
+        return True
+    return False
+
 def calc_statistics(data, ref_data, lowlim=None, highlim=None):
     """Calc statistical properties from two data arrays
     
