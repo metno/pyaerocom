@@ -54,7 +54,7 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    0.006834506988525391 s
+    0.009593486785888672 s
 
 
 .. code:: ipython3
@@ -65,7 +65,7 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
@@ -81,7 +81,15 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
+      warnings.warn(msg)
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
+      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
@@ -90,14 +98,6 @@ datatype of ``GriddedData`` is ``iris.cube.Cube``.
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
       warnings.warn(msg.format(str(cf_coord_var.cf_name)))
@@ -278,7 +278,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    141 ms ± 18.2 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    156 ms ± 3.65 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -289,7 +289,7 @@ This worked, but however, is it fast?
 
 .. parsed-literal::
 
-    114 ms ± 8.61 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    137 ms ± 3.56 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 The answer is: No, it is not fast, and furthermore, the latter datatype
@@ -305,7 +305,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    176 ms ± 20 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+    178 ms ± 18.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 
 .. code:: ipython3
@@ -316,7 +316,7 @@ conversion (if we want).
 
 .. parsed-literal::
 
-    136 ms ± 19 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    190 ms ± 26 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 
 That looks okay, since it does not lead to a notable decrease in the
@@ -341,7 +341,7 @@ and the ``cells()`` iterator, but rather directly use the underlying
 
 .. parsed-literal::
 
-    1.86 ms ± 159 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    2.2 ms ± 140 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 This is quite an improvement. But if we dig a little deeper, we can
@@ -431,7 +431,7 @@ accessed via:
 
 .. parsed-literal::
 
-    374 µs ± 10.9 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    539 µs ± 119 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 For the AATSR data, the method is slower, since here, the slower
@@ -445,7 +445,7 @@ For the AATSR data, the method is slower, since here, the slower
 
 .. parsed-literal::
 
-    2.21 ms ± 19.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.44 ms ± 87 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 Now this is an improvement. Starting with around 100ms when using the
@@ -465,7 +465,7 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    483 µs ± 107 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    531 µs ± 45.2 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 .. code:: ipython3
@@ -476,5 +476,5 @@ The method is also the standard conversion method in the
 
 .. parsed-literal::
 
-    2.03 ms ± 30.5 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    2.53 ms ± 53.5 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 

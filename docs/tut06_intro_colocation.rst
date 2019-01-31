@@ -33,7 +33,7 @@ Import setup and imports
 
 .. parsed-literal::
 
-    0.009348154067993164 s
+    0.009945869445800781 s
 
 
 Import of model data
@@ -55,8 +55,8 @@ there.
     ---------------------
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Available variables: ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
-    Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 9999]
+    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+    Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 9999]
     Available time resolutions ['daily', 'monthly']
 
 
@@ -113,7 +113,7 @@ located at altitudes between 0 and 1000 m.
 .. code:: ipython3
 
     obs_reader = pya.io.ReadUngridded(OBS_ID, [VAR, 'ang4487aer'])
-    obs_data = obs_reader.read().filter_by_meta(stat_alt=[0, 1000])
+    obs_data = obs_reader.read().filter_by_meta(altitude=[0, 1000])
     print(obs_data)
 
 
@@ -130,10 +130,10 @@ located at altitudes between 0 and 1000 m.
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['ang4487aer', 'od550aer']
     Contains instruments: ['sun_photometer']
-    Total no. of meta-blocks: 1006
+    Total no. of meta-blocks: 1013
     Filters that were applied:
-     Filter time log: 20181127115648
-    	stat_alt: [0, 1000]
+     Filter time log: 20190131184530
+    	altitude: [0, 1000]
 
 
 Plot station coordinates
@@ -176,7 +176,7 @@ station plot above).
 
 .. parsed-literal::
 
-    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['ang4487aer', 'od550aer']; instruments: ['sun_photometer'];No. of stations: 1006
+    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['ang4487aer', 'od550aer']; instruments: ['sun_photometer'];No. of stations: 1013
 
 
 
@@ -198,11 +198,11 @@ station plot above).
 .. parsed-literal::
 
     <xarray.DataArray 'od550aer' (data_source: 2, time: 12, station_name: 278)>
-    array([[[     nan, 0.117588, ...,      nan,      nan],
-            [     nan, 0.132128, ...,      nan,      nan],
+    array([[[     nan, 0.117588, ...,      nan, 0.222138],
+            [     nan, 0.132128, ...,      nan, 0.429762],
             ...,
-            [0.132236, 0.195057, ...,      nan,      nan],
-            [     nan, 0.098409, ...,      nan,      nan]],
+            [0.132236, 0.195057, ...,      nan, 0.261765],
+            [     nan, 0.098409, ...,      nan, 0.37905 ]],
     
            [[0.189948, 0.140062, ..., 0.079353, 0.204337],
             [0.150408, 0.190089, ..., 0.10622 , 0.257806],
@@ -228,7 +228,7 @@ station plot above).
         stop_str:         20101231
         unit:             ['1', None]
         data_level:       colocated
-        revision_ref:     20181105
+        revision_ref:     20181212
         region:           WORLD
         lon_range:        [-180, 180]
         lat_range:        [-90, 90]
@@ -245,7 +245,7 @@ station plot above).
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f8fe27f25f8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f9604663860>
 
 
 
@@ -270,7 +270,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <cartopy.mpl.geoaxes.GeoAxes at 0x7f8fe2c358d0>
+    <cartopy.mpl.geoaxes.GeoAxes at 0x7f96046984a8>
 
 
 
@@ -331,7 +331,7 @@ Now perform colocation only over Europe. Starting with a station plot.
         stop_str:         20101231
         unit:             ['1', None]
         data_level:       colocated
-        revision_ref:     20181105
+        revision_ref:     20181212
         region:           EUROPE
         lon_range:        [-20, 70]
         lat_range:        [30, 80]
@@ -348,7 +348,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f8fe2b1e400>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f961c14f4e0>
 
 
 

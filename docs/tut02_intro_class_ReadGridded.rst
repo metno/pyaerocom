@@ -92,7 +92,7 @@ Or the same in hourly resolution:
 
 .. parsed-literal::
 
-    0.005434751510620117 s
+    0.009787797927856445 s
     
     Pyaerocom ReadGridded
     ---------------------
