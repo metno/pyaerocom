@@ -61,7 +61,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     __version__ = "0.07_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
+    DATA_ID = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
@@ -93,9 +93,9 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     META_NAMES_FILE['data_quality_level'] = 'Data_Quality_Level'
     META_NAMES_FILE['instrument_number'] = 'AERONET_Instrument_Number'
     META_NAMES_FILE['station_name'] = 'AERONET_Site'
-    META_NAMES_FILE['stat_lat'] = 'Site_Latitude(Degrees)'
-    META_NAMES_FILE['stat_lon'] = 'Site_Longitude(Degrees)'
-    META_NAMES_FILE['stat_alt'] = 'Site_Elevation(m)'
+    META_NAMES_FILE['latitude'] = 'Site_Latitude(Degrees)'
+    META_NAMES_FILE['longitude'] = 'Site_Longitude(Degrees)'
+    META_NAMES_FILE['altitude'] = 'Site_Elevation(m)'
     META_NAMES_FILE['date'] = 'Date_(dd:mm:yyyy)'
     META_NAMES_FILE['time'] = 'Time_(hh:mm:ss)'
     META_NAMES_FILE['day_of_year'] = 'Day_of_Year'
@@ -145,7 +145,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
        
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.dataset_name = self.DATASET_NAME
+        data_out.data_id = self.DATA_ID
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []

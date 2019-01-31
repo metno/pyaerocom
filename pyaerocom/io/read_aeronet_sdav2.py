@@ -65,7 +65,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     __version__ = '0.07_' + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_SUN_V2L2_SDA_DAILY_NAME
+    DATA_ID = const.AERONET_SUN_V2L2_SDA_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
@@ -219,7 +219,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData() 
         
-        data_out.dataset_name = self.DATASET_NAME
+        data_out.data_id = self.DATA_ID
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []
@@ -246,9 +246,9 @@ class ReadAeronetSdaV2(ReadAeronetBase):
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
             dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['stat_lat'] = float(dict_loc['Latitude'])
-            data_out['stat_lon'] = float(dict_loc['Longitude'])
-            data_out['stat_alt'] = float(dict_loc['Elevation[m]'])
+            data_out['latitude'] = float(dict_loc['Latitude'])
+            data_out['longitude'] = float(dict_loc['Longitude'])
+            data_out['altitude'] = float(dict_loc['Elevation[m]'])
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             data_out['ts_type'] = self.TS_TYPE

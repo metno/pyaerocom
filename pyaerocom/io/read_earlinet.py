@@ -39,7 +39,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData, VerticalProfile, Variable
 from pyaerocom import UngriddedData
 
-# TODO: Include backscatter signal ???
+# TODO: Include backscatter signal
 # TODO: Check file order 
 # TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
 class ReadEarlinet(ReadUngriddedBase):
@@ -51,7 +51,7 @@ class ReadEarlinet(ReadUngriddedBase):
     __version__ = "0.10_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.EARLINET_NAME
+    DATA_ID = const.EARLINET_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EARLINET_NAME]
@@ -86,8 +86,8 @@ class ReadEarlinet(ReadUngriddedBase):
                          start_date         = 'StartDate',
                          start_utc          = 'StartTime_UT',
                          stop_utc           = 'StopTime_UT',
-                         stat_lon           = 'Longitude_degrees_east',
-                         stat_lat           = 'Latitude_degrees_north',
+                         longitude           = 'Longitude_degrees_east',
+                         latitude           = 'Latitude_degrees_north',
                          wavelength_emis    = 'EmissionWavelength_nm',
                          wavelength_det     = 'DetectionWavelength_nm',
                          res_raw_m          = 'ResolutionRaw_meter',
@@ -98,7 +98,7 @@ class ReadEarlinet(ReadUngriddedBase):
                          detection_mode     = 'DetectionMode',
                          res_eval           = 'ResolutionEvaluated',
                          input_params       = 'InputParameters',
-                         stat_alt           = 'Altitude_meter_asl',
+                         altitude           = 'Altitude_meter_asl',
                          eval_method        = 'EvaluationMethod')
 
     PROVIDES_VARIABLES = [#'ec5503daer', 'ec5503daer_err',
@@ -148,7 +148,7 @@ class ReadEarlinet(ReadUngriddedBase):
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
         data_out['stat_code'] = filename.split('/')[-3]
-        data_out['dataset_name'] = self.DATASET_NAME
+        data_out['data_id'] = self.DATA_ID
         data_out['ts_type'] = self.TS_TYPE
            
         # create empty arrays for all variables that are supposed to be read
@@ -319,7 +319,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     metadata[meta_key] = od()
                     metadata[meta_key].update(station_data.get_meta())
                     metadata[meta_key].update(station_data.get_station_coords())
-                    metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+                    metadata[meta_key]['data_id'] = self.DATA_ID
                     metadata[meta_key]['variables'] = []
                     # this is a list with indices of this station for each variable
                     # not sure yet, if we really need that or if it speeds up things
@@ -377,7 +377,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
+        data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
         return data_obj
         

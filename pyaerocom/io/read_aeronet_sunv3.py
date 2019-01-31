@@ -55,7 +55,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     __version__ = '0.07_' + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
+    DATA_ID = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_AOD_DAILY_NAME,
@@ -92,9 +92,9 @@ class ReadAeronetSunV3(ReadAeronetBase):
     META_NAMES_FILE['data_quality_level'] = 'Data_Quality_Level'
     META_NAMES_FILE['instrument_number'] = 'AERONET_Instrument_Number'
     META_NAMES_FILE['station_name'] = 'AERONET_Site'
-    META_NAMES_FILE['stat_lat'] = 'Site_Latitude(Degrees)'
-    META_NAMES_FILE['stat_lon'] = 'Site_Longitude(Degrees)'
-    META_NAMES_FILE['stat_alt'] = 'Site_Elevation(m)'
+    META_NAMES_FILE['latitude'] = 'Site_Latitude(Degrees)'
+    META_NAMES_FILE['longitude'] = 'Site_Longitude(Degrees)'
+    META_NAMES_FILE['altitude'] = 'Site_Elevation(m)'
     META_NAMES_FILE['date'] = 'Date(dd:mm:yyyy)'
     META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
     META_NAMES_FILE['day_of_year'] = 'Day_of_Year'
@@ -145,7 +145,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
        
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.dataset_name = self.DATASET_NAME
+        data_out.data_id = self.DATA_ID
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []
@@ -258,19 +258,44 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
+    import os
+    plt.close('all')
     
     read = ReadAeronetSunV3()
+    read.get_file_list()
     #read.verbosity_level = 'debug'
     
-    data = read.read()
+    #data = read.read()
     
-    first_ten = read.read(last_file=10)
+# =============================================================================
+#     first_ten = read.read(last_file=10)
+#     
+#     files_berlin = read.find_in_file_list('*Berlin*')
+#     berlin = read.read_file(files_berlin[0],
+#                             vars_to_retrieve=['ang4487aer_calc',
+#                                               'ang4487aer'])
+#     print(berlin)    
+#     
+# =============================================================================
     
-    files_berlin = read.find_in_file_list('*Berlin*')
-    berlin = read.read_file(files_berlin[0],
-                            vars_to_retrieve=['ang4487aer_calc',
-                                              'ang4487aer'])
-    print(berlin)    
+    files = []
+    all_data = []
+    
+    for file in read.files:
+        if 'cart_site' in file.lower():
+            files.append(file)
+            data = read.read_file(file, 'od550aer')
+            all_data.append(data)
+            fig, ax = plt.subplots(1,1, figsize=(18, 8))
+            data.plot_variable('od550aer', ax=ax)
+            ax.set_title(os.path.basename(file), fontsize=12)
+            ax.set_title(data.get_meta()['station_name'])
+    print(files)
+    
+    #ud = read.read('od550aer')
+    
+
+            
     
     
     

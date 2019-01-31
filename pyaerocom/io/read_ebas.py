@@ -124,7 +124,7 @@ class ReadEbas(ReadUngriddedBase):
     __version__ = "0.11_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.EBAS_MULTICOLUMN_NAME
+    DATA_ID = const.EBAS_MULTICOLUMN_NAME
     
     
     #: List of all datasets supported by this interface
@@ -682,7 +682,7 @@ class ReadEbas(ReadUngriddedBase):
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
         #data_out['filename'] = filename
-        data_out.dataset_name = self.DATASET_NAME
+        data_out.data_id = self.DATA_ID
         
         # write meta information
         tres_code = meta['resolution_code']
@@ -693,19 +693,19 @@ class ReadEbas(ReadUngriddedBase):
             ts_type = 'undefined'
         data_out['ts_type'] = ts_type
         # altitude of station
-        stat_alt = float(meta['station_altitude'].split(' ')[0])
+        altitude = float(meta['station_altitude'].split(' ')[0])
         try:
             meas_height = float(meta['measurement_height'].split(' ')[0])
         except KeyError:
             meas_height = 0.0
-        data_alt = stat_alt + meas_height
+        data_alt = altitude + meas_height
             
         # file specific meta information
         #data_out.update(meta)
-        data_out['stat_lon'] = float(meta['station_longitude'])
-        data_out['stat_lat'] = float(meta['station_latitude'])
+        data_out['longitude'] = float(meta['station_longitude'])
+        data_out['latitude'] = float(meta['station_latitude'])
         
-        data_out['stat_alt'] = stat_alt
+        data_out['altitude'] = altitude
         
         if name in self.MERGE_STATIONS:
             data_out['station_name'] = self.MERGE_STATIONS[name]
@@ -900,7 +900,7 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
-            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
+            metadata[meta_key]['data_id'] = self.DATA_ID
             metadata[meta_key]['ts_type'] = station_data['ts_type']
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
             metadata[meta_key]['revision_date'] = station_data['revision_date'] 
@@ -949,11 +949,11 @@ class ReadEbas(ReadUngriddedBase):
                 #write common meta info for this station (data lon, lat and 
                 #altitude are set to station locations)
                 data_obj._data[start:stop, 
-                               data_obj._LATINDEX] = station_data['stat_lat']
+                               data_obj._LATINDEX] = station_data['latitude']
                 data_obj._data[start:stop, 
-                               data_obj._LONINDEX] = station_data['stat_lon']
+                               data_obj._LONINDEX] = station_data['longitude']
                 data_obj._data[start:stop, 
-                               data_obj._ALTITUDEINDEX] = station_data['stat_alt']
+                               data_obj._ALTITUDEINDEX] = station_data['altitude']
                 data_obj._data[start:stop, 
                                data_obj._METADATAKEYINDEX] = meta_key
                                
@@ -979,7 +979,7 @@ class ReadEbas(ReadUngriddedBase):
         if self.MERGE_META:
             data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 
                                                                'PI'])
-        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
+        data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
         
         return data_obj

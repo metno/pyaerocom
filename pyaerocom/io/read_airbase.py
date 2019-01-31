@@ -16,7 +16,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 class ReadAirBase(ReadUngriddedBase):
     """Reading class for AirBase data"""
     DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AIRBASE/'
-    DATASET_NAME = 'AirBase'
+    DATA_ID = 'AirBase'
     _FILEMASK = '*.nc'
     
     DEFAULT_VARS = ['pm10']

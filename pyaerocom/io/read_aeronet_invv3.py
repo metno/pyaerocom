@@ -57,7 +57,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
     __version__ = "0.02_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_INV_V3L2_DAILY_NAME
+    DATA_ID = const.AERONET_INV_V3L2_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_INV_V3L2_DAILY_NAME,
@@ -110,9 +110,9 @@ class ReadAeronetInvV3(ReadAeronetBase):
     META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
     META_NAMES_FILE['day_of_year'] = 'Day_of_Year(fraction)'
     META_NAMES_FILE['station_name'] = 'Site'
-    META_NAMES_FILE['stat_lat'] = 'Latitude(Degrees)'
-    META_NAMES_FILE['stat_lon'] = 'Longitude(Degrees)'
-    META_NAMES_FILE['stat_alt'] = 'Elevation(m)'
+    META_NAMES_FILE['latitude'] = 'Latitude(Degrees)'
+    META_NAMES_FILE['longitude'] = 'Longitude(Degrees)'
+    META_NAMES_FILE['altitude'] = 'Elevation(m)'
     
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of

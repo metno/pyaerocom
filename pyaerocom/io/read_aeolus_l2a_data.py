@@ -66,8 +66,8 @@ class ReadAeolusL2aData:
 
     """
     _FILEMASK = '*.DBL'
-    __version__ = "0.01"
-    DATASET_NAME = 'AEOLUS-L2A'
+    __version__ = "0.02"
+    DATA_ID = 'AEOLUS-L2A'
     DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/download/'
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False

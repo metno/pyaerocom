@@ -57,7 +57,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
     __version__ = "0.07_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATASET_NAME = const.AERONET_INV_V2L2_DAILY_NAME
+    DATA_ID = const.AERONET_INV_V2L2_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_INV_V2L2_DAILY_NAME,
@@ -214,9 +214,9 @@ class ReadAeronetInvV2(ReadAeronetBase):
             i_dummy = iter(re.split(r'=|\,', c_dummy.rstrip()))
             dict_loc = dict(zip(i_dummy, i_dummy))
 
-            data_out['stat_lat'] = float(dict_loc['lat'])
-            data_out['stat_lon'] = float(dict_loc['long'])
-            data_out['stat_alt'] = float(dict_loc['elev'])
+            data_out['latitude'] = float(dict_loc['lat'])
+            data_out['longitude'] = float(dict_loc['long'])
+            data_out['altitude'] = float(dict_loc['elev'])
             data_out['station_name'] = dict_loc['Locations']
             data_out['PI'] = dict_loc['PI']
             data_out['PI_email'] = dict_loc['Email']
