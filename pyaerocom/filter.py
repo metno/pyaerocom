@@ -136,9 +136,9 @@ class Filter(BrowseDict):
     def _apply_ungridded(self, data_obj):
         """Apply filter to instance of class :class:`UngriddedData`
         """
-        return data_obj.filter_by_meta(stat_lon=self.lon_range, 
-                                       stat_lat=self.lat_range, 
-                                       stat_alt=self.alt_range)
+        return data_obj.filter_by_meta(longitude=self.lon_range,
+                                       latitude=self.lat_range,
+                                       altitude=self.alt_range)
     
     def _apply_gridded(self, data_obj):
         """Apply filter to instance of class :class:`GriddedData`

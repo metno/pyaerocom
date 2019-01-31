@@ -646,7 +646,7 @@ class GriddedData(object):
             
             data = StationData(latitude=lat, 
                                longitude=lon,
-                               dataset_name=self.name)
+                               data_id=self.name)
             
             data[var] = Series(arr[:, i, j], index=times)
             result.append(data)
@@ -920,7 +920,7 @@ class GriddedData(object):
                 str(pd.Timestamp(self.start).year), self.ts_type]
         return '_'.format(fconv.file_sep).join(name) + '.nc'
     
-    def compute_at_stations_file(self, stat_lats=None, stat_lons=None,
+    def compute_at_stations_file(self, latitudes=None, longitudes=None,
                                  out_dir=None, savename=None,
                                  obs_data=None):
         """Creates and saves new netcdf file at input lat / lon coordinates
@@ -928,18 +928,15 @@ class GriddedData(object):
         This method can be used to reduce the size of too large grid files.
         It reduces the lon / lat dimensionality corresponding to the locations
         of the input lat / lon coordinates.
-        
-        Parameters
-        ----------
-        stat_lats 
+
         """
         from pyaerocom import UngriddedData, print_log
         print_log.info('Computing AtStations file. This may take a while')
         if isinstance(obs_data, UngriddedData):
-            stat_lons = obs_data.longitude
-            stat_lats = obs_data.latitude
+            longitudes = obs_data.longitude
+            latitudes = obs_data.latitude
         
-        if not len(stat_lons) == len(stat_lats):
+        if not len(longitudes) == len(latitudes):
             raise ValueError('Longitude and latitude arrays need to have the '
                              'same length (since they are supposed to belong) '
                              'to station_coordinates')
@@ -953,7 +950,7 @@ class GriddedData(object):
         lon_idx = []
         lat_idx = []
         
-        for lat, lon in zip(stat_lats, stat_lons):
+        for lat, lon in zip(latitudes, longitudes):
             lon_idx.append(closest_index(lons, lon))
             lat_idx.append(closest_index(lats, lat))
         
