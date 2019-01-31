@@ -9,45 +9,51 @@ from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDic
 class Station(BrowseDict):
     """Dict-like base class for station information
     
+    Note
+    ----
+    This object is currently not used anymore. It was previously used as base
+    class of :class:`StationData`. This dependency was removed and the relevant 
+    methods and attributes are now part of :class:`StationData` directly.
+    
     Attributes
     ----------
-    dataset_name : str
+    data_id : str
         name of underlying dataset
     station_name : str
         name of station (may also be list / array in derived classes, e.g. in
         for each datapoint in derived subclass see e.g. 
         :class:`ReadAeronetSdaV3`)
-    stat_lat : float
+    latitude : float
         latitude of station
         
     """
     #: keys specifying default meta data keys.
     META_KEYS = ['station_name',
                  'PI',
-                 'dataset_name']
+                 'data_id']
     
     #: keys specifying the coordinates 
-    COORD_KEYS = ['stat_lat',
-                  'stat_lon',
-                  'stat_alt']
+    COORD_KEYS = ['latitude',
+                  'longitude',
+                  'altitude']
     
-    #: dictionary specifying maximumg allowed variation in m for numerical meta 
-    #: parameters, that may be delivered for each time stamp individually 
-    COORD_MAX_VAR = {'stat_lat'     : 10,
-                     'stat_lon'     : 10,
-                     'stat_alt'     : 10}
+    #: dictionary specifying maximum allowed variation in m for numerical meta 
+    #: parameters, that may be provided for each time stamp individually 
+    COORD_MAX_VAR = {'latitude'     : 10,
+                     'longitude'     : 10,
+                     'altitude'     : 10}
     
     
     def __init__(self, *args, **kwargs):
         # meta data (strings, lists or arrays)
-        self.dataset_name = ''
+        self.data_id = ''
         self.station_name = ''
         self.PI = ''
         
         # coordinate data (floats, lists or arrays)
-        self.stat_lat = np.nan
-        self.stat_lon = np.nan
-        self.stat_alt = np.nan
+        self.latitude = np.nan
+        self.longitude = np.nan
+        self.altitude = np.nan
         
         super(Station, self).__init__(*args, **kwargs)
         
@@ -99,25 +105,25 @@ class Station(BrowseDict):
             stds[key] = std
         if _check_var:
             logger.debug("Performing quality check for coordinates")
-            lat, dlat, dlon, dalt = (vals['stat_lat'],
-                                     stds['stat_lat'],
-                                     stds['stat_lon'],
-                                     stds['stat_alt'])
+            lat, dlat, dlon, dalt = (vals['latitude'],
+                                     stds['latitude'],
+                                     stds['longitude'],
+                                     stds['altitude'])
             lat_len = 111e3 #approximate length of latitude degree in m
-            if self.COORD_MAX_VAR['stat_lat'] < lat_len * dlat:
+            if self.COORD_MAX_VAR['latitude'] < lat_len * dlat:
                 raise CoordinateError("Variation in station latitude is "
                                       "exceeding upper limit of {} m".format(
-                                      self.COORD_MAX_VAR['stat_lat']))
-            elif self.COORD_MAX_VAR['stat_lon'] < (lat_len * 
+                                      self.COORD_MAX_VAR['latitude']))
+            elif self.COORD_MAX_VAR['longitude'] < (lat_len *
                                                     np.cos(np.deg2rad(lat)) * 
                                                     dlon):
                 raise CoordinateError("Variation in station longitude is "
                                       "exceeding upper limit of {} m".format(
-                                      self.COORD_MAX_VAR['stat_lat']))
-            elif self.COORD_MAX_VAR['stat_alt'] < dalt:
+                                      self.COORD_MAX_VAR['latitude']))
+            elif self.COORD_MAX_VAR['altitude'] < dalt:
                 raise CoordinateError("Variation in station altitude is "
                                       "exceeding upper limit of {} m".format(
-                                      self.COORD_MAX_VAR['stat_lat']))
+                                      self.COORD_MAX_VAR['latitude']))
         return vals
                 
     def get_meta(self, force_single_value=True, quality_check=True):
