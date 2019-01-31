@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
-from copy import deepcopy
 from datetime import datetime
 from collections import OrderedDict as od
 import fnmatch
 import pandas as pd
-from pyaerocom import logger
-from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom import logger, const
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
-                                  MetaDataError, DataUnitError)
+                                  MetaDataError)
 from pyaerocom import StationData
-from pyaerocom.mathutils import haversine
-from pyaerocom.exceptions import CoordinateError
-from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
+
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
@@ -71,7 +67,7 @@ class UngriddedData(object):
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
     """
-    __version__ = '0.15'
+    __version__ = '0.16'
     
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
@@ -81,6 +77,10 @@ class UngriddedData(object):
     _VARINDEX = 5
     _DATAINDEX = 6
     _DATAHEIGHTINDEX = 7
+    _DATAERRINDEX = 8 # col where errors can be stored
+    _DATAFLAGINDEX = 9 # can be used to store flags
+    _TRASHINDEX = 10 #index where invalid data can be moved to (e.g. when outliers are removed)
+    
 
     _COLNO = 11
     _ROWNO = 10000
@@ -105,6 +105,30 @@ class UngriddedData(object):
         
         self.filter_hist = od()
     
+    def copy(self):
+        """Make a copy of this object
+        
+        Returns
+        -------
+        UngriddedData
+            copy of this object
+            
+        Raises
+        ------
+        MemoryError
+            if copy is too big to fit into memory together with existing 
+            instance
+        """
+        from copy import deepcopy
+        new = UngriddedData()
+        new._data = np.copy(self._data)
+        new.metadata = deepcopy(self.metadata)
+        new.data_revision = self.data_revision
+        new.meta_idx = deepcopy(self.meta_idx)
+        new.var_idx = deepcopy(self.var_idx)
+        new.filter_hist = deepcopy(self.filter_hist)
+        return new
+        
     @property
     def contains_vars(self):
         """List of all variables in this dataset"""
@@ -115,7 +139,7 @@ class UngriddedData(object):
         """List of all datasets in this object"""
         datasets = []
         for info in self.metadata.values():
-            ds = info['dataset_name']
+            ds = info['data_id']
             if not ds in datasets:
                 datasets.append(ds)
         return datasets
@@ -142,13 +166,6 @@ class UngriddedData(object):
     def is_empty(self):
         """Boolean specifying whether this object contains data or not"""
         return True if len(self.metadata) == 0 else False
-
-    @property
-    def vars_to_retrieve(self):
-        logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
-                                          "deprectated. Please use attr "
-                                          "contains_vars instead"))
-        return self.contains_vars
     
     @property
     def is_filtered(self):
@@ -165,7 +182,7 @@ class UngriddedData(object):
     @property
     def longitude(self):
         """Longitudes of stations"""
-        return [stat['stat_lon'] for stat in self.metadata.values()]
+        return [stat['longitude'] for stat in self.metadata.values()]
 
     @longitude.setter
     def longitude(self, value):
@@ -174,7 +191,7 @@ class UngriddedData(object):
     @property
     def latitude(self):
         """Latitudes of stations"""
-        return [stat['stat_lat'] for stat in self.metadata.values()]
+        return [stat['latitude'] for stat in self.metadata.values()]
 
     @latitude.setter
     def latitude(self, value):
@@ -183,7 +200,7 @@ class UngriddedData(object):
     @property
     def altitude(self):
         """Altitudes of stations"""
-        return [stat['stat_alt'] for stat in self.metadata.values()]
+        return [stat['altitude'] for stat in self.metadata.values()]
 
     @altitude.setter
     def altitude(self, value):
@@ -214,6 +231,10 @@ class UngriddedData(object):
         raise AttributeError("Time array cannot be changed")
         
     def last_filter_applied(self):
+        """Returns the last filter that was applied to this dataset
+        
+        To see all filters, check out :attr:`filter_hist`
+        """
         if not self.is_filtered:
             raise AttributeError('No filters were applied so far')
         return self.filter_hist[max(self.filter_hist.keys())]
@@ -233,115 +254,7 @@ class UngriddedData(object):
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
-        logger.info("adding chunk, new array size ({})".format(self._data.shape))
-
-    def _to_timeseries_helper(self, val, start_date=None, end_date=None, 
-                              freq=None):
-        """small helper routine for self.to_timeseries to not to repeat the 
-        same code fragment three times"""
-        raise NotImplementedError('Outdated, cf. new version of to_timeseries ')
-        data_found_flag = False
-        temp_dict = {}
-        # do not return anything for stations without data
-        temp_dict['station_name'] = val['station_name']
-        temp_dict['latitude'] = val['stat_lat']
-        temp_dict['longitude'] = val['stat_lon']
-        temp_dict['altitude'] = val['stat_alt']
-        temp_dict['PI'] = val['PI']
-        temp_dict['dataset_name'] = val['dataset_name']
-        if 'files' in val:
-            temp_dict['files'] = val['files']
-        for var in val['idx']:
-            if var in self.vars_to_retrieve:
-                data_found_flag = True
-                temp_dict[var] = pd.Series(self._data[val['idx'][var], self._DATAINDEX],
-                                           index=pd.to_datetime(
-                                               self._data[
-                                                   val['idx'][var], self._TIMEINDEX],
-                                               unit='s'))
-
-                temp_dict[var] = temp_dict[var][start_date:end_date].drop_duplicates()
-                if freq is not None:
-                    temp_dict[var] = temp_dict[var][start_date:end_date].resample(freq).mean()
-
-        if data_found_flag:
-            return temp_dict
-        else:
-            return None
-    
-    def to_gridded_data(self):
-        lons = self.longitude
-        lats = self.latitude
-        raise NotImplementedError
-        
-    # TODO: review docstring        
-# =============================================================================
-#     def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
-#                       freq=None):
-#         """Convert this object into individual pandas.Series objects
-# 
-#         Parameters
-#         ----------
-#         station_name : :obj:`tuple` or :obj:`str:`, optional
-#             station_name or list of station_names to return
-#         start_date, end_date : :obj:`str:`, optional
-#             date strings with start and end date to return
-#         freq : obj:`str:`, optional
-#             frequency to resample to using the pandas resample method
-#             us the offset aliases as noted in
-#             http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
-# 
-#         Returns
-#         -------
-#         list or dictionary
-#             station_names is a string: dictionary with station data
-#             station_names is list or None: list of dictionaries with station data
-# 
-#         Example
-#         -------
-#         >>> import pyaerocom.io.readobsdata
-#         >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
-#         >>> obj.read()
-#         >>> pdseries = obj.to_timeseries()
-#         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
-#         """
-#         from warnings import warn
-#         msg = ('This method does currently not work due to recent API changes, '
-#                'and is therefore a wrapper for method to_station_data or '
-#                'to_station_data_all dependent on whether a station name is '
-#                'provided or not.')
-#         warn(DeprecationWarning(msg))
-#         if station_name is None:
-#             return self.to_station_data_all(start=start_date, stop=end_date,
-#                                             freq=freq)
-#         if isinstance(station_name, str):
-#             station_name = [station_name]
-#         if isinstance(station_name, list):
-#             indices = []
-#             for meta_idx, info in self.metadata.items():
-#                 if info['station_name'] in station_name:
-#                     indices.append(meta_idx)
-#             if len(indices) == 0:
-#                 raise MetaDataError('No such station(s): {}'.format(station_name))
-#             elif len(indices) == 1:
-#                 # return single dictionary, like before 
-#                 # TODO: maybe change this after clarification
-#                 return self.to_station_data(start=start_date, stop=end_date,
-#                                             freq=freq)
-#             else:
-#                 out_data = []
-#                 for meta_idx in indices:
-#                     try:
-#                         out_data.append(self.to_station_data(start=start_date, 
-#                                                              stop=end_date,
-#                                                              freq=freq))
-#                     except (VarNotAvailableError, TimeMatchError, 
-#                             DataCoverageError) as e:
-#                         logger.warning('Failed to convert to StationData '
-#                                'Error: {}'.format(repr(e)))
-#                 return out_data
-# =============================================================================
-                    
+        logger.info("adding chunk, new array size ({})".format(self._data.shape))                
     
     def _find_station_indices(self, station_pattern):
         idx = []
@@ -461,13 +374,13 @@ class UngriddedData(object):
                 stat_data[k] = val[k]
                 
         # do not return anything for stations without data
-        # TODO: consider writing stat_lon, stat_lat and stat_alt
+        # TODO: consider writing longitude, latitude and altitude
         stat_data['station_name'] = val['station_name']
-        stat_data['latitude'] = val['stat_lat']
-        stat_data['longitude'] = val['stat_lon']
-        stat_data['altitude'] = val['stat_alt']
+        stat_data['latitude'] = val['latitude']
+        stat_data['longitude'] = val['longitude']
+        stat_data['altitude'] = val['altitude']
         stat_data['PI'] = val['PI']
-        stat_data['dataset_name'] = val['dataset_name']
+        stat_data['data_id'] = val['data_id']
         stat_data['ts_type_src'] = val['ts_type']
         stat_data['ts_type'] = val['ts_type']
             
@@ -485,19 +398,19 @@ class UngriddedData(object):
         dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
         
         # TODO: remove try except block
-        overlap = np.logical_and(dtime >= start, dtime <= stop)
+        tmask = np.logical_and(dtime >= start, dtime <= stop)
   
-        if overlap.sum() == 0:
+        if tmask.sum() == 0:
             raise TimeMatchError('No data available for station {} ({}) in '
                                  'time interval {} - {}'
                                  .format(stat_data['station_name'],
-                                         stat_data['dataset_name'],
+                                         stat_data['data_id'],
                                          start, stop))
-        dtime = dtime[overlap]
+        dtime = dtime[tmask]
         stat_data['dtime'] = dtime
         for var in vars_to_convert:
             stat_data.var_info[var] = {}
-            indices = self.meta_idx[meta_idx][var][overlap]
+            indices = self.meta_idx[meta_idx][var][tmask]
             data = self._data[indices, self._DATAINDEX]
             if not data_as_series:
                 idx = pd.DatetimeIndex(dtime)
@@ -516,7 +429,7 @@ class UngriddedData(object):
                                                 'for interpolation.'
                                                 .format(var,
                                                         stat_data['station_name'],
-                                                        stat_data['dataset_name'],
+                                                        stat_data['data_id'],
                                                         start, stop))
                     data = data.interpolate().dropna()
                 if freq is not None:
@@ -655,8 +568,8 @@ class UngriddedData(object):
         **filter_attributes
             valid meta keywords that are supposed to be filtered and the 
             corresponding filter values (or value ranges)
-            Only valid meta keywords are considered (e.g. dataset_name, 
-            stat_lon, stat_lat, stat_alt, ts_type)
+            Only valid meta keywords are considered (e.g. data_id,
+            longitude, latitude, altitude, ts_type)
             
         Returns
         -------
@@ -664,11 +577,11 @@ class UngriddedData(object):
             3-element tuple containing
             
             - dict: string match filters for metakeys \
-              (e.g. dict['dataset_name'] = 'AeronetSunV2Lev2.daily')
+              (e.g. dict['data_id'] = 'AeronetSunV2Lev2.daily')
             - dict: in-list match filters for metakeys \
               (e.g. dict['station_name'] = ['stat1', 'stat2', 'stat3'])
             - dict: in-range dictionary for metakeys \
-              (e.g. dict['stat_lon'] = [-30, 30])
+              (e.g. dict['longitude'] = [-30, 30])
             
         """
         # initiate filters that are checked
@@ -698,54 +611,97 @@ class UngriddedData(object):
     
     # TODO: check, confirm and remove Beta version note in docstring   
 
-# =============================================================================
-#     def remove_outliers(self, **var_ranges):
-#         """Method that can be used to remove outliers from data
-#         
-#         Returns new instance of :class:`UngriddedData` that has all outliers
-#         removed.
-#         """
-#         new = UngriddedData()
-#         removed = UngriddedData()
-#         meta_idx_new = 0.0
-#         data_idx_new = 0
-#         
-#         _vars = {}
-#         for meta_idx, meta in self.metadata.items():
-#                 
-#                 new.metadata[meta_idx_new] = meta
-#                 new.meta_idx[meta_idx_new] = od()
-#                 for var in meta['variables']:
-#                     indices = self.meta_idx[meta_idx][var]
-#                     
-#                     totnum = len(indices)
-#                     if (data_idx_new + totnum) >= new._ROWNO:
-#                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
-#                         new.add_chunk(totnum)
-#                     stop = data_idx_new + totnum
-#                     
-#                     new._data[data_idx_new:stop, :] = self._data[indices, :]
-#                     new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-#                                                                 stop)
-#                     new.var_idx[var] = self.var_idx[var]
-#                     data_idx_new += totnum
-#                 
-#                 meta_idx_new += 1
-#             else:
-#                 logger.debug('{} does not match filter and will be ignored'
-#                              .format(meta))
-#         if meta_idx_new == 0 or data_idx_new == 0:
-#             raise DataExtractionError('Filtering results in empty data object')
-#         new._data = new._data[:data_idx_new]
-#         # write history of filtering applied 
-#         new.filter_hist.update(self.filter_hist)
-#         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
-#         new.filter_hist[int(time_str)] = filter_attributes
-#         new.data_revision.update(self.data_revision)
-#         
-#         return new
-# =============================================================================
-                
+    def remove_outliers(self, var_name, inplace=False, low=None, high=None,
+                        move_to_trash=True):
+        """Method that can be used to remove outliers from data
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name
+        inplace : bool
+            if True, the outliers will be removed in this object, otherwise
+            a new oject will be created and returned
+        low : float
+            lower end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. minimum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        high : float
+            upper end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. maximum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        move_to_trash : bool
+            if True, then all detected outliers will be moved to the trash 
+            column of this data object (i.e. column no. specified at
+            :attr:`UngriddedData._TRASHINDEX`).
+            
+        Returns
+        -------
+        UngriddedData
+            ungridded data object that has all outliers for this variable 
+            removed.
+            
+        Raises
+        ------
+        ValueError
+            if input :attr:`move_to_trash` is True and in case for some of the
+            measurements there is already data in the trash.
+            
+        """
+        if not inplace:
+            new = self.copy()
+        else:
+            new = self
+        if low is None:
+            low = const.VAR_PARAM[var_name].minimum
+        if high is None:
+            high = const.VAR_PARAM[var_name].maximum
+            
+        var_idx = new.var_idx[var_name]
+        var_mask = self._data[:, new._VARINDEX] == var_idx
+        
+        all_data =  self._data[:, self._DATAINDEX]
+        invalid_mask = np.logical_or(all_data < low, all_data > high)
+        
+        mask = invalid_mask * var_mask
+        invalid_vals = new._data[mask, new._DATAINDEX]
+        new._data[mask, new._DATAINDEX] = np.nan
+        
+        # check if trash is empty and put outliers into trash
+        trash = new._data[mask, new._TRASHINDEX]
+        if np.isnan(trash).sum() == len(trash): #trash is empty
+            new._data[mask, new._TRASHINDEX] = invalid_vals
+        else:
+            raise ValueError('Trash is not empty for some of the datapoints. '
+                             'Please empty trash first using method '
+                             ':func:`empty_trash` or deactivate input arg '
+                             ':attr:`move_to_trash`')
+        
+        info = ('Removed {} outliers from {} data (range: {}-{}, in trash: {})'
+                .format(len(invalid_vals), var_name, low, high, move_to_trash))
+        
+        new._add_to_filter_history(info)
+        return new
+            
+    def _add_to_filter_history(self, info):
+        """Add info to :attr:`filter_hist`
+        
+        Key is current system time string
+        
+        Parameter
+        ---------
+        info
+            information to be appended to filter history
+        """
+        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        self.filter_hist[int(time_str)] = info
+        
+    def empty_trash(self):
+        """Set all values in trash column to NaN"""
+        self._data[:, self._TRASHINDEX] = np.nan
+        
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
         
@@ -763,8 +719,8 @@ class UngriddedData(object):
         **filter_attributes
             valid meta keywords that are supposed to be filtered and the 
             corresponding filter values (or value ranges)
-            Only valid meta keywords are considered (e.g. dataset_name, 
-            stat_lon, stat_lat, stat_alt, ts_type)
+            Only valid meta keywords are considered (e.g. data_id,
+            longitude, latitude, altitude, ts_type)
             
         Returns
         -------
@@ -784,10 +740,10 @@ class UngriddedData(object):
         >>> r = pya.io.ReadUngridded(['AeronetSunV2Lev2.daily', 
                                       'AeronetSunV3Lev2.daily'], 'od550aer')
         >>> data = r.read()
-        >>> data_filtered = data.filter_by_meta(dataset_name='AeronetSunV2Lev2.daily',
-        ...                                     stat_lon=[-30, 30],
-        ...                                     stat_lat=[20, 70],
-        ...                                     stat_alt=[0, 1000])
+        >>> data_filtered = data.filter_by_meta(data_id='AeronetSunV2Lev2.daily',
+        ...                                     longitude=[-30, 30],
+        ...                                     latitude=[20, 70],
+        ...                                     altitude=[0, 1000])
         """
         new = UngriddedData()
         meta_idx_new = 0.0
@@ -833,14 +789,14 @@ class UngriddedData(object):
         return new
     
     
-    def extract_dataset(self, dataset_name):
+    def extract_dataset(self, data_id):
         """Extract single dataset into new instance of :class:`UngriddedData`
         
         Calls :func:`filter_by_meta`.
         
         Parameters
         -----------
-        dataset_name : str
+        data_id : str
             ID of dataset
         
         Returns
@@ -849,43 +805,8 @@ class UngriddedData(object):
             new instance of ungridded data containing only data from specified
             input network
         """
-        logger.info('Extracting dataset {} from data object'.format(dataset_name))
-        return self.filter_by_meta(dataset_name=dataset_name)
-# =============================================================================
-#         logger.info('Extracting dataset {} from data object'.format(dataset_name))
-#         if not dataset_name in self.contains_datasets:
-#             raise AttributeError('Dataset {} is not contained in this data '
-#                                  'object'.format(dataset_name))
-#         new = UngriddedData()
-#         meta_idx_new = 0.0
-#         data_idx_new = 0
-#         
-#         for meta_idx, meta in self.metadata.items():
-#             if meta['dataset_name'] == dataset_name:
-#                 new.metadata[meta_idx_new] = meta
-#                 new.meta_idx[meta_idx_new] = od()
-#                 for var in meta['variables']:
-#                     indices = self.meta_idx[meta_idx][var]
-#                     totnum = len(indices)
-#                     if (data_idx_new + totnum) >= new._ROWNO:
-#                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
-#                         new.add_chunk(totnum)
-#                     stop = data_idx_new + totnum
-#                     
-#                     new._data[data_idx_new:stop, :] = self._data[indices, :]
-#                     new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-#                                                                 stop)
-#                     data_idx_new += totnum
-#                 
-#                 meta_idx_new += 1
-#         if meta_idx_new == 0 or data_idx_new == 0:
-#             raise DataExtractionError('Filtering results in empty data object')
-#         new._data = new._data[:data_idx_new]
-#         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
-#         new.filter_hist[int(time_str)] = {'dataset_name' : dataset_name}
-#         new.data_revision[dataset_name] = self.data_revision[dataset_name]
-#         return new
-# =============================================================================
+        logger.info('Extracting dataset {} from data object'.format(data_id))
+        return self.filter_by_meta(data_id=data_id)
 
     def _station_to_json_trends(self, var_name, station_name, 
                                 freq, **kwargs):
@@ -1063,7 +984,7 @@ class UngriddedData(object):
             raise ValueError("Invalid input, need instance of UngriddedData, "
                              "got: {}".format(type(other)))
         if new_obj:
-            obj = deepcopy(self)
+            obj = self.copy()
         else:
             obj = self
         
@@ -1121,6 +1042,7 @@ class UngriddedData(object):
                         obj.var_idx[var] = idx
             obj._data = np.vstack([obj._data, other._data])
             obj.data_revision.update(other.data_revision)
+        obj.filter_hist.update(other.filter_hist)
         return obj
     
     def change_var_idx(self, var_name, new_idx):
@@ -1299,7 +1221,7 @@ class UngriddedData(object):
                         if not var in meta['variables']:
                             logger.debug('No {} in data of station {}'
                                          '({})'.format(var, name, 
-                                                       meta['dataset_name']))
+                                                       meta['data_id']))
                             ok = False
                     except: # attribute does not exist or is not iterable
                         ok = False
@@ -1313,14 +1235,14 @@ class UngriddedData(object):
                                         logger.debug('No {} in data of station'
                                                      ' {} ({})'.format(var, 
                                                      name, 
-                                                     meta_other['dataset_name']))
+                                                     meta_other['data_id']))
                                         ok = False
                                 except: # attribute does not exist or is not iterable
                                     ok = False
                         if ok and check_coordinates:
-                            dlat = abs(meta['stat_lat']-meta_other['stat_lat'])
-                            dlon = abs(meta['stat_lon']-meta_other['stat_lon'])
-                            lon_fac = np.cos(np.deg2rad(meta['stat_lat']))
+                            dlat = abs(meta['latitude']-meta_other['latitude'])
+                            dlon = abs(meta['longitude']-meta_other['longitude'])
+                            lon_fac = np.cos(np.deg2rad(meta['latitude']))
                             #compute distance between both station coords
                             dist = np.linalg.norm((dlat*lat_len, 
                                                    dlon*lat_len*lon_fac))
@@ -1330,8 +1252,8 @@ class UngriddedData(object):
                                                'between {} and {} data. '
                                                'Retrieved distance: {:.2f} km '
                                                .format(name, max_diff_coords_km,
-                                                       meta['dataset_name'],
-                                                       meta_other['dataset_name'],
+                                                       meta['data_id'],
+                                                       meta_other['data_id'],
                                                        dist))
                                 ok = False
                         if ok: #match found
@@ -1395,8 +1317,8 @@ class UngriddedData(object):
             for k, v in meta.items():
                 v.append(meta_item[k])
         return meta
-    
-    def to_timeseries(self, station, var_name, start=None, stop=None,
+            
+    def get_timeseries(self, station, var_name, start=None, stop=None,
                       ts_type=None, **kwargs):
         """Get variable timeseries data for a certain station
         
@@ -1424,17 +1346,17 @@ class UngriddedData(object):
         """
         stats = self.to_station_data(station, var_name, 
                                      data_as_series=True, **kwargs)
-
+        
+        
         # in case single instance of StationData was returned
-        if isinstance(stats, pya.StationData):
+        if isinstance(stats, StationData):
             return stats[var_name]
         if len(stats) == 0:
             raise pya.exceptions.VarNotAvailableError('No data available for {} ({})'
-                                                      .format(station, 
-                                                              var_name))
+                                                      .format(station, var_name))
+
+        new = StationData()
         
-        raise NotImplementedError
-            
         if len(index) == 0:
             raise pya.exceptions.VarNotAvailableError('No data available for station {} and variable {}'
                              .format(station_name, var_name))
@@ -1486,44 +1408,6 @@ class UngriddedData(object):
         
         # create pandas Series of raw data    
         s = pd.Series(values, index)
-        
-    def get_time_series(self, station, var_name, start=None, stop=None, 
-                        ts_type=None, **kwargs):
-        """Get time series of station variable
-        
-        Parameters
-        ----------
-        station : :obj:`str` or :obj:`int`
-            station name or index of station in metadata dict
-        var_name : str
-            name of variable to be retrieved
-        start 
-            start time (optional)
-        stop 
-            stop time (optional). If start time is provided and stop time not, 
-            then only the corresponding year inferred from start time will be 
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution
-        **kwargs
-            Additional keyword args passed to method :func:`to_station_data`
-            
-        Returns
-        -------
-        pandas.Series
-            time series data
-        """
-        logger.warn(DeprecationWarning('Outdated method, please use to_timeseries'))
-        
-        data = self.to_station_data(station, var_name, 
-                                     start, stop, freq=ts_type,
-                                     **kwargs) 
-        if not isinstance(data, StationData):
-            raise NotImplementedError('Multiple matches found for {}. Cannot '
-                                      'yet merge multiple instances '
-                                      'of StationData into one single '
-                                      'timeseries. Coming soon...'.format(station))
-        return data.to_timeseries(var_name)
 
     def plot_station_timeseries(self, station, var_name, start=None, 
                                 stop=None, ts_type=None, vmin=None, 
@@ -1640,7 +1524,7 @@ class UngriddedData(object):
         
         if all([x is None for x in (var_name, filter_name, start, stop)]): #use all stations
             all_meta = self._meta_to_lists()
-            lons, lats = all_meta['stat_lon'], all_meta['stat_lat']
+            lons, lats = all_meta['longitude'], all_meta['latitude']
             
         else:
             stat_data = self.to_station_data_all(var_name, start, stop, 
@@ -1751,11 +1635,126 @@ class UngriddedData(object):
             for tstamp, f in self.filter_hist.items():
                 if f:
                     s += '\n Filter time log: {}'.format(tstamp)
-                    for key, val in f.items():
-                        s += '\n\t{}: {}'.format(key, val)
+                    if isinstance(f, dict):
+                        for key, val in f.items():
+                            s += '\n\t{}: {}'.format(key, val)
+                    else:
+                        s += '\n\t{}'.format(f)
                     
         return s
+   
+    # DEPRECATED METHODS
+    @property
+    def vars_to_retrieve(self):
+        logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
+                                          "deprectated. Please use attr "
+                                          "contains_vars instead"))
+        return self.contains_vars
+    
+    def get_time_series(self, station, var_name, start=None, stop=None, 
+                        ts_type=None, **kwargs):
+        """Get time series of station variable
+        
+        Parameters
+        ----------
+        station : :obj:`str` or :obj:`int`
+            station name or index of station in metadata dict
+        var_name : str
+            name of variable to be retrieved
+        start 
+            start time (optional)
+        stop 
+            stop time (optional). If start time is provided and stop time not, 
+            then only the corresponding year inferred from start time will be 
+            considered
+        ts_type : :obj:`str`, optional
+            temporal resolution
+        **kwargs
+            Additional keyword args passed to method :func:`to_station_data`
+            
+        Returns
+        -------
+        pandas.Series
+            time series data
+        """
+        logger.warn(DeprecationWarning('Outdated method, please use to_timeseries'))
+        
+        data = self.to_station_data(station, var_name, 
+                                     start, stop, freq=ts_type,
+                                     **kwargs) 
+        if not isinstance(data, StationData):
+            raise NotImplementedError('Multiple matches found for {}. Cannot '
+                                      'yet merge multiple instances '
+                                      'of StationData into one single '
+                                      'timeseries. Coming soon...'.format(station))
+        return data.to_timeseries(var_name)
+    
+    # TODO: review docstring        
+    def to_timeseries(self, station_name=None, start_date=None, end_date=None, 
+                      freq=None):
+        """Convert this object into individual pandas.Series objects
 
+        Parameters
+        ----------
+        station_name : :obj:`tuple` or :obj:`str:`, optional
+            station_name or list of station_names to return
+        start_date, end_date : :obj:`str:`, optional
+            date strings with start and end date to return
+        freq : obj:`str:`, optional
+            frequency to resample to using the pandas resample method
+            us the offset aliases as noted in
+            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
+
+        Returns
+        -------
+        list or dictionary
+            station_names is a string: dictionary with station data
+            station_names is list or None: list of dictionaries with station data
+
+        Example
+        -------
+        >>> import pyaerocom.io.readobsdata
+        >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
+        >>> obj.read()
+        >>> pdseries = obj.to_timeseries()
+        >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
+        """
+        from warnings import warn
+        msg = ('This method does currently not work due to recent API changes, '
+               'and is therefore a wrapper for method to_station_data or '
+               'to_station_data_all dependent on whether a station name is '
+               'provided or not.')
+        warn(DeprecationWarning(msg))
+        if station_name is None:
+            return self.to_station_data_all(start=start_date, stop=end_date,
+                                            freq=freq)
+        if isinstance(station_name, str):
+            station_name = [station_name]
+        if isinstance(station_name, list):
+            indices = []
+            for meta_idx, info in self.metadata.items():
+                if info['station_name'] in station_name:
+                    indices.append(meta_idx)
+            if len(indices) == 0:
+                raise MetaDataError('No such station(s): {}'.format(station_name))
+            elif len(indices) == 1:
+                # return single dictionary, like before 
+                # TODO: maybe change this after clarification
+                return self.to_station_data(start=start_date, stop=end_date,
+                                            freq=freq)
+            else:
+                out_data = []
+                for meta_idx in indices:
+                    try:
+                        out_data.append(self.to_station_data(start=start_date, 
+                                                             stop=end_date,
+                                                             freq=freq))
+                    except (VarNotAvailableError, TimeMatchError, 
+                            DataCoverageError) as e:
+                        logger.warning('Failed to convert to StationData '
+                               'Error: {}'.format(repr(e)))
+                return out_data
+    
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     test = sorted(arr_to_be_reduced)
     closest_idx = []
@@ -1769,9 +1768,15 @@ if __name__ == "__main__":
     
     import pyaerocom as pya
     
-    data = pya.io.ReadUngridded().read('EBASMC', 'scatc550aer')
+    data = pya.io.ReadUngridded().read('EBASMC', 
+                                       ['scatc550aer', 'absc550aer'],
+                                       station_names='Puy*')
     
-    subset = data.remove_outliers()
+    data1 =  data.remove_outliers('scatc550aer')
+    
+    stats = data1.to_station_data('P*', 'scatc550aer')
+    pya.helpers.station_data_to_timeseries(stats, 'scatc550aer',
+                                           pref_attr='revision_date')
     
     
     
