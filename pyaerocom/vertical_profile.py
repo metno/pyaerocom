@@ -7,10 +7,6 @@ from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr
 
 class VerticalProfile(object):
     """Object for single variable profile data
-    
-    .. seealso::
-        
-        Base class :class:`Station`
         
     Attributes
     ----------
