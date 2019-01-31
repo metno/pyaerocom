@@ -378,6 +378,12 @@ class Config(object):
         return bool(self.check_directories())
     
     @property
+    def DIR_INI_FILES(self):
+        """Directory containing configuration files"""
+        from pyaerocom import __dir__
+        return os.path.join(__dir__, 'data')
+    
+    @property
     def EBASMC_SQL_DATABASE(self):
         """Path to EBAS SQL database"""
         return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 
