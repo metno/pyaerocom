@@ -19,6 +19,7 @@ is_3d =  lambda var_name: True if '3d' in var_name.lower() else False
 str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
 
 class VarNameInfo(object):
+    """This class can be used to retrieve information from variable names"""
     _VALID_WVL_RANGE = [100, 2000]
     _VALID_WVL_IDS = ['od', 'abs', 'ec', 'scatc', 'absc', 'bscatc', 'ssa']
     PATTERNS = {'od' : r'od\d+aer'}
@@ -36,12 +37,14 @@ class VarNameInfo(object):
     
     @property
     def contains_numbers(self):
+        """Boolean specifying whether this variable name contains numbers"""
         if len(self._nums) > 0:
             return True
         return False
     
     @property
     def is_wavelength_dependent(self):
+        """Boolean specifying whether this variable name is wavelength dependent"""
         for item in self._VALID_WVL_IDS:
             if self.var_name.startswith(item):
                 return True
@@ -49,6 +52,7 @@ class VarNameInfo(object):
     
     @property
     def contains_wavelength_nm(self):
+        """Boolean specifying whether this variable contains a certain wavelength"""
         if not self.contains_numbers:
             return False
         low, high = self._VALID_WVL_RANGE
@@ -58,6 +62,7 @@ class VarNameInfo(object):
     
     @property
     def wavelength_nm(self):
+        """Wavelength in nm (if appliable)"""
         if not self.is_wavelength_dependent:
             raise VariableDefinitionError('Variable {} is not wavelength '
                                           'dependent (does not start with '
@@ -72,14 +77,43 @@ class VarNameInfo(object):
         
     @property
     def is_optical_density(self):
+        """Boolean specifying whether variable is an optical depth"""
         if re.match(self.PATTERNS['od'], self.var_name) and self.contains_wavelength_nm:
             return True
         return False
         
     def in_wavelength_range(self, low, high):
+        """Boolean specifying whether variable is within wavelength range
+        
+        Parameters
+        ----------
+        low : float
+            lower end of wavelength range to be tested
+        high : float
+            upper end of wavelength range to be tested
+        
+        Returns
+        -------
+        bool
+            True, if this variable is wavelength dependent and if the 
+            wavelength that is inferred from the filename is within the 
+            specified input range
+        """
         return low <= self.wavelength <= high
     
     def translate_to_wavelength(self, to_wavelength):
+        """Create new variable name at a different wavelength
+        
+        Parameters
+        ----------
+        to_wavelength : float
+            new wavelength in nm
+        
+        Returns
+        -------
+        VarNameInfo
+            new variable name
+        """
         if not self.contains_wavelength_nm:
             raise ValueError('Variable {} is not wavelength dependent'.format(self.var_name))
         name = self.var_name.replace(str(self.wavelength_nm),
