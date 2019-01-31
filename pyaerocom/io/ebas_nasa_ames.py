@@ -708,6 +708,10 @@ class EbasNasaAmesFile(NasaAmesHeader):
         
                 
     def compute_time_stamps(self):
+        """Compute time stamps from first two data columns"""
+        if not self.var_defs[1].name == 'endtime' or not self.var_defs[0].unit == self.var_defs[1].unit:
+            raise NasaAmesReadError('2nd column is not endtime or does not '
+                                    'have the same unit as 1st column (starttime)')
         offs = self.base_date
         unit = self.time_unit
         if not unit in self.TIMEUNIT2SECFAC:
@@ -855,24 +859,17 @@ class EbasNasaAmesFile(NasaAmesHeader):
         if replace_invalid_nan:
             dep_dat = data[:, 1:]
             for i, val in enumerate(np.floor(self.vals_invalid)):
-                try:
-                    col = dep_dat[:, i]
-                    cond = np.floor(col) == val
-                    col[cond] = np.nan
-                    dep_dat[:, i] = col
-                except:
-                    logger.warning("Failed to replace invalid values with "
-                                   "NaNs in column {}".format(self.col_names[i+1]))
+                col = dep_dat[:, i]
+                cond = np.floor(col) == val
+                col[cond] = np.nan
+                dep_dat[:, i] = col
+
             data[:, 1:] = dep_dat
         self._data = data
         
         if convert_timestamps:
-            try:
-                self.compute_time_stamps()
-            except Exception as e:
-                logger.warning("Failed to compute time stamps.\n"
-                               "Error message: {}".format(repr(e)))
-        
+            self.compute_time_stamps()
+            
         self.assign_flagcols()
         self.init_flags(evaluate=evaluate_flags)
         
@@ -930,29 +927,23 @@ class EbasNasaAmesFile(NasaAmesHeader):
     
 if __name__=="__main__":
     DIR_MC = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/"
-    FILES_MC = ['DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas',
-                'CA0420G.20040101000000.20150618072433.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.11w.1h.CA01L_Radiance-Research_PSAP-3W_ALT.CA01L_abs_coef..nas']
+    FILES_MC = ['DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas']
     
     
     file_mc = os.path.join(DIR_MC, FILES_MC[0])
+        
+    mc = EbasNasaAmesFile(file_mc)
+    print(mc)
     
-    f = open(file_mc)
-    lines = f.readlines()
+    #alert = EbasNasaAmesFile(DIR_MC + FILES_MC[1])
+    #print(alert)
     
-# =============================================================================
-#     mc = EbasNasaAmesFile(file_mc)
-#     print(mc)
-#     
-# =============================================================================
-    alert = EbasNasaAmesFile(DIR_MC + FILES_MC[1])
-    print(alert)
+    #df = alert.to_dataframe()
     
-    df = alert.to_dataframe()
-    
-    idx = alert._find_col_matches('aerosol_absorption_coefficient',
-                                  statistics='arithmetic mean')
+    #idx = alert._find_col_matches('aerosol_absorption_coefficient',
+    #                              statistics='arithmetic mean')
     
     
     
-    alert.plot_var('aerosol_absorption_coefficient', data_level=2)
+    #alert.plot_var('aerosol_absorption_coefficient', data_level=2)
     
