@@ -357,7 +357,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
         base class
     
     """
-    TIMEUNIT2SECFAC = dict(days = 3600*24)
+    TIMEUNIT2SECFAC = dict(days = 3600*24,
+                           Days = 3600*24)
     
     ERR_LOW_STATS = 'percentile:15.87'
     ERR_HIGH_STATS = 'percentile:84.13'
@@ -457,30 +458,11 @@ class EbasNasaAmesFile(NasaAmesHeader):
         totnum = len(num_arr)
         if totnum == 0:
             raise AttributeError("No data available in file")
-        elif totnum == 1:
-            num_arr = np.asarray([num_arr])
+# =============================================================================
+#         elif totnum == 1:
+#             num_arr = np.asarray([num_arr])
+# =============================================================================
         return basedate + (num_arr * mulfac_to_sec).astype("timedelta64[s]")
-    
-# =============================================================================
-#     def decode_flags_col(self, colnum=None):
-#         """Decode flags column
-#         
-#         Parameters
-#         ----------
-#         colnum : int
-#             flag column number (only relevant if file contains multiple flag
-#             columns)
-#         """
-#         if colnum is None:
-#             l = self.col_names
-#             flag_cols = [i for (i, item) in enumerate(l) if "numflag" in item]
-#             if len(flag_cols) > 1:
-#                 raise ValueError("Found multiple flag columns: {}. Please "
-#                                  "specify which column to decode.".format(flag_cols))
-#             colnum = flag_cols[0]
-#         elif not self.var_defs[colnum].is_flag:
-#             raise IndexError("Provided column number is not a flag column")
-# =============================================================================
     
     def get_colnames_unique(self):
         """Create a list of unique column names"""
@@ -709,7 +691,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                 
     def compute_time_stamps(self):
         """Compute time stamps from first two data columns"""
-        if not self.var_defs[1].name == 'endtime' or not self.var_defs[0].unit == self.var_defs[1].unit:
+        if not self.var_defs[0].unit == self.var_defs[1].unit:
             raise NasaAmesReadError('2nd column is not endtime or does not '
                                     'have the same unit as 1st column (starttime)')
         offs = self.base_date
@@ -720,7 +702,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         
         start = self.numarr_to_datetime64(offs, self.data[:,0], mulfac)
         stop = self.numarr_to_datetime64(offs, self.data[:,1], mulfac)
-        
+            
         self.time_stamps = start + (stop - start)*.5
         return (start, stop)
     
@@ -880,10 +862,14 @@ class EbasNasaAmesFile(NasaAmesHeader):
         """Import variable definition line from NASA Ames file"""
         spl = [x.strip() for x in line_from_file.split(",")]
         name = spl[0]
+        if not len(spl) > 1:
+            unit = ''
+        else:
+            unit = spl[1]
         data = EbasColDef(name=name,
                           is_flag=True,
                           is_var=False,
-                          unit=spl[1])
+                          unit=unit)
         
         if not "numflag" in name:    
             data.is_var = True
@@ -927,7 +913,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
     
 if __name__=="__main__":
     DIR_MC = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/"
-    FILES_MC = ['DE0043G.20080101000000.20160708144500.nephelometer..aerosol.1y.1h.DE09L_tsi_neph_3563.DE09L_nephelometer.lev2.nas']
+    FILES_MC = ['US0035R.20150826222034.20160117041718.nephelometer..pm10.5mn.1h.US06L_TSI_3563_BND_pm10.US06L_scat_coef.lev2.nas']
     
     
     file_mc = os.path.join(DIR_MC, FILES_MC[0])
