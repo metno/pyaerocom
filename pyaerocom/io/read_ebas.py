@@ -158,7 +158,6 @@ class ReadEbas(ReadUngriddedBase):
     AUX_FUNS = {'scatc550dryaer'    :   compute_scatc550dryaer,
                 'absc550dryaer'     :   compute_absc550dryaer}
     
-    
     # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
@@ -1017,10 +1016,11 @@ if __name__=="__main__":
     change_verbosity('critical')
 
     r = ReadEbas()
-    absc = r.read(['absc550aer', 'scatc550dryaer'])
+    #absc = r.read(['absc550aer', 'scatc550dryaer'])
     
-    data = r.read('scatc550dryaer', station_names=['Melpitz'],
-                            REMOVE_INVALID_FLAGS=True, LOG_READ_STATS=True,
+    data = r.read('scatc550dryaer', station_names=['Bondv*'],
+                            REMOVE_INVALID_FLAGS=True, 
+                            LOG_READ_STATS=True,
                             MERGE_META=False)
     
     

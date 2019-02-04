@@ -6,6 +6,7 @@ Created on Mon Jan 28 13:26:36 2019
 @author: jonasg
 """
 import os
+import numpy as np
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom import const
 
@@ -24,6 +25,8 @@ class DataSource(BrowseDict):
         version of data (e.g. 3)
     data_level 
         level of data (e.g. 2)
+    revision_date
+        last revision date of dataset
     ts_type_src 
         sampling frequency as defined in data files (use None if undefined)
     
@@ -33,7 +36,8 @@ class DataSource(BrowseDict):
                   data_product  =   str,
                   data_version  =   float,
                   data_level    =   float,
-                  ts_type_src   =   str)
+                  ts_type_src   =   str,
+                  revision_date =   np.datetime64)
     
     _ini_file_name = 'data_sources.ini'
     def __init__(self, **info):
@@ -43,14 +47,13 @@ class DataSource(BrowseDict):
         self.data_product = None
         self.data_version = None
         self.data_level = None
+        self.revision_date = None
         
         self.ts_type_src = None
         
         self.update(**info)
         if self.data_id is not None:
             self._parse_source_info_from_ini()
-        
-        
         
     @property
     def data_dir(self):
