@@ -103,8 +103,7 @@ class StationData(StationMetaData):
         quality_check : bool
             if True, and coordinate values are lists or arrays, then the 
             standarad deviation in the values is compared to the upper limits
-            allowed in the local variation. The upper limits are specified
-            in attr. ``COORD_MAX_VAR``. 
+            allowed in the local variation. 
         
         Returns
         -------
@@ -142,6 +141,8 @@ class StationData(StationMetaData):
             vals[key] = val
             stds[key] = std
         if _check_var:
+            raise NotImplementedError('This feature does currently not work '
+                                      'due to recent API changes')
             logger.debug("Performing quality check for coordinates")
             lat, dlat, dlon, dalt = (vals['latitude'],
                                      stds['latitude'],
