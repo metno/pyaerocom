@@ -15,17 +15,7 @@ def test_exponent():
             utils.exponent(234)]
     npt.assert_array_equal(nominal, vals)
     
-def test_haversine():
-    npt.assert_allclose(utils.haversine(15, 0, 16, 0), 111.20, atol=0.1)
-    
-def test_is_within_radius_km():
-    assert utils.is_within_radius_km(15,0,0, 16, 0, 1000, 111.2)
-    
 if __name__ == '__main__':
     test_exponent()
-    test_haversine()
-    test_is_within_radius_km()
-    
-
     
     
