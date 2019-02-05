@@ -66,11 +66,11 @@ class ReadEarlinet(ReadUngriddedBase):
     #: dictionary specifying the file search patterns for each variable
     VAR_PATTERNS_FILE = {#'ec5503daer'       : '*/f*/*.e5*', 
                          #'ec5503daer_err'   : '*/f*/*.e5*',
-                         'ec5323daer'       : '*/f*/*.e5*', 
-                         'ec5323daer_err'   : '*/f*/*.e5*', 
-                         'ec3553daer'       : '*/f*/*.e3*', 
-                         'ec3553daer_err'   : '*/f*/*.e3*', 
-                         'zdust'            : '*/f*/*.e*'}
+                         'ec5323daer'       : '*/*.e5*', 
+                         'ec5323daer_err'   : '*/*.e5*', 
+                         'ec3553daer'       : '*/*.e3*', 
+                         'ec3553daer_err'   : '*/*.e3*', 
+                         'zdust'            : '*/*.e*'}
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
@@ -381,6 +381,28 @@ class ReadEarlinet(ReadUngriddedBase):
         self.data = data_obj
         return data_obj
         
+    def _load_exclude_filelist(self):
+        exclude = []
+        import glob
+        files = glob.glob('{}/EXCLUDE/*.txt'.format(self.DATASET_PATH))
+        for i, file in enumerate(files):
+            count = 0
+            num = None
+            indata = False
+            with open(file) as f:
+                for line in f:
+                    if indata:
+                        exclude.append(line.strip())
+                        count += 1
+                    elif 'Number of' in line:
+                        print(line)
+                        num = int(line.split(':')[1].strip())
+                        indata = True
+                    
+            if not count == num:
+                raise Exception
+                        
+            
     def get_file_list(self, vars_to_retrieve=None):
         """Perform recusive file search for all input variables
         
@@ -415,47 +437,49 @@ class ReadEarlinet(ReadUngriddedBase):
         return files
 
 if __name__=="__main__":
-    F0 = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/ev/f2010/ev1008192050.e532'
-    F150 = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Earlinet/data/kb/f2001/kb0108091955.e532'
+    
     read = ReadEarlinet()
     read.verbosity_level = 'info'
+    read._load_exclude_filelist()
+    #data = read.read('ec5323daer', last_file=10)
     
-    data = read.read('ec5323daer', last_file=10)
     
     
-    from time import time
-    t0=time()
-    #data = read.read(vars_to_retrieve='zdust', first_file=345, last_file=1000)
-    print("Elapsed time read all zdust: {} s".format(time() - t0))
-    stat_test = False
-    if stat_test:
-        all_stats = []
-        stat = ''
-        last_stat = ''
-        files = read.get_file_list()
-        problematic = []
-        read_failed = []
-        for i, file in enumerate(files):
-            ok = True
-            try:
-                data = xarray.open_dataset(file)
-            except:
-                read_failed.append(file)
-                ok = False
-            if ok:
-                stat = data.attrs['Location'].split(',')[0].strip()
-                if stat != last_stat:
-                    print('New location: {} (file no. {})'.format(stat, i))
-                    lon = data.attrs['Longitude_degrees_east']
-                    lat = data.attrs['Latitude_degrees_north']
-                    print("Lon / lat: ({:.3f}, {:.3f})".format(lon, lat))
-                    
-                    if stat in all_stats:
-                        print('Order not conserved')
-                        problematic.append(stat)
-                    all_stats.append(stat)
-                last_stat = stat
-            
+# =============================================================================
+#     from time import time
+#     t0=time()
+#     #data = read.read(vars_to_retrieve='zdust', first_file=345, last_file=1000)
+#     print("Elapsed time read all zdust: {} s".format(time() - t0))
+#     stat_test = False
+#     if stat_test:
+#         all_stats = []
+#         stat = ''
+#         last_stat = ''
+#         files = read.get_file_list()
+#         problematic = []
+#         read_failed = []
+#         for i, file in enumerate(files):
+#             ok = True
+#             try:
+#                 data = xarray.open_dataset(file)
+#             except:
+#                 read_failed.append(file)
+#                 ok = False
+#             if ok:
+#                 stat = data.attrs['Location'].split(',')[0].strip()
+#                 if stat != last_stat:
+#                     print('New location: {} (file no. {})'.format(stat, i))
+#                     lon = data.attrs['Longitude_degrees_east']
+#                     lat = data.attrs['Latitude_degrees_north']
+#                     print("Lon / lat: ({:.3f}, {:.3f})".format(lon, lat))
+#                     
+#                     if stat in all_stats:
+#                         print('Order not conserved')
+#                         problematic.append(stat)
+#                     all_stats.append(stat)
+#                 last_stat = stat
+#             
+# =============================================================================
         
             
     
