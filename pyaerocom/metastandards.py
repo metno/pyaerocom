@@ -126,6 +126,7 @@ class StationMetaData(DataSource):
         self.station_name = None
         self.instrument_name = None
         self.PI = None
+        self.filename = None
         
         self.ts_type = None
         self.latitude = None
