@@ -14,7 +14,7 @@ from pyaerocom import StationData
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
-                               start_stop)
+                               start_stop, merge_station_data)
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -269,8 +269,9 @@ class UngriddedData(object):
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
                         stop=None, freq=None, interp_nans=False, 
-                        min_coverage_interp=0.68, 
-                        data_as_series=True):
+                        min_coverage_interp=0.68, data_as_series=True, 
+                        merge_if_multi=True, merge_pref_attr=None, 
+                        merge_sort_by_largest=True, insert_nans=False):
         """Convert data from one station to :class:`StationData`
         
         Todo
@@ -301,7 +302,25 @@ class UngriddedData(object):
             roughly corresponding to 1 sigma)
         data_as_series : bool
             if True, all data columns are returned as time-series
-            
+        merge_if_multi : bool
+            if True and if data request results in multiple instances of 
+            StationData objects, then these are attempted to be merged into one 
+            :class:`StationData` object using :func:`merge_station_data`
+        merge_pref_attr 
+            only relevant for merging of multiple matches: preferred attribute 
+            that is used to sort the individual StationData objects by relevance.
+            Needs to be available in each of the individual StationData objects.
+            For details cf. :attr:`pref_attr` in docstring of 
+            :func:`merge_station_data`. Example could be `revision_date`. If 
+            None, then the stations will be sorted based on the number of 
+            available data points (if :attr:`merge_sort_by_largest` is True, 
+            which is default).
+        merge_sort_by_largest : bool
+            only relevant for merging of multiple matches: cf. prev. attr. and
+            docstring of :func:`merge_station_data` method.
+        insert_nans : bool
+            if True, then the retrieved :class:`StationData` objects are filled
+            with NaNs 
         
         Returns
         -------
@@ -311,15 +330,6 @@ class UngriddedData(object):
             detected for that station (e.g. data from different instruments), 
             else single instance of StationData
         """
-        if isinstance(meta_idx, str):
-            # user asks explicitely for station name, find all meta indices
-            # that match this station
-            try:
-                meta_idx = self._find_station_indices(meta_idx)
-            except ValueError:
-                raise ValueError('No such station {} in UngriddedData'.format(meta_idx))
-        if not isinstance(meta_idx, list):
-            meta_idx = [meta_idx]
         if isinstance(vars_to_convert, str):
             vars_to_convert = [vars_to_convert]
         if start is None and stop is None:
@@ -327,6 +337,21 @@ class UngriddedData(object):
             stop = pd.Timestamp('2200')
         else:
             start, stop = start_stop(start, stop)
+            
+        if isinstance(meta_idx, str):
+            # user asks explicitely for station name, find all meta indices
+            # that match this station
+            try:
+                meta_idx = self._find_station_indices(meta_idx)
+            except ValueError:
+                raise ValueError('No such station {} in UngriddedData'
+                                 .format(meta_idx))
+            if merge_if_multi and len(vars_to_convert) > 1:
+                raise NotImplementedError('Cannot yet merge multiple stations '
+                                          'with multiple variables.')
+        if not isinstance(meta_idx, list):
+            meta_idx = [meta_idx]
+        
             
         start, stop = np.datetime64(start), np.datetime64(stop)
         if len(meta_idx) == 1:
@@ -349,8 +374,21 @@ class UngriddedData(object):
                 stats.append(stat)
             except VarNotAvailableError:
                 pass
+        if merge_if_multi and len(stats) > 1:
+            merged = merge_station_data(stats, vars_to_convert,
+                                        pref_attr=merge_pref_attr,
+                                        sort_by_largest=merge_sort_by_largest)
+            stats = [merged]
+        if insert_nans:
+            for stat in stats:
+                for var in vars_to_convert:
+                    stat.insert_nans(var)
         if len(stats) == 0:
             logger.warn('No data could be retrieved for request')
+        elif len(stats) == 1:
+            # return StationData object and not list 
+            return stats[0]
+        
         return stats
         
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
