@@ -7,7 +7,8 @@ import iris
 from iris import coord_categorisation
 import pandas as pd
 import numpy as np
-from pyaerocom.exceptions import LongitudeConstraintError
+from pyaerocom.exceptions import (LongitudeConstraintError, 
+                                  DataCoverageError, MetaDataError)
 from pyaerocom import logger
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
@@ -69,20 +70,69 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
-def station_data_to_timeseries(stats, var_name, pref_attr=None, 
-                               sort_by_largest=True):
-    """Order stations based on their significance and resolve conflicts"""
-    # first sort based on number of data points (ignor NaNs)
-    from pyaerocom import StationData
+def merge_station_data(stats, var_name, pref_attr=None, 
+                       sort_by_largest=True, fill_missing_nan=True,
+                       **add_meta_keys):
+    """Merge multiple StationData objects (from one station) into one instance
     
+    Note
+    ----
+    - all input :class:`StationData` objects need to have same attributes\
+       ``station_name``, ``latitude``, ``longitude`` and ``altitude``
+    
+    Parameters
+    ----------
+    stats : list
+        list containing :class:`StationData` objects (note: all of these 
+        objects must contain variable data for the specified input variable)
+    var_name : str
+        data variable name that is to be merged
+    pref_attr 
+        optional argument that may be used to specify a metadata attribute
+        that is available in all input :class:`StationData` objects and that
+        is used to order the input stations by relevance. The associated values
+        of this attribute need to be sortable (e.g. revision_date). This is 
+        only relevant in case overlaps occur. If unspecified the relevance of 
+        the stations is sorted based on the length of the associated data 
+        arrays.
+    sort_by_largest : bool
+        if True, the result from the sorting is inverted. E.g. if 
+        ``pref_attr`` is unspecified, then the stations will be sorted based on
+        the length of the data vectors, starting with the shortest, ending with
+        the longest. This sorting result will then be inverted, if 
+        ``sort_by_largest=True``, so that the longest time series get's highest
+        importance. If, e.g. ``pref_attr='revision_date'``, then the stations 
+        are sorted by the associated revision date value, starting with the 
+        earliest, ending with the latest (which will also be inverted if 
+        this argument is set to True)
+    fill_missing_nan : bool
+        if True, the resulting time series is filled with NaNs. NOTE: this 
+        requires that information about the temporal resolution (ts_type) of
+        the data is available in each of the StationData objects.
+    """    
     # make sure the data is provided as pandas.Series object
     for stat in stats:
-        if not isinstance(stat[var_name], pd.Series):
-            raise ValueError('Data needs to be provided as pandas Series in '
-                             'individual station data objects')
-        
-    merged = StationData()
-    
+        if not var_name in stat:
+            raise DataCoverageError('All input station must contain {} data'
+                                    .format(var_name))
+        elif not isinstance(stat[var_name], pd.Series):
+            try:
+                stat._to_ts_helper(var_name)
+            except Exception as e:
+                raise ValueError('Data needs to be provided as pandas Series in '
+                                 'individual station data objects. Attempted to'
+                                 'convert but failed with the following '
+                                 'exception: {}'.format(repr(e)))
+        elif fill_missing_nan:
+            try:
+                stat.get_var_ts_type(var_name)
+            except MetaDataError:
+                raise MetaDataError('Cannot merge StationData objects: one or '
+                                    'more of the provided objects does not '
+                                    'provide information about the ts_type of '
+                                    'the {} data, which is required when input '
+                                    'arg. fill_missing_nan is True.'.format(var_name))
+                
     if pref_attr is not None:
         stats.sort(key=lambda s: s[pref_attr])
     else:
@@ -90,56 +140,17 @@ def station_data_to_timeseries(stats, var_name, pref_attr=None,
     
     if sort_by_largest:
         stats = stats[::-1]
+    
+    # remove first station from the list
+    first = stats.pop(0)
         
-    vals_merged, idx_merged = [], []
-    vals_removed, idx_removed = [], []
+    for i, stat in enumerate(stats):    
+        first.merge_other(stat, var_name, **add_meta_keys)
+        #first.merge_vardata(stat, var_name)
     
-    
-    for i, stat in enumerate(stats):
-        s = stat[var_name].dropna()
-        info = stat.var_info[var_name]
-        if info['overlap']:
-            raise NotImplementedError('Coming soon...')
-# =============================================================================
-#             s = s.groupby(s.index).mean()
-#             stat.overlap_removed = True
-# =============================================================================
-        
-        if len(s) > 0: #there is data
-            if len(idx_merged) > 0: # we're not in the first station
-                overlap = np.intersect1d(idx_merged, s.index)
-                # there is an overlap ignore data from this station (we have sorted 
-                # above by significance based on total no. of datapoints)
-                if len(overlap) > 0: 
-                    s.drop(index=overlap, inplace=True)
-                    removed = s[overlap]
-                    idx_removed.extend(removed.index)
-                    vals_removed.extend(removed.values)
-                    
-            if len(s) > 0:
-                vals_merged.extend(s.values)
-                idx_merged.extend(s.index)
-                
-                # make sure each timestamp only occurs once 
-                # TODO: this may be removed if functionality is tested
-                pdidx = pd.DatetimeIndex(idx_merged)
-                if len(pdidx) != len(pdidx.unique()):
-                    raise ValueError('Please debug')
-            
-            if not var_name in merged.var_info:
-                merged.var_info[var_name] = info
-            else:
-                merged.merge_var_info(stat, var_name)
-            merged.merge_meta(stat)
-            
-    ts = pd.Series(vals_merged, idx_merged)
-    overlap = pd.Series(vals_removed, idx_removed)
-    
-    merged.dtime = idx_merged
-    merged[var_name] = ts
-    merged['{}_overlap'.format(var_name)] = overlap
-    
-    return (merged)
+    if fill_missing_nan:
+        first.insert_nans(var_name)
+    return first
 
 def resample_timeseries(s, freq, how='mean'):
     """Resample a timeseries (pandas.Series)
