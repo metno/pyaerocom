@@ -67,7 +67,7 @@ class UngriddedData(object):
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
     """
-    __version__ = '0.16'
+    __version__ = '0.17'
     
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
@@ -346,9 +346,6 @@ class UngriddedData(object):
             except ValueError:
                 raise ValueError('No such station {} in UngriddedData'
                                  .format(meta_idx))
-            if merge_if_multi and len(vars_to_convert) > 1:
-                raise NotImplementedError('Cannot yet merge multiple stations '
-                                          'with multiple variables.')
         if not isinstance(meta_idx, list):
             meta_idx = [meta_idx]
         
@@ -375,6 +372,9 @@ class UngriddedData(object):
             except VarNotAvailableError:
                 pass
         if merge_if_multi and len(stats) > 1:
+            if len(vars_to_convert) > 1:
+                raise NotImplementedError('Cannot yet merge multiple stations '
+                                          'with multiple variables.')
             merged = merge_station_data(stats, vars_to_convert,
                                         pref_attr=merge_pref_attr,
                                         sort_by_largest=merge_sort_by_largest)
