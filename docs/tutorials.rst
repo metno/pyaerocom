@@ -26,3 +26,5 @@ Further tutorials (in-depth)
 .. include:: add02_read_ebas_nasa_ames.rst
 
 .. include:: add03_ebas_database_browser.rst
+
+.. include:: add04_stationdata_merging.rst
