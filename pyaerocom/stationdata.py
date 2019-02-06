@@ -373,6 +373,19 @@ class StationData(StationMetaData):
         This method removes NaN's from the existing time series in the data
         objects. In order to fill up the time-series with NaNs again after 
         merging, call :func:`insert_nans`
+        
+        Parameters
+        ----------
+        other : StationData
+            other data object 
+        var_name : str
+            variable name for which info is to be merged (needs to be both
+            available in this object and the provided other object)
+            
+        Returns
+        -------
+        StationData
+            this object
         """
         if not var_name in self:
             raise VarNotAvailableError('StationData object does not contain '
@@ -424,7 +437,32 @@ class StationData(StationMetaData):
                 self.overlap[var_name] = removed
                 
         return self
-                
+         
+    def merge_other(self, other, var_name, **add_meta_keys):
+        """Merge other station data object
+        
+        Todo
+        ----
+        Should be independent of variable, i.e. it should be able to merge all
+        data that is in the other object into this, even if this object does
+        not contain that variable yet.
+        
+        Parameters
+        ----------
+        other : StationData
+            other data object 
+        var_name : str
+            variable name for which info is to be merged (needs to be both
+            available in this object and the provided other object)
+            
+        Returns
+        -------
+        StationData
+            this object that has merged the other station
+        """
+        self.merge_meta_same_station(other, **add_meta_keys)
+        self.merge_vardata(other, var_name)
+        return self
         
     def get_data_columns(self):
         """List containing all data columns
@@ -565,15 +603,22 @@ class StationData(StationMetaData):
         ---------
         var_name : str
             variable name
+        inplace : bool
+            if True, the actual data in this object will be overwritten with 
+            the new data that contains NaNs
         
         Returns
         -------
+        StationData
+            the modified station data object
         
         """
         ts_type = self.get_var_ts_type(var_name)
         
-        self.resample_vardata(var_name, ts_type)
-        return self[var_name]
+        self.resample_vardata(var_name, ts_type, inplace=True)
+        
+        return self
+
     
     def _to_ts_helper(self, var_name):
         """Convert data internally to pandas.Series if it is not stored as such
@@ -640,7 +685,7 @@ class StationData(StationMetaData):
         return data
     
     def plot_variable(self, var_name, freq=None, resample_how='mean', 
-                      add_overlaps=False, **kwargs):
+                      add_overlaps=False, legend=True, **kwargs):
         """Plot timeseries for variable
         
         Note
@@ -687,6 +732,12 @@ class StationData(StationMetaData):
             lbl = var_name
             if freq is not None:
                 lbl += ' ({} {})'.format(freq, resample_how)
+            else:
+                try:
+                    ts_type = self.get_var_ts_type(var_name)
+                    lbl += ' ({})'.format(ts_type)
+                except:
+                    pass
         if not 'ax' in kwargs:
             if 'figsize' in kwargs:
                 fs = kwargs.pop('figsize')
@@ -704,7 +755,6 @@ class StationData(StationMetaData):
             if var_name in self.overlap:
                 ax.plot(self.overlap[var_name], '--', lw=1, c='r', 
                         label='{} (overlap)'.format(var_name)) 
-                ax.legend()
             else: 
                 tit += ' (No overlapping data found)'
                 
@@ -719,6 +769,8 @@ class StationData(StationMetaData):
                         .format(var_name))
         ax.set_ylabel(ylabel)
         ax.set_title(tit)
+        if legend:
+            ax.legend()
         return ax
             
     def __str__(self):
