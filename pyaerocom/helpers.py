@@ -110,11 +110,19 @@ def merge_station_data(stats, var_name, pref_attr=None,
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
     """    
+    if isinstance(var_name, list):
+        if len(var_name) > 1:
+            raise NotImplementedError('Merging of multivar data not yet possible')
+        var_name = var_name[0]
     # make sure the data is provided as pandas.Series object
     for stat in stats:
         if not var_name in stat:
             raise DataCoverageError('All input station must contain {} data'
                                     .format(var_name))
+        elif pref_attr is not None and not pref_attr in stat:
+            raise MetaDataError('Cannot sort station relevance by attribute {}. '
+                                'At least one of the input stations does not '
+                                'contain this attribute'.format(pref_attr))
         elif not isinstance(stat[var_name], pd.Series):
             try:
                 stat._to_ts_helper(var_name)
