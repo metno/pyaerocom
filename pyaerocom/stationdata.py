@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
-from pyaerocom import VerticalProfile, logger
-from pyaerocom import GEONUM_AVAILABLE
+from pyaerocom import VerticalProfile, logger, GEONUM_AVAILABLE, const
+
 from pyaerocom.exceptions import CoordinateError, MetaDataError, VarNotAvailableError
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
-
+from pyaerocom.helpers import resample_timeseries
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -475,17 +475,38 @@ class StationData(StationMetaData):
         return pd.DataFrame(data=self.get_data_columns(), index=self.dtime)
     
     def get_var_ts_type(self, var_name):
-        """Get ts_type for a certain variable"""
+        """Get ts_type for a certain variable
+        
+        Parameters
+        ----------
+        var_name : str
+            data variable name for which the ts_type is supposed to be
+            retrieved
+        
+        Returns
+        -------
+        str
+            the corresponding data time resolution
+        
+        Raises
+        ------
+        MetaDataError
+            if no metadata is available for this variable (e.g. if ``var_name``
+            cannot be found in :attr:`var_info`) or if the 
+        """
         if not var_name in self.var_info:
-            raise KeyError('No variable specific metadata available for {}'
-                           .format(var_name))
-    
+            raise MetaDataError('No variable specific metadata available '
+                                'for {}'.format(var_name))
+        
         if 'ts_type' in self.var_info[var_name]:
             tp = self.var_info[var_name]['ts_type']
         else:
             tp = self.ts_type
         if tp is None:
-            raise ValueError('ts_type is not defined...')
+            raise MetaDataError('ts_type is not defined...')
+        elif not tp in const.GRID_IO.TS_TYPES:
+            raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
+                                .format(tp, const.GRID_IO.TS_TYPES))
         return tp
             
     def resample_vardata(self, var_name, ts_type, how='mean',
@@ -519,8 +540,6 @@ class StationData(StationMetaData):
                 raise ValueError('{} data must be stored as pandas Series '
                                  'instance. Failed to convert to pandas Series.'
                                  'Error: {}'.format(repr(e)))
-                
-        from pyaerocom.helpers import resample_timeseries
         
         new = resample_timeseries(data, freq=ts_type, how=how)
         
@@ -556,17 +575,46 @@ class StationData(StationMetaData):
         self.resample_vardata(var_name, ts_type)
         return self[var_name]
     
-    def to_timeseries(self, var_name, inplace=True):
+    def _to_ts_helper(self, var_name):
+        """Convert data internally to pandas.Series if it is not stored as such
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name of data
+        
+        Returns
+        -------
+        pandas.Series
+            data as timeseries
+        """
+        data = self[var_name]
+        if not data.ndim == 1:
+            raise NotImplementedError('Multi-dimensional data columns '
+                                      'cannot be converted to time-series')
+        self.check_dtime()
+        if not len(data) == len(self.dtime):
+            raise ValueError("Mismatch between length of data array for "
+                             "variable {} (length: {}) and time array  "
+                             "(length: {}).".format(var_name, len(data), 
+                               len(self.dtime)))    
+        self[var_name] = s = pd.Series(data, index=self.dtime)
+        return s
+        
+    def to_timeseries(self, var_name, freq=None, resample_how='mean'):
         """Get pandas.Series object for one of the data columns
         
         Parameters
         ----------
         var_name : str
             name of variable (e.g. "od550aer")
-        inplace : bool
-            if True, then the current data object assigned with this variable
-            will be overwritten
-            
+        freq : str
+            new temporal resolution (can be pandas freq. string, or pyaerocom
+            ts_type)
+        resample_how : str
+            choose from mean or median (only relevant if input parameter freq 
+            is provided, i.e. if resampling is applied)
+        
         Returns
         -------
         Series
@@ -582,41 +630,43 @@ class StationData(StationMetaData):
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
     
-        data = self[var_name]
-        if not isinstance(data, pd.Series):
-            if not data.ndim == 1:
-                raise NotImplementedError('Multi-dimensional data columns '
-                                          'cannot be converted to time-series')
-            self.check_dtime()
-            if not len(data) == len(self.dtime):
-                raise ValueError("Mismatch between length of data array for "
-                                 "variable {} (length: {}) and time array  "
-                                 "(length: {}).".format(var_name, len(data), 
-                                   len(self.dtime)))    
-            data = pd.Series(data, index=self.dtime)
-            if inplace:
-                self[var_name] = data
+        if not isinstance(self[var_name], pd.Series):
+            data = self._to_ts_helper(var_name)
         else:
             logger.info('Data is already instance of pandas.Series')
-        
+            data = self[var_name]
+        if freq is not None:
+            data = resample_timeseries(data, freq, how=resample_how)
         return data
     
     def plot_variable(self, var_name, freq=None, resample_how='mean', 
-                      **kwargs):
+                      add_overlaps=False, **kwargs):
         """Plot timeseries for variable
+        
+        Note
+        ----
+        If you set input arg ``add_overlaps = True`` the overlapping timeseries
+        data - if it exists - will be plotted on top of the actual timeseries
+        using red colour and dashed line. As the overlapping data may be 
+        identical with the actual data, you might want to increase the line 
+        width of the actual timeseries using an additional input argumend 
+        ``lw=4``, or similar.
         
         Parameters
         ----------
         var_name : str
             name of variable (e.g. "od550aer")
-        freq : str
-            new temporal resolution (can be pandas freq. string, or pyaerocom
-            ts_type)
-        resample_how : str
+        freq : :obj:`str`, optional
+            sampling resolution of data (can be pandas freq. string, or 
+            pyaerocom ts_type).
+        resample_how : :obj:`str`, optional
             choose from mean or median (only relevant if input parameter freq 
             is provided, i.e. if resampling is applied)
+        add_overlaps : bool
+            if True and if overlapping data exists for this variable, it will 
+            be added to the plot.
         **kwargs
-            additional keyword args passed to ``Series.plot`` method
+            additional keyword args passed to matplotlib ``plot`` method
             
         Returns
         -------
@@ -630,31 +680,46 @@ class StationData(StationMetaData):
         ValueError
             if length of data array does not equal the length of the time array
         """
+        import matplotlib.pyplot as plt
+        if 'label' in kwargs:
+            lbl = kwargs.pop('label')
+        else:
+            lbl = var_name
+            if freq is not None:
+                lbl += ' ({} {})'.format(freq, resample_how)
+        if not 'ax' in kwargs:
+            if 'figsize' in kwargs:
+                fs = kwargs.pop('figsize')
+            else:
+                fs = (16, 8)
+            _, ax = plt.subplots(1, 1, figsize=fs)
+        else: 
+            ax = kwargs.pop('ax')
+        
+        tit = self.station_name
         s = self.to_timeseries(var_name, freq, resample_how)
-        ax = s.plot(**kwargs)
+        
+        ax.plot(s, label=lbl, **kwargs)
+        if add_overlaps:
+            if var_name in self.overlap:
+                ax.plot(self.overlap[var_name], '--', lw=1, c='r', 
+                        label='{} (overlap)'.format(var_name)) 
+                ax.legend()
+            else: 
+                tit += ' (No overlapping data found)'
+                
+        ylabel = var_name
+        try:
+            if 'unit' in self.var_info[var_name]:
+                u = self.var_info[var_name]['unit']
+                if u is not None and not u in [1, '1']:
+                    ylabel += ' [{}]'.format(u)
+        except:
+            logger.warn('Failed to access unit information for variable {}'
+                        .format(var_name))
+        ax.set_ylabel(ylabel)
+        ax.set_title(tit)
         return ax
-            
-# =============================================================================
-#     def __getitem__(self, name):
-#         if name in self._coords:
-#             # no special treatment
-#             return self._coords[name]
-#         return self[name]
-#     
-#     def __setitem__(self, name, value):
-#         if name in self._coords:
-#             #special treatment
-#             if isinstance(value, (int, np.integer)):
-#                 value = float(value)
-#             if not isinstance(value, (float, np.floating, 
-#                                       tuple, list, np.ndarray)):
-#                 raise ValueError('Need floating point or list-like, got: {}'
-#                                  .format(value))
-#             self._coords[name] = value
-#         else:
-#             # no special treatment
-#             super(StationData, self).__setitem__(name, value)
-# =============================================================================
             
     def __str__(self):
         """String representation"""
