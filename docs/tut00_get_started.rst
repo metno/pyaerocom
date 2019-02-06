@@ -58,7 +58,7 @@ displayed in the flowchart.
 
 .. parsed-literal::
 
-    0.008213520050048828 s
+    0.006315708160400391 s
 
 
 Check data directory
@@ -692,9 +692,11 @@ You may print it to see what is in there:
     var_info ({'od550aer': {'overlap': False}})
        od550aer (<class 'dict'>)
         overlap: False
+    overlap (BrowseDict())
     station_name: Leipzig
     instrument_name: sun_photometer
     PI: Brent_Holben
+    filename: None
     ts_type: daily
     latitude: 51.352500000000006
     longitude: 12.435277999999998
@@ -704,6 +706,7 @@ You may print it to see what is in there:
     data_product: None
     data_version: None
     data_level: None
+    revision_date: None
     ts_type_src: daily
     
     Data arrays
@@ -725,14 +728,15 @@ nm. If you like, you can plot this time-series:
 
 .. code:: ipython3
 
-    station_data.plot_variable('od550aer', style=' xg', figsize=(16,6)).set_title('Leipzig AOD all times')
+    ax = station_data.insert_nans('od550aer').plot_variable('od550aer', marker='x', ls='none')
+    station_data.plot_variable('od550aer', freq='monthly', marker=' ', ls='-', lw=3, ax=ax)
 
 
 
 
 .. parsed-literal::
 
-    Text(0.5, 1.0, 'Leipzig AOD all times')
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f5578170278>
 
 
 
@@ -749,13 +753,11 @@ passing the axes instance returned by the plotting method:
 
     ax=aeronet_data.to_station_data('Leipzig', 
                                     start=2010, 
-                                    freq='daily').plot_variable('od550aer', 
-                                                                label='daily')
+                                    freq='daily').plot_variable('od550aer')
     
     ax=aeronet_data.to_station_data('Leipzig', 
                                     start=2010, 
                                     freq='monthly').plot_variable('od550aer', 
-                                                                  label='monthly',
                                                                   ax=ax)
     ax.legend()
     ax.set_title('Leipzig AODs 2010')
@@ -798,9 +800,11 @@ bouldering trip, you may call:
                          '2006-11-01T00:00:00.000000000', '2006-12-01T00:00:00.000000000'],
                         dtype='datetime64[ns]')),
                  ('var_info', {'od550aer': {'overlap': False}}),
+                 ('overlap', BrowseDict()),
                  ('station_name', 'Fontainebleau'),
                  ('instrument_name', 'sun_photometer'),
                  ('PI', 'Brent_Holben'),
+                 ('filename', None),
                  ('ts_type', 'monthly'),
                  ('latitude', 48.406666999999985),
                  ('longitude', 2.6802780000000004),
@@ -810,6 +814,7 @@ bouldering trip, you may call:
                  ('data_product', None),
                  ('data_version', None),
                  ('data_level', None),
+                 ('revision_date', None),
                  ('ts_type_src', 'daily'),
                  ('od550aer', 2006-01-01    0.176742
                   2006-02-01    0.176013
@@ -971,7 +976,7 @@ Let's do the same for the clear-sky data.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fd5e90850f0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f5559ff2ac8>
 
 
 
