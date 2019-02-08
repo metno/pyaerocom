@@ -541,3 +541,8 @@ if __name__=="__main__":
     
     all_vars = AllVariables()
     v = all_vars['abscrh']
+    
+    print(v)
+    
+    v = all_vars['z']
+    print(v)
