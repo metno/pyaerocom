@@ -5,7 +5,7 @@ from datetime import datetime
 from collections import OrderedDict as od
 import fnmatch
 import pandas as pd
-from pyaerocom import logger, const
+from pyaerocom import logger, const, print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError)
@@ -694,9 +694,10 @@ class UngriddedData(object):
             new = self
         if low is None:
             low = const.VAR_PARAM[var_name].minimum
+            print_log.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
         if high is None:
             high = const.VAR_PARAM[var_name].maximum
-            
+            print_log.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
         var_mask = self._data[:, new._VARINDEX] == var_idx
         
@@ -1530,7 +1531,7 @@ class UngriddedData(object):
             
         """
         
-        from pyaerocom import Filter, print_log
+        from pyaerocom import Filter
         from pyaerocom.plot.plotcoordinates import plot_coordinates
         from pyaerocom.plot.mapping import set_map_ticks
     
