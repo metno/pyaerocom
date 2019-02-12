@@ -81,7 +81,7 @@ class VarNameInfo(object):
         if re.match(self.PATTERNS['od'], self.var_name) and self.contains_wavelength_nm:
             return True
         return False
-        
+    
     def in_wavelength_range(self, low, high):
         """Boolean specifying whether variable is within wavelength range
         
@@ -131,13 +131,19 @@ class VarNameInfo(object):
         return s
  
 def _read_alias_ini():
+    """Read all alias definitions from aliases.ini file and return as dict
+    
+    Returns
+    -------
+    dict
+        keys are AEROCOM standard names of variable, values are corresponding
+        aliases
+    """
     file = os.path.join(__dir__, "data", "aliases.ini")
     if not os.path.exists(file):
         return {}
     parser = ConfigParser()
     parser.read(file)
-    if not 'aliases' in parser:
-        raise IOError('aliases ini file does not contain section aliases')
     aliases = {}
     items = parser['aliases']
     for var_name in items:
@@ -238,7 +244,8 @@ class Variable(BrowseDict):
     
     RH_MAX_DRY = 0.4
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
-        self._var_name = var_name #save orig. input for whatever reasons
+        #save orig. input for whatever reasons
+        self._var_name_input = var_name 
         self.is_3d = False
         self.is_dry = False
         
@@ -256,10 +263,10 @@ class Variable(BrowseDict):
             var_name_alt = var_name
             
         self.var_name = var_name
-        self.var_name_alt = var_name_alt #alternative var_name that is searched for 
+        self.var_name_alt = var_name_alt #alternative var_name
         self.standard_name = None
         self.unit = 1
-        self.aliases = []
+        #self.aliases = []
         self.wavelength_nm = None
         self.dry_rh_max = None
         self.dimensions = None
@@ -291,7 +298,8 @@ class Variable(BrowseDict):
         # imports default information and, on top, variable information (if 
         # applicable)
         if init:
-            self.parse_from_ini(var_name, var_name_alt=self.var_name_alt,
+            self.parse_from_ini(var_name, 
+                                var_name_alt=self.var_name_alt,
                                 cfg=cfg) 
         
         self.update(**kwargs)
@@ -337,6 +345,23 @@ class Variable(BrowseDict):
     def var_name_info(self):
         return VarNameInfo(self.var_name)
         
+    @property
+    def aliases(self):
+        """Alias variable names that are frequently found / used
+        
+        Returns
+        -------
+        list
+            list containing valid aliases
+        """
+        file = os.path.join(__dir__, "data", "aliases.ini")
+        parser = ConfigParser()
+        parser.read(file)
+        info = parser['aliases']
+        if self.var_name in info:
+            return [a.strip() for a in info[self.var_name].split(',')]
+        return []
+    
     def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
         
@@ -374,7 +399,8 @@ class Variable(BrowseDict):
             else:
                 aliases = _read_alias_ini()
                 if var_name in aliases:
-                    var_info = cfg[aliases[var_name]]
+                    var_name = aliases[var_name]
+                    var_info = cfg[var_name]
                 else:
                     logger.warning("No default configuration available for "
                                    "variable {}. Using DEFAULT settings"
@@ -402,6 +428,7 @@ class Variable(BrowseDict):
                 if val == 'None':
                     val = None
                 self[key] = val
+        self.var_name = var_name
         
     def __repr__(self):
        return ("Variable {}".format(self.var_name))
@@ -540,9 +567,10 @@ def all_var_names():
 if __name__=="__main__":
     
     all_vars = AllVariables()
-    v = all_vars['abscrh']
+    
+    v = Variable('od550aer')
     
     print(v)
     
-    v = all_vars['z']
-    print(v)
+    print(v.aliases)
+    
