@@ -20,13 +20,16 @@ from pyaerocom.exceptions import (DataExtractionError,
                                   DimensionOrderError,
                                   NDimError, DataDimensionError,
                                   VariableDefinitionError)
-from pyaerocom.helpers import (get_time_constraint, 
+from pyaerocom.helpers import (get_time_rng_constraint,
+                               get_lon_rng_constraint,
+                               get_lat_rng_constraint,
                                cftime_to_datetime64,
                                str_to_iris,
                                IRIS_AGGREGATORS,
                                to_pandas_timestamp,
                                TS_TYPE_TO_NUMPY_FREQ,
-                               datetime2str)
+                               datetime2str,
+                               isrange)
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
@@ -107,7 +110,8 @@ class GriddedData(object):
                              ts_type        = "Unknown",
                              regridded      = False,
                              computed       = True,
-                             region         = None)
+                             region         = None,
+                             reader         = None)
         
         
         self.flags = od(unit_ok=True)
@@ -145,6 +149,19 @@ class GriddedData(object):
     
                 return revision
         return 'n/a'
+        
+    @property
+    def reader(self):
+        """Instance of reader class from which this object was created"""
+        return self.suppl_info['reader']
+    
+    @reader.setter
+    def reader(self, val):
+        from pyaerocom.io import ReadGridded
+        if not isinstance(val, ReadGridded):
+            raise ValueError('Input reader {} is not a support reader class for '
+                             'gridded data...'.format(type(val)))
+        self.suppl_info['reader'] = val
         
     @property
     def unit(self):
@@ -220,44 +237,7 @@ class GriddedData(object):
             logger.exception('Failed to round start time {} to beggining of '
                              'frequency {}'.format(t, self.ts_type))
             return t.astype('datetime64[us]')
-    
-# =============================================================================
-#     @property
-#     def longitude(self):
-#         """Longitudes of data"""
-#         if self.is_cube:
-#             return self.grid.coord("longitude")
-#         
-#     @longitude.setter
-#     def longitude(self, value):
-#         raise AttributeError("Longitudes cannot be changed, please check "
-#                              "underlying data type stored in attribute grid")
-#     
-#     @property
-#     def latitude(self):
-#         """Latitudes of data"""
-#         if self.is_cube:
-#             return self.grid.coord("latitude")
-#         
-#     @latitude.setter
-#     def latitude(self, value):
-#         raise AttributeError("Latitudes cannot be changed, please check "
-#                              "underlying data type stored in attribute grid")
-# =============================================================================
-        
-# =============================================================================
-#     @property
-#     def time(self):
-#         """Time dimension of data"""
-#         if self.is_cube:
-#             return self.grid.coord("time")
-#         
-#     @time.setter
-#     def time(self, value):
-#         raise AttributeError("Time array cannot be changed, please check "
-#                              "underlying data type stored in attribute grid")
-# =============================================================================
-            
+   
     @property
     def grid(self):
         """Underlying grid data object"""
@@ -294,8 +274,20 @@ class GriddedData(object):
     @property 
     def name(self):
         """ID of model to which data belongs"""
+        logger.warn('Deprecated attribute name, please use data_id instead')
         return self.suppl_info["name"]
     
+    @property
+    def data_id(self):
+        """ID of data object (e.g. model run ID, obsnetwork ID)
+        
+        Note
+        ----
+        This attribute was formerly named ``name`` which is alse the 
+        corresponding attribute name in :attr:`suppl_info`
+        """
+        return self.suppl_info['name']
+        
     @property
     def is_cube(self):
         """Checks if underlying data type is of type :class:`iris.cube.Cube`"""
@@ -377,6 +369,7 @@ class GriddedData(object):
     
     @property
     def area_weights(self):
+        """Area weights of lat / lon grid"""
         if self._area_weights is None:
             self.calc_area_weights()
         return self._area_weights
@@ -388,7 +381,22 @@ class GriddedData(object):
     def check_dim_coords(self):
         """Check dimension coordinates of grid data"""
         raise NotImplementedError
-        
+     
+    def init_reader(self, print_info=True):
+        """Initiate reader class"""
+        if self.reader is not None:
+            logger.warn('Existing reader class will be overwritten')
+        from pyaerocom.io import ReadGridded
+        try:
+            self.reader = ReadGridded(self.data_id)
+            if print_info:
+                print('\n----Initiated reader class----\n\n')
+                print(self.reader)
+        except Exception as e:
+            from pyaerocom import print_log
+            print_log.exception('Failed to initiate reader class: {}'
+                                .format(repr(e)))
+            
     def load_input(self, input, var_name):
         """Import input as cube
         
@@ -520,7 +528,6 @@ class GriddedData(object):
         self.grid.transpose(new_order)
         
     def _check_altitude_access(self):
-        raise NotImplementedError
         coord_name = self.coord_names[-1]
         if coord_name == 'altitude':
             return True
@@ -528,8 +535,6 @@ class GriddedData(object):
         if not coord_name in conv.supported:
             return False
         arg_info = conv.VARS[coord_name]
-        args_dict = {}
-        name1
         for arg, possible_vals in arg_info.items():
             pass
             
@@ -738,12 +743,85 @@ class GriddedData(object):
                 'name'          : self.name,
                 self.var_name   : Series(data, times)}
         
-    def sel(self):
-        raise NotImplementedError('Coming soon...')
+    def _closest_time_idx(self, t):
+        """Find closest index to input in time dimension"""
+        t = self.time.units.date2num(to_pandas_timestamp(t))
+        return self.time.nearest_neighbour_index(t)
     
-    def isel(self):
-        raise NotImplementedError('Coming soon...')
+    def find_closest_index(self, **dimcoord_vals):
+        """Find the closest indices for dimension coordinate values"""
+        idx = {}
+        for dim, val in dimcoord_vals.items():
+            if not dim in self.coord_names:
+                raise DataDimensionError('No such dimension {}'.format(dim))
+            elif dim == 'time':
+                idx[dim] = self._closest_time_idx(val)
+            else:
+                idx[dim] = self[dim].nearest_neighbour_index(val)
+        return idx
+    
+    def isel(self, use_neirest=True, **dimcoord_vals):
+        """Select subset by dimension names
         
+        Note
+        ----
+        This is a BETA version, please use with care
+        
+        Parameters
+        ----------
+        **dimcoord_vals 
+            key / value pairs specifying coordinate values to be extracted
+            
+        Returns
+        -------
+        GriddedData
+            subset data object
+        """
+        constraints = []
+        rng_funs = {'time'   : get_time_rng_constraint,
+                    'longitude' : get_lon_rng_constraint,
+                    'latitude' : get_lat_rng_constraint}
+        
+        coord_vals = {}
+        for dim, val in dimcoord_vals.items():
+            is_rng = isrange(val)
+            if is_rng:
+                c = rng_funs[dim](val)
+                constraints.append(c)
+            else:
+                if dim == 'time':
+                    _idx = self._closest_time_idx(val)
+                    _cval = self.time.units.num2date(self.time[_idx].points[0])
+                    if not use_neirest and _cval != val:
+                        raise DataExtractionError('No such value {} in dim {}. '
+                                                  'Use option use_neirest to '
+                                                  'disregard and extract '
+                                                  'neirest neighbour'.format
+                                                  (val, dim))
+                else:
+                    _idx = self[dim].nearest_neighbour_index(val)
+                    _cval = self[dim][_idx].points[0]
+                    if not use_neirest and _cval != val:
+                        raise DataExtractionError('No such value {} in dim {}'
+                                                  'Use option use_neirest to '
+                                                  'disregard and extract '
+                                                  'neirest neighbour'.format
+                                                  (val, dim))
+                coord_vals[dim] = _cval
+                
+        if coord_vals:
+            constraints.append(iris.Constraint(coord_values=coord_vals))
+        
+        if len(constraints) > 0:
+            c = constraints[0]
+            for cadd in constraints[1:]:
+                c = c & cadd
+        subset = self.extract(c)
+        if subset is None:
+            raise DataExtractionError('Failed to extract subset for input '
+                                      'coordinates {}'.format(dimcoord_vals))
+        return subset
+                    
     # TODO: Test, confirm and remove beta flag in docstring
     def downscale_time(self, to_ts_type='monthly'):
         """Downscale in time to predefined resolution resolution
@@ -875,7 +953,7 @@ class GriddedData(object):
                               Timestamp(time_range[1]))
             if all(isinstance(x, Timestamp) for x in time_range):
                 logger.info("Cropping along time axis based on Timestamps")
-                time_constraint = get_time_constraint(*time_range)
+                time_constraint = get_time_rng_constraint(*time_range)
                 data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
@@ -1299,6 +1377,7 @@ class GriddedData(object):
     
     def __getitem__(self, indices_or_attr):
         """x.__getitem__(y) <==> x[y]"""
+   
         if isinstance(indices_or_attr, str):
             if indices_or_attr in self.__dict__:
                 return self.__dict__[indices_or_attr]
