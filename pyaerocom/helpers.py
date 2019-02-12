@@ -70,6 +70,56 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
+def isnumeric(val):
+    """Check if input value is numeric
+    
+    Parameters
+    ----------
+    val
+        input value to be checked
+    
+    Returns
+    -------
+    bool 
+        True, if input value corresponds to a range, else False.
+    """
+    try:
+        float(val)
+        return True
+    except:
+        return False
+    
+def isrange(val):
+    """Check if input value corresponds to a range
+    
+    Checks if input is list, or array or tuple with 2 entries, or alternatively
+    a slice that has defined start and stop and has set step to None.
+
+    Note
+    ----
+    No check is performed, whether first entry is smaller than second entry if
+    all requirements for a range are fulfilled.
+    
+    Parameters
+    ----------
+    val
+        input value to be checked
+    
+    Returns
+    -------
+    bool 
+        True, if input value corresponds to a range, else False.
+    """
+    if isinstance(val, (list, np.ndarray, tuple)):
+        if len(val) == 2:
+            return True
+        return False
+    elif isinstance(val, slice):
+        if slice.step is not None or slice.start is None or slice.stop is None:
+            return False
+        return True
+    return False
+        
 def merge_station_data(stats, var_name, pref_attr=None, 
                        sort_by_largest=True, fill_missing_nan=True,
                        **add_meta_keys):
@@ -474,10 +524,8 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
     Please be aware of the definition of the longitudes in your data when 
     cropping within the longitude dimension. The longitudes in your data may be 
     defined either from **-180 <= lon <= 180** (pyaerocom standard) or from 
-    **0 <= lon <= 360**. In the former case (-180 _> 180) you can leave the 
-    additional input parameter ``meridian_centre=True`` (default). In this
-    case, if you want to crop over the border of the array (e.g. from Australia 
-    to North America),
+    **0 <= lon <= 360**. In the former case (-180 -> 180) you can leave the 
+    additional input parameter ``meridian_centre=True`` (default). 
     
     Parameters
     ----------
@@ -542,18 +590,18 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
         cond = lambda c: c.var_name in var_names
         constraints.append(iris.Constraint(cube_func=cond))
     if lon_range is not None:
-        constraints.append(get_lon_constraint(lon_range, meridian_centre))    
+        constraints.append(get_lon_rng_constraint(lon_range, meridian_centre))
     if lat_range is not None:
-        constraints.append(get_lat_constraint(lat_range))
+        constraints.append(get_lat_rng_constraint(lat_range))
     if time_range is not None:
-        constraints.append(get_time_constraint(*time_range))
+        constraints.append(get_time_rng_constraint(*time_range))
     if len(constraints) > 0:
         c = constraints[0]
         for cadd in constraints[1:]:
             c = c & cadd
     return c
 
-def get_lat_constraint(lat_range):
+def get_lat_rng_constraint(lat_range):
     """Create latitude constraint based on input range
     
     Parameters
@@ -568,50 +616,8 @@ def get_lat_constraint(lat_range):
         
     """
     return iris.Constraint(latitude=lambda v: lat_range[0] <= v <= lat_range[1])
-
-def get_lon_constraint_buggy(lon_range, meridian_centre=True):        
-    """Create longitude constraint based on input range
     
-    Note
-    ----
-    In this definition, the constraint is combined in case the border of the
-    longitude array is crossed. Apparently, that does not work properly and 
-    it is therefore recommended to use :func:`iris.cube.Cube.intersection` 
-    instead (which is also reimplemented in :class:`pyaerocom.GriddedData`).
-    If you use :func:`get_lon_constraint` it will detect if there is a border 
-    crossing, and if so, it will raise an error (that suggests to use the
-    intersection method instead).
-    
-    Parameters
-    ----------
-    lon_range : tuple
-        2-element tuple containing from left -> right end of range
-    meridian_centre : bool
-        specifies the coordinate definition range of longitude array. If True, 
-        then -180 -> 180 is assumed, else 0 -> 360
-    
-    Returns
-    -------
-    iris.Constraint
-        the corresponding iris.Constraint instance 
-    """
-    left, right = lon_range
-    if left == right:
-        raise ValueError("the specified values are equal")
-    if meridian_centre:
-        left, right = (left+180)%360-180, (right+180)%360-180
-        r_end, l_end = 180, -180
-    else:
-        left, right = left%360, right%360
-        r_end, l_end = 360, 0
-    if left < right:
-        return iris.Constraint(longitude=lambda v: left < v < right)
-    else:
-        cleft = iris.Constraint(longitude=lambda v: left <= v <= r_end)
-        cright = iris.Constraint(longitude=lambda v: l_end <= v <= right)
-        return (cleft or cright)
-    
-def get_lon_constraint(lon_range, meridian_centre=True):        
+def get_lon_rng_constraint(lon_range, meridian_centre=True):
     """Create longitude constraint based on input range
 
     Parameters
@@ -641,11 +647,11 @@ def get_lon_constraint(lon_range, meridian_centre=True):
     >>> from pyaerocom import GriddedData
     >>> files = get()
     >>> data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
-    >>> c = get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
+    >>> c = get_lon_rng_constraint(lon_range=(170, -160), meridian_centre=True)
     Traceback (most recent call last):
      ...
     ValueError: Left coordinate must exceed right coordinate
-    >>> c = get_lon_constraint(lon_range=(-30, 30), meridian_centre=True)
+    >>> c = get_lon_rng_constraint(lon_range=(-30, 30), meridian_centre=True)
     >>> data_crop = data.extract(c)
     >>> assert data_crop.grid.shape == (366, 180, 60)
     """
@@ -663,7 +669,7 @@ def get_lon_constraint(lon_range, meridian_centre=True):
         raise LongitudeConstraintError(msg)
     return iris.Constraint(longitude=lambda v: left <= v <= right)
 
-def get_time_constraint(start, stop):
+def get_time_rng_constraint(start, stop):
     """Create iris.Constraint for data extraction along time axis
     
     Parameters
@@ -788,7 +794,7 @@ if __name__=="__main__":
     data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
     lons = data.grid.coord("longitude")
     try:
-        get_lon_constraint(lon_range=(170, -160), meridian_centre=True)
+        get_lon_rng_constraint(lon_range=(170, -160), meridian_centre=True)
     except ValueError:
         print("Expected behaviour")
 
