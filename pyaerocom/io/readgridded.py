@@ -916,6 +916,8 @@ class ReadGridded(object):
         if var_name in self.data:
             self.logger.warning("Warning: Data for variable {} already exists "
                            "and will be overwritten".format(var_name))
+        
+        data.reader = self
         self.data[var_name] = data
         
         return data
