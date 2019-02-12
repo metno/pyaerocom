@@ -35,20 +35,21 @@ from collections import OrderedDict as od
 import numpy as np
 import xarray
 from pyaerocom import const
+from pyaerocom.helpers import unit_conversion_fac
+from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData, VerticalProfile, Variable
 from pyaerocom import UngriddedData
+        
 
-# TODO: Include backscatter signal
-# TODO: Check file order 
 # TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
 class ReadEarlinet(ReadUngriddedBase):
     """Interface for reading of EARLINET data"""
     #: Mask for identifying datafiles 
-    _FILEMASK = '*.e*'
+    _FILEMASK = '*.*'
     
     #: version log of this class (for caching)
-    __version__ = "0.11_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.12_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -57,36 +58,44 @@ class ReadEarlinet(ReadUngriddedBase):
     SUPPORTED_DATASETS = [const.EARLINET_NAME]
     
     #: default variables for read method
-    DEFAULT_VARS = ['zdust', 'ec5323daer', 'ec5323daer_err']
+    DEFAULT_VARS = ['ec532aer']
     
-    Z3D_VARNAME = 'Altitude'
+    #: all data values that exceed this number will be set to NaN on read. This
+    #: is because iris, xarray, etc. assign a FILL VALUE of the order of e36 
+    #: to missing data in the netcdf files
+    _MAX_VAL_NAN = 1e6
     
+    #: variable name of altitude in files
+    ALTITUDE_ID = 'Altitude'
+    
+    #: temporal resolution
     TS_TYPE = 'undefined'
     
     #: dictionary specifying the file search patterns for each variable
-    VAR_PATTERNS_FILE = {#'ec5503daer'       : '*/f*/*.e5*', 
-                         #'ec5503daer_err'   : '*/f*/*.e5*',
-                         'ec5323daer'       : '*/*.e5*', 
-                         'ec5323daer_err'   : '*/*.e5*', 
-                         'ec3553daer'       : '*/*.e3*', 
-                         'ec3553daer_err'   : '*/*.e3*', 
-                         'zdust'            : '*/*.e*'}
+    VAR_PATTERNS_FILE = {'ec532aer'     : '*/*.e532', 
+                         'ec355aer'     : '*/*.e355',
+                         'bscatc532aer' : '*/*.b532',
+                         'bscatc355aer' : '*/*.b355',
+                         'bscatc1064aer': '*/*.b1064',
+                         'zdust'        : '*/*.e*'}
+    
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
-    VAR_NAMES_FILE = {#'ec5503daer'      : 'Extinction', 
-                      #'ec5503daer_err'  : 'ErrorExtinction', 
-                      'ec5323daer'      : 'Extinction', 
-                      'ec5323daer_err'  : 'ErrorExtinction', 
-                      'ec3553daer'      : 'Extinction', 
-                      'ec3553daer_err'  : 'ErrorExtinction', 
+    VAR_NAMES_FILE = {'ec532aer'        : 'Extinction', 
+                      'ec355aer'        : 'Extinction', 
+                      'ec1064aer'       : 'Extinction',
+                      'bscatc532aer'    : 'Backscatter',
+                      'bscatc355aer'    : 'Backscatter',
+                      'bscatc1064aer'   : 'Backscatter',
                       'zdust'           : 'DustLayerHeight'}
         
+    #: metadata names that are supposed to be imported
     META_NAMES_FILE = od(location           = 'Location',
                          start_date         = 'StartDate',
                          start_utc          = 'StartTime_UT',
                          stop_utc           = 'StopTime_UT',
-                         longitude           = 'Longitude_degrees_east',
+                         longitude          = 'Longitude_degrees_east',
                          latitude           = 'Latitude_degrees_north',
                          wavelength_emis    = 'EmissionWavelength_nm',
                          wavelength_det     = 'DetectionWavelength_nm',
@@ -100,12 +109,26 @@ class ReadEarlinet(ReadUngriddedBase):
                          input_params       = 'InputParameters',
                          altitude           = 'Altitude_meter_asl',
                          eval_method        = 'EvaluationMethod')
-
-    PROVIDES_VARIABLES = [#'ec5503daer', 'ec5503daer_err',
-                          'ec5323daer', 'ec5323daer_err',
-                          'ec3553daer', 'ec3553daer_err',
-                          'zdust']
-
+    
+    #: Attribute access names for unit reading of variable data
+    VAR_UNIT_NAMES = od(Extinction    = ['ExtinctionUnits', 'units'],
+                        Backscatter   = ['BackscatterUnits', 'units'],
+                        Altitude      = 'units')
+    #: Variable names of uncertainty data
+    ERR_VARNAMES = od(  ec532aer = 'ErrorExtinction',
+                        ec355aer = 'ErrorExtinction')
+    
+    #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
+    READ_ERR = True
+    
+    PROVIDES_VARIABLES = list(VAR_PATTERNS_FILE)
+    
+    EXCLUDE_FILES = ['cirrus.txt', 
+                     'etna.txt', 
+                     'forest_fires.txt', 
+                     'saharan_dust.txt']
+    EXCLUDE_CASES = ['cirrus.txt']
+    
     def __init__(self, dataset_to_read=None):
         # initiate base class
         super(ReadEarlinet, self).__init__(dataset_to_read)
@@ -120,8 +143,14 @@ class ReadEarlinet(ReadUngriddedBase):
                                  "variable defined in PROVIDES_VARIABLES")
         #: private dictionary containing loaded Variable instances, 
         self._var_info = {}
+        
+        #: files that are supposed to be excluded from reading
+        self.exclude_files = []
+        
+        #: files that were actually excluded from reading
+        self.excluded_files = []
     
-    def read_file(self, filename, vars_to_retrieve=None):
+    def read_file(self, filename, vars_to_retrieve=None, read_errs=None):
         """Read EARLINET file and return it as instance of :class:`StationData`
         
         Parameters
@@ -131,12 +160,17 @@ class ReadEarlinet(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list`, optional
             list of str with variable names to read. If None, use
             :attr:`DEFAULT_VARS`
+        read_errs : bool
+            if True, uncertainty data is also read (where available).
     
         Returns
         -------
         StationData 
             dict-like object containing results
         """
+        if read_errs is None: #use default setting
+            read_errs = self.READ_ERR
+            
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
         
@@ -207,7 +241,26 @@ class ReadEarlinet(ReadUngriddedBase):
                 continue
             
             info = var_info[var]
-            val = np.float64(data_in.variables[netcdf_var_name])
+            # xarray.DataArray
+            arr = data_in.variables[netcdf_var_name]
+            # the actual data as numpy array (or float if 0-D data, e.g. zdust)
+            val = np.float64(arr)
+            unit = None
+            unames = self.VAR_UNIT_NAMES[netcdf_var_name]
+            for u in unames:
+                if u in arr.attrs:
+                    unit = arr.attrs[u]
+            if unit is None:
+                raise DataUnitError('Unit of {} could not be accessed in file '
+                                    '{}'.format(var, filename))
+            unit_fac = None
+            try:
+                to_unit = self._var_info[var].unit
+                unit_fac = unit_conversion_fac(unit, to_unit)
+                val *= unit_fac
+                unit = to_unit
+            except Exception as e:
+                self.logger.warn('Failed to convert unit: {}'.format(repr(e)))
             # 1D variable
             if var == 'zdust':
                 if not val.ndim == 0:
@@ -222,10 +275,12 @@ class ReadEarlinet(ReadUngriddedBase):
                 data_out[var] = float(val)
                 
 
-            elif var.startswith('ec'):
+            #elif var.startswith('ec'):
+            else:
                 if not val.ndim == 1:
                     raise ValueError('Extinction data must be one dimensional')
-                wvlg = np.float64(var[2:5])
+                val[val > self._MAX_VAL_NAN] = np.nan
+                wvlg = var_info[var].wavelength_nm
                 wvlg_str = self.META_NAMES_FILE['wavelength_emis']
                 
                 if not wvlg == data_in.attrs[wvlg_str]:
@@ -233,20 +288,50 @@ class ReadEarlinet(ReadUngriddedBase):
                     continue
                 
                 # create instance of ProfileData
-                profile = VerticalProfile(var)
-                profile.altitude = np.float64(data_in.variables[self.Z3D_VARNAME])
+                profile = VerticalProfile(var_name=var)
+                
+                alt_id = self.ALTITUDE_ID
+                alt_data = data_in.variables[alt_id]
+                
+                alt_vals = np.float64(alt_data)
+                alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
+                to_alt_unit = const.VAR_PARAM['alt'].unit
+                if not alt_unit == to_alt_unit:
+                    try:
+                        alt_unit_fac = unit_conversion_fac(alt_unit, 
+                                                           to_alt_unit)
+                        alt_vals *= alt_unit_fac
+                        alt_unit = to_alt_unit
+                    except Exception as e:
+                        self.logger.warn('Failed to convert unit: {}'.format(repr(e)))
+                profile.altitude = alt_vals
+                
+                profile.var_info['altitude'] = od()
+                profile.var_info['altitude']['unit'] = alt_unit
                 profile.data  = val
                 profile.dtime = dtime
+                profile.var_info[var] = od()
+                profile.var_info[var]['unit'] = unit
+                
+                if read_errs and var in self.ERR_VARNAMES:
+                    err_name = self.ERR_VARNAMES[var]
+                    if err_name in data_in.variables:
+                        errs = np.float64(data_in.variables[err_name])
+                        errs[errs > self._MAX_VAL_NAN] = np.nan
+                        if unit_fac is not None:
+                            errs *= unit_fac
+                        profile.data_err = errs
                 
                 data_out[var] = profile
-            else:
-                raise NotImplementedError
+
             contains_vars.append(var)
+            
         data_out['contains_vars'] = contains_vars
         return (data_out)
     
+    
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
-             last_file=None):
+             last_file=None, read_errs=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -263,6 +348,8 @@ class ReadEarlinet(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file 
             in the list is used
+        read_errs : bool
+            if True, uncertainty data is also read (where available).
             
         Returns
         -------
@@ -298,8 +385,15 @@ class ReadEarlinet(ReadUngriddedBase):
         
         last_stat_code = ''
         num_files = len(files)
+        
+        disp_each = int(num_files*0.1)
+        if disp_each < 1:
+            disp_each = 1
+            
         for i, _file in enumerate(files):
-            self.logger.info('File {} ({})'.format(i, num_files))
+            if i%disp_each == 0:
+                print("Reading file {} of {} ({})".format(i+1, 
+                                 num_files, type(self).__name__))
             try:
                 station_data = self.read_file(_file, vars_to_retrieve=
                                               vars_to_retrieve)
@@ -318,7 +412,6 @@ class ReadEarlinet(ReadUngriddedBase):
                     # in the time series plot
                     metadata[meta_key] = od()
                     metadata[meta_key].update(station_data.get_meta())
-                    metadata[meta_key].update(station_data.get_station_coords())
                     metadata[meta_key]['data_id'] = self.DATA_ID
                     metadata[meta_key]['variables'] = []
                     # this is a list with indices of this station for each variable
@@ -381,11 +474,14 @@ class ReadEarlinet(ReadUngriddedBase):
         self.data = data_obj
         return data_obj
         
-    def _load_exclude_filelist(self):
+    def _get_exclude_filelist(self):
+        """Get list of filenames that are supposed to be ignored"""
         exclude = []
         import glob
         files = glob.glob('{}/EXCLUDE/*.txt'.format(self.DATASET_PATH))
         for i, file in enumerate(files):
+            if not os.path.basename(file) in self.EXCLUDE_CASES:
+                continue
             count = 0
             num = None
             indata = False
@@ -395,14 +491,14 @@ class ReadEarlinet(ReadUngriddedBase):
                         exclude.append(line.strip())
                         count += 1
                     elif 'Number of' in line:
-                        print(line)
                         num = int(line.split(':')[1].strip())
                         indata = True
                     
             if not count == num:
                 raise Exception
-                        
-            
+        self.exclude_files = list(dict.fromkeys(exclude))
+        return self.exclude_files
+        
     def get_file_list(self, vars_to_retrieve=None):
         """Perform recusive file search for all input variables
         
@@ -425,6 +521,7 @@ class ReadEarlinet(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
+        exclude = self._get_exclude_filelist()
         self.logger.info('Fetching data files. This might take a while...')
         patterns = [self.VAR_PATTERNS_FILE[var] for var in vars_to_retrieve]
         matches = []
@@ -432,54 +529,40 @@ class ReadEarlinet(ReadUngriddedBase):
             for pattern in patterns:
                 paths = [os.path.join(root, f) for f in files]
                 for path in fnmatch.filter(paths, pattern):
-                    matches.append(path)
+                    if  os.path.basename(path) in exclude:
+                        self.excluded_files.append(path)
+                    else:
+                        matches.append(path)
         self.files = files = list(dict.fromkeys(matches))
         return files
-
-if __name__=="__main__":
     
+    def copy(self):
+        """Make and return a deepcopy of this object"""
+        from copy import deepcopy
+        return deepcopy(self)
+    
+if __name__=="__main__":
+    import matplotlib.pyplot as plt
+    plt.close('all')
     read = ReadEarlinet()
     read.verbosity_level = 'info'
-    read._load_exclude_filelist()
-    #data = read.read('ec5323daer', last_file=10)
-    
-    
     
 # =============================================================================
-#     from time import time
-#     t0=time()
-#     #data = read.read(vars_to_retrieve='zdust', first_file=345, last_file=1000)
-#     print("Elapsed time read all zdust: {} s".format(time() - t0))
-#     stat_test = False
-#     if stat_test:
-#         all_stats = []
-#         stat = ''
-#         last_stat = ''
-#         files = read.get_file_list()
-#         problematic = []
-#         read_failed = []
-#         for i, file in enumerate(files):
-#             ok = True
-#             try:
-#                 data = xarray.open_dataset(file)
-#             except:
-#                 read_failed.append(file)
-#                 ok = False
-#             if ok:
-#                 stat = data.attrs['Location'].split(',')[0].strip()
-#                 if stat != last_stat:
-#                     print('New location: {} (file no. {})'.format(stat, i))
-#                     lon = data.attrs['Longitude_degrees_east']
-#                     lat = data.attrs['Latitude_degrees_north']
-#                     print("Lon / lat: ({:.3f}, {:.3f})".format(lon, lat))
-#                     
-#                     if stat in all_stats:
-#                         print('Order not conserved')
-#                         problematic.append(stat)
-#                     all_stats.append(stat)
-#                 last_stat = stat
-#             
+#     lst = read.get_file_list('bscatc532aer')
+#     
+#     data = read.read_file(lst[0], 'bscatc532aer')
 # =============================================================================
-        
-            
+    
+    lst = read.get_file_list('ec532aer')
+    
+    stat = read.read_file(lst[0], 'ec532aer')
+    
+    ax = stat.ec532aer.plot()
+    
+    
+    data = read.read('ec532aer', last_file=50)
+    
+    for f in read.read_failed:
+        ds = xarray.open_dataset(f)
+        print(ds.Extinction.attrs)
     
