@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
-from pyaerocom import VerticalProfile, logger, GEONUM_AVAILABLE, const
+from pyaerocom import VerticalProfile, logger, const
 
-from pyaerocom.exceptions import CoordinateError, MetaDataError, VarNotAvailableError
+from pyaerocom.exceptions import MetaDataError, VarNotAvailableError
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.helpers import resample_timeseries
