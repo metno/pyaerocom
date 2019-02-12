@@ -11,19 +11,26 @@ from pyaerocom.helpers import resample_timeseries
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
-        
+    
+    ToDo: write more detailed introduction
+    
     Attributes
     ----------
     dtime : list
         list / array containing index values
     var_info : dict
         dictionary containing information about each variable
+    errs : dict
+        dictionary that may be used to store uncertainty timeseries associated 
+        with the different variable data.
+    overlap : dict
+        dictionary that may be filled to store overlapping timeseries data 
+        associated with one variable. This is, for instance, used in 
+        :func:`merge_vardata` to store overlapping data from another station.
     
     """
     #: List of keys that specify standard metadata attribute names. This 
     #: is used e.g. in :func:`get_meta`
-    
-    
     STANDARD_COORD_KEYS = ['latitude', 
                            'longitude',
                            'altitude']    
@@ -36,17 +43,11 @@ class StationData(StationMetaData):
 
         self.dtime = []
     
-        # dictionary that should be filled with available meta-information 
-        # for each data column appended to this object
         self.var_info = BrowseDict()
         
-        # the following dictionary is used in method merge_var_data when 
-        # merging variable data from another station and in case overlaps
-        # in the timestamps are detected. The overlapping timeseries is then
-        # stored in the dictionary using the corresponding variable name
+        self.errs = BrowseDict()        
         self.overlap = BrowseDict()
         super(StationData, self).__init__(**meta_info)
-        #super(StationData, self).__init__(*args, **kwargs)
     
     def dist_other(self, other):
         """Distance to other station in km
@@ -143,26 +144,28 @@ class StationData(StationMetaData):
         if _check_var:
             raise NotImplementedError('This feature does currently not work '
                                       'due to recent API changes')
-            logger.debug("Performing quality check for coordinates")
-            lat, dlat, dlon, dalt = (vals['latitude'],
-                                     stds['latitude'],
-                                     stds['longitude'],
-                                     stds['altitude'])
-            lat_len = 111e3 #approximate length of latitude degree in m
-            if self.COORD_MAX_VAR['latitude'] < lat_len * dlat:
-                raise CoordinateError("Variation in station latitude is "
-                                      "exceeding upper limit of {} m".format(
-                                      self.COORD_MAX_VAR['latitude']))
-            elif self.COORD_MAX_VAR['longitude'] < (lat_len *
-                                                    np.cos(np.deg2rad(lat)) * 
-                                                    dlon):
-                raise CoordinateError("Variation in station longitude is "
-                                      "exceeding upper limit of {} m".format(
-                                      self.COORD_MAX_VAR['latitude']))
-            elif self.COORD_MAX_VAR['altitude'] < dalt:
-                raise CoordinateError("Variation in station altitude is "
-                                      "exceeding upper limit of {} m".format(
-                                      self.COORD_MAX_VAR['latitude']))
+# =============================================================================
+#             logger.debug("Performing quality check for coordinates")
+#             lat, dlat, dlon, dalt = (vals['latitude'],
+#                                      stds['latitude'],
+#                                      stds['longitude'],
+#                                      stds['altitude'])
+#             lat_len = 111e3 #approximate length of latitude degree in m
+#             if self.COORD_MAX_VAR['latitude'] < lat_len * dlat:
+#                 raise CoordinateError("Variation in station latitude is "
+#                                       "exceeding upper limit of {} m".format(
+#                                       self.COORD_MAX_VAR['latitude']))
+#             elif self.COORD_MAX_VAR['longitude'] < (lat_len *
+#                                                     np.cos(np.deg2rad(lat)) * 
+#                                                     dlon):
+#                 raise CoordinateError("Variation in station longitude is "
+#                                       "exceeding upper limit of {} m".format(
+#                                       self.COORD_MAX_VAR['latitude']))
+#             elif self.COORD_MAX_VAR['altitude'] < dalt:
+#                 raise CoordinateError("Variation in station altitude is "
+#                                       "exceeding upper limit of {} m".format(
+#                                       self.COORD_MAX_VAR['latitude']))
+# =============================================================================
         return vals
     
     def get_meta(self, force_single_value=True, quality_check=True):
@@ -192,7 +195,10 @@ class StationData(StationMetaData):
             in case of consistencies in meta data between individual time-stamps
         """
         meta = {}
+        meta.update(self.get_station_coords(force_single_value, quality_check))
         for key in self.STANDARD_META_KEYS:
+            if key in self.STANDARD_COORD_KEYS: # this has been handled above
+                continue
             if self[key] is None:
                 logger.warn('No metadata available for key {}'.format(key))
                 continue
@@ -206,7 +212,7 @@ class StationData(StationMetaData):
                                         key))
                 val = val[0]
             meta[key] = val
-        
+    
         return meta
     
     def _append_meta_item(self, key, val):
@@ -748,6 +754,12 @@ class StationData(StationMetaData):
             ax = kwargs.pop('ax')
         
         tit = self.station_name
+        if not isinstance(tit, str):
+            try:
+                tit = self.get_meta(force_single_value=True, 
+                                     quality_check=False)['station_name']
+            except:
+                tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)
         
         ax.plot(s, label=lbl, **kwargs)
