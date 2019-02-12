@@ -302,7 +302,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             # in the time series plot
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
-            metadata[meta_key].update(station_data.get_station_coords())
+            #metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]['data_id'] = self.DATA_ID
             metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve

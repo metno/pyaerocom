@@ -117,7 +117,8 @@ class ReadEbas(ReadUngriddedBase):
         
     TODO
     ----
-    Check for negative values vs. detection limit
+    - Check for negative values vs. detection limit
+    - Read uncertainties from percentiles (where available)
     """
     
     #: version log of this class (for caching)
@@ -898,7 +899,7 @@ class ReadEbas(ReadUngriddedBase):
             # in the time series plot
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
-            metadata[meta_key].update(station_data.get_station_coords())
+            #metadata[meta_key].update(station_data.get_station_coords())
             metadata[meta_key]['data_id'] = self.DATA_ID
             metadata[meta_key]['ts_type'] = station_data['ts_type']
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
