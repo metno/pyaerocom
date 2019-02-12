@@ -345,6 +345,30 @@ def to_pandas_timestamp(value):
         except Exception as e:
             raise ValueError('Failed to convert {} to Timestamp: {}'
                              .format(value, repr(e)))    
+    
+def to_datetime64(value):
+    """Convert input value to numpy.datetime64 
+    
+    Parameters
+    ----------
+    value
+        input value that is supposed to be converted, needs to be either str, 
+        datetime.datetime, pandas.Timestamp or an integer specifying the 
+        desired year.
+        
+    Returns
+    -------
+    datetime64
+        input timestamp converted to datetime64
+    """
+    if isinstance(value, np.datetime64):
+        return value
+    else:
+        try:
+            return to_pandas_timestamp(value).to_datetime64()
+        except Exception as e:
+            raise ValueError('Failed to convert {} to datetime64 object'
+                             'Error: {}'.format(value, repr(e)))
   
 def is_year(val):
     try:
@@ -515,7 +539,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     else:
         return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])
 
-def get_constraint(var_names=None, lon_range=None, lat_range=None, 
+def get_constraint(lon_range=None, lat_range=None, 
                    time_range=None, meridian_centre=True):
     """Function that creates an :class:`iris.Constraint` based on input
     
@@ -529,9 +553,6 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
     
     Parameters
     ----------
-    var_names : :obj:`str` or :obj:`list`, optional
-        variable name or list of variable names. Note that if multiple
-        variables are provided in a list
     lon_range : :obj:`tuple`, optional
         2-element tuple containing longitude range for cropping
         Example input to crop around meridian: `lon_range=(-30, 30)`
@@ -575,8 +596,7 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
     >>> lons = cubes[0].coord("longitude").points
     >>> meridian_centre = True if lons.max() > 180 else False
     >>> year = meta_info["year"]
-    >>> c = get_constraint(var_names=meta_info["var_name"], 
-    ...                    lon_range=(50, 150), 
+    >>> c = get_constraint(lon_range=(50, 150), 
     ...                    lat_range=(20, 60), 
     ...                    time_range=("%s-02-05" %year, "%s-02-25" %year))
     >>> cube_crop = cubes.extract(c)[0]
@@ -584,11 +604,6 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
     (21, 40, 100)
     """
     constraints = []
-    if var_names is not None:
-        if isinstance(var_names, str):
-            var_names = [var_names]
-        cond = lambda c: c.var_name in var_names
-        constraints.append(iris.Constraint(cube_func=cond))
     if lon_range is not None:
         constraints.append(get_lon_rng_constraint(lon_range, meridian_centre))
     if lat_range is not None:
@@ -600,7 +615,7 @@ def get_constraint(var_names=None, lon_range=None, lat_range=None,
         for cadd in constraints[1:]:
             c = c & cadd
     return c
-
+    
 def get_lat_rng_constraint(lat_range):
     """Create latitude constraint based on input range
     
