@@ -66,9 +66,27 @@ class UngriddedData(object):
         mapping of variable name (keys, e.g. od550aer) to numerical variable 
         index of this variable in data numpy array (in column specified by
         :attr:`_VARINDEX`)
+        
+    Parameters
+    ----------
+    num_points : :obj:`int`, optional
+        inital number of total datapoints (number of rows in 2D dataarray)
+    add_cols : :obj:`list`, optional
+        list of additional index column names of 2D datarray.
+        
     """
-    __version__ = '0.17'
+    #: version of class (for caching)
+    __version__ = '0.18'
     
+    #: inital total number of rows in dataarray
+    _ROWNO = 10000
+    #: default number of rows that are dynamically added if total number of 
+    #: data rows is reached.
+    _CHUNKSIZE = 1000
+    
+    #: The following indices specify what the individual rows of the datarray
+    #: are reserved for. These may be expanded when creating an instance of 
+    #: this class by providing a list of additional index names.
     _METADATAKEYINDEX = 0
     _TIMEINDEX = 1
     _LATINDEX = 2
@@ -79,12 +97,8 @@ class UngriddedData(object):
     _DATAHEIGHTINDEX = 7
     _DATAERRINDEX = 8 # col where errors can be stored
     _DATAFLAGINDEX = 9 # can be used to store flags
-    _TRASHINDEX = 10 #index where invalid data can be moved to (e.g. when outliers are removed)
-    
-
-    _COLNO = 11
-    _ROWNO = 10000
-    _CHUNKSIZE = 1000
+    _STOPTIMEINDEX = 10 # can be used to store stop time of acq. 
+    _TRASHINDEX = 11 #index where invalid data can be moved to (e.g. when outliers are removed)
     
     # The following number denotes the kept precision after the decimal dot of
     # the location (e.g denotes lat = 300.12345)
@@ -92,9 +106,13 @@ class UngriddedData(object):
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
     
-    def __init__(self, num_points=None):
+    def __init__(self, num_points=None, add_cols=None):
+        
+        self._index = self._init_index(add_cols)
         if num_points is None:
             num_points = self._ROWNO
+            
+        
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([num_points, self._COLNO]) * np.nan
 
@@ -104,6 +122,42 @@ class UngriddedData(object):
         self.var_idx = od()
         
         self.filter_hist = od()
+    
+    @property
+    def index(self):
+        return self._index
+    
+    def _init_index(self, add_cols=None):
+        """Init index mapping for columns in dataarray"""
+        idx = od(metadata       = self._METADATAKEYINDEX,
+                 time           = self._TIMEINDEX,
+                 stoptime       = self._STOPTIMEINDEX,
+                 latitude       = self._LATINDEX,
+                 longitude      = self._LONINDEX,
+                 altitude       = self._ALTITUDEINDEX,
+                 var            = self._VARINDEX,
+                 data           = self._DATAINDEX,
+                 data_err       = self._DATAERRINDEX,
+                 dataaltitude   = self._DATAHEIGHTINDEX,
+                 dataflag       = self._DATAFLAGINDEX,
+                 trash          = self._TRASHINDEX)
+        
+        next_idx = max(idx.values()) + 1
+        if add_cols is not None:
+            if not isinstance(add_cols, (list, tuple)):
+                raise ValueError('Invalid input for add_cols. Need list or tuple')
+            for name in add_cols:
+                if name in idx:
+                    raise ValueError('Cannot add new index with name {} since '
+                                     'this index already exists at column '
+                                     'position {}'.format(name, idx[name]))
+                idx[name] = next_idx
+                next_idx += 1
+        return idx
+    
+    @property
+    def _COLNO(self):
+        return len(self._index)
     
     def copy(self):
         """Make a copy of this object
@@ -1807,16 +1861,20 @@ if __name__ == "__main__":
     
     import pyaerocom as pya
     
-    data = pya.io.ReadUngridded().read('EBASMC', 
-                                       ['scatc550aer', 'absc550aer'],
-                                       station_names='Puy*')
-    
-    data1 =  data.remove_outliers('scatc550aer')
-    
-    stats = data1.to_station_data('P*', 'scatc550aer')
-    pya.helpers.station_data_to_timeseries(stats, 'scatc550aer',
-                                           pref_attr='revision_date')
-    
+    d = UngriddedData()
+# =============================================================================
+#     
+#     data = pya.io.ReadUngridded().read('EBASMC', 
+#                                        ['scatc550aer', 'absc550aer'],
+#                                        station_names='Puy*')
+#     
+#     data1 =  data.remove_outliers('scatc550aer')
+#     
+#     stats = data1.to_station_data('P*', 'scatc550aer')
+#     pya.helpers.station_data_to_timeseries(stats, 'scatc550aer',
+#                                            pref_attr='revision_date')
+#     
+# =============================================================================
     
     
     
