@@ -21,9 +21,9 @@ def dataset():
     
 def test_variables(dataset):
     npt.assert_array_equal(dataset.vars,
-                           ['ang4487aer', 'od440aer', 'od550aer', 'od550bc', 
-                            'od550dust', 'od550oa', 'od550so4', 'od550ss', 
-                            'od865aer'])
+                           ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 
+                            'od550bc', 'od550dust', 'od550oa', 'od550so4', 
+                            'od550ss', 'od865aer'])
     
 def test_years_available(dataset):
     npt.assert_array_equal(dataset.years,
@@ -32,16 +32,7 @@ def test_years_available(dataset):
                              2005,
                              2006,
                              2007,
-                             2008,
-                             2009,
-                             2010,
-                             2011,
-                             2012,
-                             2013,
-                             2014,
-                             2015,
-                             2016,
-                             9999])    
+                             2008])    
 
     
 def test_meta(dataset):
@@ -50,7 +41,7 @@ def test_meta(dataset):
                             dataset._start, 
                             dataset._stop,
                             list(dataset.get_years_to_load())],
-                            [190,
+                            [104,
                              '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
                              Timestamp("1-1-2003"), 
                              Timestamp("31-12-2007"),
@@ -62,7 +53,7 @@ def test_read_var(dataset):
     npt.assert_array_equal([d.var_name, sum(d.shape), d.start, d.stop],
                            ["od550aer", 1826 + 161 + 320,
                             datetime64('2003-01-01T00:00:00.000000'),
-                            datetime64('2007-12-31T00:00:00.000000')])
+                            datetime64('2007-12-31T23:59:59.999999')])
     vals = [d.longitude.points[0],
             d.longitude.points[-1],
             d.latitude.points[0],

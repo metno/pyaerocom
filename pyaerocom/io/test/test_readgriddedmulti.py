@@ -33,9 +33,8 @@ def test_info_available(dataset):
                      'loadss', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 
                      'od550so4', 'od550ss', 'sconcbc', 'sconcdust', 'sconcoa', 
                      'sconcso4', 'sconcss']]
-    years_nominal = [[2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 
-                      2011, 2012],
-                     [2006, 2008, 2010],
+    years_nominal = [[2010, 2011, 2012],
+                     [2010],
                      [2010]]
     
     for i, model in enumerate(MODELS):
