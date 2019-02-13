@@ -95,9 +95,7 @@ def is_within_radius_km(lat0, lon0, lat1, lon1, maxdist_km, alt0=0, alt1=0,
         False
         
     """
-    
-    
-    
+    dist = calc_distance(lat0, lon0, lat1, lon1, alt0=alt0, alt1=alt1)
     if dist <= maxdist_km:
         return True
     return False
