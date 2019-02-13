@@ -76,15 +76,6 @@ class DataSource(BrowseDict):
             for k, v in cfg[self.data_id].items():
                 if k in self:
                     self[k] = self._types[k](v)
-    
-# =============================================================================
-#     def __setitem__(self, key, val):
-#         super(DataSource, self).__setitem__(key, val)
-#         if key == 'data_id':
-#             self._parse_source_info_from_ini()
-# =============================================================================
-            
-            
               
 class StationMetaData(DataSource):
     """This object defines a standard for station metadata in pyaerocom

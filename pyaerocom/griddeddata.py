@@ -591,7 +591,7 @@ class GriddedData(object):
             self.check_dimcoords_tseries()
         except DimensionOrderError:
             self.reorder_dimensions_tseries()
-        # if the method makes it to this point, the it is 3 or 4 dimensional 
+        # if the method makes it to this point, it is 3 or 4 dimensional 
         # and the first 3 dimensions are time, latitude, longitude.
         
         # init input for sample points
@@ -691,7 +691,7 @@ class GriddedData(object):
         
         try:
             # check if vertical scheme can be converted into valid iris 
-            # aggregator (in which case vertical dimension is collopsed)
+            # aggregator (in which case vertical dimension is collapsed)
             aggr = str_to_iris(vert_scheme)
             data = self.collapsed(cname, aggr)
         except KeyError:
