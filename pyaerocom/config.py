@@ -121,6 +121,8 @@ class Config(object):
     #names of the different obs networks
     OBSNET_NONE = 'NONE'
     NOMODELNAME = 'OBSERVATIONS-ONLY'
+    
+    RM_CACHE_OUTDATED = True
 
     #: Name of the file containing the revision string of an obs data network
     REVISION_FILE = 'Revision.txt'
@@ -149,14 +151,16 @@ class Config(object):
         from pyaerocom import print_log, logger
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
-        
+        print_log.info('Initating pyaerocom configuration')
         self.print_log = print_log
         self.logger = logger
+        
         if not isinstance(config_file, str) or not os.path.exists(config_file):
             from time import time
+            print_log.info('Checking server configuration ...')
             t0 = time()
             config_file = self._infer_config_file()
-            print(time() - t0, 's')
+            print_log.info('Expired time: {:.3f} s'.format(time() - t0))
         # Directories
         self._modelbasedir = model_base_dir
         self._obsbasedir = obs_base_dir
