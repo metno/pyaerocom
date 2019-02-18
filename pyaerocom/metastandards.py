@@ -91,41 +91,52 @@ class StationMetaData(DataSource):
     
     Attributes
     ----------
-    station_name
+    filename : str
+        name of file (may be full path or only filename)
+    station_id : str
+        Code or unique ID of station
+    station_name :str
         name or ID of a station. Note, that the concept of a station in 
         pyaerocom is not necessarily related to a fixed coordinate. A station
         can also be a satellite, ship, or a human walking around and measuring
         something
-    instrument_name 
+    instrument_name : str
         name (or ID) of instrument
-    PI 
+    PI : str
         principal investigator
-    ts_type
+    country : str
+        string specifying country (or country ID)
+    ts_type : str
         frequency of data (e.g. monthly). Note the difference between 
         :attr:`ts_type_src` of :class:`DataSource`, which specifies the freq.
         of the original files.
-    latitude
+    latitude : float
         latitude coordinate
-    longitude 
+    longitude : float
         longitude coordinate
-    altitude
+    altitude : float
         altitude coordinate
     
     """
     def __init__(self, **info):
         
+        self.filename = None
+        
+        self.station_id = None
         self.station_name = None
         self.instrument_name = None
         self.PI = None
-        self.filename = None
+        
+        self.country = None
         
         self.ts_type = None
-        self.latitude = None
-        self.longitude = None
-        self.altitude = None
+        
+        self.latitude = np.nan
+        self.longitude = np.nan
+        self.altitude = np.nan
         
         super(StationMetaData, self).__init__(**info)
-        
+     
 if __name__ == '__main__':
     meta = StationMetaData(data_id = 'AeronetSunV3Lev2.daily',
                            ts_type = 'blaaaa')
