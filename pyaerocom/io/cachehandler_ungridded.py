@@ -148,6 +148,28 @@ class CacheHandlerUngridded(object):
         return True
     
     def check_and_load(self):
+        """Check if cache file exists and load
+        
+        Note
+        ----
+        If a cache file exists for this database, but cannot be loaded or is
+        outdated against pyaerocom updates, then it will be removed (the latter
+        only if :attr:`pyaerocom.const.RM_CACHE_OUTDATED` is True).
+        
+        Returns
+        -------
+        bool
+            True, if cache file exists and could be successfully loaded, else
+            False. Note: if import is successful, the corresponding data object
+            (instance of :class:`pyaerocom.UngriddedData` can be accessed via
+            :attr:`loaded_data'
+            
+        Raises
+        ------
+        TypeError
+            if cached file is not an instance of :class:`pyaerocom.UngriddedData` 
+            class (which should not happen)
+        """
         try:
             if not os.path.isfile(self.file_path):
                 logger.info('No cache file available for query of dataset '
@@ -157,7 +179,8 @@ class CacheHandlerUngridded(object):
             logger.warning(repr(e))
             return False
         
-        delete_existing = False
+        delete_existing = const.RM_CACHE_OUTDATED
+                
         in_handle = open(self.file_path, 'rb')
         # read meta information about file
         if self.connection_established:
@@ -177,11 +200,14 @@ class CacheHandlerUngridded(object):
                             .format(self.file_name))
                 in_handle.close()
                 if delete_existing: #something was wrong
+                    const.print_log.info('Deleting outdated cache file: {}'
+                                         .self.file_path)
                     os.remove(self.file_path)
                 return False
         else:
             for k in range(self.LEN_CACHE_HEAD):
                 logger.debug(pickle.load(in_handle))
+        
         # everything is okay
         data = pickle.load(in_handle)
         if not isinstance(data, UngriddedData):
