@@ -444,6 +444,8 @@ def colocate_gridded_ungridded_2D(*args, **kwargs):
     
 if __name__=='__main__':
     import pyaerocom as pya
+    import matplotlib.pyplot as plt
+    plt.close('all')
     
     reader = pya.io.ReadGridded('ECMWF_OSUITE')
     model_data = reader.read_var(var_name='od550aer', start=2010)
@@ -451,27 +453,31 @@ if __name__=='__main__':
     obs_reader = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
     obs_data = obs_reader.read(vars_to_retrieve='od550aer')
     
-    colocated_data = pya.colocation.colocate_gridded_ungridded_2D(model_data, obs_data)
+    colocated_data = pya.colocation.colocate_gridded_ungridded(model_data, 
+                                                               obs_data,
+                                                               ts_type='monthly')
     
-    
-    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    model = r.read_var('od550aer', start=2010)
-    
-    obs_r1 = pya.io.ReadGridded('MODIS6.terra')
-    obs1 = obs_r1.read_var('od550aer', start=2010)
-    
-    obs_r2 = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
-    obs2 = obs_r2.read(vars_to_retrieve='od550aer')
-    
-    coll_data1 = colocate_gridded_gridded(model, obs1, ts_type='monthly')
-    
-    coll_data1.plot_scatter()
-    
-    coll_data2 = colocate_gridded_ungridded_2D(model, obs2, ts_type='monthly')
-    coll_data2.plot_scatter()
-    
-    print(model)
-    print(obs1)
-    print(obs2)
-    print(coll_data1)
-    print(coll_data2)
+    colocated_data.plot_scatter()
+# =============================================================================
+#     r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
+#     model = r.read_var('od550aer', start=2010)
+#     
+#     obs_r1 = pya.io.ReadGridded('MODIS6.terra')
+#     obs1 = obs_r1.read_var('od550aer', start=2010)
+#     
+#     obs_r2 = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
+#     obs2 = obs_r2.read(vars_to_retrieve='od550aer')
+#     
+#     coll_data1 = colocate_gridded_gridded(model, obs1, ts_type='monthly')
+#     
+#     coll_data1.plot_scatter()
+#     
+#     coll_data2 = colocate_gridded_ungridded_2D(model, obs2, ts_type='monthly')
+#     coll_data2.plot_scatter()
+#     
+#     print(model)
+#     print(obs1)
+#     print(obs2)
+#     print(coll_data1)
+#     print(coll_data2)
+# =============================================================================
