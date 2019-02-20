@@ -9,7 +9,111 @@ This module contains low-level methods to perform geographical calculations,
 from pyaerocom import GEONUM_AVAILABLE
 from pyaerocom import print_log
 import numpy as np
+import os
 
+def get_topo_data(lat0, lon0, lat1=None, lon1=None, topo_dataset='srtm', 
+                  topodata_loc=None, try_etopo1=False):
+    """Retrieve topographic altitude for a certain location
+    
+    Currently works only if :mod:`geonum` is installed. Supports topography
+    datasets supported by geonum. These are currently (20 Feb. 19) srtm 
+    (SRTM dataset, default, automatic access if online) and etopo1 
+    (ETOPO1 dataset, lower resolution, must be available on local machine or
+    server). 
+    
+    Parameters
+    ----------
+    lat0 : float 
+            start longitude for data extraction
+    lon0 : float 
+        start latitude for data extraction
+    lat1 : float 
+        stop longitude for data extraction (default: None). If None only 
+        data around lon0, lat0 will be extracted.
+    lon1 : float
+        stop latitude for data extraction (default: None). 
+        If None only data around lon0, lat0 will be extracted
+    topo_dataset : str
+        name of topography dataset
+    topodata_loc : str
+        filepath or directory containing supported topographic datasets
+    try_etopo1 : bool
+        if True and if access fails via input arg `topo_dataset`, then try
+        to access altitude using ETOPO1 dataset.
+        
+    Returns
+    -------
+    geonum.TopoData
+        data object containing topography data in specified range 
+    
+    Raises
+    ------
+    ValueError
+        if altitude data cannot be accessed
+    """
+    if not GEONUM_AVAILABLE:
+        raise ModuleNotFoundError('Feature disabled: geonum library is not '
+                                  'installed')
+    import geonum
+    if topodata_loc is None:
+        from pyaerocom import const
+        if topo_dataset in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS[topo_dataset]):
+            topodata_loc = const.SUPPLDIRS[topo_dataset]    
+            print_log.info('Found default location for {} topodata at\n{}'
+                      .format(topo_dataset, topodata_loc))
+        
+    try:
+        access = geonum.TopoDataAccess(topo_dataset, local_path=topodata_loc)
+        return access.get_data(lat0, lon0, lat1, lon1)
+    except Exception as e:
+        if try_etopo1 and not topo_dataset=='etopo1':
+            print_log.warn('Failed to access topography data for {}. '
+                           'Trying ETOPO1.\nError: {}'.format(topo_dataset, repr(e)))
+            return get_topo_data(lat0, lon0, lat1, lon1, 
+                                 topo_dataset='etopo1', 
+                                 topodata_loc=topodata_loc,
+                                 try_etopo1=False)
+        raise
+        
+def get_topo_altitude(lat, lon, topo_dataset='srtm', topodata_loc=None,
+                      try_etopo1=True):
+    """Retrieve topographic altitude for a certain location
+    
+    Currently works only if :mod:`geonum` is installed. Supports topography
+    datasets supported by geonum. These are currently (20 Feb. 19) srtm 
+    (SRTM dataset, default, automatic access if online) and etopo1 
+    (ETOPO1 dataset, lower resolution, must be available on local machine or
+    server). 
+    
+    Parameters
+    ----------
+    lat : float
+        latitude of coordinate
+    lon : float
+        longitude of coordinate
+    topo_dataset : str
+        name of topography dataset
+    topodata_loc : str
+        filepath or directory containing supported topographic datasets
+    try_etopo1 : bool
+        if True and if access fails via input arg `topo_dataset`, then try
+        to access altitude using ETOPO1 dataset.
+        
+    Returns
+    -------
+    dict
+        dictionary containing input latitude, longitude, altitude and 
+        topographic dataset name used to retrieve the altitude.
+    
+    Raises
+    ------
+    ValueError
+        if altitude data cannot be accessed
+    """
+    return get_topo_data(lat, lon, topo_dataset=topo_dataset, 
+                         topodata_loc=topodata_loc,
+                         try_etopo1=try_etopo1)(lat, lon)
+    
 def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None,
                   auto_altitude_srtm=False):
     """Calculate distance between two coordinates
@@ -139,3 +243,17 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     c = 2 * np.arcsin(np.sqrt(a))
  
     return earth_radius * c
+
+if __name__ == '__main__':
+    import geonum
+    lat = 50.7
+    lon = 8.2
+    
+    print(get_topo_altitude(0,0,try_etopo1=True))
+    
+    a0 = get_topo_altitude(lat, lon, 'srtm', try_etopo1=False)
+    a1 = get_topo_altitude(lat, lon, 'etopo1', try_etopo1=False)
+    
+    print(a0, a1)
+    
+    
