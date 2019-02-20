@@ -20,9 +20,9 @@ class StationData(StationMetaData):
         list / array containing index values
     var_info : dict
         dictionary containing information about each variable
-    errs : dict
-        dictionary that may be used to store uncertainty timeseries associated 
-        with the different variable data.
+    data_err : dict
+        dictionary that may be used to store uncertainty timeseries or data
+        arrays associated with the different variable data.
     overlap : dict
         dictionary that may be filled to store overlapping timeseries data 
         associated with one variable. This is, for instance, used in 
@@ -45,7 +45,7 @@ class StationData(StationMetaData):
     
         self.var_info = BrowseDict()
         
-        self.errs = BrowseDict()        
+        self.data_err = BrowseDict()        
         self.overlap = BrowseDict()
         super(StationData, self).__init__(**meta_info)
     
@@ -70,8 +70,6 @@ class StationData(StationMetaData):
         return calc_distance(cthis['latitude'], cthis['longitude'],
                              cother['latitude'], cother['longitude'],
                              cthis['altitude'], cother['altitude'])
-        
-        
         
     def same_coords(self, other, tol_km=None):
         """Compare station coordinates of other station with this station
@@ -344,6 +342,12 @@ class StationData(StationMetaData):
                             info_this[key] = info_this[key] + ';{}'.format(_val)
                 else:
                     if isinstance(val, (list, np.ndarray)):
+                        if len(val) == 0:
+                            continue
+                        elif type(info_this[key]) == type(val):
+                            if info_this[key] == val:
+                                continue
+                            info_this[key] = [info_this[key], val]
                         raise ValueError('Cannot append metadata value that is '
                                          'already a list or numpy array due to '
                                          'potential ambiguities')
@@ -378,7 +382,7 @@ class StationData(StationMetaData):
         ----
         This method removes NaN's from the existing time series in the data
         objects. In order to fill up the time-series with NaNs again after 
-        merging, call :func:`insert_nans`
+        merging, call :func:`insert_nans_timeseries`
         
         Parameters
         ----------
@@ -552,10 +556,43 @@ class StationData(StationMetaData):
             raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
                                 .format(tp, const.GRID_IO.TS_TYPES))
         return tp
+       
+    def interpolate_timeseries(self, var_name, freq, min_coverage_interp=0.3,
+                               resample_how='mean', inplace=False):
+        """Interpolate one variable timeseries to a certain frequency
+        
+        ToDo: complete docstring
+        """
+        new = self.to_timeseries(var_name, freq=freq, 
+                                  resample_how='mean')
+        coverage = 1 - new.isnull().sum() / len(new)
+        if coverage < min_coverage_interp:
+            from pyaerocom.exceptions import DataCoverageError
+            raise DataCoverageError('{} data of station {} ({}) in '
+                                    'time interval {} - {} contains '
+                                    'too many invalid measurements '
+                                    'for interpolation.'
+                                    .format(var_name,
+                                            self.station_name,
+                                            self.data_id,
+                                            self.dtime[0],
+                                            self.dtime[-1]))
+        new = new.interpolate().dropna()
+        if inplace:
+            from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE
+            ts_type = PANDAS_FREQ_TO_TS_TYPE[new.index.freqstr]
+            self[var_name] = new
             
-    def resample_vardata(self, var_name, ts_type, how='mean',
+            self.var_info[var_name]['ts_type'] = ts_type        
+            if len(self.var_info) > 1:     
+                self.ts_type = None
+            else:
+                self.ts_type = ts_type
+        return new
+    
+    def resample_timeseries(self, var_name, ts_type, how='mean',
                          inplace=True):
-        """Resample one of the time-series om this object
+        """Resample one of the time-series in this object
         
         Parameters
         ----------
@@ -590,13 +627,13 @@ class StationData(StationMetaData):
         if inplace:
             self[var_name] = new
             self.var_info[var_name]['ts_type'] = ts_type        
-            if len(self.var_info) > 1: # there is more than one variable in this object
+            if len(self.var_info) > 1:     
                 self.ts_type = None
             else:
                 self.ts_type = ts_type
         return new
-        
-    def insert_nans(self, var_name):
+    
+    def insert_nans_timeseries(self, var_name):
         """Fill up missing values with NaNs in an existing time series
         
         Note
@@ -621,7 +658,7 @@ class StationData(StationMetaData):
         """
         ts_type = self.get_var_ts_type(var_name)
         
-        self.resample_vardata(var_name, ts_type, inplace=True)
+        self.resample_timeseries(var_name, ts_type, inplace=True)
         
         return self
 
@@ -690,8 +727,8 @@ class StationData(StationMetaData):
             data = resample_timeseries(data, freq, how=resample_how)
         return data
     
-    def plot_variable(self, var_name, freq=None, resample_how='mean', 
-                      add_overlaps=False, legend=True, **kwargs):
+    def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
+                        add_overlaps=False, legend=True, **kwargs):
         """Plot timeseries for variable
         
         Note
