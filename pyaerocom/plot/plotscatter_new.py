@@ -8,8 +8,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from pyaerocom import const
-from pyaerocom.helpers import (to_pandas_timestamp, TS_TYPE_TO_NUMPY_FREQ,
-                               start_stop_str)
+from pyaerocom.helpers import start_stop_str
 from pyaerocom.mathutils import calc_statistics
 
 def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None, 
@@ -112,7 +111,9 @@ def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None,
     
     var_str = var_name# + VAR_PARAM.unit_str
 
-    if unit is not None and unit != 1:
+    if unit is None:
+        unit = 'N/D'
+    if str(unit) != '1':
         var_str += ' [{}]'.format(unit)
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
