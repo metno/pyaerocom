@@ -17,10 +17,10 @@ class BrowseDict(OrderedDict):
     3
     """
     def __getattr__(self, key):
-        return self[key]
+        return self.__getitem__(key)
     
     def __setattr__(self, key, val):
-        self[key] = val
+        self.__setitem__(key, val)
         
     def __dir__(self):
         return self.keys()
