@@ -53,20 +53,25 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           'monthly' :   'MS', #Month start !
                           'yearly'  :   'Y'}
 
+PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
+
 # frequency strings 
 TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
                           '3hourly' :   '3h',
                           'daily'   :   'D',
                           'monthly' :   'M', #Month start !
                           'yearly'  :   'Y'}
+
+NUMPY_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_NUMPY_FREQ.items()}
+
 # conversion of datetime-like objects for given temporal resolutions (can, e.g.
 # be used in plotting methods)
 TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
-                         'hourly'     : '%d.%m.%Y',
-                         '3hourly'    : '%d.%m.%Y',
-                         'daily'      : '%d.%m.%Y',
-                         'monthly'    : '%b %Y',
-                         'yearly'    : '%Y'}
+                         'hourly'   : '%d.%m.%Y',
+                         '3hourly'  : '%d.%m.%Y',
+                         'daily'    : '%d.%m.%Y',
+                         'monthly'  : '%b %Y',
+                         'yearly'   : '%Y'}
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
@@ -207,7 +212,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         #first.merge_vardata(stat, var_name)
     
     if fill_missing_nan:
-        first.insert_nans(var_name)
+        first.insert_nans_timeseries(var_name)
     return first
 
 def resample_timeseries(s, freq, how='mean'):
@@ -766,7 +771,9 @@ def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
     # df.show()
 
 # TODO: review and move into test-suite
-def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_retrieve=['od550_aer'], debug_mode = False):
+def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, 
+                                 vars_to_retrieve=['od550_aer'], 
+                                 debug_mode=False):
     """test routine to colocate xarray object"""
 
     import pandas as pd
@@ -779,7 +786,9 @@ def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_retriev
 
     for index in range(max_index):
         print(index)
-        xarray_col = xarray_obj.sel(latitude=obs_lats[index], longitude=obs_lons[index], method='nearest')
+        xarray_col = xarray_obj.sel(latitude=obs_lats[index], 
+                                    longitude=obs_lons[index], 
+                                    method='nearest')
         _dict = {}
         # _dict['latitude'] = obs_lats[index]
         # _dict['longitude'] = obs_lons[index]
@@ -790,42 +799,17 @@ def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, vars_to_retriev
         for var in vars_to_retrieve:
             # _dict[var] = pd.Series(data_frame[var])
             # _dict[var] = xarray_col[var].to_series()
-            _dict[var] = pd.Series(xarray_col[var], index=xarray_col['time'], dtype=np.float_)
+            _dict[var] = pd.Series(xarray_col[var], index=xarray_col['time'], 
+                                   dtype=np.float_)
 
         result.append(_dict)
     return result
 
 
 if __name__=="__main__":
+    print(TS_TYPE_TO_PANDAS_FREQ)
+    print(PANDAS_FREQ_TO_TS_TYPE)
     
-    
-    import doctest
-    import warnings
-    warnings.simplefilter("ignore")
-    doctest.testmod()
-    from pyaerocom.io.testfiles import get
-    from pyaerocom import GriddedData
-    files = get()
-    data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
-    lons = data.grid.coord("longitude")
-    try:
-        get_lon_rng_constraint(lon_range=(170, -160), meridian_centre=True)
-    except ValueError:
-        print("Expected behaviour")
-
-    from iris import load
-    cubes = load(files['models']['aatsr_su_v4.3'])
-    lons = cubes[0].coord("longitude").points
-    meridian_centre = True if lons.max() > 180 else False
-    c = get_constraint(var_names="od550aer",
-                       lon_range=(50, 150),
-                       lat_range=(20, 60),
-                       time_range=("2008-02-01", "2008-02-05"))
-
-    cube_crop = cubes.extract(c)[0]
-
-
-    print(start_stop_str(2010, '15-2-2018', ts_type='monthly'))
-                           
-
+    print(TS_TYPE_TO_NUMPY_FREQ)
+    print(NUMPY_FREQ_TO_TS_TYPE)
 
