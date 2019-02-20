@@ -173,6 +173,7 @@ class Config(object):
         
         # Attributes that are used to store import results
         self.OBSCONFIG = od()
+        self.SUPPLDIRS = od()
         self.MODELDIRS = []
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
@@ -237,10 +238,12 @@ class Config(object):
     
     @property
     def OUTPUTDIR(self):
+        """Default output directory"""
         return self._outputdir
     
     @property
     def COLOCATEDDATADIR(self):
+        """Directory for accessing and saving colocated data objects"""
         return self._colocateddatadir
     
     @property
@@ -260,6 +263,7 @@ class Config(object):
         
     @property
     def OBSDATACACHEDIR(self):
+        """Cache directory for UngriddedData objects (deprecated)"""
         from warnings import warn
         warn(DeprecationWarning('Attr. was renamed (but still works). '
                                 'Please us CACHEDIR instead'))
@@ -267,7 +271,7 @@ class Config(object):
     
     @property
     def CACHEDIR(self):
-        """Cache directory"""
+        """Cache directory for UngriddedData objects"""
         if self._cachedir is None:
             raise IOError('Cache directory is not defined')
         try:
@@ -581,7 +585,13 @@ class Config(object):
                     warn('Failed to init output and colocated data directory '
                          'from config file. Error: {}'.format(repr(e)))
                     
-        
+        if cr.has_section('supplfolders'):
+            for name, path in cr['supplfolders'].items():
+                if not os.path.exists(path):
+                    self.print_log.warn('Supplementary data directory for '
+                                        '{} does not exist:\n{}'.format(name, path))
+                self.SUPPLDIRS[name] = path
+                
         #init base directories for Model data
         if not keep_basedirs or not self.dir_exists(self._modelbasedir):
             _dir = cr['modelfolders']['BASEDIR']
