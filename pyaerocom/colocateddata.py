@@ -164,6 +164,20 @@ class ColocatedData(object):
         except KeyError:
             logger.warn('Failed to access unit ColocatedData class (may be an '
                         'old version of data)')
+    @property
+    def unitstr(self):
+        unique = []
+        u = self.unit
+        for val in u:
+            if val is None:
+                val = 'N/D'
+            elif not isinstance(val, str):
+                val = str(val)
+            if not val in unique:
+                unique.append(val)
+        return ', '.join(unique)
+        
+        
     
     @property
     def meta(self):
@@ -264,7 +278,7 @@ class ColocatedData(object):
                             y_name=meta['data_source'][1], 
                             start=self.start, 
                             stop=self.stop, 
-                            unit=self.unit,
+                            unit=self.unitstr,
                             ts_type=meta['ts_type'], 
                             stations_ok=num_points,
                             filter_name=meta['filter_name'], 
@@ -524,16 +538,16 @@ class ColocatedData(object):
 
     
 if __name__=="__main__":
-    OUT_DIR = '../dev_scripts/out'
+    
+    testdir = '~/pyaerocom/colocated_data/CAM5.3-Oslo_AP3-CTRL2016-PD/'
+    testfile = 'od550aer_REF-AeronetSunV3Lev2.daily_MOD-CAM5.3-Oslo_AP3-CTRL2016-PD-monthly_20100101_20101231_monthly_WORLD-noMOUNTAINS_COLL.nc'
     d = ColocatedData()
-    d._load_fake_data()
     
-    d.to_netcdf(OUT_DIR)
-    
-    fp = os.path.join(OUT_DIR, d.save_name_aerocom + '.nc')
-    
-    d1 = ColocatedData(fp)
-    print(d1)
+    d.read_netcdf(testdir + testfile)
+    #fp = os.path.join(OUT_DIR, d.save_name_aerocom + '.nc')
+    print(d)
+    #d1 = ColocatedData(fp)
+    #print(d1)
     
         
     
