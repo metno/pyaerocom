@@ -299,9 +299,3 @@ if __name__=="__main__":
     
     udat = read.read(last_file=10)
     
-    #print(data15)
-    #read.print_all_columns()
-    
-    #ax = data.plot_variable('od550aer')
-    
-    #all_lvl2 = read.read()

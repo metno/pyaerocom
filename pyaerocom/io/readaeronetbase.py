@@ -14,7 +14,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.05_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.06_' + ReadUngriddedBase.__baseversion__
     
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -37,7 +37,19 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
     
+    #: name of measurement instrument
     INSTRUMENT_NAME = 'sun_photometer'
+    
+    #: Default data unit that is assigned to all variables that are not 
+    #: specified in UNITS dictionary (cf. :attr:`UNITS`)
+    DEFAULT_UNIT = '1'
+    
+    #: Variable specific units, only required for variables that deviate from 
+    #: :attr:`DEFAULT_UNIT` (is irrelevant for all variables that are 
+    #: so far supported by the implemented Aeronet products, i.e. all variables
+    #: are dimensionless as specified in :attr:`DEFAULT_UNIT`)
+    UNITS = {}
+    
     def __init__(self, dataset_to_read=None):
         super(ReadAeronetBase, self).__init__(dataset_to_read)
         
@@ -300,17 +312,18 @@ class ReadAeronetBase(ReadUngriddedBase):
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
-            metadata[meta_key] = od()
-            metadata[meta_key].update(station_data.get_meta())
+            meta = od()
+            meta['var_info'] = od()
+            meta.update(station_data.get_meta())
             #metadata[meta_key].update(station_data.get_station_coords())
-            metadata[meta_key]['data_id'] = self.DATA_ID
-            metadata[meta_key]['ts_type'] = self.TS_TYPE
-            metadata[meta_key]['variables'] = vars_to_retrieve
+            meta['data_id'] = self.DATA_ID
+            meta['ts_type'] = self.TS_TYPE
+            meta['variables'] = vars_to_retrieve
             if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                 instr = station_data['instrument_name']
             else:
                 instr = self.INSTRUMENT_NAME
-            metadata[meta_key]['instrument_name'] = instr
+            meta['instrument_name'] = instr
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = od()
@@ -334,7 +347,6 @@ class ReadAeronetBase(ReadUngriddedBase):
                 start = idx + var_idx * num_times
                 stop = start + num_times
                 
-                
                 #write common meta info for this station (data lon, lat and 
                 #altitude are set to station locations)
                 data_obj._data[start:stop, 
@@ -353,10 +365,19 @@ class ReadAeronetBase(ReadUngriddedBase):
                 
                 meta_idx[meta_key][var] = np.arange(start, stop)
                 
+                if (var in station_data['var_info'] 
+                    and 'unit' in station_data['var_info'][var]):
+                    u = station_data['var_info'][var]['unit']
+                elif var in self.UNITS:
+                    u = self.UNITS[var]
+                else:
+                    u = self.DEFAULT_UNIT
+                meta['var_info'][var] = od(unit=u)
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
             
             idx += totnum  
+            metadata[meta_key] = meta
             meta_key = meta_key + 1.
         
         # shorten data_obj._data to the right number of points
