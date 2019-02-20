@@ -30,7 +30,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-import os, fnmatch
+import os, fnmatch, re
 from collections import OrderedDict as od
 import numpy as np
 import xarray
@@ -41,8 +41,9 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData, VerticalProfile, Variable
 from pyaerocom import UngriddedData
         
-
 # TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
+# use station_id instead... would require more flexible iterator in 
+# UngriddedData
 class ReadEarlinet(ReadUngriddedBase):
     """Interface for reading of EARLINET data"""
     #: Mask for identifying datafiles 
@@ -101,7 +102,7 @@ class ReadEarlinet(ReadUngriddedBase):
                          wavelength_det     = 'DetectionWavelength_nm',
                          res_raw_m          = 'ResolutionRaw_meter',
                          zenith_ang_deg     = 'ZenithAngle_degrees',
-                         system             = 'System',
+                         instrument_name    = 'System',
                          comments           = 'Comments',
                          shots_avg          = 'ShotsAveraged',
                          detection_mode     = 'DetectionMode',
@@ -109,6 +110,14 @@ class ReadEarlinet(ReadUngriddedBase):
                          input_params       = 'InputParameters',
                          altitude           = 'Altitude_meter_asl',
                          eval_method        = 'EvaluationMethod')
+    
+    #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to 
+    #: standard keys defined in :class:`StationMetaData` and that are supposed 
+    #: to be inserted into :class:`UngriddedData` object created in :func:`read`
+    KEEP_ADD_META = ['location', 'wavelength_emis', 'wavelength_det', 
+                     'res_raw_m', 'zenith_ang_deg', 'comments', 'shots_avg', 
+                     'detection_mode', 'res_eval', 'input_params', 
+                     'eval_method']
     
     #: Attribute access names for unit reading of variable data
     VAR_UNIT_NAMES = od(Extinction    = ['ExtinctionUnits', 'units'],
@@ -181,9 +190,9 @@ class ReadEarlinet(ReadUngriddedBase):
                                       "profile data as well")
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out['stat_code'] = filename.split('/')[-3]
+        data_out['station_id'] = filename.split('/')[-2]
         data_out['data_id'] = self.DATA_ID
-        data_out['ts_type'] = self.TS_TYPE
+        #data_out['ts_type'] = self.TS_TYPE
            
         # create empty arrays for all variables that are supposed to be read
         # from file
@@ -199,38 +208,41 @@ class ReadEarlinet(ReadUngriddedBase):
         data_in = xarray.open_dataset(filename)
         
         for k, v in self.META_NAMES_FILE.items():
-            try:
-                val = data_in.attrs[v]
-            except:
-                val = "FAILED_TO_READ"
-            data_out[k] = val
+            
+            data_out[k] = data_in.attrs[v]
         
-        # get station name and country
-        spl = data_out['location'].split(',')
-        data_out['station_name'] = spl[0].strip()
-        try:
-            data_out['country'] = spl[1].strip()
-        except:
-            self.logger.warning('Unusual location string detected. Earlinet '
-                                'location string expected to be comma separated '
-                                'city, country information, got: '
-                                '{}'.format(data_out['location']))
+        data_out['station_name'] = re.split('\s|,', data_out['location'])[0].strip()
+# =============================================================================
+#         except:
+#             self.logger.warning('Unusual location string detected. Earlinet '
+#                                 'location string expected to be comma separated '
+#                                 'city, country information, got: '
+#                                 '{}'.format(data_out['location']))
+# =============================================================================
         
         str_dummy = str(data_in.StartDate)
-        year = str_dummy[0:4]
-        month = str_dummy[4:6]
-        day = str_dummy[6:8]
+        year, month, day = str_dummy[0:4], str_dummy[4:6], str_dummy[6:8]
 
         str_dummy = str(data_in.StartTime_UT).zfill(6)
-        hours = str_dummy[0:2]
-        minutes = str_dummy[2:4]
-        seconds = str_dummy[4:6]
-        datestring = '-'.join([year, month, day])
-        datestring = 'T'.join([datestring, ':'.join([hours, minutes, seconds])])
+        hours, minutes, seconds = str_dummy[0:2], str_dummy[2:4], str_dummy[4:6]
         
-        # Earlinet files only contain one timestamp
-        dtime = np.datetime64(datestring)
-        data_out['dtime'] = dtime
+        datestring = '-'.join([year, month, day])
+        startstring = 'T'.join([datestring, ':'.join([hours, minutes, seconds])])
+         
+        dtime = np.datetime64(startstring)
+        
+        str_dummy = str(data_in.StopTime_UT).zfill(6)
+        hours, minutes, seconds = str_dummy[0:2], str_dummy[2:4], str_dummy[4:6]
+        
+        stopstring = 'T'.join([datestring, ':'.join([hours, minutes, seconds])])
+        
+        stop = np.datetime64(stopstring)
+        
+        if stop < dtime:
+            raise Exception('Fatal: stop time is earlier than start time. '
+                            'Developers: check if data has StopDate or similar')
+        data_out['dtime'] = [dtime]
+        data_out['stopdtime'] = [stop]
         data_out['has_zdust'] = False
         contains_vars = []
         for var in vars_to_read:
@@ -329,7 +341,6 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out['contains_vars'] = contains_vars
         return (data_out)
     
-    
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
              last_file=None, read_errs=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
@@ -349,7 +360,8 @@ class ReadEarlinet(ReadUngriddedBase):
             index of last file in list to read. If None, the very last file 
             in the list is used
         read_errs : bool
-            if True, uncertainty data is also read (where available).
+            if True, uncertainty data is also read (where available). If 
+            unspecified (None), then the default is used (cf. :att:`READ_ERR`)
             
         Returns
         -------
@@ -360,6 +372,8 @@ class ReadEarlinet(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
+        if read_errs is None:
+            read_errs = self.READ_ERR
             
         if files is None:
             if len(self.files) == 0:
@@ -376,6 +390,7 @@ class ReadEarlinet(ReadUngriddedBase):
         self.read_failed = []
         
         data_obj = UngriddedData()
+        col_idx = data_obj.index
         meta_key = -1.0
         idx = 0
         
@@ -383,7 +398,7 @@ class ReadEarlinet(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
         
-        last_stat_code = ''
+        #last_station_id = ''
         num_files = len(files)
         
         disp_each = int(num_files*0.1)
@@ -395,42 +410,58 @@ class ReadEarlinet(ReadUngriddedBase):
                 print("Reading file {} of {} ({})".format(i+1, 
                                  num_files, type(self).__name__))
             try:
-                station_data = self.read_file(_file, vars_to_retrieve=
-                                              vars_to_retrieve)
-                if not any([var in station_data.contains_vars for var in 
+                stat = self.read_file(_file, vars_to_retrieve=
+                                              vars_to_retrieve,
+                                              read_errs=read_errs)
+                if not any([var in stat.contains_vars for var in 
                             vars_to_retrieve]):
                     self.logger.info("Station {} contains none of the desired "
                                      "variables. Skipping station..."
-                                     .format(station_data.station_name))
+                                     .format(stat.station_name))
                     continue
-                stat_code = station_data['stat_code']
-                if last_stat_code != stat_code:
-                    meta_key += 1
-                    # Fill the metatdata dict
-                    # the location in the data set is time step dependant!
-                    # use the lat location here since we have to choose one location
-                    # in the time series plot
-                    metadata[meta_key] = od()
-                    metadata[meta_key].update(station_data.get_meta())
-                    metadata[meta_key]['data_id'] = self.DATA_ID
-                    metadata[meta_key]['variables'] = []
-                    # this is a list with indices of this station for each variable
-                    # not sure yet, if we really need that or if it speeds up things
-                    meta_idx[meta_key] = od()
-                    last_stat_code = stat_code
+                #if last_station_id != station_id:
+                meta_key += 1
+                # Fill the metatdata dict
+                # the location in the data set is time step dependant!
+                # use the lat location here since we have to choose one location
+                # in the time series plot
+                metadata[meta_key] = od()
+                metadata[meta_key].update(stat.get_meta())
+                for add_meta in self.KEEP_ADD_META:
+                    if add_meta in stat:
+                        metadata[meta_key][add_meta] = stat[add_meta]
+                #metadata[meta_key]['station_id'] = station_id
+                #metadata[meta_key]['data_id'] = self.DATA_ID
+                metadata[meta_key]['variables'] = []
+                metadata[meta_key]['var_info'] = od()
+                # this is a list with indices of this station for each variable
+                # not sure yet, if we really need that or if it speeds up things
+                meta_idx[meta_key] = od()
+                    #last_station_id = station_id
                 
                 # Is floating point single value
-                time = station_data.dtime
-                for var_idx, var in enumerate(station_data.contains_vars):
-                    val = station_data[var]
+                time = stat.dtime[0]
+                for var_idx, var in enumerate(stat.contains_vars):
+                    val = stat[var]
+                    metadata[meta_key]['var_info'][var] = vi = od()
                     if isinstance(val, VerticalProfile):
                         altitude = val.altitude
                         data = val.data
                         add = len(data)
+                        err = val.data_err
+                        metadata[meta_key]['var_info']['altitude'] = via =od()
+                        
+                        vi['unit'] = val.var_info[var]['unit']
+                        via['unit'] = val.var_info['altitude']['unit']
                     else:
                         add = 1
                         altitude = np.nan
                         data = val
+                        if var in stat.data_err:
+                            err = stat.errs[var]
+                        else:
+                            err = np.nan
+                        
                     stop = idx + add
                     #check if size of data object needs to be extended
                     if stop >= data_obj._ROWNO:
@@ -439,19 +470,23 @@ class ReadEarlinet(ReadUngriddedBase):
                     
                     #write common meta info for this station
                     data_obj._data[idx:stop, 
-                                   data_obj._LATINDEX] = station_data['latitude']
+                                   col_idx['latitude']] = stat['latitude']
                     data_obj._data[idx:stop, 
-                                   data_obj._LONINDEX] = station_data['longitude']
+                                   col_idx['longitude']] = stat['longitude']
                     data_obj._data[idx:stop, 
-                                   data_obj._ALTITUDEINDEX] = station_data['altitude']
+                                   col_idx['altitude']] = stat['altitude']
                     data_obj._data[idx:stop, 
-                                   data_obj._METADATAKEYINDEX] = meta_key
+                                   col_idx['metadata']] = meta_key
                                    
                     # write data to data object
-                    data_obj._data[idx:stop, data_obj._TIMEINDEX] = time
-                    data_obj._data[idx:stop, data_obj._DATAINDEX] = data
-                    data_obj._data[idx:stop, data_obj._DATAHEIGHTINDEX] = altitude
-                    data_obj._data[idx:stop, data_obj._VARINDEX] = var_idx
+                    data_obj._data[idx:stop, col_idx['time']] = time
+                    data_obj._data[idx:stop, col_idx['stoptime']] = stat.stopdtime[0]
+                    data_obj._data[idx:stop, col_idx['data']] = data
+                    data_obj._data[idx:stop, col_idx['dataaltitude']] = altitude
+                    data_obj._data[idx:stop, col_idx['varidx']] = var_idx
+                    
+                    if read_errs:
+                        data_obj._data[idx:stop, col_idx['dataerr']] = err
                     
                     if not var in meta_idx[meta_key]:
                         meta_idx[meta_key][var] = []
@@ -545,24 +580,41 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     read = ReadEarlinet()
-    read.verbosity_level = 'info'
+    read.verbosity_level = 'warning'
     
-# =============================================================================
-#     lst = read.get_file_list('bscatc532aer')
-#     
-#     data = read.read_file(lst[0], 'bscatc532aer')
-# =============================================================================
+    #lst = read.get_file_list('ec532aer')
     
-    lst = read.get_file_list('ec532aer')
+    # to accelerate things for testing (first 20 files)
+    lst = ['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008192050.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1009162031.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1012131839.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1011221924.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1105122027.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1507232059.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1107072042.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109192000.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001251402.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001211841.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1005272143.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev0911091200.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109222000.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1103242017.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109052000.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109152000.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109082000.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1006212036.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008022112.e532',
+             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1508272229.e532']
+    
+    read.files = lst
     
     stat = read.read_file(lst[0], 'ec532aer')
     
     ax = stat.ec532aer.plot()
     
     
-    data = read.read('ec532aer', last_file=50)
+    data = read.read('ec532aer', last_file=20)
+    print(data)
     
-    for f in read.read_failed:
-        ds = xarray.open_dataset(f)
-        print(ds.Extinction.attrs)
+    stat = data.to_station_data('Evora')
     
