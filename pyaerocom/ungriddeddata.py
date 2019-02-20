@@ -8,13 +8,15 @@ import pandas as pd
 from pyaerocom import logger, const, print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
-                                  MetaDataError)
+                                  MetaDataError, StationNotFoundError)
 from pyaerocom import StationData
 
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
                                start_stop, merge_station_data)
+from pyaerocom.metastandards import StationMetaData
+from pyaerocom import VerticalProfile
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -106,6 +108,7 @@ class UngriddedData(object):
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
     
+    STANDARD_META_KEYS = list(StationMetaData().keys())
     def __init__(self, num_points=None, add_cols=None):
         
         self._index = self._init_index(add_cols)
@@ -135,9 +138,9 @@ class UngriddedData(object):
                  latitude       = self._LATINDEX,
                  longitude      = self._LONINDEX,
                  altitude       = self._ALTITUDEINDEX,
-                 var            = self._VARINDEX,
+                 varidx         = self._VARINDEX,
                  data           = self._DATAINDEX,
-                 data_err       = self._DATAERRINDEX,
+                 dataerr        = self._DATAERRINDEX,
                  dataaltitude   = self._DATAHEIGHTINDEX,
                  dataflag       = self._DATAFLAGINDEX,
                  trash          = self._TRASHINDEX)
@@ -311,21 +314,39 @@ class UngriddedData(object):
         logger.info("adding chunk, new array size ({})".format(self._data.shape))                
     
     def _find_station_indices(self, station_pattern):
+        """Find indices of all metadata blocks matching input station name
+        
+        Parameters
+        ----------
+        station_pattern : str
+            station name or wildcard pattern
+        
+        Returns
+        -------
+        list
+           list containing all metadata indices that match the input station
+           name or pattern
+           
+        Raises
+        ------
+        StationNotFoundError
+            if no such station exists in this data object
+        """
         idx = []
         for i, meta in self.metadata.items():
             if fnmatch.fnmatch(meta['station_name'], station_pattern):
                 idx.append(i)
         if len(idx) == 0:
-            raise ValueError('No station available in UngriddedData that '
-                             'matches pattern {}'.format(station_pattern))
+            raise StationNotFoundError('No station available in UngriddedData '
+                                       'that matches name or pattern {}'
+                                       .format(station_pattern))
         return idx
     
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
-                        stop=None, freq=None, interp_nans=False, 
-                        min_coverage_interp=0.68, data_as_series=True, 
-                        merge_if_multi=True, merge_pref_attr=None, 
-                        merge_sort_by_largest=True, insert_nans=False):
+                        stop=None, freq=None, merge_if_multi=True, 
+                        merge_pref_attr=None, merge_sort_by_largest=True, 
+                        insert_nans=False):
         """Convert data from one station to :class:`StationData`
         
         Todo
@@ -354,8 +375,6 @@ class UngriddedData(object):
         min_coverage_interp : float
             required coverage fraction for interpolation (default is 0.68, i.e.
             roughly corresponding to 1 sigma)
-        data_as_series : bool
-            if True, all data columns are returned as time-series
         merge_if_multi : bool
             if True and if data request results in multiple instances of 
             StationData objects, then these are attempted to be merged into one 
@@ -382,10 +401,13 @@ class UngriddedData(object):
             StationData object(s) containing results. list is only returned if 
             input for meta_idx is station name and multiple matches are 
             detected for that station (e.g. data from different instruments), 
-            else single instance of StationData
+            else single instance of StationData. All variable time series are
+            inserted as pandas Series
         """
         if isinstance(vars_to_convert, str):
             vars_to_convert = [vars_to_convert]
+        elif vars_to_convert is None:
+            vars_to_convert = self.contains_vars
         if start is None and stop is None:
             start = pd.Timestamp('1970')
             stop = pd.Timestamp('2200')
@@ -395,11 +417,7 @@ class UngriddedData(object):
         if isinstance(meta_idx, str):
             # user asks explicitely for station name, find all meta indices
             # that match this station
-            try:
-                meta_idx = self._find_station_indices(meta_idx)
-            except ValueError:
-                raise ValueError('No such station {} in UngriddedData'
-                                 .format(meta_idx))
+            meta_idx = self._find_station_indices(meta_idx)
         if not isinstance(meta_idx, list):
             meta_idx = [meta_idx]
         
@@ -408,20 +426,14 @@ class UngriddedData(object):
         if len(meta_idx) == 1:
             return self._metablock_to_stationdata(meta_idx[0], 
                                                   vars_to_convert,  
-                                                  start, stop, freq, 
-                                                  interp_nans, 
-                                                  min_coverage_interp, 
-                                                  data_as_series)
+                                                  start, stop, freq)
         
         stats = []
         for idx in meta_idx:
             try:
                 stat = self._metablock_to_stationdata(idx, 
                                                       vars_to_convert,  
-                                                      start, stop, freq, 
-                                                      interp_nans, 
-                                                      min_coverage_interp, 
-                                                      data_as_series)
+                                                      start, stop, freq)
                 stats.append(stat)
             except VarNotAvailableError:
                 pass
@@ -436,7 +448,7 @@ class UngriddedData(object):
         if insert_nans:
             for stat in stats:
                 for var in vars_to_convert:
-                    stat.insert_nans(var)
+                    stat.insert_nans_timeseries(var)
         if len(stats) == 0:
             logger.warn('No data could be retrieved for request')
         elif len(stats) == 1:
@@ -446,10 +458,7 @@ class UngriddedData(object):
         return stats
         
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
-                                  start, stop, freq=None, 
-                                  interp_nans=False, 
-                                  min_coverage_interp=0.68, 
-                                  data_as_series=True):
+                                  start, stop, freq=None):
         """Convert one metadata index to StationData (helper method)
         
         See :func:`to_station_data` for input parameters
@@ -464,19 +473,25 @@ class UngriddedData(object):
         for k in check_keys:
             if k in val:
                 stat_data[k] = val[k]
-                
-        # do not return anything for stations without data
-        # TODO: consider writing longitude, latitude and altitude
-        stat_data['station_name'] = val['station_name']
-        stat_data['latitude'] = val['latitude']
-        stat_data['longitude'] = val['longitude']
-        stat_data['altitude'] = val['altitude']
-        stat_data['PI'] = val['PI']
-        stat_data['data_id'] = val['data_id']
-        stat_data['ts_type_src'] = val['ts_type']
-        stat_data['ts_type'] = val['ts_type']
             
-        stat_data['var_info'] = {}
+        for k in self.STANDARD_META_KEYS:
+            if k in val:
+                stat_data[k] = val[k]
+        
+# =============================================================================
+#         stat_data['station_name'] = val['station_name']
+#         stat_data['latitude'] = val['latitude']
+#         stat_data['longitude'] = val['longitude']
+#         stat_data['altitude'] = val['altitude']
+#         stat_data['PI'] = val['PI']
+#         stat_data['data_id'] = val['data_id']
+#         stat_data['ts_type_src'] = val['ts_type']
+#         stat_data['ts_type'] = val['ts_type']
+# =============================================================================
+            
+# =============================================================================
+#         stat_data['var_info'] = {}
+# =============================================================================
         
         if vars_to_convert is None:
             vars_to_convert = val['variables']
@@ -486,9 +501,13 @@ class UngriddedData(object):
                                        'or station does not contain data. {}'
                                        .format(val['variables']))
         first_var = vars_to_convert[0]
-        indices_first = self.meta_idx[meta_idx][first_var]
-        dtime = self._data[indices_first, self._TIMEINDEX].astype('datetime64[s]')
+        idx = self.meta_idx[meta_idx][first_var]
+        dtime = self._data[idx, self._TIMEINDEX].astype('datetime64[s]')
         
+        altitude =  self._data[idx, self._DATAHEIGHTINDEX]
+        IS3D = False
+        if not np.all(np.isnan(altitude)):
+            IS3D = True
         # TODO: remove try except block
         tmask = np.logical_and(dtime >= start, dtime <= stop)
   
@@ -502,28 +521,19 @@ class UngriddedData(object):
         stat_data['dtime'] = dtime
         for var in vars_to_convert:
             stat_data.var_info[var] = {}
-            indices = self.meta_idx[meta_idx][var][tmask]
-            data = self._data[indices, self._DATAINDEX]
-            if not data_as_series:
-                idx = pd.DatetimeIndex(dtime)
+            var_idx = np.asarray(self.meta_idx[meta_idx][var])[tmask]
+            
+            data = self._data[var_idx, self._DATAINDEX]
+            if IS3D:
+                data = VerticalProfile(data, altitude, var_name=var)
+                
             else:
                 data = pd.Series(data, dtime)
                 if not data.index.is_monotonic:
                     data = data.sort_index()
                 data = data[start:stop]
                 idx = data.index
-                if interp_nans:
-                    coverage = 1 - data.isnull().sum() / len(data)
-                    if coverage < min_coverage_interp:
-                        raise DataCoverageError('{} data of station {} ({}) in '
-                                                'time interval {} - {} contains '
-                                                'too many invalid measurements '
-                                                'for interpolation.'
-                                                .format(var,
-                                                        stat_data['station_name'],
-                                                        stat_data['data_id'],
-                                                        start, stop))
-                    data = data.interpolate().dropna()
+                
                 if freq is not None:
                     from pyaerocom.helpers import resample_timeseries
                     data = resample_timeseries(data, freq) 
@@ -541,15 +551,15 @@ class UngriddedData(object):
                 stat_data.var_info[var]['overlap'] = False  
             else:
                 stat_data.var_info[var]['overlap'] = True
-        # there is overlapping data
-        
         
         return stat_data
     
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
-                            freq=None, interp_nans=False, 
-                            min_coverage_interp=0.68, keep_na=True):
-        """Convert all possible stations to :class:`StationData` objects
+                            freq=None, include_stats_nodata=True, **kwargs):
+        """Convert all data to :class:`StationData` objects
+        
+        Creates one instance of :class:`StationData` for each metadata block in 
+        this object. For datasets like Aeronet, this corresponds to one
 
         Parameters
         ----------
@@ -564,13 +574,12 @@ class UngriddedData(object):
             pandas.Timestamp)
         freq : str
             pandas frequency string (e.g. 'D' for daily, 'M' for month end)
-        interp_nans : bool
-            if True, all NaN values in the time series for each 
-            variable are interpolated using linear interpolation
-        min_coverage_interp : float
-            required coverage fraction for interpolation (default is 0.68, i.e.
-            roughly corresponding to 1 sigma)
-        drop_na 
+            or valid pyaerocom ts_type (e.g. 'hourly', 'monthly').
+        
+        **kwargs
+            additional keyword args passed to :func:`to_station_data` (e.g.
+            `merge_if_multi, merge_pref_attr, merge_sort_by_largest, 
+            insert_nans`)
 
         Returns
         -------
@@ -586,8 +595,7 @@ class UngriddedData(object):
         for index, val in self.metadata.items():
             try:
                 data = self.to_station_data(index, vars_to_convert, start, 
-                                            stop, freq, interp_nans, 
-                                            min_coverage_interp)
+                                            stop, freq)
                 
                 out_data.append(data)
             # catch the exceptions that are acceptable
@@ -597,7 +605,7 @@ class UngriddedData(object):
                                'Error: {}'.format(repr(e)))
                 # append None to make sure indices of stations are 
                 # preserved in output array
-                if keep_na:
+                if include_stats_nodata:
                     out_data.append(None)
         return out_data
     
@@ -1861,20 +1869,21 @@ if __name__ == "__main__":
     
     import pyaerocom as pya
     
-    d = UngriddedData()
-# =============================================================================
-#     
-#     data = pya.io.ReadUngridded().read('EBASMC', 
-#                                        ['scatc550aer', 'absc550aer'],
-#                                        station_names='Puy*')
-#     
-#     data1 =  data.remove_outliers('scatc550aer')
-#     
-#     stats = data1.to_station_data('P*', 'scatc550aer')
-#     pya.helpers.station_data_to_timeseries(stats, 'scatc550aer',
-#                                            pref_attr='revision_date')
-#     
-# =============================================================================
+    
+    
+    data = pya.io.ReadUngridded().read('EBASMC', 
+                                       ['scatc550aer', 'absc550aer'],
+                                       station_names='Puy*')
+    
+    data1 =  data.remove_outliers('scatc550aer')
+    
+    stat = data1.to_station_data('P*', 'scatc550aer', 
+                                  merge_if_multi=True,
+                                  merge_pref_attr='revision_date')
+    
+    stat.plot_timeseries('scatc550aer', add_overlaps=True)
+    
+    
     
     
     
