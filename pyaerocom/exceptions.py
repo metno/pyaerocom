@@ -80,6 +80,9 @@ class NetcdfError(IOError):
 class NotInFileError(IOError):
     pass
 
+class StationNotFoundError(AttributeError):
+    pass
+
 class TimeZoneError(AttributeError):
     pass
 
