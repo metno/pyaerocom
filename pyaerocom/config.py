@@ -42,7 +42,8 @@ from warnings import warn
 from collections import OrderedDict as od
 import pyaerocom.obs_io as obs_io
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, dict_to_str,
-                                         chk_make_subdir)
+                                         chk_make_subdir,
+                                         check_fun_timeout_multiproc)
 from pyaerocom.variable import AllVariables
 try:
     from ConfigParser import ConfigParser
@@ -131,6 +132,9 @@ class Config(object):
     BASEDIR_PPI = os.path.join('/lustre', 'storeA', 'project', 'aerocom') 
     BASEDIR_USER_SERVER = os.path.join('/metno', 'aerocom-users-database')
     
+    #: timeout to check if one of the supported server locations can be 
+    #: accessed
+    SERVER_CHECK_TIMEOUT = 0.1 #s
     
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
@@ -192,49 +196,92 @@ class Config(object):
             except Exception as e:
                 from traceback import format_exc
                 self.init_outputdirs()
-                print(format_exc())
-                print("Failed to init config. Error: %s" %repr(e))
+                self.print_log.warn(format_exc())
+                self.print_log.warn("Failed to init config. Error: %s" %repr(e))
+    
+    def _check_access(self, loc):
+        """Uses multiprocessing approach to check if location can be accessed
         
+        Wrapper for :func:`check_fun_timeout_multiproc`. Uses method 
+        :func:`os.listdir` to validate accessibility at input location
+        (without the timeout and for mounted remote locations, this could 
+        otherwise take ages)
+        
+        Parameters
+        ----------
+        loc : str
+            path that is supposed to be checked
+        
+        Returns
+        -------
+        bool
+            True, if location is accessible, else False
+        """
+        return check_fun_timeout_multiproc(os.listdir, fun_args=(loc, ),
+                                           timeout_secs=self.SERVER_CHECK_TIMEOUT)
+    
+    @property
+    def has_access_lustre(self):
+        """Boolean specifying whether the lustre database can be accessed"""
+        ok = False
+        p = os.path.join(self.ROOTDIR, 'lustre/')
+        if os.path.exists(p):
+            ok = self._check_access(os.path.join(p, 'storeA'))
+        self.print_log.info('Access to lustre database: {}'.format(ok))
+        return ok
+    
+    @property
+    def has_access_users_database(self):
+        """Boolean specifying whether the users database can be accessed"""
+        ok = False
+        p = os.path.join(self.ROOTDIR, 'metno/')
+        if os.path.exists(p):
+            test_loc = os.path.join(p, 'aerocom-users-database')
+            ok = self._check_access(test_loc)
+                
+        self.print_log.info("Access to aerocom-users-database: {}".format(ok))
+        return ok
+    
+    @property
+    def has_access_testdata(self):
+        """Boolean specifying whether the testdataset can be accessed"""
+        ok = False
+        p = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
+        
+        if os.path.exists(p):
+            ok = True
+            
+        self.print_log.info("Access to pyaerocom-testdata: {}".format(ok))
+        return ok
+    
     def _infer_config_file(self):
         """Infer the database configuration to be loaded"""
-        if os.path.exists('/lustre'):
-            try:
-                # check if host is connected (lustre may be mounted locally but
-                # not connected). THe listdir command will raise FileNotFoundError
-                # if directory is mounted but not connected
-                os.listdir('/lustre/storeA')
-                self.print_log.info("Init data paths for lustre")
-                return self._config_files['metno']
-            except FileNotFoundError:
-                pass
-        if os.path.exists('/metno'):
-            try:
-                # check if host is connected (lustre may be mounted locally but
-                # not connected). THe listdir command will raise FileNotFoundError
-                # if directory is mounted but not connected
-                os.listdir('/metno/aerocom-users-database')
-                self.print_log.info("Init data paths for users database")
-                return self._config_files['aerocom-users-database']
-            except FileNotFoundError:
-                pass
-            self.print_log.info("Init data paths for Aerocom users server")
+        if self.has_access_lustre:
+            self.print_log.info("Init data paths for lustre")
+            return self._config_files['metno']
+        elif self.has_access_users_database:
+            self.print_log.info("Init data paths for users database")
             return self._config_files['aerocom-users-database']
-        if os.path.exists(os.path.join(self.HOMEDIR, 'pyaerocom-testdata')):
+        elif self.has_access_testdata:
             self.print_log.info("Init data paths for pyaerocom testdata")
             return self._config_files['pyaerocom-testdata']
         
         self.GRID_IO.load_default()
         return None
-            
+    
     @property
     def ALL_DATABASE_IDS(self):
         '''ID's of available database configurations'''
         return list(self._config_files.keys())
     
     @property
+    def ROOTDIR(self):
+        return os.path.abspath(os.sep)
+    
+    @property
     def HOMEDIR(self):
         """Home directory of user"""
-        return os.path.expanduser("~")
+        return os.path.expanduser("~") + '/'
     
     @property
     def OUTPUTDIR(self):
