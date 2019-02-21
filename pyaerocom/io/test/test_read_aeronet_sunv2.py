@@ -3,30 +3,26 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
-
-# TODO: Docstrings
-import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import TEST_RTOL
+import os
+from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
-
-@pytest.fixture(scope='module')
-def dataset():
-    '''Read ECMWF data between 2003 and 2008
-    '''
-    return ReadAeronetSunV2()
     
-def test_load_berlin(dataset):
-    files = dataset.find_in_file_list('*Berlin*')
+@lustre_unavail
+def test_load_berlin():
+    reader = ReadAeronetSunV2()
+    files = reader.find_in_file_list('*Berlin*')
     assert len(files) == 1
-    data = dataset.read_file(files[0],
-                             vars_to_retrieve=['od550aer'])
+    assert os.path.basename(files[0]) == 'Berlin_FUB.lev30'
+    data = reader.read_file(files[0],
+                            vars_to_retrieve=['od550aer'])
     
     test_vars = ['od440aer',
                  'od500aer',
                  'od550aer',
                  'ang4487aer']
+    
     assert all([x in data for x in test_vars])
     
     # more than 100 timestamps
@@ -44,5 +40,4 @@ def test_load_berlin(dataset):
     
     
 if __name__=="__main__":
-    d = dataset()
-    test_load_berlin(d)
+    test_load_berlin()

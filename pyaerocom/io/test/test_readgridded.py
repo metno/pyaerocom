@@ -8,9 +8,10 @@ Created on Mon Jul  9 14:14:29 2018
 import pytest
 import numpy.testing as npt
 from pandas import Timestamp
-from pyaerocom.test.settings import TEST_RTOL
+from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
+@lustre_unavail
 @pytest.fixture(scope='module')
 def dataset():
     '''Read ECMWF data between 2003 and 2008
@@ -18,13 +19,13 @@ def dataset():
     return ReadGridded(name="ECMWF_CAMS_REAN",
                        start="1-1-2003",
                        stop="31-12-2007")
-    
+@lustre_unavail    
 def test_variables(dataset):
     npt.assert_array_equal(dataset.vars,
                            ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 
                             'od550bc', 'od550dust', 'od550oa', 'od550so4', 
                             'od550ss', 'od865aer'])
-    
+@lustre_unavail    
 def test_years_available(dataset):
     npt.assert_array_equal(dataset.years,
                            [ 2003,
@@ -34,7 +35,7 @@ def test_years_available(dataset):
                              2007,
                              2008])    
 
-    
+@lustre_unavail    
 def test_meta(dataset):
     npt.assert_array_equal([len(dataset.files),
                             dataset.data_dir,
@@ -46,7 +47,7 @@ def test_meta(dataset):
                              Timestamp("1-1-2003"), 
                              Timestamp("31-12-2007"),
                              [2003, 2004, 2005, 2006, 2007]])
-    
+@lustre_unavail    
 def test_read_var(dataset):
     from numpy import datetime64
     d = dataset.read_var(var_name="od550aer", ts_type="daily")
@@ -63,6 +64,7 @@ def test_read_var(dataset):
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
     return d
 
+@lustre_unavail
 def test_read_vars(dataset):
     d = dataset.read(['od440aer', 'od550aer', 'od865aer'], 
                            ts_type="daily")

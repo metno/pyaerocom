@@ -5,11 +5,9 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-
-import pytest
 import numpy.testing as npt
-from pyaerocom.test.settings import TEST_RTOL
-from pyaerocom import UngriddedData
+from pyaerocom import UngriddedData, const
+
 
 def test_init_shape():
     npt.assert_array_equal(UngriddedData().shape, (10000, 12))
@@ -20,7 +18,7 @@ def test_init_shape():
     d1.add_chunk(1112)
     
     npt.assert_array_equal(d1.shape, (1114, 14))
-    
+
 
     
 if __name__=="__main__":

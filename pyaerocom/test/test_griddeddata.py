@@ -9,9 +9,10 @@ Created on Thu Apr 12 14:45:43 2018
 import pytest
 import numpy.testing as npt
 from datetime import datetime
-from pyaerocom.test.settings import TEST_RTOL
+from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom import GriddedData
 
+@lustre_unavail
 @pytest.fixture(scope='module')
 def data_cci():
     '''import example data from Aerosol CCI
@@ -23,6 +24,7 @@ def data_cci():
     test_file = get()['models']['aatsr_su_v4.3']
     return GriddedData(test_file, var_name="od550aer")
 
+@lustre_unavail
 @pytest.fixture(scope='module')
 def data_osuite():
     '''import example data from ECMWF_OSUITE
@@ -34,7 +36,7 @@ def data_osuite():
     test_file = get()['models']['ecmwf_osuite']
     return GriddedData(test_file, var_name="od550aer")
 
-
+@lustre_unavail
 def test_longitude(data_cci, data_osuite):
     """Test if longitudes are defined right"""
     lons_cci = data_cci.longitude.points
@@ -44,13 +46,15 @@ def test_longitude(data_cci, data_osuite):
             lons_osuite.min(), lons_osuite.max()]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
     
+@lustre_unavail
 def test_latitude(data_cci):
     """test latitude array"""
     nominal_eq = ['arc_degree', 0]
     vals_eq = [data_cci.latitude.units.name,
                int(sum(data_cci.latitude.points))]
     npt.assert_array_equal(nominal_eq, vals_eq)
-    
+
+@lustre_unavail    
 def test_time(data_cci, data_osuite):
     """Test time dimension access and values"""
     time_cci = data_cci.time

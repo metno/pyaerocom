@@ -8,18 +8,19 @@ Created on Mon Jul  9 14:14:29 2018
 import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import TEST_RTOL
+from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGriddedMulti
 
-MODELS = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016", 'ECHAM6-SALSA_AP3-CTRL2015']
+MODELS = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016", 
+          'ECHAM6-SALSA_AP3-CTRL2015']
 TEST_VARS = ["od550aer", "od550dust"]
 
+@lustre_unavail
 @pytest.fixture(scope='module')
 def dataset():
-    '''Read ECMWF data between 2003 and 2008
-    '''
     return ReadGriddedMulti(MODELS, '2010','2011')
-    
+
+@lustre_unavail    
 def test_info_available(dataset):    
     ids_nominal = MODELS
     vars_nominal = [['abs550aer', 'ang4487aer', 'od550aer', 'od550dust', 
@@ -42,7 +43,8 @@ def test_info_available(dataset):
         assert d.name == ids_nominal[i]
         npt.assert_array_equal(d.vars, vars_nominal[i])
         npt.assert_array_equal(d.years, years_nominal[i])
-        
+
+@lustre_unavail        
 def test_read_vars(dataset):
     result = dataset.read(TEST_VARS, ts_type="daily",
                           flex_ts_type=False)
@@ -51,7 +53,8 @@ def test_read_vars(dataset):
     dataset["ECHAM6-SALSA_AP3-CTRL2015"].read(TEST_VARS, ts_type="monthly")
     
     npt.assert_array_equal([2,2,2], [len(x.data) for x in dataset.results.values()])
-                
+
+@lustre_unavail                
 def test_data_available(dataset):
     npt.assert_array_equal(MODELS, [k for k in dataset.results.keys()])
     arr = []

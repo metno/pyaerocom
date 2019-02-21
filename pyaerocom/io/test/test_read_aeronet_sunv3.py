@@ -3,23 +3,18 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
-
-# TODO: Docstrings
-import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import TEST_RTOL
+import os
+from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
-@pytest.fixture(scope='module')
-def dataset():
-    '''Read ECMWF data between 2003 and 2008
-    '''
-    return ReadAeronetSunV3()
-    
-def test_load_berlin(dataset):
+@lustre_unavail
+def test_load_berlin():
+    dataset = ReadAeronetSunV3()
     files = dataset.find_in_file_list('*Berlin*')
     assert len(files) == 1
+    assert os.path.basename(files[0]) == 'Berlin_FUB.lev30'
     data = dataset.read_file(files[0],
                              vars_to_retrieve=['od550aer'])
     
@@ -47,5 +42,4 @@ def test_load_berlin(dataset):
     
     
 if __name__=="__main__":
-    d = dataset()
-    test_load_berlin(d)
+    test_load_berlin()
