@@ -1,0 +1,33 @@
+# Disable sudo to speed up the build
+sudo: false
+
+# Set the build language to Python
+language: python
+
+# Set the python versions
+python:
+  - "3.5"
+  - "3.6"
+
+before_install:
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 false
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  - echo "Python version var"
+  - echo $TRAVIS_PYTHON_VERSION
+  - sed -i -E 's/(python=)(.*)/\1'$TRAVIS_PYTHON_VERSION'/' ./pyaerocom_env.yml
+  - conda env create -n testenv -f pyaerocom_env.yml
+  - source activate testenv
+
+install:
+  - pip install -r test-requirements.txt
+  - python setup.py develop
+  
+script:
+  - py.test
+
