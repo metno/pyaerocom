@@ -48,7 +48,7 @@ def execute_and_save_notebook(file):
             nb = nbformat.read(f, as_version=4)
             
         ep = ExecutePreprocessor(kernel_name="python3")
-        ep.timeout = 240
+        ep.timeout = 600
         ep.preprocess(nb, {'metadata': {'path': '.'}})
         
         
