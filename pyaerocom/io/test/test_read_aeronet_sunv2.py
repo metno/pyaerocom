@@ -14,7 +14,7 @@ def test_load_berlin():
     reader = ReadAeronetSunV2()
     files = reader.find_in_file_list('*Berlin*')
     assert len(files) == 1
-    assert os.path.basename(files[0]) == 'Berlin_FUB.lev30'
+    assert os.path.basename(files[0]) == '920801_180519_Berlin_FUB.lev20'
     data = reader.read_file(files[0],
                             vars_to_retrieve=['od550aer'])
     
