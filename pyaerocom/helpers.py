@@ -88,11 +88,10 @@ def isnumeric(val):
     bool 
         True, if input value corresponds to a range, else False.
     """
-    try:
-        float(val)
+    from numbers import Number
+    if isinstance(val, Number):
         return True
-    except:
-        return False
+    return False
     
 def isrange(val):
     """Check if input value corresponds to a range
