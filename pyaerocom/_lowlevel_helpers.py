@@ -5,6 +5,7 @@ Small helper utility functions for pyaerocom
 """   
 import numpy as np
 import os
+import multiprocessing as mp
 from collections import OrderedDict
 
 class BrowseDict(OrderedDict):
@@ -27,7 +28,41 @@ class BrowseDict(OrderedDict):
 
     def __str__(self):
         return dict_to_str(self)
-   
+
+def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
+    """Check input function timeout performance
+    
+    Uses multiprocessing module to test if input function finishes within a 
+    certain time interval.
+    
+    Parameters
+    ----------
+    fun : callable
+        function that is supposed to be tested
+    fun_args : tuple
+        function arguments
+    timeout_secs : float
+        timeout in seconds
+    
+    Returns
+    -------
+    bool
+        True if function execution requires less time than input timeout, else
+        False
+    """
+    
+    # Start foo as a process
+    OK = True
+    p = mp.Process(target=fun, name="test", args=fun_args)
+    p.start()
+    p.join(timeout_secs)
+    if p.is_alive():# Terminate foo
+        OK =False
+        p.terminate()
+        # Cleanup
+        p.join()  
+    
+    return OK   
 def _is_interactive():
     import __main__ as main
     return not hasattr(main, '__file__')
