@@ -13,5 +13,6 @@ dependencies:
   - netcdf4
   - cf_units
   - numpy
+  - pytest
 
 
