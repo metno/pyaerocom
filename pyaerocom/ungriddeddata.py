@@ -450,15 +450,19 @@ class UngriddedData(object):
                 for var in vars_to_convert:
                     stat.insert_nans_timeseries(var)
         if len(stats) == 0:
-            logger.warn('No data could be retrieved for request')
+            logger.warning('No data could be retrieved for request')
         elif len(stats) == 1:
             # return StationData object and not list 
             return stats[0]
         
         return stats
         
+    def _get_subset(self, meta_idx, var_name, start=None, stop=None):
+        """Get 2D data block corresponding to input meta index and variable"""
+        pass
+    
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
-                                  start, stop, freq=None):
+                                  start=None, stop=None, freq=None):
         """Convert one metadata index to StationData (helper method)
         
         See :func:`to_station_data` for input parameters
@@ -478,21 +482,6 @@ class UngriddedData(object):
             if k in val:
                 stat_data[k] = val[k]
         
-# =============================================================================
-#         stat_data['station_name'] = val['station_name']
-#         stat_data['latitude'] = val['latitude']
-#         stat_data['longitude'] = val['longitude']
-#         stat_data['altitude'] = val['altitude']
-#         stat_data['PI'] = val['PI']
-#         stat_data['data_id'] = val['data_id']
-#         stat_data['ts_type_src'] = val['ts_type']
-#         stat_data['ts_type'] = val['ts_type']
-# =============================================================================
-            
-# =============================================================================
-#         stat_data['var_info'] = {}
-# =============================================================================
-        
         if vars_to_convert is None:
             vars_to_convert = val['variables']
         vars_to_convert = np.intersect1d(vars_to_convert, val['variables']) 
@@ -504,12 +493,21 @@ class UngriddedData(object):
         idx = self.meta_idx[meta_idx][first_var]
         dtime = self._data[idx, self._TIMEINDEX].astype('datetime64[s]')
         
+        if start is None:
+            start = dtime.min()
+        if stop is None:
+            stop = dtime.max()
+        
+        tmask = np.logical_and(dtime >= start, 
+                               dtime <= stop)
+        dtime = dtime[tmask]
+        
         altitude =  self._data[idx, self._DATAHEIGHTINDEX]
         IS3D = False
         if not np.all(np.isnan(altitude)):
             IS3D = True
-        # TODO: remove try except block
-        tmask = np.logical_and(dtime >= start, dtime <= stop)
+        
+        
   
         if tmask.sum() == 0:
             raise TimeMatchError('No data available for station {} ({}) in '
@@ -517,18 +515,22 @@ class UngriddedData(object):
                                  .format(stat_data['station_name'],
                                          stat_data['data_id'],
                                          start, stop))
-        dtime = dtime[tmask]
-        stat_data['dtime'] = dtime
+        
+        idx = pd.DatetimeIndex(dtime)
         for var in vars_to_convert:
             stat_data.var_info[var] = {}
             var_idx = np.asarray(self.meta_idx[meta_idx][var])[tmask]
             
             data = self._data[var_idx, self._DATAINDEX]
             if IS3D:
-                data = VerticalProfile(data, altitude, var_name=var)
+                dtime = idx.unique().values
+                if len(dtime) > 1:
+                    raise NotImplementedError()
+                data = VerticalProfile(data, altitude,
+                                       dtime=dtime, var_name=var)
                 
             else:
-                data = pd.Series(data, dtime)
+                data = pd.Series(data, idx)
                 if not data.index.is_monotonic:
                     data = data.sort_index()
                 data = data[start:stop]
@@ -539,6 +541,8 @@ class UngriddedData(object):
                     data = resample_timeseries(data, freq) 
                     stat_data['ts_type'] = freq
                     stat_data['dtime'] = data.index.values
+            
+            stat_data['dtime'] = dtime
             stat_data[var] = data
             try:
                 stat_data.var_info[var]['unit'] = val['var_info'][var]['unit']
@@ -1778,7 +1782,7 @@ class UngriddedData(object):
         pandas.Series
             time series data
         """
-        logger.warn(DeprecationWarning('Outdated method, please use to_timeseries'))
+        logger.warning(DeprecationWarning('Outdated method, please use to_timeseries'))
         
         data = self.to_station_data(station, var_name, 
                                      start, stop, freq=ts_type,

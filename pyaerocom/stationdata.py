@@ -198,7 +198,7 @@ class StationData(StationMetaData):
             if key in self.STANDARD_COORD_KEYS: # this has been handled above
                 continue
             if self[key] is None:
-                logger.warn('No metadata available for key {}'.format(key))
+                logger.warning('No metadata available for key {}'.format(key))
                 continue
             
             val = self[key]
@@ -814,8 +814,8 @@ class StationData(StationMetaData):
                 if u is not None and not u in [1, '1']:
                     ylabel += ' [{}]'.format(u)
         except:
-            logger.warn('Failed to access unit information for variable {}'
-                        .format(var_name))
+            logger.warning('Failed to access unit information for variable {}'
+                           .format(var_name))
         ax.set_ylabel(ylabel)
         ax.set_title(tit)
         if legend:
