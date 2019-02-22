@@ -159,7 +159,7 @@ def check_and_regrid_lons_cube(cube):
             logger.info("Rolling longitudes to -180 -> 180 definition")
             cube = cube.intersection(longitude=(-180, 180))
     except Exception as e:
-        print_log.warn('Failed to roll longitudes: {}'.format(repr(e)))
+        print_log.warning('Failed to roll longitudes: {}'.format(repr(e)))
     return cube
 
 def check_dim_coords_cube(cube):

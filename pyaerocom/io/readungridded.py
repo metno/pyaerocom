@@ -275,7 +275,7 @@ class ReadUngridded(object):
                 cache.write(data)
             except Exception as e:
                 _caching = False
-                print_log.warn('Failed to write to cache directory:\n{}.\n'
+                print_log.warning('Failed to write to cache directory:\n{}.\n'
                                'Deactivating caching in pyaerocom'.format(repr(e)))
         
         if _caching is not None:
