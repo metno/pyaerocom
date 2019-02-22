@@ -67,7 +67,7 @@ def get_topo_data(lat0, lon0, lat1=None, lon1=None, topo_dataset='srtm',
         return access.get_data(lat0, lon0, lat1, lon1)
     except Exception as e:
         if try_etopo1 and not topo_dataset=='etopo1':
-            print_log.warn('Failed to access topography data for {}. '
+            print_log.warning('Failed to access topography data for {}. '
                            'Trying ETOPO1.\nError: {}'.format(topo_dataset, repr(e)))
             return get_topo_data(lat0, lon0, lat1, lon1, 
                                  topo_dataset='etopo1', 
@@ -161,7 +161,7 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None,
                                  '{} using SRTM topographic database'.format(p1))
         return (p0 - p1).magnitude
     else:
-        print_log.warn('geonum is not installed, computing approximate '
+        print_log.warning('geonum is not installed, computing approximate '
                        'distance using haversine formula')
         hordist = haversine(lat0, lon0, lat1, lon1)
         if alt0 == None:

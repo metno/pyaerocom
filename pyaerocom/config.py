@@ -197,8 +197,8 @@ class Config(object):
             except Exception as e:
                 from traceback import format_exc
                 self.init_outputdirs()
-                self.print_log.warn(format_exc())
-                self.print_log.warn("Failed to init config. Error: %s" %repr(e))
+                self.print_log.warning(format_exc())
+                self.print_log.warning("Failed to init config. Error: %s" %repr(e))
     
     def _check_access(self, loc):
         """Uses multiprocessing approach to check if location can be accessed
@@ -644,7 +644,7 @@ class Config(object):
         if cr.has_section('supplfolders'):
             for name, path in cr['supplfolders'].items():
                 if not os.path.exists(path):
-                    self.print_log.warn('Supplementary data directory for '
+                    self.print_log.warning('Supplementary data directory for '
                                         '{} does not exist:\n{}'.format(name, path))
                 self.SUPPLDIRS[name] = path
                 
