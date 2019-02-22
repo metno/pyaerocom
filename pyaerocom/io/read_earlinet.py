@@ -272,7 +272,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 val *= unit_fac
                 unit = to_unit
             except Exception as e:
-                self.logger.warn('Failed to convert unit: {}'.format(repr(e)))
+                self.logger.warning('Failed to convert unit: {}'.format(repr(e)))
             # 1D variable
             if var == 'zdust':
                 if not val.ndim == 0:
@@ -315,7 +315,7 @@ class ReadEarlinet(ReadUngriddedBase):
                         alt_vals *= alt_unit_fac
                         alt_unit = to_alt_unit
                     except Exception as e:
-                        self.logger.warn('Failed to convert unit: {}'.format(repr(e)))
+                        self.logger.warning('Failed to convert unit: {}'.format(repr(e)))
                 profile.altitude = alt_vals
                 
                 profile.var_info['altitude'] = od()
@@ -616,5 +616,7 @@ if __name__=="__main__":
     data = read.read('ec532aer', last_file=20)
     print(data)
     
-    stat = data.to_station_data('Evora')
+    stat = data.to_station_data(0)
+    
+    
     

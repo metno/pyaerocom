@@ -216,7 +216,10 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                 day, month, year = dummy_arr[col_index['date']].split(':')
                 datestring = '-'.join([year, month, day])
                 datestring = 'T'.join([datestring, dummy_arr[col_index['time']]])
-                datestring = '+'.join([datestring, '00:00'])
+                # NOTE JGLISS: parsing timezone offset was removed on 22/2/19
+                # since it is deprecated in recent numpy versions, for details
+                # see https://www.numpy.org/devdocs/reference/arrays.datetime.html#changes-with-numpy-1-11
+                #datestring = '+'.join([datestring, '00:00'])
                 
                 data_out['dtime'].append(np.datetime64(datestring))
 
