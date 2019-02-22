@@ -11,20 +11,22 @@ from pandas import Timestamp
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
-@lustre_unavail
-@pytest.fixture(scope='module')
-def dataset():
-    '''Read ECMWF data between 2003 and 2008
-    '''
+def make_dataset():
     return ReadGridded(name="ECMWF_CAMS_REAN",
                        start="1-1-2003",
                        stop="31-12-2007")
+@lustre_unavail
+@pytest.fixture(scope='module')
+def dataset():
+    return make_dataset()
+    
 @lustre_unavail    
 def test_variables(dataset):
+    assert len(dataset.vars) == 12, 'Mismatch in number of available variables'
     npt.assert_array_equal(dataset.vars,
                            ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 
                             'od550bc', 'od550dust', 'od550oa', 'od550so4', 
-                            'od550ss', 'od865aer'])
+                            'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25'])
 @lustre_unavail    
 def test_years_available(dataset):
     npt.assert_array_equal(dataset.years,
@@ -42,11 +44,12 @@ def test_meta(dataset):
                             dataset._start, 
                             dataset._stop,
                             list(dataset.get_years_to_load())],
-                            [104,
+                            [112,
                              '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
                              Timestamp("1-1-2003"), 
                              Timestamp("31-12-2007"),
                              [2003, 2004, 2005, 2006, 2007]])
+    
 @lustre_unavail    
 def test_read_var(dataset):
     from numpy import datetime64
@@ -83,10 +86,6 @@ def test_read_vars(dataset):
     return d
     
 if __name__=="__main__":
-    d = dataset()
-    test_variables(d)
-    test_years_available(d)
-    test_meta(d)
-    test_read_var(d)
-    
-    dat = test_read_vars(d)
+    ds = make_dataset()
+    test_meta(ds)
+    test_variables(ds)

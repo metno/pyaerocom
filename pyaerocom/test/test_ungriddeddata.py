@@ -6,7 +6,7 @@ Created on Thu Apr 12 14:45:43 2018
 @author: jonasg
 """
 import numpy.testing as npt
-from pyaerocom import UngriddedData, const
+from pyaerocom import UngriddedData
 
 
 def test_init_shape():
@@ -18,8 +18,6 @@ def test_init_shape():
     d1.add_chunk(1112)
     
     npt.assert_array_equal(d1.shape, (1114, 14))
-
-
     
 if __name__=="__main__":
     test_init_shape()
