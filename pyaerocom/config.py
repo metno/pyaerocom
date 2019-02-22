@@ -218,6 +218,14 @@ class Config(object):
         bool
             True, if location is accessible, else False
         """
+# =============================================================================
+#         try:
+#             os.listdir(loc)
+#             return True
+#         except:
+#             return False
+# =============================================================================
+        self.print_log.info('Checking access to: {}'.format(loc))
         return check_fun_timeout_multiproc(os.listdir, fun_args=(loc, ),
                                            timeout_secs=self.SERVER_CHECK_TIMEOUT)
     

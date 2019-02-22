@@ -425,8 +425,8 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         below_thresh = result < const.VAR_PARAM[var_name]['minimum']
         result[below_thresh] = np.nan
     except:
-        logger.warn("Could not access lower limit from global settings for "
-                    "variable {}".format(var_name))
+        logger.warning("Could not access lower limit from global settings for "
+                       "variable {}".format(var_name))
     
     return result
 

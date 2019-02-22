@@ -10,7 +10,7 @@ from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
     
 @lustre_unavail
-def test_load_berlin():
+def test_load_berlin_AeroSunV2L2D():
     reader = ReadAeronetSunV2()
     files = reader.find_in_file_list('*Berlin*')
     assert len(files) == 1
@@ -40,4 +40,4 @@ def test_load_berlin():
     
     
 if __name__=="__main__":
-    test_load_berlin()
+    test_load_berlin_AeroSunV2L2D()

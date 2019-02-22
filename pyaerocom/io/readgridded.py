@@ -683,23 +683,7 @@ class ReadGridded(object):
             if concatenation of all cubes failed (catch this error using 
             :func:`concatenate_possible_cubes` which returns an instance 
             of :class:`CubeList` with results)
-        """
-# =============================================================================
-#         for cube in cubes:
-#             name = cube.standard_name or cube.long_name
-#             if name is None:
-#                 cube.long_name = 'UNDEFINED'
-#                 self.logger.warn('Cube {} does not contain standard_name or '
-#                                  'long_name attribute. Setting to UNDEFINED '
-#                                  'so that iris.concatenate wont get confused'
-#                                  .format(cube))
-# =============================================================================
-# =============================================================================
-#                 raise NetcdfError('Either standard_name or long_name must be '
-#                                   'defined in all cubes for iris.concatenate '
-#                                   'to work')
-# =============================================================================
-        
+        """        
         return concatenate_iris_cubes(cubes, error_on_mismatch=True)
     
     def concatenate_possible_cubes(self, cubes):

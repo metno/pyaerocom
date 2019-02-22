@@ -274,7 +274,7 @@ class GriddedData(object):
     @property 
     def name(self):
         """ID of model to which data belongs"""
-        logger.warn('Deprecated attribute name, please use data_id instead')
+        logger.warning('Deprecated attribute name, please use data_id instead')
         return self.suppl_info["name"]
     
     @property
@@ -385,7 +385,7 @@ class GriddedData(object):
     def init_reader(self, print_info=True):
         """Initiate reader class"""
         if self.reader is not None:
-            logger.warn('Existing reader class will be overwritten')
+            logger.warning('Existing reader class will be overwritten')
         from pyaerocom.io import ReadGridded
         try:
             self.reader = ReadGridded(self.data_id)
@@ -429,7 +429,8 @@ class GriddedData(object):
         try:
             self.grid.var_name = self.var_info.var_name
         except:
-            logger.warn('Failed to convert variable name {}'.format(self.var_name))
+            logger.warning('Failed to convert variable name {}'
+                           .format(self.var_name))
         
      
     def convert_unit(self, new_unit):
@@ -454,8 +455,8 @@ class GriddedData(object):
 
     def check_coord_order(self):
         """Wrapper for :func:`check_dimcoords_tseries`"""
-        logger.warn(DeprecationWarning('Method was renamed, please use '
-                                       'check_dimcoords_tseries'))
+        logger.warning(DeprecationWarning('Method was renamed, please use '
+                                          'check_dimcoords_tseries'))
         return self.check_dimcoords_tseries()
     
     def check_dimcoords_tseries(self):

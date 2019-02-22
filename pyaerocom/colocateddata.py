@@ -162,7 +162,7 @@ class ColocatedData(object):
         try:
             return self.data.attrs['unit']
         except KeyError:
-            logger.warn('Failed to access unit ColocatedData class (may be an '
+            logger.warning('Failed to access unit ColocatedData class (may be an '
                         'old version of data)')
     @property
     def unitstr(self):

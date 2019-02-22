@@ -47,13 +47,13 @@ def check_requirements(logger):
         import geonum
     except:
         GEONUM_AVAILABLE = False
-        logger.warn('geonum library is not installed. Some features will not '
+        logger.warning('geonum library is not installed. Some features will not '
                     'be available (e.g. conversion of pressure to altitude')
     try:
         from mpl_toolkits.basemap import Basemap
     except:
         BASEMAP_AVAILABLE = False
-        logger.warn('basemap extension library is not installed (or cannot be '
+        logger.warning('basemap extension library is not installed (or cannot be '
                     'imported. Some features will not be available')
     return (GEONUM_AVAILABLE, BASEMAP_AVAILABLE)
 
