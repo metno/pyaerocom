@@ -4,7 +4,6 @@
 """
 import numpy as np
 from collections import OrderedDict as od
-from pyaerocom.metastandards import StationMetaData
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 
 class VerticalProfile(object):
