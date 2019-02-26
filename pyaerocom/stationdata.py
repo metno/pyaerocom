@@ -693,7 +693,8 @@ class StationData(StationMetaData):
         var_name : str
             name of data variable
         ts_type : str
-            new frequency
+            new frequency string (can be pyaerocom ts_type or valid pandas
+            frequency string)
         how : str
             how should the resampled data be averaged (e.g. mean, median)
         inplace : bool
