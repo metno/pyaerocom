@@ -4,7 +4,7 @@ from pyaerocom import logger
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import DataDimensionError, NetcdfError
-from pyaerocom.plot.plotscatter_new import plot_scatter
+from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 import numpy as np
 import pandas as pd

@@ -36,7 +36,7 @@
 # near future
 from .plotmaps import plotmaps, annotate_aerocom, plot_ts_map
 from .mapping import plot_griddeddata_on_map
-from .plotscatter import plotscatter
+from .plotscatter_v0 import plotscatter
 from .plotseries import plot_series_year
 from .heatmaps import df_to_heatmap
 from .plotsitelocation import plotsitelocation
