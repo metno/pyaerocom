@@ -51,7 +51,10 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           '3hourly' :   '3H',
                           'daily'   :   'D',
                           'monthly' :   'MS', #Month start !
-                          'yearly'  :   'Y'}
+                          'yearly'  :   'AS'}
+
+PANDAS_RESAMPLE_OFFSETS = {'AS' : np.timedelta64(6, '[M]'),
+                           'MS' : np.timedelta64(15, '[D]')}
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 
@@ -284,7 +287,10 @@ def resample_timeseries(s, freq, how='mean'):
     """
     if freq in TS_TYPE_TO_PANDAS_FREQ:
         freq = TS_TYPE_TO_PANDAS_FREQ[freq]
-    resampler = s.resample(freq)
+    loffset = None
+    if freq in PANDAS_RESAMPLE_OFFSETS:
+        loffset = PANDAS_RESAMPLE_OFFSETS[freq]
+    resampler = s.resample(freq, loffset=loffset)
     if how =='mean':
         return resampler.mean() 
     elif how == 'median':
