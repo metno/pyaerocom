@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
+import xarray as xarr
 from pyaerocom import VerticalProfile, logger, const
 
 from pyaerocom.exceptions import MetaDataError, VarNotAvailableError
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom.helpers import resample_timeseries
+from pyaerocom.helpers import resample_timeseries, isnumeric
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -45,9 +46,24 @@ class StationData(StationMetaData):
     
         self.var_info = BrowseDict()
         
+        self.station_coords = dict.fromkeys(self.STANDARD_COORD_KEYS)
+        
         self.data_err = BrowseDict()        
         self.overlap = BrowseDict()
         super(StationData, self).__init__(**meta_info)
+    
+    @property
+    def default_vert_grid(self):
+        """AeroCom default grid for vertical regridding
+        
+        For details, see :attr:`DEFAULT_VERT_GRID_DEF` in :class:`Config`
+        
+        Returns
+        -------
+        ndarray
+            numpy array specifying default coordinates
+        """
+        return const.make_default_vert_grid()
     
     def dist_other(self, other):
         """Distance to other station in km
@@ -94,6 +110,13 @@ class StationData(StationMetaData):
     def get_station_coords(self, force_single_value=True, quality_check=True):
         """Return coordinates as dictionary
         
+        This method uses the standard coordinate names defined in 
+        :attr:`STANDARD_COORD_KEYS` (latitude, longitude and altitude) to get
+        the station coordinates. For each of these parameters tt first looks 
+        in :attr:`station_coords` if the parameter is defined (i.e. it is not 
+        None) and if not it checks if this object has an attribute that has 
+        this name and uses that one. 
+        
         Parameters
         ----------
         force_single_value : bool
@@ -120,25 +143,36 @@ class StationData(StationMetaData):
         _check_var = False
         vals , stds = {}, {}
         for key in self.STANDARD_COORD_KEYS:
-            if not key in self or self[key] is None:
-                raise MetaDataError('{} information is not available in data'.format(key))
-            val = self[key]
-            std = 0.0
-            # TODO: review the quality check and make shorter
-            if force_single_value and not isinstance(val, (float, np.floating)):
-                if isinstance(val, (int, np.integer)):
-                    val = np.float64(val)
-                elif isinstance(val, (list, np.ndarray)):
-                    val = np.mean(val)
-                    std = np.std(val)
-                    if std > 0:
-                        _check_var = True
-                else:
-                    raise AttributeError("Invalid value encountered for coord "
-                                         "{}, need float, int, list or ndarray, "
-                                         "got {}".format(key, type(val)))
-            vals[key] = val
-            stds[key] = std
+            # prefer explicit if defined in station_coord dictionary (e.g. altitude
+            # attribute in lidar data will be an array corresponding to profile
+            # altitudes)
+            val = self.station_coords[key]
+            if val is not None:
+                if not isnumeric(val):
+                    raise MetaDataError('Station coordinate {} must be numeric. '
+                                        'Got: {}'.format(key, val))
+                vals[key] = val
+                stds[key] = 0
+            else:
+                if not key in self or self[key] is None:
+                    raise MetaDataError('{} information is not available in data'.format(key))
+                val = self[key]
+                std = 0
+                # TODO: review the quality check and make shorter
+                if force_single_value and not isinstance(val, (float, np.floating)):
+                    if isinstance(val, (int, np.integer)):
+                        val = np.float64(val)
+                    elif isinstance(val, (list, np.ndarray)):
+                        val = np.mean(val)
+                        std = np.std(val)
+                        if std > 0:
+                            _check_var = True
+                    else:
+                        raise AttributeError("Invalid value encountered for coord "
+                                             "{}, need float, int, list or ndarray, "
+                                             "got {}".format(key, type(val)))
+                vals[key] = val
+                stds[key] = std
         if _check_var:
             raise NotImplementedError('This feature does currently not work '
                                       'due to recent API changes')
@@ -369,6 +403,92 @@ class StationData(StationMetaData):
 #                 info_this[k].append(v)
 # =============================================================================
         
+    def check_if_3d(self, var_name):
+        """Checks if altitude data is available in this object"""
+        if 'altitude' in self: 
+            val = self['altitude']
+            if isnumeric(val): # is numerical value
+                return False
+            # unique altitude values
+            uvals = np.unique(val)
+            if len(uvals) == 1: # only one value in altitude array (NOT 3D)
+                return False
+            elif len(uvals[~np.isnan(uvals)]) == 1: # only 2 unique values in altitude array but one is NaN
+                return False
+            return True
+        return False
+        
+    def _merge_vardata_3d(self, other, var_name):
+        """Merge 3D variable data (for details see :func:`merge_vardata`)"""
+        raise NotImplementedError
+        s0 = self[var_name]
+        s1 = other[var_name]
+        info = other.var_info[var_name]
+        removed = None
+        if info['overlap']:
+            raise NotImplementedError('Coming soon...')
+        
+        if len(s1) > 0: #there is data
+            overlap = s0.index.intersection(s1.index)
+            if len(overlap) > 0:
+                removed = s1[overlap]
+                s1 = s1.drop(index=overlap, inplace=True)
+            
+            #compute merged time series
+            s0 = pd.concat([s0, s1], verify_integrity=True)
+            
+            # sort the concatenated series based on timestamps
+            s0.sort_index(inplace=True)
+            self.merge_varinfo(other, var_name)
+        
+        # assign merged time series (overwrites previous one)
+        self[var_name] = s0
+        
+        if removed is not None:
+            if var_name in self.overlap:
+                self.overlap[var_name] = pd.concat([self.overlap[var_name], 
+                                                   removed])
+                self.overlap[var_name].sort_index(inplace=True)
+            else:
+                self.overlap[var_name] = removed
+                
+        return self
+    
+    def _merge_vardata_2d(self, other, var_name):
+        """Merge 2D variable data (for details see :func:`merge_vardata`)"""
+        s0 = self[var_name].dropna()
+        s1 = other[var_name].dropna()
+        info = other.var_info[var_name]
+        removed = None
+        if info['overlap']:
+            raise NotImplementedError('Coming soon...')
+        
+        if len(s1) > 0: #there is data
+            overlap = s0.index.intersection(s1.index)
+            if len(overlap) > 0:
+                removed = s1[overlap]
+                s1 = s1.drop(index=overlap, inplace=True)
+            #compute merged time series
+            s0 = pd.concat([s0, s1], verify_integrity=True)
+            
+            # sort the concatenated series based on timestamps
+            s0.sort_index(inplace=True)
+            self.merge_varinfo(other, var_name)
+        
+        # assign merged time series (overwrites previous one)
+        self[var_name] = s0
+        self.dtime = s0.index.values
+        
+        if removed is not None:
+            if var_name in self.overlap:
+                self.overlap[var_name] = pd.concat([self.overlap[var_name], 
+                                                   removed])
+                self.overlap[var_name].sort_index(inplace=True)
+            else:
+                self.overlap[var_name] = removed
+                
+        return self
+    
     def merge_vardata(self, other, var_name):
         """Merge variable data from other object into this object
         
@@ -415,38 +535,12 @@ class StationData(StationMetaData):
             raise MetaDataError('For merging of {} data, variable specific meta '
                                 'data needs to be available in var_info dict '
                                 .format(var_name))
-        
-        s0 = self[var_name].dropna()
-        s1 = other[var_name].dropna()
-        info = other.var_info[var_name]
-        removed = None
-        if info['overlap']:
-            raise NotImplementedError('Coming soon...')
-        
-        if len(s1) > 0: #there is data
-            overlap = s0.index.intersection(s1.index)
-            if len(overlap) > 0:
-                removed = s1[overlap]
-                s1 = s1.drop(index=overlap, inplace=True)
-            #compute merged time series
-            s0 = pd.concat([s0, s1], verify_integrity=True)
             
-            # sort the concatenated series based on timestamps
-            s0.sort_index(inplace=True)
-            self.merge_varinfo(other, var_name)
-        
-        # assign merged time series (overwrites previous one)
-        self[var_name] = s0
-        
-        if removed is not None:
-            if var_name in self.overlap:
-                self.overlap[var_name] = pd.concat([self.overlap[var_name], 
-                                                   removed])
-                self.overlap[var_name].sort_index(inplace=True)
-            else:
-                self.overlap[var_name] = removed
-                
-        return self
+        if self.check_if_3d(var_name):
+            raise NotImplementedError
+            #return self._merge_vardata_3d(other, var_name)
+        else:
+            return self._merge_vardata_2d(other, var_name)
          
     def merge_other(self, other, var_name, **add_meta_keys):
         """Merge other station data object
@@ -614,23 +708,32 @@ class StationData(StationMetaData):
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
         data = self[var_name]
-        if not isinstance(data, pd.Series):
+    
+        if not isinstance(data, (pd.Series, xarr.DataArray)):
             try:
                 data = self.to_timeseries(var_name, inplace=inplace)
             except Exception as e:
                 raise ValueError('{} data must be stored as pandas Series '
-                                 'instance. Failed to convert to pandas Series.'
+                                 'instance or as xarray.DataArray. Failed to '
+                                 'convert to pandas Series.'
                                  'Error: {}'.format(repr(e)))
         
-        new = resample_timeseries(data, freq=ts_type, how=how)
+        if isinstance(data, pd.Series):
+            new = resample_timeseries(data, freq=ts_type, how=how)
+        elif isinstance(data, xarr.DataArray):
+            raise NotImplementedError('Coming soon...')
+            idx = pd.DatetimeIndex(freq)
+            new = data.reindex()
         
         if inplace:
             self[var_name] = new
             self.var_info[var_name]['ts_type'] = ts_type        
             if len(self.var_info) > 1:     
                 self.ts_type = None
+                self.dtime = None
             else:
                 self.ts_type = ts_type
+                self.dtime = new.index.values
         return new
     
     def insert_nans_timeseries(self, var_name):
