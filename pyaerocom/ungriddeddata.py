@@ -1555,7 +1555,7 @@ class UngriddedData(object):
                                  filter_name=None, start=None, 
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
-                                 ax_lim_filter=False, **kwargs):
+                                 **kwargs):
         """Plot station coordinates on a map
         
         All input parameters are optional and may be used to add constraints 
@@ -1585,9 +1585,6 @@ class UngriddedData(object):
             size of station markers
         fontsize_base : int
             basic fontsize 
-        ax_lim_filter : bool
-            if True and a regional filter is specified, then the displayed 
-            axes limits (lat, lon) are updated corresponding to that region
         **kwargs
             Addifional keyword args passed to 
             :func:`pyaerocom.plot.plot_coordinates`
@@ -1655,10 +1652,9 @@ class UngriddedData(object):
                               markersize=markersize, 
                               fontsize_base=fontsize_base, **kwargs)
         region = f._region
-        if ax_lim_filter:
-            ax.set_xlim(region.lon_range_plot)
-            ax.set_ylim(region.lat_range_plot)
-        
+        ax.set_xlim(region.lon_range_plot)
+        ax.set_ylim(region.lat_range_plot)
+    
         ax = set_map_ticks(ax, 
                            region.lon_ticks, 
                            region.lat_ticks)
