@@ -1,23 +1,18 @@
 ################################################################
-# read_aeronet_earlinet.py
+# read_earlinet.py
 #
-# read Aeronet direct sun V2 data
+# read Earlinet lidar profile data
 #
 # this file is part of the pyaerocom package
 #
-#################################################################
-# Created 20171026 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
 # Copyright (C) 2017 met.no
 # Contact information:
 # Norwegian Meteorological Institute
 # Box 43 Blindern
 # 0313 OSLO
 # NORWAY
-# E-mail: jan.griesfeller@met.no
+# E-mail: jonasg@met.no
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -30,6 +25,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
+
 import os, fnmatch, re
 from collections import OrderedDict as od
 import numpy as np
@@ -70,7 +66,7 @@ class ReadEarlinet(ReadUngriddedBase):
     ALTITUDE_ID = 'Altitude'
     
     #: temporal resolution
-    TS_TYPE = 'undefined'
+    TS_TYPE = 'daily'
     
     #: dictionary specifying the file search patterns for each variable
     VAR_PATTERNS_FILE = {'ec532aer'     : '*/*.e532', 
@@ -192,7 +188,7 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out = StationData()
         data_out['station_id'] = filename.split('/')[-2]
         data_out['data_id'] = self.DATA_ID
-        #data_out['ts_type'] = self.TS_TYPE
+        data_out['ts_type'] = self.TS_TYPE
            
         # create empty arrays for all variables that are supposed to be read
         # from file
@@ -578,6 +574,8 @@ class ReadEarlinet(ReadUngriddedBase):
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
+    import pyaerocom as pya
+    
     plt.close('all')
     read = ReadEarlinet()
     read.verbosity_level = 'warning'
@@ -617,6 +615,11 @@ if __name__=="__main__":
     print(data)
     
     stat = data.to_station_data(0)
+    
+    merged = data.to_station_data('Evora', freq='monthly',
+                                  insert_nans=False)
+    
+    print(merged)
     
     
     
