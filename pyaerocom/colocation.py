@@ -12,6 +12,7 @@ from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
                                TS_TYPE_TO_NUMPY_FREQ,
+                               PANDAS_RESAMPLE_OFFSETS,
                                to_datestring_YYYYMMDD)
 
 from pyaerocom.filter import Filter
@@ -196,20 +197,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     var = gridded_data.var_info.var_name
     if var_ref is None:
         var_ref = var
-    
-# =============================================================================
-#     if gridded_data.var_info.has_unit:
-#         if not gridded_data.unit == ungridded_data.unit[var_ref]:
-#             try:
-#                 gridded_data.convert_unit(ungridded_data.unit[var_ref])
-#             except:
-#                 raise DataUnitError('Failed to merge data unit of '
-#                                     'gridded data object ({}) to data unit '
-#                                     'of ungridded data object ({})'
-#                                     .format(gridded_data.unit, 
-#                                             ungridded_data.unit[var_ref]))
-# =============================================================================
-                
+        
     if not var_ref in ungridded_data.contains_vars:
         raise VarNotAvailableError('Variable {} is not available in ungridded '
                                    'data (which contains {})'
@@ -294,7 +282,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     
     
     TIME_IDX = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
-    
+    if freq_pd in PANDAS_RESAMPLE_OFFSETS:
+        TIME_IDX = TIME_IDX + PANDAS_RESAMPLE_OFFSETS[freq_pd]
+        
     ungridded_unit = None
     ts_type_src_ref = None
     for i, obs_data in enumerate(obs_stat_data):
