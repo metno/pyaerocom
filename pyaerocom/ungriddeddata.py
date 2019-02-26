@@ -117,7 +117,7 @@ class UngriddedData(object):
             
         
         #keep private, this is not supposed to be used by the user
-        self._data = np.empty([num_points, self._COLNO]) * np.nan
+        self._data = np.ones([num_points, self._COLNO]) * np.nan
 
         self.metadata = od()
         self.data_revision = od()
