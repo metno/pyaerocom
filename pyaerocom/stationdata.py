@@ -685,7 +685,7 @@ class StationData(StationMetaData):
         return new
     
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                         inplace=True):
+                         inplace=False):
         """Resample one of the time-series in this object
         
         Parameters
@@ -792,7 +792,8 @@ class StationData(StationMetaData):
         self[var_name] = s = pd.Series(data, index=self.dtime)
         return s
         
-    def to_timeseries(self, var_name, freq=None, resample_how='mean'):
+    def to_timeseries(self, var_name, freq=None, resample_how='mean',
+                      **kwargs):
         """Get pandas.Series object for one of the data columns
         
         Parameters
@@ -805,7 +806,9 @@ class StationData(StationMetaData):
         resample_how : str
             choose from mean or median (only relevant if input parameter freq 
             is provided, i.e. if resampling is applied)
-        
+        **kwargs
+            optional keyword args passed to :func:`resample_timeseries`
+            
         Returns
         -------
         Series
@@ -827,7 +830,8 @@ class StationData(StationMetaData):
             logger.info('Data is already instance of pandas.Series')
             data = self[var_name]
         if freq is not None:
-            data = resample_timeseries(data, freq, how=resample_how)
+            data = resample_timeseries(data, freq, how=resample_how,
+                                       **kwargs)
         return data
     
     def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
