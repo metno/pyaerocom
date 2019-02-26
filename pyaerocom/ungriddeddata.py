@@ -78,7 +78,7 @@ class UngriddedData(object):
         
     """
     #: version of class (for caching)
-    __version__ = '0.18'
+    __version__ = '0.19'
     
     #: inital total number of rows in dataarray
     _ROWNO = 10000
@@ -344,9 +344,9 @@ class UngriddedData(object):
     
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
-                        stop=None, freq=None, merge_if_multi=True, 
-                        merge_pref_attr=None, merge_sort_by_largest=True, 
-                        insert_nans=False):
+                        stop=None, freq=None,  
+                        merge_if_multi=True, merge_pref_attr=None, 
+                        merge_sort_by_largest=True, insert_nans=False):
         """Convert data from one station to :class:`StationData`
         
         Todo
@@ -421,48 +421,44 @@ class UngriddedData(object):
         if not isinstance(meta_idx, list):
             meta_idx = [meta_idx]
         
-            
+        stats = []    
         start, stop = np.datetime64(start), np.datetime64(stop)
-        if len(meta_idx) == 1:
-            return self._metablock_to_stationdata(meta_idx[0], 
-                                                  vars_to_convert,  
-                                                  start, stop, freq)
         
-        stats = []
         for idx in meta_idx:
             try:
                 stat = self._metablock_to_stationdata(idx, 
                                                       vars_to_convert,  
-                                                      start, stop, freq)
+                                                      start, stop)
                 stats.append(stat)
-            except VarNotAvailableError:
-                pass
+            except (VarNotAvailableError, TimeMatchError) as e:
+                logger.info('Skipping meta index {}. Reason: {}'
+                            .format(idx, repr(e)))
         if merge_if_multi and len(stats) > 1:
             if len(vars_to_convert) > 1:
                 raise NotImplementedError('Cannot yet merge multiple stations '
                                           'with multiple variables.')
             merged = merge_station_data(stats, vars_to_convert,
                                         pref_attr=merge_pref_attr,
-                                        sort_by_largest=merge_sort_by_largest)
+                                        sort_by_largest=merge_sort_by_largest,
+                                        fill_missing_nan=False) #done below
             stats = [merged]
-        if insert_nans:
-            for stat in stats:
-                for var in vars_to_convert:
+        for stat in stats:
+            for var in vars_to_convert:
+                if freq is not None:
+                    stat.resample_timeseries(var, freq) # this does also insert NaNs, thus elif in next
+                elif insert_nans:
                     stat.insert_nans_timeseries(var)
         if len(stats) == 0:
-            logger.warning('No data could be retrieved for request')
+            raise DataCoverageError('{} data could not be retrieved for meta '
+                                    ' index (or station name) {}'
+                                    .format(vars_to_convert, meta_idx))
         elif len(stats) == 1:
             # return StationData object and not list 
             return stats[0]
-        
         return stats
         
-    def _get_subset(self, meta_idx, var_name, start=None, stop=None):
-        """Get 2D data block corresponding to input meta index and variable"""
-        pass
-    
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
-                                  start=None, stop=None, freq=None):
+                                  start=None, stop=None):
         """Convert one metadata index to StationData (helper method)
         
         See :func:`to_station_data` for input parameters
@@ -470,17 +466,24 @@ class UngriddedData(object):
         # may or may not be defined in metadata block
         check_keys = ['instrument_name', 'filename', 'revision_date',
                       'station_name_orig']
-        stat_data = StationData()
+        sd = StationData()
         
         val = self.metadata[meta_idx]
         
         for k in check_keys:
             if k in val:
-                stat_data[k] = val[k]
+                sd[k] = val[k]
             
         for k in self.STANDARD_META_KEYS:
             if k in val:
-                stat_data[k] = val[k]
+                sd[k] = val[k]
+        if 'ts_type' in val:
+            sd['ts_type_src'] = val['ts_type']
+            
+        # assign station coordinates explicitely
+        for ck in sd.STANDARD_COORD_KEYS:
+            if ck in val:
+                sd.station_coords[ck] = val[ck]
         
         if vars_to_convert is None:
             vars_to_convert = val['variables']
@@ -489,74 +492,70 @@ class UngriddedData(object):
             raise VarNotAvailableError('None of the input variables matches, '
                                        'or station does not contain data. {}'
                                        .format(val['variables']))
-        first_var = vars_to_convert[0]
-        idx = self.meta_idx[meta_idx][first_var]
-        dtime = self._data[idx, self._TIMEINDEX].astype('datetime64[s]')
+        #_data = self._get_subset(meta_idx)
         
-        if start is None:
-            start = dtime.min()
-        if stop is None:
-            stop = dtime.max()
-        
-        tmask = np.logical_and(dtime >= start, 
-                               dtime <= stop)
-        dtime = dtime[tmask]
-        
-        altitude =  self._data[idx, self._DATAHEIGHTINDEX]
-        IS3D = False
-        if not np.all(np.isnan(altitude)):
-            IS3D = True
-        
-        
-  
-        if tmask.sum() == 0:
-            raise TimeMatchError('No data available for station {} ({}) in '
-                                 'time interval {} - {}'
-                                 .format(stat_data['station_name'],
-                                         stat_data['data_id'],
-                                         start, stop))
-        
-        idx = pd.DatetimeIndex(dtime)
         for var in vars_to_convert:
-            stat_data.var_info[var] = {}
-            var_idx = np.asarray(self.meta_idx[meta_idx][var])[tmask]
             
-            data = self._data[var_idx, self._DATAINDEX]
-            if IS3D:
-                dtime = idx.unique().values
-                if len(dtime) > 1:
-                    raise NotImplementedError()
-                data = VerticalProfile(data, altitude,
-                                       dtime=dtime, var_name=var)
+            # get indices of this variable
+            var_idx = self.meta_idx[meta_idx][var]
+            
+            # vector of timestamps corresponding to this variable
+            dtime = self._data[var_idx, 
+                               self._TIMEINDEX].astype('datetime64[s]')
+            
+            # get subset
+            subset = self._data[var_idx]
+            
+            # make sure to extract only valid timestamps
+            if start is None:
+                start = dtime.min()
+            if stop is None:
+                stop = dtime.max()
+            
+            # create access mask for valid time stamps
+            tmask = np.logical_and(dtime >= start, 
+                                   dtime <= stop)
+            
+            # make sure there is some valid data
+            if tmask.sum() == 0:
+                raise TimeMatchError('No data available for station {} ({}) in '
+                                     'time interval {} - {}'
+                                     .format(sd['station_name'],
+                                             sd['data_id'],
+                                             start, stop))
                 
-            else:
-                data = pd.Series(data, idx)
-                if not data.index.is_monotonic:
-                    data = data.sort_index()
-                data = data[start:stop]
-                idx = data.index
+            dtime = dtime[tmask]
+            subset = subset[tmask]
+            
+            vals = subset[:, self._DATAINDEX]
+            vals_err = subset[:, self._DATAERRINDEX]
+            altitude =  subset[:, self._DATAHEIGHTINDEX]
                 
-                if freq is not None:
-                    from pyaerocom.helpers import resample_timeseries
-                    data = resample_timeseries(data, freq) 
-                    stat_data['ts_type'] = freq
-                    stat_data['dtime'] = data.index.values
-            
-            stat_data['dtime'] = dtime
-            stat_data[var] = data
-            try:
-                stat_data.var_info[var]['unit'] = val['var_info'][var]['unit']
-            except:
-                logger.warning('Unit for variable {} is not available'.format(var))
-            if 'var_info' in val and var in val['var_info']:
-                stat_data['var_info'][var] = val['var_info'][var]
-            
-            if len(idx) == len(idx.unique()):
-                stat_data.var_info[var]['overlap'] = False  
-            else:
-                stat_data.var_info[var]['overlap'] = True
+            data = pd.Series(vals, dtime)
+            if not data.index.is_monotonic:
+                data = data.sort_index()
+            sd.data_err[var] = vals_err
         
-        return stat_data
+            sd['dtime'] = data.index.values
+            sd[var] = data
+            
+            # check if there is information about altitude (then relevant 3D
+            # variables and parameters are included too)
+            if not np.isnan(altitude).all():
+                if 'altitude' in val['var_info']:
+                    sd.var_info['altitude'] = val['var_info']['altitude']
+                sd.altitude = altitude
+            if var in val['var_info']:
+                sd.var_info[var] = val['var_info'][var]
+            else:
+                sd.var_info[var] = od()
+        
+            if len(data.index) == len(data.index.unique()):
+                sd.var_info[var]['overlap'] = False  
+            else:
+                sd.var_info[var]['overlap'] = True
+        
+        return sd
     
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
                             freq=None, include_stats_nodata=True, **kwargs):
@@ -1556,7 +1555,7 @@ class UngriddedData(object):
                                  filter_name=None, start=None, 
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
-                                 **kwargs):
+                                 ax_lim_filter=False, **kwargs):
         """Plot station coordinates on a map
         
         All input parameters are optional and may be used to add constraints 
@@ -1586,6 +1585,9 @@ class UngriddedData(object):
             size of station markers
         fontsize_base : int
             basic fontsize 
+        ax_lim_filter : bool
+            if True and a regional filter is specified, then the displayed 
+            axes limits (lat, lon) are updated corresponding to that region
         **kwargs
             Addifional keyword args passed to 
             :func:`pyaerocom.plot.plot_coordinates`
@@ -1633,7 +1635,8 @@ class UngriddedData(object):
             
         else:
             stat_data = self.to_station_data_all(var_name, start, stop, 
-                                                 ts_type, keep_na=False)
+                                                 ts_type, 
+                                                 include_stats_nodata=False)
             
             if len(stat_data) == 0:
                 raise DataCoverageError('No stations could be found for input '
@@ -1652,8 +1655,9 @@ class UngriddedData(object):
                               markersize=markersize, 
                               fontsize_base=fontsize_base, **kwargs)
         region = f._region
-        ax.set_xlim(region.lon_range_plot)
-        ax.set_ylim(region.lat_range_plot)
+        if ax_lim_filter:
+            ax.set_xlim(region.lon_range_plot)
+            ax.set_ylim(region.lat_range_plot)
         
         ax = set_map_ticks(ax, 
                            region.lon_ticks, 
