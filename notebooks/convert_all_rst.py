@@ -136,7 +136,7 @@ if __name__=="__main__":
         ### RUN ALL NOTEBOOKS
         if args.execute_all:
             for f in files:    
-                if not execute_and_save_notebook(f):
+                if execute_and_save_notebook(f):
                     success.append(f)
                 else:
                     failed.append(f)
