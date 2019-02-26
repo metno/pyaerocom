@@ -169,6 +169,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
             raise NotImplementedError('Merging of multivar data not yet possible')
         var_name = var_name[0]
     # make sure the data is provided as pandas.Series object
+    is_3d, has_errs = False, False
     for stat in stats:
         if not var_name in stat:
             raise DataCoverageError('All input station must contain {} data'
@@ -194,25 +195,74 @@ def merge_station_data(stats, var_name, pref_attr=None,
                                     'provide information about the ts_type of '
                                     'the {} data, which is required when input '
                                     'arg. fill_missing_nan is True.'.format(var_name))
-                
-    if pref_attr is not None:
-        stats.sort(key=lambda s: s[pref_attr])
-    else:
-        stats.sort(key=lambda s: len(s[var_name].dropna()))
-    
-    if sort_by_largest:
-        stats = stats[::-1]
-    
-    # remove first station from the list
-    first = stats.pop(0)
+        if stat.check_if_3d(var_name):
+            is_3d = True
+        elif is_3d:
+            raise ValueError('Merge error: some of the input stations contain '
+                             'altitude info (suggesting profile data), others '
+                             'not.')
+        if var_name in stat.data_err:
+            has_errs = True
+            
+    if not is_3d:
+        if pref_attr is not None:
+            stats.sort(key=lambda s: s[pref_attr])
+        else:
+            stats.sort(key=lambda s: len(s[var_name].dropna()))
         
-    for i, stat in enumerate(stats):    
-        first.merge_other(stat, var_name, **add_meta_keys)
-        #first.merge_vardata(stat, var_name)
+        if sort_by_largest:
+            stats = stats[::-1]
+        
+        # remove first station from the list
+        merged = stats.pop(0)
+            
+        for i, stat in enumerate(stats):    
+            merged.merge_other(stat, var_name, **add_meta_keys)
+    else:
+        from pyaerocom import const
+        from xarray import DataArray
+        dtime = []
+        for stat in stats:
+            _t = stat[var_name].index.unique()
+            if not len(_t) == 1:
+                raise NotImplementedError('So far, merging of profile data '
+                                          'requires that profile values are '
+                                          'sampled at the same time')
+            dtime.append(_t[0])
+        tidx = pd.DatetimeIndex(dtime)
+        
+        # AeroCom default vertical grid
+        vert_grid = const.make_default_vert_grid()
+        _data = np.ones((len(vert_grid), len(tidx))) * np.nan
+        if has_errs:
+            _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
+        
+        for i, stat in enumerate(stats):
+            if i == 0:
+                merged = stat
+            else:
+                merged.merge_meta_same_station(stat, **add_meta_keys)
+
+            _data[:, i] = np.interp(vert_grid, stat['altitude'], 
+                                    stat[var_name].values)
+            
+            if has_errs:
+                _data_err[:, i] = np.interp(vert_grid, 
+                                            stat['altitude'], 
+                                            stat.data_err[var_name])
+        _coords = {'time'     : tidx,
+                   'altitude' : vert_grid}
+        
+        d = DataArray(data=_data, coords=_coords, 
+                      dims=['altitude', 'time'], name=var_name)
+        d = d.sortby('time')
+        merged[var_name] = d
+        merged.dtime = d.time
+        merged.altitude = d.altitude
     
     if fill_missing_nan:
-        first.insert_nans_timeseries(var_name)
-    return first
+        merged.insert_nans_timeseries(var_name)
+    return merged
 
 def resample_timeseries(s, freq, how='mean'):
     """Resample a timeseries (pandas.Series)
