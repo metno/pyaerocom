@@ -445,7 +445,7 @@ class UngriddedData(object):
         for stat in stats:
             for var in vars_to_convert:
                 if freq is not None:
-                    stat.resample_timeseries(var, freq) # this does also insert NaNs, thus elif in next
+                    stat.resample_timeseries(var, freq, inplace=True) # this does also insert NaNs, thus elif in next
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
         if len(stats) == 0:
