@@ -54,7 +54,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           'yearly'  :   'AS'}
 
 PANDAS_RESAMPLE_OFFSETS = {'AS' : np.timedelta64(6, '[M]'),
-                           'MS' : np.timedelta64(15, '[D]')}
+                           'MS' : np.timedelta64(14, '[D]')}
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 

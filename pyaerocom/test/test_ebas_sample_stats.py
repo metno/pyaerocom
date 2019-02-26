@@ -109,8 +109,8 @@ def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
                                                   freq='monthly')
     
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
-                            [np.datetime64('2008-01-01'),
-                             np.datetime64('2010-12-01') ])
+                            [np.datetime64('2008-01-15'),
+                             np.datetime64('2010-12-15') ])
     assert stat.ts_type == 'monthly'
     assert stat.ts_type_src == 'hourly'
     
