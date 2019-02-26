@@ -107,6 +107,12 @@ class Config(object):
     #: Highest possible year in data
     MAX_YEAR = 20000
     
+    #: Information specifying default vertical grid for post processing of 
+    #: profile data. The values are in units of m.
+    DEFAULT_VERT_GRID_DEF = od(lower = 0,
+                               upper = 15000,
+                               step  = 250)
+    
     #: This boolean can be used to enable / disable the former (i.e. use
     #: available wavelengths of variable in a certain range around variable
     #: wavelength).
@@ -478,6 +484,14 @@ class Config(object):
         """List of all IDs of observations"""
         return [x for x in self.OBSCONFIG.keys()]
     
+    def make_default_vert_grid(self):
+        """Makes default vertical grid for resampling of profile data"""
+        step = self.DEFAULT_VERT_GRID_DEF['step']
+        offs = int(step/2)
+        return np.arange(self.DEFAULT_VERT_GRID_DEF['lower'] + offs,
+                         self.DEFAULT_VERT_GRID_DEF['upper'] - offs,
+                         step)
+        
     def dir_exists(self, path):
         """Checks if directory exists"""
         if isinstance(path, str) and os.path.isdir(path):
