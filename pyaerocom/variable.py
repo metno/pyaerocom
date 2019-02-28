@@ -461,7 +461,7 @@ class AllVariables(object):
         
         self._cfg = self._read_ini()
         
-        self.all_vars = [k for k in self._cfg.keys()]
+        self.all_vars = [k.lower() for k in self._cfg.keys()]
     
         
         logger.info("Importing variable aliases info")
@@ -526,8 +526,15 @@ class AllVariables(object):
         Variable od550aer
         """
         #make sure to be in the right namespace
-        
-        check = var_name.lower().replace('3d','').replace('dry', '')
+        low = var_name.lower()
+        if not low == var_name:
+            from pyaerocom import const
+            w = DeprecationWarning('Variable input contains capital letters. '
+                                   'This is deprecated and the input name ({}) '
+                                   'will automatically be converted to :{}'
+                                   .format(var_name, low))
+            #const.print_log.warning()
+        check = low.replace('3d','').replace('dry', '')
         
         if not check in self:
             raise VariableDefinitionError("No default configuration available "
@@ -568,9 +575,11 @@ if __name__=="__main__":
     
     all_vars = AllVariables()
     
-    v = Variable('od550aer')
+    v = Variable('DEFAULT')
     
     print(v)
     
-    print(v.aliases)
+    a = AllVariables()
+    a['DEFAULT']
+    #print(v.aliases)
     
