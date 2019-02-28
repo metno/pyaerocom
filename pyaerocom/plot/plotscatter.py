@@ -11,12 +11,21 @@ from pyaerocom import const
 from pyaerocom.helpers import start_stop_str
 from pyaerocom.mathutils import calc_statistics
 
-def plot_scatter(x_vals, y_vals, var_name=None, var_name_ref=None, 
-                 x_name=None, y_name=None, start=None, stop=None, ts_type=None, 
-                 unit=None, stations_ok=None, 
-                 filter_name=None, lowlim_stats=None, highlim_stats=None, 
-                 loglog=None, savefig=False, save_dir=None, save_name=None, 
-                 ax=None, figsize=None, fontsize_base=10):
+def plot_scatter(x_vals, y_vals, **kwargs):
+    """Scatter plot
+    
+    Currently a wrapper for high-level method plot_scatter_aerocom (same module,
+    see there for details)
+    """
+    return plot_scatter_aerocom(x_vals, y_vals, **kwargs)
+
+def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None, 
+                         x_name=None, y_name=None, start=None, stop=None, 
+                         ts_type=None, unit=None, stations_ok=None, 
+                         filter_name=None, lowlim_stats=None, highlim_stats=None, 
+                         loglog=None, savefig=False, save_dir=None, 
+                         save_name=None, ax=None, figsize=None, 
+                         fontsize_base=10):
     """Method that performs a scatter plot of data in AEROCOM format
     
     Parameters

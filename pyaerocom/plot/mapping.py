@@ -324,13 +324,15 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
         data = data.crop(region="WORLD")
     region = data.suppl_info["region"]
     s = data.plot_settings
-    fig = plot_map(data, xlim=region.lon_range_plot, ylim=region.lat_range_plot,
-                   vmin=s.map_vmin, vmax=s.map_vmax, 
-                   c_over=s.map_c_over, c_under=s.map_c_under,
-                   cbar_levels=s.map_cbar_levels, 
-                   xticks = region.lon_ticks,
-                   yticks = region.lat_ticks,
-                   cbar_ticks=s.map_cbar_ticks, **kwargs)
+    fig = plot_griddeddata_on_map(data, 
+                                  xlim=region.lon_range_plot, 
+                                  ylim=region.lat_range_plot,
+                                  vmin=s.map_vmin, vmax=s.map_vmax, 
+                                  c_over=s.map_c_over, c_under=s.map_c_under,
+                                  cbar_levels=s.map_cbar_levels, 
+                                  xticks = region.lon_ticks,
+                                  yticks = region.lat_ticks,
+                                  cbar_ticks=s.map_cbar_ticks, **kwargs)
     ax = fig.axes[0]
     
     # annotate model in lower left corner
