@@ -212,7 +212,7 @@ class UngriddedData(object):
                     instruments.append(instr)
             except:
                 pass
-        return instruments
+        return instruments        
     
     @property
     def shape(self):
@@ -239,7 +239,13 @@ class UngriddedData(object):
     @property
     def longitude(self):
         """Longitudes of stations"""
-        return [stat['longitude'] for stat in self.metadata.values()]
+        vals = []
+        for v in self.metadata.values():
+            try:
+                vals.append(v['longitude'])
+            except:
+                vals.append(np.nan)
+        return vals
 
     @longitude.setter
     def longitude(self, value):
@@ -248,7 +254,13 @@ class UngriddedData(object):
     @property
     def latitude(self):
         """Latitudes of stations"""
-        return [stat['latitude'] for stat in self.metadata.values()]
+        vals = []
+        for v in self.metadata.values():
+            try:
+                vals.append(v['latitude'])
+            except:
+                vals.append(np.nan)
+        return vals
 
     @latitude.setter
     def latitude(self, value):
@@ -257,7 +269,13 @@ class UngriddedData(object):
     @property
     def altitude(self):
         """Altitudes of stations"""
-        return [stat['altitude'] for stat in self.metadata.values()]
+        vals = []
+        for v in self.metadata.values():
+            try:
+                vals.append(v['altitude'])
+            except:
+                vals.append(np.nan)
+        return vals
 
     @altitude.setter
     def altitude(self, value):
@@ -266,8 +284,13 @@ class UngriddedData(object):
     @property
     def station_name(self):
         """Latitudes of data"""
-        stat_names = [self.metadata[np.float(x)]['station_name'] for x in range(len(self.metadata))]
-        return stat_names
+        vals = []
+        for v in self.metadata.values():
+            try:
+                vals.append(v['station_name'])
+            except:
+                vals.append(np.nan)
+        return vals
 
     @station_name.setter
     def station_name(self, value):
@@ -341,6 +364,29 @@ class UngriddedData(object):
                                        'that matches name or pattern {}'
                                        .format(station_pattern))
         return idx
+    
+    def find_station_meta_indices(self, station_name_or_pattern):
+        """Find indices of all metadata blocks matching input station name
+        
+        You may also use wildcard pattern as input (e.g. *Potenza*)
+        
+        Parameters
+        ----------
+        station_pattern : str
+            station name or wildcard pattern
+        
+        Returns
+        -------
+        list
+           list containing all metadata indices that match the input station
+           name or pattern
+           
+        Raises
+        ------
+        StationNotFoundError
+            if no such station exists in this data object
+        """
+        return self._find_station_indices(station_name_or_pattern)
     
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
@@ -805,18 +851,42 @@ class UngriddedData(object):
     def empty_trash(self):
         """Set all values in trash column to NaN"""
         self._data[:, self._TRASHINDEX] = np.nan
+      
+    @property
+    def station_coordinates(self):
+        """dictionary with station coordinates
         
+        Returns
+        -------
+        dict
+            dictionary containing station coordinates (latitude, longitude, 
+            altitude -> values) for all stations (keys) where these parameters 
+            are accessible.
+        """
+        d = {}
+        for i, meta in self.metadata.items():
+            if not 'station_name' in meta:
+                print_log.warning('Skipping meta-block {}: station_name is not '
+                                  'defined'.format(i))
+                continue
+            elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
+                print_log.warning('Skipping meta-block {} (station {}): '
+                                  'one or more of the coordinates is not '
+                                  'defined'.format(i, meta['station_name']))
+                continue
+            
+            stat = meta['station_name']
+            
+            if stat in d:
+                continue
+            d[stat] = {}
+            for k in const.STANDARD_COORD_NAMES:
+                d[stat][k] = meta[k]
+        return d
+                
+                    
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
-        
-        Note
-        ----
-        Beta version
-        
-        Todo
-        ----
-        Check filter history (attr filter_hist) before applying filter in 
-        order to see if filter(s) already have been applied before
         
         Parameters
         ----------
@@ -1422,13 +1492,13 @@ class UngriddedData(object):
                 v.append(meta_item[k])
         return meta
             
-    def get_timeseries(self, station, var_name, start=None, stop=None,
-                      ts_type=None, **kwargs):
+    def get_timeseries(self, station_name, var_name, start=None, stop=None,
+                      ts_type=None, insert_nans=True, **kwargs):
         """Get variable timeseries data for a certain station
         
         Parameters
         ----------
-        station : :obj:`str` or :obj:`int`
+        station_name : :obj:`str` or :obj:`int`
             station name or index of station in metadata dict
         var_name : str
             name of variable to be retrieved
@@ -1439,7 +1509,8 @@ class UngriddedData(object):
             then only the corresponding year inferred from start time will be 
             considered
         ts_type : :obj:`str`, optional
-            temporal resolution
+            temporal resolution (can be pyaerocom ts_type or pandas freq. 
+            string)
         **kwargs
             Additional keyword args passed to method :func:`to_station_data`
             
@@ -1448,79 +1519,25 @@ class UngriddedData(object):
         pandas.Series
             time series data
         """
-        stats = self.to_station_data(station, var_name, 
-                                     data_as_series=True, **kwargs)
+        if 'merge_if_multi' in kwargs:
+            if not kwargs.pop['merge_if_multi']:
+                print_log.warning('Invalid input merge_if_multi=False'
+                                  'setting it to True')
+        stat = self.to_station_data(station_name, var_name, start, stop, 
+                                    freq=ts_type, merge_if_multi=True,
+                                    insert_nans=insert_nans,
+                                    **kwargs)
+        return stat.to_timeseries(var_name)
         
-        
-        # in case single instance of StationData was returned
-        if isinstance(stats, StationData):
-            return stats[var_name]
-        if len(stats) == 0:
-            raise pya.exceptions.VarNotAvailableError('No data available for {} ({})'
-                                                      .format(station, var_name))
-
-        new = StationData()
-        
-        if len(index) == 0:
-            raise pya.exceptions.VarNotAvailableError('No data available for station {} and variable {}'
-                             .format(station_name, var_name))
-        # Read and merge meta information
-        for stat in stats:
-            if 'overlap_removed' in stat:
-                vardata.data_overlap = True
-            if 'var_info' in stat and var_name in stat['var_info']:
-                var_info =  stat['var_info'][var_name]
-            else:
-                var_info = {}
-            for k, v in keymap.items():
-                try: # longitude, latitude and altitude are @property decorators in StationData
-                    vardata = _write(vardata, v, stat[k])
-                except:   
-                    if k in var_info:
-                        vardata = _write(vardata, v, var_info[k])
-        # fill up missing keys
-        for v in keymap.values():
-            if not v in vardata:
-                vardata[v] = None
-                
-        meta_keys = list(keymap.values())
-        for k, v in vardata.items():
-            if k in meta_keys and isinstance(v, (list, tuple)):
-                if k == 'PI':
-                    vardata[k] = '; '.join(list(dict.fromkeys(vardata[k])))
-                else:    
-                    vardata[k] = ', '.join(list(dict.fromkeys(vardata[k])))
-        
-        if ',' in vardata.lat: # merged from multiple stations with different lat coordinates
-            lats = [float(x) for x in vardata.lat.split(',')]
-            lat0 = lats[0]
-            for lat in lats[1:]:
-                if (abs(lat0-lat) > LONLATTOL):
-                    raise pya.exceptions.CoordinateError('Merged station latitudes '
-                                                         'are not within tolerance '
-                                                         'range {}'.format(LONLATTOL))
-            vardata.lat = '{:.3f}'.format(lat0)
-        if ',' in vardata.lon: # merged from multiple stations with different lon coordinates
-            lons = [float(x) for x in vardata.lon.split(',')]
-            lon0 = lons[0]
-            for lon in lons[1:]:
-                if (abs(lon0-lon) > LONLATTOL):
-                    raise pya.exceptions.CoordinateError('Merged station longitudes '
-                                                         'are not within tolerance '
-                                                         'range {}'.format(LONLATTOL))
-            vardata.lon = '{:.3f}'.format(lon0)
-        
-        # create pandas Series of raw data    
-        s = pd.Series(values, index)
-
-    def plot_station_timeseries(self, station, var_name, start=None, 
-                                stop=None, ts_type=None, vmin=None, 
-                                vmax=None, ax=None, **kwargs):
+    
+    def plot_station_timeseries(self, station_name, var_name, start=None, 
+                                stop=None, ts_type=None,
+                                insert_nans=True, ax=None, **kwargs):
         """Plot time series of station and variable
         
         Parameters
         ----------
-        station : :obj:`str` or :obj:`int`
+        station_name : :obj:`str` or :obj:`int`
             station name or index of station in metadata dict
         var_name : str
             name of variable to be retrieved
@@ -1532,6 +1549,7 @@ class UngriddedData(object):
             considered
         ts_type : :obj:`str`, optional
             temporal resolution
+        
         **kwargs
             Addifional keyword args passed to method :func:`pandas.Series.plot`
             
@@ -1546,9 +1564,12 @@ class UngriddedData(object):
             from pyaerocom.plot.config import FIGSIZE_DEFAULT
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
         
-        s = self.get_time_series(station, var_name, start, stop, ts_type)
-        s.plot(ax=ax, **kwargs)
-            
+        stat = self.to_station_data(station_name, var_name, start, stop, 
+                                    freq=ts_type, merge_if_multi=True,
+                                    insert_nans=insert_nans)
+        #s = self.get_timeseries(station_name, var_name, start, stop, ts_type)
+        #s.plot(ax=ax, **kwargs)
+        ax = stat.plot_timeseries(var_name, ax=ax, **kwargs)
         return ax
         
     def plot_station_coordinates(self, var_name=None, 
@@ -1704,8 +1725,7 @@ class UngriddedData(object):
                         len(self.metadata)))
         
     def __getitem__(self, key):
-        
-        return self.to_station_data(key)
+        return self.to_station_data(key, insert_nans=True)
     
     def __and__(self, other):
         """Merge this object with another using the logical ``and`` operator
@@ -1825,11 +1845,9 @@ class UngriddedData(object):
         >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
         """
         from warnings import warn
-        msg = ('This method does currently not work due to recent API changes, '
-               'and is therefore a wrapper for method to_station_data or '
-               'to_station_data_all dependent on whether a station name is '
-               'provided or not.')
+        msg = ('This method name is deprecated, please use to_timeseries')
         warn(DeprecationWarning(msg))
+        
         if station_name is None:
             return self.to_station_data_all(start=start_date, stop=end_date,
                                             freq=freq)
