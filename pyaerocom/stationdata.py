@@ -18,7 +18,7 @@ class StationData(StationMetaData):
     Attributes
     ----------
     dtime : list
-        list / array containing index values
+        list / array containing time index values
     var_info : dict
         dictionary containing information about each variable
     data_err : dict
@@ -32,9 +32,7 @@ class StationData(StationMetaData):
     """
     #: List of keys that specify standard metadata attribute names. This 
     #: is used e.g. in :func:`get_meta`
-    STANDARD_COORD_KEYS = ['latitude', 
-                           'longitude',
-                           'altitude']    
+    STANDARD_COORD_KEYS = const.STANDARD_COORD_NAMES
     
     #: maximum numerical distance between coordinates associated with this
     #: station
@@ -685,7 +683,7 @@ class StationData(StationMetaData):
         return new
     
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                         inplace=False):
+                         inplace=False, min_num_obs=None):
         """Resample one of the time-series in this object
         
         Parameters
@@ -700,6 +698,11 @@ class StationData(StationMetaData):
         inplace : bool
             if True, then the current data object stored in self, will be 
             overwritten with the resampled time-series
+        min_num_obs : :obj:`int`, optional
+            minimum number of observations required per period (when downsampling).
+            E.g. if input is in daily resolution and freq is monthly and 
+            min_num_obs is 10, then all months that have less than 10 days of data
+            are set to nan.
             
         Returns
         -------
@@ -720,7 +723,8 @@ class StationData(StationMetaData):
                                  'Error: {}'.format(repr(e)))
         
         if isinstance(data, pd.Series):
-            new = resample_timeseries(data, freq=ts_type, how=how)
+            new = resample_timeseries(data, freq=ts_type, how=how,
+                                      min_num_obs=min_num_obs)
         elif isinstance(data, xarr.DataArray):
             raise NotImplementedError('Coming soon...')
             idx = pd.DatetimeIndex(freq)
@@ -836,7 +840,8 @@ class StationData(StationMetaData):
         return data
     
     def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
-                        add_overlaps=False, legend=True, **kwargs):
+                        add_overlaps=False, legend=True, tit=None, 
+                        **kwargs):
         """Plot timeseries for variable
         
         Note
@@ -861,6 +866,8 @@ class StationData(StationMetaData):
         add_overlaps : bool
             if True and if overlapping data exists for this variable, it will 
             be added to the plot.
+        tit : :obj:`str`, optional
+            title of plot, if None, default title is used
         **kwargs
             additional keyword args passed to matplotlib ``plot`` method
             
@@ -897,12 +904,15 @@ class StationData(StationMetaData):
             _, ax = plt.subplots(1, 1, figsize=fs)
         else: 
             ax = kwargs.pop('ax')
+            # keep existing title if it exists
+            _tit = ax.get_title()
+            if not _tit == '':
+                tit = _tit
         
-        tit = self.station_name
-        if not isinstance(tit, str):
+        if tit is None:
             try:
                 tit = self.get_meta(force_single_value=True, 
-                                     quality_check=False)['station_name']
+                                      quality_check=False)['station_name']    
             except:
                 tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)
@@ -940,8 +950,7 @@ class StationData(StationMetaData):
         for k, v in self.items():
             if k[0] == '_':
                 continue
-            
-            if isinstance(v, dict):
+            if isinstance(v, dict) and v:
                 s += "\n{} ({})".format(k, repr(v))
                 s = dict_to_str(v, s)
             elif isinstance(v, list):
