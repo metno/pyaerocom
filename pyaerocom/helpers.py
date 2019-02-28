@@ -267,7 +267,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         merged.insert_nans_timeseries(var_name)
     return merged
 
-def resample_timeseries(s, freq, how='mean'):
+def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
     
     Parameters
@@ -279,6 +279,11 @@ def resample_timeseries(s, freq, how='mean'):
         ts_type)
     how : str
         choose from mean or median
+    min_num_obs : :obj:`int`, optional
+        minimum number of observations required per period (when downsampling).
+        E.g. if input is in daily resolution and freq is monthly and 
+        min_num_obs is 10, then all months that have less than 10 days of data
+        are set to nan.
     
     Returns
     -------
@@ -291,14 +296,14 @@ def resample_timeseries(s, freq, how='mean'):
     if freq in PANDAS_RESAMPLE_OFFSETS:
         loffset = PANDAS_RESAMPLE_OFFSETS[freq]
     resampler = s.resample(freq, loffset=loffset)
-    if how =='mean':
-        return resampler.mean() 
-    elif how == 'median':
-        return resampler.median() 
+    if min_num_obs is None:
+        data = resampler.agg(how)
     else:
-        raise ValueError('resampling can only be performed using mean or median'
-                         'aggregators')
-        
+        df = resampler.agg([how, 'count'])
+        df[how][df['count'] < min_num_obs] = np.nan
+        data = df[how]
+    return data
+
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
     
