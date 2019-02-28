@@ -13,7 +13,11 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 
 .. include:: tut04_intro_class_GriddedData.rst
 
-.. include:: tut06_intro_colocation.rst
+.. include:: tut05_intro_ungridded_reading.rst
+
+.. include:: tut06_intro_UngriddedData_and_StationData_classes.rst
+
+.. include:: tut07_intro_colocation.rst
 
 
 Further tutorials (in-depth)
