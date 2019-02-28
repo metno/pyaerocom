@@ -38,7 +38,6 @@ Provides access to pyaerocom specific configuration values
 import numpy as np
 import os
 import getpass
-from warnings import warn
 from collections import OrderedDict as od
 import pyaerocom.obs_io as obs_io
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, dict_to_str,
@@ -107,6 +106,10 @@ class Config(object):
     #: Highest possible year in data
     MAX_YEAR = 20000
     
+    #: standard names for coordinates
+    STANDARD_COORD_NAMES = ['latitude', 
+                            'longitude',
+                            'altitude']    
     #: Information specifying default vertical grid for post processing of 
     #: profile data. The values are in units of m.
     DEFAULT_VERT_GRID_DEF = od(lower = 0,
@@ -310,8 +313,8 @@ class Config(object):
     
     @property
     def OUT_BASEDIR(self):
-        warn(DeprecationWarning('Attribute OUT_BASEDIR is deprecated. Please '
-                                'use OUTPUTDIR instead'))
+        msg = 'Attribute OUT_BASEDIR is deprecated. Please use OUTPUTDIR instead'
+        self.print_log.warning(DeprecationWarning(msg))
         return self.OUTPUTDIR
     
     @property
@@ -326,9 +329,8 @@ class Config(object):
     @property
     def OBSDATACACHEDIR(self):
         """Cache directory for UngriddedData objects (deprecated)"""
-        from warnings import warn
-        warn(DeprecationWarning('Attr. was renamed (but still works). '
-                                'Please us CACHEDIR instead'))
+        msg=('Attr. was renamed (but still works). Please us CACHEDIR instead')
+        self.print_log.warning(DeprecationWarning(msg))
         return self.CACHEDIR
     
     @property
@@ -551,8 +553,8 @@ class Config(object):
                 self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
                 out_ok = True
             except:
-                warn('Failed to create {} directory in home directory'
-                     .format(self._outhomename))
+                self.logger.warning('Failed to create {} directory in home '
+                                    'directory'.format(self._outhomename))
         
         if not out_ok or not self._write_access(self._outputdir):
             self.log.info('Cannot establish write access to output directory {}'
@@ -639,8 +641,9 @@ class Config(object):
                         raise PermissionError('Cannot write to {}'.format(cachedir))
                     self._cachedir = cr['outputfolders']['CACHEDIR']
                 except Exception as e:
-                    warn('Failed to init cache directory from config '
-                         'file. Error: {}'.format(repr(e)))
+                    self.logger.warning('Failed to init cache directory from '
+                                        'config file. Error: {}'
+                                        .format(repr(e)))
                 
             if not keep_basedirs or not self.dir_exists(self._outputdir):
                 try:
@@ -652,8 +655,9 @@ class Config(object):
                     self._colocateddatadir = os.path.join(outdir, 
                                                           'colocated_data')
                 except Exception as e:
-                    warn('Failed to init output and colocated data directory '
-                         'from config file. Error: {}'.format(repr(e)))
+                    self.logger.warning('Failed to init output and colocated data '
+                                        'directory from config file. Error: {}'
+                                        .format(repr(e)))
                     
         if cr.has_section('supplfolders'):
             for name, path in cr['supplfolders'].items():
