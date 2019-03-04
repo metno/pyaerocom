@@ -45,17 +45,21 @@ Alternatively, you can include the requirements into an existing environment. Fi
 Installation of pyaerocom
 =========================
 
-.. note:: Use branch v080DEV for most recent changes
-	This branch is not yet released and cannot be installed using Option 1. Please install from source if you want the most recent version (Option 2).
+****
+**NOTE**: Use branch v080DEV for most recent changes. This branch is not yet released and cannot be installed using Option 1. Please install from source if you want the most recent version (Option 2).
+****
 
 You have several options to install pyaerocom, the first one is the easiest, but may not refer to the most recent (non-released) version of pyaerocom. So please check first, which version you are interested in.
 
 Option 1: Installation using conda install
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: This will install the latest release
-	- It hence, may not include the most recent developments.
-	- Requirements are installed automatically
+****
+**NOTE:** This will install the latest release of pyaerocom.
+
+- It hence, may not include the most recent developments.
+- Requirements are installed automatically.
+****
 
 If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
 
@@ -63,9 +67,9 @@ If you use *conda* as a package manager, the easiest way to install pyaerocom (a
 
 This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
 
-**PLEASE NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
-
-You can skip the following lines and go straight to *Getting started* section if you have installed via conda as described above.
+****
+**NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
+****
 
 Option 2: Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -91,7 +95,6 @@ Finally, we recommend installing jupyter (if not already installed in your conda
    conda install jupyter
 
 
-
 Access to users database
 ========================
 
@@ -113,8 +116,8 @@ To get started, please see `introduction notebook <https://github.com/metno/pyae
 The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
 contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.
 
-Note for Windows users
-^^^^^^^^^^^^^^^^^^^^^^^
+Remark for Windows users
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 pyaerocom has only been tested on macOS and other linux systems (Ubuntu). Many high-level features won't work on Windows machines at the moment, that is, features that rely on and are built upon access to the AEROCOM database servers and automatic database path navigation. In particular, this includes the automised reading of gridded and ungridded data using the either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
 However, you may still define file locations in your Python script yourself yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
