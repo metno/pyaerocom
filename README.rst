@@ -45,21 +45,17 @@ Alternatively, you can include the requirements into an existing environment. Fi
 Installation of pyaerocom
 =========================
 
-****
 **NOTE**: Use branch v080DEV for most recent changes. This branch is not yet released and cannot be installed using Option 1. Please install from source if you want the most recent version (Option 2).
-****
 
 You have several options to install pyaerocom, the first one is the easiest, but may not refer to the most recent (non-released) version of pyaerocom. So please check first, which version you are interested in.
 
 Option 1: Installation using conda install
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-****
 **NOTE:** This will install the latest release of pyaerocom.
 
 - It hence, may not include the most recent developments.
 - Requirements are installed automatically.
-****
 
 If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
 
@@ -67,9 +63,7 @@ If you use *conda* as a package manager, the easiest way to install pyaerocom (a
 
 This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
 
-****
 **NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
-****
 
 Option 2: Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -111,7 +105,7 @@ After installing pyaerocom, open your python executable and try to import pyaero
 
 To get started, please see `introduction notebook <https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb>`__.
 
-.. note:: pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
+**NOTE:** pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
 
 The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
 contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.
