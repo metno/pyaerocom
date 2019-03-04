@@ -105,7 +105,7 @@ After installing pyaerocom, open your python executable and try to import pyaero
 
 To get started, please see `introduction notebook <https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb>`__.
 
-.. note:: pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
+**NOTE:** pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
 
 The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
 contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.
