@@ -23,7 +23,7 @@ if you are not already *here* anyways ;)
 Requirements
 ============
 
-Please see file *pyaerocom_env.yml* in the toplevel directory for a list of all requirements.
+Please see file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/master/pyaerocom_env.yml>`__ in the toplevel directory for a list of all requirements.
 
 Installing all requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -111,7 +111,7 @@ To get started, please see `introduction notebook <https://github.com/metno/pyae
 .. note:: pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
 
 The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
-contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.  
+contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.
 
 Note for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^
