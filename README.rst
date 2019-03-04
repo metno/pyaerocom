@@ -1,7 +1,7 @@
 About
 =====
 
-Pyaerocom is written and tested for Python >= 3.6 and for unix based systems (Windows users, please information below in Getting started section). Pyaerocom provides tools for processing and plotting of data related to the AEROCOM-project. 
+Pyaerocom is written and tested for Python >= 3.6 and for unix based systems (Windows users, please information below in Getting started section). Pyaerocom provides tools for processing and plotting of data related to the AEROCOM-project.
 
 This includes reading and processing of gridded data (e.g. model or satellite data, e.g. NetCDF files) and ungridded data (e.g. observational data from `AERONET <https://aeronet.gsfc.nasa.gov/>`__ or `EBAS <http://ebas.nilu.no/>`__ networks, e.g. ASCII files) as well as tools for colocation and cross evaluation of different datasets.
 
@@ -14,7 +14,7 @@ At this point the tools are work in progress and will develop into a replacement
 Website and code documentation
 ==============================
 
-The official website including code documentation is hosted here: 
+The official website including code documentation is hosted here:
 
 http://aerocom.met.no/pyaerocom
 
@@ -23,60 +23,64 @@ if you are not already *here* anyways ;)
 Requirements
 ============
 
-The following Python packages are required for the installation of pyaerocom. To install the requirements, 
-we recommend using `Anaconda <https://www.continuum.io/downloads>`_ as package manager. 
+Please see file *pyaerocom_env.yml* in the toplevel directory for a list of all requirements.
 
-- iris >= 2.0.0
-- xarray >= 0.10.8
-- pandas >= 0.22.0 (comes with iris)
-- cartopy >= 0.16.0 (comes with iris)
-- netcdf4 >= 1.4.0 (comes with iris)
-- cf_units >= 2.0.1 (comes with iris)
-- numpy >= 1.14 (comes with iris)
-- matplotlib >= 3.0.1 (**Note**: please avoid matplotlib v3.0.0 due to `this issue <https://github.com/SciTools/cartopy/issues/1120>`__)
-- seaborn >= 0.8.1
-- **Optional**:
-	- geonum (for SRTM access and basic atmospheric calculations, e.g. conversion of pressure to altitude)
-	- geopy (for reading Aeolus data)
+Installing all requirements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By installing iris, some of the further listed dependencies will be installed automatically (e.g. numpy, pandas, cf_units, netcdf4 and matplotlib).
+We recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.7 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
 
-Installation
-============
+If you use Anaconda as a package manager, you can install all requirements (specified in previous section) into a new environment using the provided *pyaerocom_env.yml* file::
 
-You have several options to install pyaerocom, the first one is the easiest.
+	conda env create -n pya -f pyaerocom_env.yml
 
-Installation using conda
-^^^^^^^^^^^^^^^^^^^^^^^^
+This will create a new conda environment called *pya* which can be activated using::
 
-If you use `Anaconda <https://www.continuum.io/downloads>`_ as package manager, the easiest way to install pyaerocom (and all requirements, see previous section) using the build provided in the *nordicesmhub* conda channel::
+	conda activate pya
+
+Alternatively, you can include the requirements into an existing environment. First, activate the existing environment, and then install the dependencies using:
+
+	conda env update -f=pyaerocom_env.yml
+
+Installation of pyaerocom
+=========================
+
+.. note:: Use branch v080DEV for most recent changes
+	This branch is not yet released and cannot be installed using Option 1. Please install from source if you want the most recent version (Option 2).
+
+You have several options to install pyaerocom, the first one is the easiest, but may not refer to the most recent (non-released) version of pyaerocom. So please check first, which version you are interested in.
+
+Option 1: Installation using conda install
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note:: This will install the latest release
+	- It hence, may not include the most recent developments.
+	- Requirements are installed automatically
+
+If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
 
 	conda install -c nordicesmhub -c conda-forge pyaerocom
 
-This will install the latest release of pyaerocom. Alternatively, you may install from source as described in the following.
+This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
 
 **PLEASE NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
 
 You can skip the following lines and go straight to *Getting started* section if you have installed via conda as described above.
 
-Installing requirements using provided *pyaerocom_env.yml* file
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Option 2: Installing from source
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you use Anaconda as a package manager, you can install all requirements (specified in previous section) into a new environment using the provided *pyaerocom_env.yml* file::
+If you use the *conda* packages manager, please make sure to `activate the environment <https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment>`__ you want to install pyaerocom into. For more information about conda environments, `see here <https://conda.io/docs/user-guide/tasks/manage-environments.html>`__.
 
-	conda env create -f pyaerocom_env.yml
+Please make sure to install all requirements (see above) before installing pyaerocom from source.
 
-After this, you can install pyaerocom from source as described in the next section. 
-
-Make sure to `activate the newly created environment <https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment>`__ before installing pyaerocom.
-For more information about conda environments, `see here <https://conda.io/docs/user-guide/tasks/manage-environments.html>`__.
-
-Installation of pyaerocom from source
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To install pyaerocom from source, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone this repository) and install from source tree folder (that contains a file *setup.py*) either using::
+To install pyaerocom from source, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone this repository) and install from the toplevel directory (that contains a file *setup.py*) using::
 
 	python setup.py install
+
+Alternatively, if you plan to apply local changes to the pyaerocom source code, you may install in `development mode <>`__::
+
+	python setup.py develop
 
 You may also download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ to install the very latest (not yet released) version of pyaerocom.
 
@@ -85,6 +89,8 @@ More detailed installation instructions `can be found here <https://github.com/m
 Finally, we recommend installing jupyter (if not already installed in your conda environment)::
 
    conda install jupyter
+
+
 
 Access to users database
 ========================
@@ -96,10 +102,19 @@ https://wiki.met.no/aerocom/data_retrieval
 Getting started
 ===============
 
+After installing pyaerocom, open your python executable and try to import pyaerocom::
+
+	import pyaerocom as pya
+
 To get started, please see `introduction notebook <https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb>`__.
+
+.. note:: pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
+
+The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
+contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.  
 
 Note for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-pyaerocom has only been tested on macOS and other linux systems (Ubuntu). Many high-level features won't work on Windows machines at the moment, that is, features that rely on and are built upon access to the AEROCOM database servers and automatic database path navigation. In particular, this includes the automised reading of gridded and ungridded data using the either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__). 
+pyaerocom has only been tested on macOS and other linux systems (Ubuntu). Many high-level features won't work on Windows machines at the moment, that is, features that rely on and are built upon access to the AEROCOM database servers and automatic database path navigation. In particular, this includes the automised reading of gridded and ungridded data using the either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
 However, you may still define file locations in your Python script yourself yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
