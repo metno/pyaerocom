@@ -45,21 +45,17 @@ Alternatively, you can include the requirements into an existing environment. Fi
 Installation of pyaerocom
 =========================
 
-****
 **NOTE**: Use branch v080DEV for most recent changes. This branch is not yet released and cannot be installed using Option 1. Please install from source if you want the most recent version (Option 2).
-****
 
 You have several options to install pyaerocom, the first one is the easiest, but may not refer to the most recent (non-released) version of pyaerocom. So please check first, which version you are interested in.
 
 Option 1: Installation using conda install
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-****
 **NOTE:** This will install the latest release of pyaerocom.
 
 - It hence, may not include the most recent developments.
 - Requirements are installed automatically.
-****
 
 If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
 
@@ -67,9 +63,7 @@ If you use *conda* as a package manager, the easiest way to install pyaerocom (a
 
 This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
 
-****
 **NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
-****
 
 Option 2: Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
