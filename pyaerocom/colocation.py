@@ -349,7 +349,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
         revision = 'n/a'
     meta = {'data_source'       :   [dataset_ref,
                                      gridded_data.name],
-            'var_name'          :   [var, var_ref],
+            'var_name'          :   [var_ref, var],
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   grid_ts_type,
