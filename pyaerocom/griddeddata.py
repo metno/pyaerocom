@@ -861,14 +861,27 @@ class GriddedData(object):
                 'temporal resolution from {} to {}'.format(self.ts_type,
                                           to_ts_type))
         cube = self.grid
-        if not any([x.name() == to_ts_type for x in cube.coords()]):
-            IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
         
-        aggregated = cube.aggregated_by(to_ts_type, MEAN)
+        # Create aggregators
+        aggrs = ['yearly']
+        if not to_ts_type in aggrs:
+            aggrs.append(to_ts_type)
+            
+        for aggr in aggrs:
+            if not aggr in [c.name() for c in cube.aux_coords]:
+                # this adds the corresponding aggregator to the cube
+                IRIS_AGGREGATORS[aggr](cube, 'time', name=aggr)
+            #IRIS_AGGREGATORS[to_ts_type](cube, 'time', name=to_ts_type)
+        # not downscale
+        aggregated = cube.aggregated_by(aggrs, MEAN)
         data = GriddedData(aggregated, **self.suppl_info)
         data.suppl_info['ts_type'] = to_ts_type
+        data.check_dimcoords_tseries()
         return data     
     
+    def add_aggregator(self, aggr_name):
+        raise NotImplementedError
+        
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         self._check_lonlat_bounds()
