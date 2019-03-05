@@ -29,14 +29,18 @@ class DataSource(BrowseDict):
         last revision date of dataset
     ts_type_src 
         sampling frequency as defined in data files (use None if undefined)
-    
-    
+    stat_merge_pref_attr : str
+        optional, a metadata attribute that is available in data and that
+        is used to order the individual stations by relevance in case overlaps
+        occur. The associated values of this attribute need to be sortable 
+        (e.g. revision_date). This is only relevant in case overlaps occur. 
     """
     _types = dict(dataset_name  =   str,
                   data_product  =   str,
                   data_version  =   float,
                   data_level    =   float,
                   ts_type_src   =   str,
+                  stat_merge_pref_attr = str, 
                   revision_date =   np.datetime64)
     
     _ini_file_name = 'data_sources.ini'
@@ -50,6 +54,8 @@ class DataSource(BrowseDict):
         self.revision_date = None
         
         self.ts_type_src = None
+        
+        self.stat_merge_pref_attr = None
         
         self.update(**info)
         if self.data_id is not None:
@@ -74,8 +80,10 @@ class DataSource(BrowseDict):
         cfg.read(file)
         if self.data_id in cfg:
             for k, v in cfg[self.data_id].items():
-                if k in self:
+                if k in self._types:
                     self[k] = self._types[k](v)
+                else:
+                    self[k] = str(v)
               
 class StationMetaData(DataSource):
     """This object defines a standard for station metadata in pyaerocom
@@ -136,6 +144,7 @@ class StationMetaData(DataSource):
         self.altitude = np.nan
         
         super(StationMetaData, self).__init__(**info)
+                
      
 if __name__ == '__main__':
     meta = StationMetaData(data_id = 'AeronetSunV3Lev2.daily',
