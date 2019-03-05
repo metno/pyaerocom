@@ -265,6 +265,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
     
     if fill_missing_nan:
         merged.insert_nans_timeseries(var_name)
+    merged['stat_merge_pref_attr'] = pref_attr
     return merged
 
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
