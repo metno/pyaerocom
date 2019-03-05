@@ -157,10 +157,12 @@ class GriddedData(object):
     
     @reader.setter
     def reader(self, val):
-        from pyaerocom.io import ReadGridded
-        if not isinstance(val, ReadGridded):
-            raise ValueError('Input reader {} is not a support reader class for '
-                             'gridded data...'.format(type(val)))
+# =============================================================================
+#         from pyaerocom.io import ReadGridded
+#         if not isinstance(val, ReadGridded):
+#             raise ValueError('Input reader {} is not a support reader class for '
+#                              'gridded data...'.format(type(val)))
+# =============================================================================
         self.suppl_info['reader'] = val
         
     @property
