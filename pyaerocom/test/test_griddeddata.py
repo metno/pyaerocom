@@ -12,6 +12,19 @@ from datetime import datetime
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom import GriddedData
 
+### Helpers that may be used in __main__ for testing
+def _load_osuite():
+    from pyaerocom.io.testfiles import get
+    test_file = get()['models']['ecmwf_osuite']
+    return GriddedData(test_file, var_name="od550aer")
+
+def _load_cams_rean():
+    from pyaerocom.io import ReadGridded
+    r = ReadGridded(name="ECMWF_CAMS_REAN")
+    return r.read_var('od550aer', ts_type='daily',
+                      start=2010, stop=2013)
+    
+### fixtures
 @lustre_unavail
 @pytest.fixture(scope='module')
 def data_cci():
@@ -26,16 +39,20 @@ def data_cci():
 
 @lustre_unavail
 @pytest.fixture(scope='module')
+def data_cams_rean():
+    return _load_cams_rean()
+
+@lustre_unavail
+@pytest.fixture(scope='module')
 def data_osuite():
     '''import example data from ECMWF_OSUITE
     
     The fixture property makes sure that this "variable" is only created once
     for the entire scope of this test session within this module
     '''
-    from pyaerocom.io.testfiles import get
-    test_file = get()['models']['ecmwf_osuite']
-    return GriddedData(test_file, var_name="od550aer")
+    return _load_osuite()    
 
+### tests
 @lustre_unavail
 def test_longitude(data_cci, data_osuite):
     """Test if longitudes are defined right"""
@@ -74,9 +91,30 @@ def test_time(data_cci, data_osuite):
     npt.assert_array_equal(nominal_eq, vals_eq)
 
 
+@lustre_unavail
+def test_downscale_time(data_cams_rean):
+    
+    data = data_cams_rean
+    print(data)
+    
+    monthly = data.downscale_time('monthly')
+    yearly = data.downscale_time('yearly')
+    
+    npt.assert_array_equal(data.shape, (1097, 161, 320))
+    npt.assert_array_equal(monthly.shape, (37, 161, 320))
+    npt.assert_array_equal(yearly.shape, (4, 161, 320))
+    
+    mean_vals = [data.mean(), monthly.mean(), yearly.mean()]
+    npt.assert_allclose(actual=mean_vals,
+                        desired=[0.1213392669166126, 
+                                 0.12069144475849365, 
+                                 0.11591256935171756], rtol=TEST_RTOL)
+
 if __name__=="__main__":
     import warnings
     warnings.filterwarnings('ignore')
     pytest.main()
+    
+    
     
     

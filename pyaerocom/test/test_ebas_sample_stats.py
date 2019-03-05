@@ -50,6 +50,9 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
     
     keys = list(stat.keys())
     
+    assert 'scatc550aer' in stat.overlap
+    assert len(stat.overlap['scatc550aer']) == 17466
+    assert stat['stat_merge_pref_attr'] == 'revision_date'
     npt.assert_array_equal(keys, 
                            ['dtime', 
                             'var_info',
@@ -72,6 +75,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                             'data_level', 
                             'revision_date', 
                             'ts_type_src', 
+                            'stat_merge_pref_attr',
                             'scatc550aer'])
     
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
@@ -81,7 +85,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                             stat['ts_type'],
                             stat['PI'],
                             len(stat.filename.split(';'))],
-    ['TSI_3563_JFJ_dry;Ecotech_Aurora3000_JFJ_dry;IN3563',
+    ['IN3563;Ecotech_Aurora3000_JFJ_dry;TSI_3563_JFJ_dry',
      'hourly',
      'Baltensperger, Urs; Weingartner, Ernest;Bukowiecki, Nicolas',
      26])
@@ -89,17 +93,13 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
     d = stat.scatc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]
     npt.assert_allclose([d.mean(), d.std(), d.min(), d.max()],
-                         [4.582937693642244, 7.572480646452833, -5.574, 182.7],
+                         [4.695428,   7.653512, -5.574, 182.7],
                          rtol=TEST_RTOL)
     
     d = stat.overlap['scatc550aer']
     vals = [d.mean(), d.std(), d.min(), d.max()]
-    
     npt.assert_allclose(vals,
-                         [2.9349565417800325, 
-                          4.668775849012737, 
-                          -3.4684991, 
-                          61.11774001], rtol=TEST_RTOL)
+                         [2.662519,  4.303533, -3.468499, 54.971412], rtol=TEST_RTOL)
 
 @lustre_unavail   
 def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
