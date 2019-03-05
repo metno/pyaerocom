@@ -4,10 +4,11 @@
 High level module containing analysis classes and methods to perform 
 colocation.
 
-.. note::
-    
-    This is a development module and may undergo significant, non-backwards 
-    compatible changes in the near future (date: 21.9.2018)
+NOTE
+----
+
+This module will be deprecated soon but most of the code will be refactored 
+into colocation.py module.
 """
 import os
 import numpy as np
