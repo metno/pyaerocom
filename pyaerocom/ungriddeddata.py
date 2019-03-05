@@ -486,6 +486,8 @@ class UngriddedData(object):
             if len(vars_to_convert) > 1:
                 raise NotImplementedError('Cannot yet merge multiple stations '
                                           'with multiple variables.')
+            if merge_pref_attr is None: 
+                merge_pref_attr = self._try_infer_stat_merge_pref_attr(stats)
             merged = merge_station_data(stats, vars_to_convert,
                                         pref_attr=merge_pref_attr,
                                         sort_by_largest=merge_sort_by_largest,
@@ -505,7 +507,36 @@ class UngriddedData(object):
             # return StationData object and not list 
             return stats[0]
         return stats
+      
+    def _try_infer_stat_merge_pref_attr(self, stats):
+        """Checks if a preferred attribute for handling of overlaps can be inferred
         
+        Parameters
+        ----------
+        stats : list
+            list of :class:`StationData` objects
+        
+        Returns
+        -------
+        str
+            preferred merge attribute parameter, if applicable, else None
+        """
+        data_id = None
+        pref_attr = None
+        for stat in stats:
+            if not 'data_id' in stat:
+                return None
+            elif data_id is None:
+                data_id = stat['data_id']
+                from pyaerocom.metastandards import DataSource
+                s = DataSource(data_id=data_id) # reads default data source info that may contain preferred meta attribute
+                pref_attr = s.stat_merge_pref_attr
+                if pref_attr is None:
+                    return None
+            elif not stat['data_id'] == data_id: #station data objects contain different data sources
+                return None
+        return pref_attr
+    
     ### TODO: check if both `variables` and `var_info` attrs are required in 
     ### metdatda blocks
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
@@ -615,8 +646,65 @@ class UngriddedData(object):
         
         return sd
     
-    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
+    def to_station_data_all_DEV(self, vars_to_convert=None, start=None, stop=None, 
                             freq=None, include_stats_nodata=True, **kwargs):
+        """Convert all data to :class:`StationData` objects
+        
+        Creates one instance of :class:`StationData` for each metadata block in 
+        this object.
+
+        Parameters
+        ----------
+        vars_to_convert : :obj:`list` or :obj:`str`, optional
+            variables that are supposed to be converted. If None, use all 
+            variables that are available for this station
+        start
+            start time, optional (if not None, input must be convertible into
+            pandas.Timestamp)
+        stop 
+            stop time, optional (if not None, input must be convertible into
+            pandas.Timestamp)
+        freq : str
+            pandas frequency string (e.g. 'D' for daily, 'M' for month end)
+            or valid pyaerocom ts_type (e.g. 'hourly', 'monthly').
+        
+        **kwargs
+            additional keyword args passed to :func:`to_station_data` (e.g.
+            `merge_if_multi, merge_pref_attr, merge_sort_by_largest, 
+            insert_nans`)
+
+        Returns
+        -------
+        list 
+            list containing loaded instances of :class:`StationData` for each
+            station in :attr:`metadata`, where :func:`to_station_data` was 
+            successful, and ``None`` entries for meta data indices where 
+            :func:`to_station_data` failed (e.g. because no temporal match, 
+            etc.)
+
+        """
+        out_data = []
+        stats = self.unique_station_names
+        for stat in stats:
+            try:
+                data = self.to_station_data(stat, vars_to_convert, start, 
+                                            stop, freq,
+                                            merge_if_multi=True)
+                
+                out_data.append(data)
+            # catch the exceptions that are acceptable
+            except (VarNotAvailableError, TimeMatchError, 
+                    DataCoverageError) as e:
+                logger.warning('Failed to convert to StationData '
+                               'Error: {}'.format(repr(e)))
+                # append None to make sure indices of stations are 
+                # preserved in output array
+                if include_stats_nodata:
+                    out_data.append(None)
+        return out_data
+    
+    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
+                                freq=None, include_stats_nodata=True, **kwargs):
         """Convert all data to :class:`StationData` objects
         
         Creates one instance of :class:`StationData` for each metadata block in 
