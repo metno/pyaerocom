@@ -16,7 +16,7 @@ def make_dataset():
                        start="1-1-2003",
                        stop="31-12-2007")
 @lustre_unavail
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def dataset():
     return make_dataset()
     
@@ -44,7 +44,7 @@ def test_meta(dataset):
                             dataset._start, 
                             dataset._stop,
                             list(dataset.get_years_to_load())],
-                            [112,
+                            [116,
                              '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
                              Timestamp("1-1-2003"), 
                              Timestamp("31-12-2007"),
