@@ -454,6 +454,9 @@ class UngriddedData(object):
             vars_to_convert = [vars_to_convert]
         elif vars_to_convert is None:
             vars_to_convert = self.contains_vars
+            if len(vars_to_convert) == 0:
+                raise DataCoverageError('UngriddedData object does not contain '
+                                        'any variables')
         if start is None and stop is None:
             start = pd.Timestamp('1970')
             stop = pd.Timestamp('2200')
@@ -503,9 +506,12 @@ class UngriddedData(object):
             return stats[0]
         return stats
         
+    ### TODO: check if both `variables` and `var_info` attrs are required in 
+    ### metdatda blocks
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
                                   start=None, stop=None):
         """Convert one metadata index to StationData (helper method)
+        
         
         See :func:`to_station_data` for input parameters
         """
@@ -515,7 +521,9 @@ class UngriddedData(object):
         sd = StationData()
         
         val = self.metadata[meta_idx]
-        
+        if not 'variables' in val or val['variables'] in (None, []):
+            raise VarNotAvailableError('Metablock does not contain variable '
+                                       'information')
         for k in check_keys:
             if k in val:
                 sd[k] = val[k]
@@ -587,12 +595,16 @@ class UngriddedData(object):
             
             # check if there is information about altitude (then relevant 3D
             # variables and parameters are included too)
+            if 'var_info' in val:
+                vi = val['var_info']
+            else:
+                vi = {}
             if not np.isnan(altitude).all():
-                if 'altitude' in val['var_info']:
-                    sd.var_info['altitude'] = val['var_info']['altitude']
+                if 'altitude' in vi:
+                    sd.var_info['altitude'] = vi['altitude']
                 sd.altitude = altitude
-            if var in val['var_info']:
-                sd.var_info[var] = val['var_info'][var]
+            if var in vi:
+                sd.var_info[var] = vi[var]
             else:
                 sd.var_info[var] = od()
         
@@ -863,7 +875,11 @@ class UngriddedData(object):
             altitude -> values) for all stations (keys) where these parameters 
             are accessible.
         """
-        d = {}
+        d = {'station_name' : [],
+             'latitude'     : [],
+             'longitude'    : [],
+             'altitude'     : []}
+        
         for i, meta in self.metadata.items():
             if not 'station_name' in meta:
                 print_log.warning('Skipping meta-block {}: station_name is not '
@@ -877,11 +893,11 @@ class UngriddedData(object):
             
             stat = meta['station_name']
             
-            if stat in d:
+            if stat in d['station_name']:
                 continue
-            d[stat] = {}
+            d['station_name'].append(stat)
             for k in const.STANDARD_COORD_NAMES:
-                d[stat][k] = meta[k]
+                d[k].append(meta[k])
         return d
                 
                     
@@ -1904,6 +1920,10 @@ if __name__ == "__main__":
                                   merge_pref_attr='revision_date')
     
     stat.plot_timeseries('scatc550aer', add_overlaps=True)
+    
+    
+    
+
     
     
     
