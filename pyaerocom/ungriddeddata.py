@@ -16,7 +16,6 @@ from pyaerocom.helpers import (same_meta_dict,
                                start_stop_str,
                                start_stop, merge_station_data)
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom import VerticalProfile
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -646,8 +645,8 @@ class UngriddedData(object):
         
         return sd
     
-    def to_station_data_all_DEV(self, vars_to_convert=None, start=None, stop=None, 
-                            freq=None, include_stats_nodata=True, **kwargs):
+    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
+                            freq=None, by_station_name=True, **kwargs):
         """Convert all data to :class:`StationData` objects
         
         Creates one instance of :class:`StationData` for each metadata block in 
@@ -667,7 +666,9 @@ class UngriddedData(object):
         freq : str
             pandas frequency string (e.g. 'D' for daily, 'M' for month end)
             or valid pyaerocom ts_type (e.g. 'hourly', 'monthly').
-        
+        by_station_name : bool
+            if True, then iter over unique_station_name (and merge multiple 
+            matches if applicable), else, iter over metadata index
         **kwargs
             additional keyword args passed to :func:`to_station_data` (e.g.
             `merge_if_multi, merge_pref_attr, merge_sort_by_largest, 
@@ -683,80 +684,90 @@ class UngriddedData(object):
             etc.)
 
         """
-        out_data = []
-        stats = self.unique_station_names
-        for stat in stats:
+        out_data = {'stats' : [],
+                    'station_name' : [],
+                    'latitude'     : [],
+                    'longitude'    : []}
+        
+        if by_station_name:
+            _iter = self.unique_station_names
+        else:
+            _iter = range(len(self.metadata))
+        for idx in _iter:
             try:
-                data = self.to_station_data(stat, vars_to_convert, start, 
+                data = self.to_station_data(idx, vars_to_convert, start, 
                                             stop, freq,
                                             merge_if_multi=True)
                 
-                out_data.append(data)
+                out_data['latitude'].append(data['latitude'])
+                out_data['longitude'].append(data['longitude'])
+                out_data['station_name'].append(data['station_name'])
+                out_data['stats'].append(data)
+                
             # catch the exceptions that are acceptable
             except (VarNotAvailableError, TimeMatchError, 
                     DataCoverageError) as e:
                 logger.warning('Failed to convert to StationData '
                                'Error: {}'.format(repr(e)))
-                # append None to make sure indices of stations are 
-                # preserved in output array
-                if include_stats_nodata:
-                    out_data.append(None)
         return out_data
     
-    def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
-                                freq=None, include_stats_nodata=True, **kwargs):
-        """Convert all data to :class:`StationData` objects
-        
-        Creates one instance of :class:`StationData` for each metadata block in 
-        this object. For datasets like Aeronet, this corresponds to one
-
-        Parameters
-        ----------
-        vars_to_convert : :obj:`list` or :obj:`str`, optional
-            variables that are supposed to be converted. If None, use all 
-            variables that are available for this station
-        start
-            start time, optional (if not None, input must be convertible into
-            pandas.Timestamp)
-        stop 
-            stop time, optional (if not None, input must be convertible into
-            pandas.Timestamp)
-        freq : str
-            pandas frequency string (e.g. 'D' for daily, 'M' for month end)
-            or valid pyaerocom ts_type (e.g. 'hourly', 'monthly').
-        
-        **kwargs
-            additional keyword args passed to :func:`to_station_data` (e.g.
-            `merge_if_multi, merge_pref_attr, merge_sort_by_largest, 
-            insert_nans`)
-
-        Returns
-        -------
-        list 
-            list containing loaded instances of :class:`StationData` for each
-            station in :attr:`metadata`, where :func:`to_station_data` was 
-            successful, and ``None`` entries for meta data indices where 
-            :func:`to_station_data` failed (e.g. because no temporal match, 
-            etc.)
-
-        """
-        out_data = []
-        for index, val in self.metadata.items():
-            try:
-                data = self.to_station_data(index, vars_to_convert, start, 
-                                            stop, freq)
-                
-                out_data.append(data)
-            # catch the exceptions that are acceptable
-            except (VarNotAvailableError, TimeMatchError, 
-                    DataCoverageError) as e:
-                logger.warning('Failed to convert to StationData '
-                               'Error: {}'.format(repr(e)))
-                # append None to make sure indices of stations are 
-                # preserved in output array
-                if include_stats_nodata:
-                    out_data.append(None)
-        return out_data
+### See new implementation (changed on 6/3/19 by J. Gliss)
+# =============================================================================
+#     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
+#                                 freq=None, include_stats_nodata=True, **kwargs):
+#         """Convert all data to :class:`StationData` objects
+#         
+#         Creates one instance of :class:`StationData` for each metadata block in 
+#         this object. For datasets like Aeronet, this corresponds to one
+# 
+#         Parameters
+#         ----------
+#         vars_to_convert : :obj:`list` or :obj:`str`, optional
+#             variables that are supposed to be converted. If None, use all 
+#             variables that are available for this station
+#         start
+#             start time, optional (if not None, input must be convertible into
+#             pandas.Timestamp)
+#         stop 
+#             stop time, optional (if not None, input must be convertible into
+#             pandas.Timestamp)
+#         freq : str
+#             pandas frequency string (e.g. 'D' for daily, 'M' for month end)
+#             or valid pyaerocom ts_type (e.g. 'hourly', 'monthly').
+#         
+#         **kwargs
+#             additional keyword args passed to :func:`to_station_data` (e.g.
+#             `merge_if_multi, merge_pref_attr, merge_sort_by_largest, 
+#             insert_nans`)
+# 
+#         Returns
+#         -------
+#         list 
+#             list containing loaded instances of :class:`StationData` for each
+#             station in :attr:`metadata`, where :func:`to_station_data` was 
+#             successful, and ``None`` entries for meta data indices where 
+#             :func:`to_station_data` failed (e.g. because no temporal match, 
+#             etc.)
+# 
+#         """
+#         out_data = []
+#         for index in self.metadata:
+#             try:
+#                 data = self.to_station_data(index, vars_to_convert, start, 
+#                                             stop, freq)
+#                 
+#                 out_data.append(data)
+#             # catch the exceptions that are acceptable
+#             except (VarNotAvailableError, TimeMatchError, 
+#                     DataCoverageError) as e:
+#                 logger.warning('Failed to convert to StationData '
+#                                'Error: {}'.format(repr(e)))
+#                 # append None to make sure indices of stations are 
+#                 # preserved in output array
+#                 if include_stats_nodata:
+#                     out_data.append(None)
+#         return out_data
+# =============================================================================
     
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
