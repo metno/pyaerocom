@@ -244,19 +244,17 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     # apply filter to data
     ungridded_data = regfilter(ungridded_data)
     
-    ungridded_lons = ungridded_data.longitude
-    ungridded_lats = ungridded_data.latitude               
+    #Commented out on 6/2/19 due to new colocation strategy 
+# =============================================================================
+#     ungridded_lons = ungridded_data.longitude
+#     ungridded_lats = ungridded_data.latitude               
+# =============================================================================
 
     #crop time
     gridded_data = gridded_data.crop(time_range=(start, stop))
     
     # downscale time (if applicable)
     grid_data = gridded_data.downscale_time(to_ts_type=ts_type)
-    
-    # conver
-    grid_stat_data = grid_data.to_time_series(longitude=ungridded_lons,
-                                              latitude=ungridded_lats,
-                                              vert_scheme=vert_scheme)
 
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
@@ -265,12 +263,25 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
     #stop = pd.Timestamp(stop.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
     
-    obs_stat_data = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
+    
+    coords = ungridded_data.station_coordinates
+    
+    
+    # this conve
+    all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                        start=start, 
                                                        stop=stop, 
                                                        freq=freq_pd, 
+                                                       by_station_name=True,
                                                        interp_nans=False)
     
+    obs_stat_data = all_stats['stats']
+    ungridded_lons = all_stats['longitude']
+    ungridded_lats = all_stats['latitude']
+    
+    grid_stat_data = grid_data.to_time_series(longitude=ungridded_lons,
+                                              latitude=ungridded_lats,
+                                              vert_scheme=vert_scheme)
     obs_vals = []
     grid_vals = []
     lons = []
