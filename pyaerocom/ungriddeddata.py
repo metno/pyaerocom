@@ -676,13 +676,14 @@ class UngriddedData(object):
 
         Returns
         -------
-        list 
-            list containing loaded instances of :class:`StationData` for each
-            station in :attr:`metadata`, where :func:`to_station_data` was 
-            successful, and ``None`` entries for meta data indices where 
-            :func:`to_station_data` failed (e.g. because no temporal match, 
-            etc.)
-
+        dict
+            4-element dictionary containing following key / value pairs:
+                
+                - stats: list of :class:`StationData` objects
+                - station_name: list of corresponding station names
+                - latitude: list of latitude coordinates
+                - longitude: list of longitude coordinates
+                
         """
         out_data = {'stats' : [],
                     'station_name' : [],
