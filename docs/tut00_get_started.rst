@@ -58,7 +58,7 @@ displayed in the flowchart.
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.018 s
+    Expired time: 0.043 s
 
 
 Check data directory
@@ -689,10 +689,11 @@ You may print it to see what is in there:
     
     Pyaerocom StationData
     ---------------------
-    var_info (BrowseDict([('od550aer', OrderedDict([('unit', '1'), ('overlap', False)]))]))
+    var_info (BrowseDict([('od550aer', OrderedDict([('unit', '1'), ('overlap', False), ('ts_type', 'daily')]))]))
        od550aer (<class 'collections.OrderedDict'>)
         unit: 1
         overlap: False
+        ts_type: daily
     station_coords ({'latitude': 51.352500000000006, 'longitude': 12.435277999999998, 'altitude': 125.0})
        latitude: 51.352500000000006
        longitude: 12.435277999999998
@@ -705,7 +706,7 @@ You may print it to see what is in there:
         nan
         nan]
     
-    overlap (BrowseDict())
+    overlap: 
     filename: None
     station_id: None
     station_name: Leipzig
@@ -723,19 +724,20 @@ You may print it to see what is in there:
     data_level: None
     revision_date: None
     ts_type_src: daily
+    stat_merge_pref_attr: None
     
     Data arrays
     .................
-    dtime (array, 2894 items)
-       [numpy.datetime64('2001-05-20T12:00:00.000000000')
-        numpy.datetime64('2001-05-21T12:00:00.000000000')
+    dtime (array, 6364 items)
+       [numpy.datetime64('2001-05-20T00:00:00.000000000')
+        numpy.datetime64('2001-05-21T00:00:00.000000000')
         ...
-        numpy.datetime64('2018-10-20T12:00:00.000000000')
-        numpy.datetime64('2018-10-21T12:00:00.000000000')]
+        numpy.datetime64('2018-10-20T00:00:00.000000000')
+        numpy.datetime64('2018-10-21T00:00:00.000000000')]
     
     Pandas Series
     .................
-    od550aer (Series, 2894 items)
+    od550aer (Series, 6364 items)
 
 
 As you can see, this station contains a time-series of the AOD at 550
@@ -751,7 +753,7 @@ nm. If you like, you can plot this time-series:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f31106185c0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7efc74f24ef0>
 
 
 
@@ -858,6 +860,7 @@ bouldering trip, you may call:
                  ('data_level', None),
                  ('revision_date', None),
                  ('ts_type_src', 'daily'),
+                 ('stat_merge_pref_attr', None),
                  ('od550aer', 2006-01-15    0.176742
                   2006-02-15    0.176013
                   2006-03-15    0.252403

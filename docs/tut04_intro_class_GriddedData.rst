@@ -8,10 +8,10 @@ class of pyaerocom. The ``GriddedData`` class is the fundamental base
 class for the analysis of model data. The underlying data type is
 `iris.cube.Cube <http://scitools.org.uk/iris/docs/latest/iris/iris/cube.html#iris.cube.Cube>`__
 which was extended, for instance by allowing direct imports of netCDF
-files when creating an instance of ``GriddedData`` (i.e. by passing the
+files when creating an instance of ``GriddedData`` (i.e. by passing the
 filename and specifying the variable name on initialisation). This
 notebook introduces some of the features of the ``GriddedData`` class.
-Starting with some imports...
+Starting with some imports…
 
 .. code:: ipython3
 
@@ -23,15 +23,15 @@ Starting with some imports...
 
 .. parsed-literal::
 
+    Initating pyaerocom configuration
+    Checking server configuration ...
+    Checking access to: /lustre/storeA
+    Access to lustre database: True
     Init data paths for lustre
+    Expired time: 0.016 s
 
 
-.. parsed-literal::
-
-    0.00882267951965332 s
-
-
-Let's get a test file to load
+Let’s get a test file to load
 
 .. code:: ipython3
 
@@ -49,7 +49,7 @@ Let's get a test file to load
     
 
 
-Let's pick out the ECMWF OSUITE test file and load the data directly
+Let’s pick out the ECMWF OSUITE test file and load the data directly
 into an instance of the ``GriddedData`` class. The ``GriddedData`` class
 takes either preloaded instances of the ``iris.cube.Cube`` class as
 input, or a valid netCDF file path. The latter requires specification of
@@ -69,7 +69,7 @@ object.
 
 .. parsed-literal::
 
-    pyaerocom.GriddedData: ECMWF_OSUITE
+    pyaerocom.GriddedData: Unknown
     Grid data: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
          Dimension coordinates:
               time                                       x              -               -
@@ -116,10 +116,10 @@ Features of the ``GriddedData`` class
 In the following cell, some of the most important attributes are
 introduced. These are mostly reimplementations of the underlying
 ``Cube`` data which is stored in the ``GriddedData.grid`` attribute. For
-instance the attribute ``GriddedData.longitude`` get's you
-``GriddedData.grid.coord("longitude")``, ``GriddedData.latitude`` get's
+instance the attribute ``GriddedData.longitude`` get’s you
+``GriddedData.grid.coord("longitude")``, ``GriddedData.latitude`` get’s
 you ``GriddedData.grid.coord("latitude")`` and ``GriddedData.time``
-get's you ``GriddedData.grid.coord("time")``.
+get’s you ``GriddedData.grid.coord("time")``.
 
 .. code:: ipython3
 
@@ -158,7 +158,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550dust', 'od550so4', 'od550bc', 'od550aer', 'od550oa']",)
+    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550oa', 'od550dust', 'od550so4', 'od550bc', 'od550aer']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -191,14 +191,14 @@ method
 .. image:: tut04_intro_class_GriddedData/tut04_intro_class_GriddedData_14_0.png
 
 
-Why not load some of the other variables...
+Why not load some of the other variables…
 
 .. code:: ipython3
 
     data_bc = pya.GriddedData(fpath, var_name="od550bc", name="ECMWF_OSUITE")
     data_so4 = pya.GriddedData(fpath, var_name="od550so4", name="ECMWF_OSUITE")
 
-... and plot them as well
+… and plot them as well
 
 .. code:: ipython3
 
@@ -268,7 +268,7 @@ Retrieve area weighted mean from data
 
 .. parsed-literal::
 
-    <matplotlib.legend.Legend at 0x7f018e38bfd0>
+    <matplotlib.legend.Legend at 0x7fcfdd922470>
 
 
 
@@ -278,8 +278,8 @@ Retrieve area weighted mean from data
 
 Looks similar (which is good).
 
-... more to come
-^^^^^^^^^^^^^^^^
+… more to come
+^^^^^^^^^^^^^^
 
 This tutorial is not yet completed as the ``GriddedData`` class is
 currently under development.

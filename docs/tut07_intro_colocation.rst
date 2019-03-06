@@ -33,7 +33,7 @@ Import setup and imports
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.020 s
+    Expired time: 0.021 s
 
 
 Import of model data
@@ -124,7 +124,7 @@ located at altitudes between 0 and 1000 m.
     Contains instruments: ['sun_photometer']
     Total no. of meta-blocks: 1013
     Filters that were applied:
-     Filter time log: 20190228175112
+     Filter time log: 20190306152047
     	altitude: [0, 1000]
 
 
@@ -237,7 +237,7 @@ station plot above).
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f39ec30a518>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f07e84d7b70>
 
 
 
@@ -262,7 +262,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <cartopy.mpl.geoaxes.GeoAxes at 0x7f39ec308cf8>
+    <cartopy.mpl.geoaxes.GeoAxes at 0x7f07e81b5d68>
 
 
 
@@ -335,7 +335,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f3a0c0386d8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f07e86a1a58>
 
 
 

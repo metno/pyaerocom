@@ -3,7 +3,7 @@ AEROCOM default regions
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 This notebook introduces how pya handles information related to default
-regions (e.g. Europe, Asia, ...) as used in the `AEROCOM
+regions (e.g. Europe, Asia, …) as used in the `AEROCOM
 interface <http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl>`__.
 All default regions are defined in the file
 `regions.ini <http://aerocom.met.no/pya/config_files.html#default-regions>`__.
@@ -17,12 +17,12 @@ All default regions are defined in the file
 
 .. parsed-literal::
 
+    Initating pyaerocom configuration
+    Checking server configuration ...
+    Checking access to: /lustre/storeA
+    Access to lustre database: True
     Init data paths for lustre
-
-
-.. parsed-literal::
-
-    0.009045124053955078 s
+    Expired time: 0.646 s
 
 
 
@@ -95,50 +95,20 @@ of the results over Europe.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
-      warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550bc' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550oa' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550so4' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
     /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550aer' invalid units '~'
       warnings.warn(msg)
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'latitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'longitude' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'time' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:1932: UserWarning: Ignoring netCDF variable 'od550dust' invalid units '~'
+      warnings.warn(msg)
 
 
 
 .. image:: tut01_intro_regions/tut01_intro_regions_6_1.png
 
 
-That's it. Not much more to say about regions until now.
+That’s it. Not much more to say about regions until now.

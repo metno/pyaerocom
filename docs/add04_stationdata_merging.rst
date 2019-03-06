@@ -26,7 +26,7 @@ Germany.
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.015 s
+    Expired time: 0.020 s
 
 
 Get list of all files containing scattering data for EBAS station Jungfraujoch
@@ -63,7 +63,7 @@ Get list of all files containing scattering data for EBAS station Jungfraujoch
     Contains instruments: ['IN3563', 'TSI_3563_JFJ_dry', 'Ecotech_Aurora3000_JFJ_dry']
     Total no. of meta-blocks: 26
     Filters that were applied:
-     Filter time log: 20190226172014
+     Filter time log: 20190306152244
     	datalevel: 2
     	station_names: Jungfraujoch
 
@@ -177,7 +177,7 @@ First, convert into instance of ``StationData`` class and then plot.
         nan
         nan]
     
-    overlap (BrowseDict())
+    overlap: 
     filename: CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas
     station_id: None
     station_name: Jungfraujoch
@@ -195,6 +195,7 @@ First, convert into instance of ``StationData`` class and then plot.
     data_level: None
     revision_date: 2018-10-31T00:00:00
     ts_type_src: hourly
+    stat_merge_pref_attr: None
     
     Data arrays
     .................
@@ -241,7 +242,7 @@ First, convert into instance of ``StationData`` class and then plot.
         nan
         nan]
     
-    overlap (BrowseDict())
+    overlap: 
     filename: CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas
     station_id: None
     station_name: Jungfraujoch
@@ -259,6 +260,7 @@ First, convert into instance of ``StationData`` class and then plot.
     data_level: None
     revision_date: 2018-03-20T00:00:00
     ts_type_src: hourly
+    stat_merge_pref_attr: None
     
     Data arrays
     .................
@@ -330,7 +332,7 @@ This is actually very easy:
         nan
         nan]
     
-    overlap (BrowseDict())
+    overlap: 
     filename: CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas
     station_id: None
     station_name: Jungfraujoch
@@ -351,6 +353,7 @@ This is actually very easy:
         numpy.datetime64('2018-03-20T00:00:00')]
     
     ts_type_src: hourly
+    stat_merge_pref_attr: None
     
     Data arrays
     .................
@@ -576,6 +579,7 @@ Now merge them into one long time series:
         numpy.datetime64('2018-03-20T00:00:00')    numpy.datetime64('2018-10-31T00:00:00')]
     
     ts_type_src: hourly
+    stat_merge_pref_attr: None
     
     Data arrays
     .................
@@ -624,7 +628,7 @@ The default here is ``True``, so you can just go ahead and do:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fec9a5bfcc0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fbc9c209e48>
 
 
 
@@ -833,7 +837,7 @@ instead:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fec99f95438>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7fbc9c0e1978>
 
 
 

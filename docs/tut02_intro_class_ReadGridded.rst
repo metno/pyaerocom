@@ -18,7 +18,7 @@ which is introduced in the following tutorial (may be skipped).
 In the following, we create an instance of the the ``ReadGridded`` class
 and use this object to find and import data files containing the aerosol
 optical depth at 550 nm (*od550aer*) from the ECMWF CAMS reanalysis
-dataset (*ECMWF\_CAMS\_REAN*) for the years 2003-2007 and in daily
+dataset (*ECMWF_CAMS_REAN*) for the years 2003-2007 and in daily
 resolution. The files will be temporally merged and put into a single
 instance of the ``GriddedData`` class.
 
@@ -32,7 +32,7 @@ Remark on reading of gridded data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Since model data files can be large (too large for in-memory
-operations), gridded data in pyaerocom (e.g. model data or satellite
+operations), gridded data in pyaerocom (e.g. model data or satellite
 data) is generally read and represented as *lazy data*. That means, that
 the actual N-dimensional data array is not loaded into memory before
 needed. Lazy data is represented as [dask array] as pyaerocom data
@@ -40,8 +40,8 @@ objects rely either on the Python
 `iris <https://scitools.org.uk/iris/docs/latest/index.html>`__ library
 or `xarray <http://xarray.pydata.org/en/stable/index.html>`__ (which
 both use dask for representing lazy data and for out of core
-computation). For more information on lazy data, see e.g.
-https://scitools.org.uk/iris/docs/latest/userguide/real\_and\_lazy\_data.html.
+computation). For more information on lazy data, see
+e.g. https://scitools.org.uk/iris/docs/latest/userguide/real_and_lazy_data.html.
 
 **Example**: Consider one year of daily model data in 1x1 resolution
 with 30 vertical layers, stored as 64 bit floating point numbers.
@@ -79,7 +79,7 @@ Or the same in hourly resolution:
 
     import pyaerocom as pya
     pya.change_verbosity('critical')
-    read = pya.io.ReadGridded(name="ECMWF_CAMS_REAN",
+    read = pya.io.ReadGridded(data_id="ECMWF_CAMS_REAN",
                               start="1-1-2003",
                               stop="31-12-2007")
     print(read)
@@ -87,18 +87,22 @@ Or the same in hourly resolution:
 
 .. parsed-literal::
 
+    Initating pyaerocom configuration
+    Checking server configuration ...
+    Checking access to: /lustre/storeA
+    Access to lustre database: True
     Init data paths for lustre
+    Expired time: 0.017 s
 
 
 .. parsed-literal::
 
-    0.009787797927856445 s
     
     Pyaerocom ReadGridded
     ---------------------
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008]
     Available time resolutions ['daily', 'monthly']
 
@@ -115,43 +119,19 @@ by printing the string representation, as shown in the cell above).
 
 .. code:: ipython3
 
-    print("Detected variables for model %s:\n %s" %(read.name, read.vars))
+    print("Detected variables for model %s:\n %s" %(read.data_id, read.vars))
 
 
 .. parsed-literal::
 
     Detected variables for model ECMWF_CAMS_REAN:
-     ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+     ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25']
 
 
 .. code:: ipython3
 
     data = read.read_var(var_name="od550aer", ts_type="daily")
     data
-
-
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
 
 
@@ -192,90 +172,6 @@ or multiple variables on the run.
     read.read(['od550bc', 'od550dust', 'od550oa', 'od550so4'])
 
 
-.. parsed-literal::
-
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lat' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py:2029: UserWarning: Gracefully filling 'lon' dimension coordinate masked points
-      warnings.warn(msg.format(str(cf_coord_var.cf_name)))
-
-
 
 
 .. parsed-literal::
@@ -291,7 +187,7 @@ or multiple variables on the run.
 
 
 
-Now let's double check if all variables have been imported.
+Now let’s double check if all variables have been imported.
 
 .. code:: ipython3
 
@@ -305,7 +201,7 @@ Now let's double check if all variables have been imported.
     ---------------------
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer']
+    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008]
     Available time resolutions ['daily', 'monthly']
     
@@ -388,9 +284,9 @@ file. Pyaerocom can correct for this on data import by
 1. First checking if the time dimension in the NetCDF file is correct
    according to CF convention (`see here for details on the
    implementation <http://aerocom.met.no/pyaerocom/api.html#pyaerocom.io.helpers.check_time_coord>`__
-   and if a problem is detected, then ...
+   and if a problem is detected, then …
 2. the time axis is redefined based on the year and time resolution
-   (*ts\_type*) that is encrypted in the filename. The latter requires
+   (*ts_type*) that is encrypted in the filename. The latter requires
    that the file follows one of the `pyaerocom file
    conventions <http://aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__.
 
@@ -432,7 +328,7 @@ series at the coordinates in the city of Leipzig, Germany.
 
 .. parsed-literal::
 
-    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/analysis/cartography.py:377: UserWarning: Using DEFAULT_SPHERICAL_EARTH_RADIUS.
+    /home/jonasg/anaconda3/lib/python3.6/site-packages/iris/analysis/cartography.py:394: UserWarning: Using DEFAULT_SPHERICAL_EARTH_RADIUS.
       warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
     Interpolating data of shape (1826, 161, 320). This may take a while.
     Successfully interpolated cube

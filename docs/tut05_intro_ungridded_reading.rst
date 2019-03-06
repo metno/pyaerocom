@@ -82,7 +82,7 @@ Reading of and investigating Aeronet Sun AODs (version 3, level 2 data)
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.024 s
+    Expired time: 0.017 s
 
 
 Check version of pyaerocom:
@@ -96,7 +96,7 @@ Check version of pyaerocom:
 
 .. parsed-literal::
 
-    '0.8.0.dev4'
+    '0.8.0.dev7'
 
 
 

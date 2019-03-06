@@ -21,12 +21,12 @@ started <http://aerocom.met.no/pyaerocom/notebooks.html#getting-started>`__
 
 .. parsed-literal::
 
+    Initating pyaerocom configuration
+    Checking server configuration ...
+    Checking access to: /lustre/storeA
+    Access to lustre database: True
     Init data paths for lustre
-
-
-.. parsed-literal::
-
-    0.007534980773925781 s
+    Expired time: 0.018 s
 
 
 .. code:: ipython3
@@ -175,10 +175,10 @@ represented by in the instance of the EbasNasaAmesFile class.
 -  One row that specifies NaN-equivalent values for each data column
    (``vals_invalid``)
 -  A number of rows specifying metainformation for each data column in
-   the file (i.e. 12 rows, if the data has 12 columns)
+   the file (i.e. 12 rows, if the data has 12 columns)
 -  Dataset specific metadata
 -  Data block: rows are timestamps, columns are different columns
-   specified in the header (cf. 2 points above)
+   specified in the header (cf. 2 points above)
 
    -  Represented by 2D numpy array (``data`` attribute) where first
       index is row and second index is column
@@ -222,7 +222,7 @@ measurments. Each flag in a flag column comprises a floating point
 number that has encoded up to 3 3-digit numerical flags which are
 specified here:
 
-https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/ebas\_flags.csv
+https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/ebas_flags.csv
 
 More info about the flags follows below. You can see, that the column 4
 printed above has assigned column 12 (index 11) as flag column.
@@ -358,7 +358,7 @@ may use the following command:
 
 You can see that all variable columns were assigned the same flag
 column, since there is only one (column no. 11). This would be different
-if there were multiple flag columns (e.g. one for each variable).
+if there were multiple flag columns (e.g. one for each variable).
 
 Access flag information
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -377,7 +377,7 @@ you want to access, here->11).
 
 .. parsed-literal::
 
-    <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f6e94a80d68>
+    <pyaerocom.io.ebas_nasa_ames.EbasFlagCol at 0x7f3c37123358>
 
 
 
@@ -455,8 +455,8 @@ measurement. Looking into `the flag definition
 file <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/ebas_flags.csv>`__
 we see that these two flags have the following meaning:
 
--  394,'Data completeness less than 90%','V'
--  999,'Missing measurement, unspecified reason','M'
+-  394,‘Data completeness less than 90%’,‘V’
+-  999,‘Missing measurement, unspecified reason’,‘M’
 
 where the last string specifies if this flag is valid (V) or invalid (I)
 or missing (M).
@@ -1007,7 +1007,7 @@ You may also apply selection constraints when converting to a DataFrame
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f6e946e1ba8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f3c36dc74e0>
 
 
 

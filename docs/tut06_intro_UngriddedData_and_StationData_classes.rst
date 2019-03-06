@@ -53,7 +53,7 @@ Import the ``UngriddedData`` object that was created in the previous tutorial
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.017 s
+    Expired time: 0.038 s
 
 
 
@@ -222,7 +222,7 @@ attributes. For instance:
     Contains instruments: ['sun_photometer']
     Total no. of meta-blocks: 160
     Filters that were applied:
-     Filter time log: 20190228175037
+     Filter time log: 20190306152009
     	latitude: (30, 60)
     	longitude: (0, 45)
     	altitude: (0, 1000)
@@ -345,23 +345,6 @@ can get a list of unique station names using:
 
 
 
-Get all station coordinates
-'''''''''''''''''''''''''''
-
-.. code:: ipython3
-
-    stat_coords = data.station_coordinates
-    stat_coords['Mace_Head']
-
-
-
-
-.. parsed-literal::
-
-    {'latitude': 53.32583000000001, 'longitude': -9.89944, 'altitude': 20.0}
-
-
-
 ``StationData``: Access the data from individual stations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -413,7 +396,7 @@ Below we will illustrate the several options to access station data (and
 show that they contain the same data):
 
 Option 1. Get station data using the corresponding metadata indices that match the station name
-                                                                                               
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Find index (or indices) that match the station name:
 
@@ -579,16 +562,16 @@ Let’s have a look if the data objects are really the same (by plotting the AOD
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f34b631c630>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c798bdba8>
 
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_43_1.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_41_1.png
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_43_2.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_41_2.png
 
 
 Looks good. Let’s explore the ``StationData`` object a little more (you
@@ -639,6 +622,7 @@ can print it and it will get you a nice overview):
     data_level: None
     revision_date: None
     ts_type_src: daily
+    stat_merge_pref_attr: None
     
     Data arrays
     .................
@@ -809,7 +793,7 @@ Second, you may plot it:
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_58_0.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_56_0.png
 
 
 Third, you may extract subsets using *fancy indexing*:
@@ -824,12 +808,12 @@ Third, you may extract subsets using *fancy indexing*:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f34bd32bf98>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c76fd5da0>
 
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_60_1.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_58_1.png
 
 
 Or fourth, resample to another frequency:
@@ -844,12 +828,12 @@ Or fourth, resample to another frequency:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f34bd2b37f0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c76ee02b0>
 
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_62_1.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_60_1.png
 
 
 Or fifth, resample to lower frequency, but require a minimum number of
@@ -959,7 +943,7 @@ the one with constraint:
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_68_0.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_66_0.png
 
 
 As you can see, there is quite some months missing when applying the
@@ -1032,12 +1016,12 @@ we created above:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f34bed47dd8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c70ebf3c8>
 
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_74_1.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_72_1.png
 
 
 That was enough of a detour into the pandas world. As you shall see
@@ -1060,7 +1044,7 @@ when plotting:
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_77_0.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_75_0.png
 
 
 The resampling of the timeseries in the plotting method is done
@@ -1094,5 +1078,5 @@ Compare the result with the yearly product plotted above:
 
 
 
-.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_81_0.png
+.. image:: tut06_intro_UngriddedData_and_StationData_classes/tut06_intro_UngriddedData_and_StationData_classes_79_0.png
 
