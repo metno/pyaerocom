@@ -106,7 +106,7 @@ class GriddedData(object):
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
         self.suppl_info = od(from_files     = [],
-                             name           = "Unknown",
+                             data_id        = "Unknown",
                              ts_type        = "Unknown",
                              regridded      = False,
                              computed       = False,
@@ -277,7 +277,7 @@ class GriddedData(object):
     def name(self):
         """ID of model to which data belongs"""
         logger.warning('Deprecated attribute name, please use data_id instead')
-        return self.suppl_info["name"]
+        return self.suppl_info["data_id"]
     
     @property
     def data_id(self):
@@ -288,7 +288,7 @@ class GriddedData(object):
         This attribute was formerly named ``name`` which is alse the 
         corresponding attribute name in :attr:`suppl_info`
         """
-        return self.suppl_info['name']
+        return self.suppl_info['data_id']
         
     @property
     def is_cube(self):
