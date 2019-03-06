@@ -712,7 +712,7 @@ class UngriddedData(object):
                                'Error: {}'.format(repr(e)))
         return out_data
     
-### See new implementation (changed on 6/3/19 by J. Gliss)
+# See new implementation (changed on 6/3/19 by J. Gliss)
 # =============================================================================
 #     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
 #                                 freq=None, include_stats_nodata=True, **kwargs):
@@ -1769,19 +1769,13 @@ class UngriddedData(object):
             
         else:
             stat_data = self.to_station_data_all(var_name, start, stop, 
-                                                 ts_type, 
-                                                 include_stats_nodata=False)
+                                                 ts_type)
             
-            if len(stat_data) == 0:
+            if len(stat_data['stats']) == 0:
                 raise DataCoverageError('No stations could be found for input '
                                         'specs (var, start, stop, freq)')
-            lons, lats, stat_names = [], [], []
-            for stat in stat_data:
-                if not stat.station_name in stat_names:
-                    stat_names.append(stat.station_name)
-                    lons.append(stat['longitude'])
-                    lats.append(stat['latitude'])
-                
+            lons = stat_data['longitude']    
+            lats = stat_data['latitude']    
         if not 'label' in kwargs:
             kwargs['label'] = info_str
         ax = plot_coordinates(lons, lats,
@@ -1965,8 +1959,9 @@ class UngriddedData(object):
         warn(DeprecationWarning(msg))
         
         if station_name is None:
-            return self.to_station_data_all(start=start_date, stop=end_date,
-                                            freq=freq)
+            stats = self.to_station_data_all(start=start_date, stop=end_date,
+                                             freq=freq)
+            stats['stats']
         if isinstance(station_name, str):
             station_name = [station_name]
         if isinstance(station_name, list):
