@@ -12,7 +12,7 @@ from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
 def make_dataset():
-    return ReadGridded(name="ECMWF_CAMS_REAN",
+    return ReadGridded(data_id="ECMWF_CAMS_REAN",
                        start="1-1-2003",
                        stop="31-12-2007")
 @lustre_unavail

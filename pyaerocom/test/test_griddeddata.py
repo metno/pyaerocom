@@ -20,7 +20,7 @@ def _load_osuite():
 
 def _load_cams_rean():
     from pyaerocom.io import ReadGridded
-    r = ReadGridded(name="ECMWF_CAMS_REAN")
+    r = ReadGridded(data_id="ECMWF_CAMS_REAN")
     return r.read_var('od550aer', ts_type='daily',
                       start=2010, stop=2013)
     
