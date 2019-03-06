@@ -130,3 +130,5 @@ pyaerocom/_sorted_out
 
 # Issues directory
 issues/
+
+docs/**/*.png
