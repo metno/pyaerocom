@@ -68,7 +68,7 @@ class ReadGridded(object):
     
     Attributes
     ----------
-    name : str
+    data_id : str
         string ID for model or obsdata network (see e.g. Aerocom interface map
         plots lower left corner)
     data : GriddedData
@@ -99,7 +99,7 @@ class ReadGridded(object):
         
     Parameters
     ----------
-    name : str
+    data_id : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
     start : :obj:`pandas.Timestamp` or :obj:`str`, optional
         desired start time of dataset (note, that strings are passed to 
@@ -119,7 +119,7 @@ class ReadGridded(object):
     Examples
     --------
     
-        >>> read = ReadGridded(name="ECMWF_OSUITE")
+        >>> read = ReadGridded(data_id="ECMWF_OSUITE")
         >>> read.read_var("od550aer")
         >>> read.read_var("od550so4")
         >>> read.read_var("od550bc")
@@ -138,20 +138,20 @@ class ReadGridded(object):
     _start = None
     _stop = None
     #VALID_DIM_STANDARD_NAMES = ['longitude', 'latitude', 'altitude', 'time']
-    def __init__(self, name="", start=None, stop=None,
+    def __init__(self, data_id="", start=None, stop=None,
                  file_convention="aerocom3", init=True):
         # model ID
-        if not isinstance(name, str):
-            if isinstance(name, list):
-                msg = ("Input for name is list. You might want to use "
+        if not isinstance(data_id, str):
+            if isinstance(data_id, list):
+                msg = ("Input for data_id is list. You might want to use "
                        "class ReadGriddedMulti for import?")
             else:
-                msg = ("Invalid input for name. Need str, got: %s"
-                       %type(name))
+                msg = ("Invalid input for data_id. Need str, got: %s"
+                       %type(data_id))
             raise TypeError(msg)
         
-        #: name of gridded dataset        
-        self.name = name
+        #: data_id of gridded dataset        
+        self.data_id = data_id
         
         self.logger = logging.getLogger(__name__)
         # only overwrite if there is input, note that the attributes
@@ -207,7 +207,7 @@ class ReadGridded(object):
         self.read_errors = {}
         
         self._aux_avail = None
-        if init and name:
+        if init and data_id:
             self.search_data_dir()
             self.search_all_files()
      
@@ -245,7 +245,7 @@ class ReadGridded(object):
         dirloc = self._data_dir
         if not isdir(dirloc):
             raise IOError("Model directory for ID %s not available or does "
-                          "not exist" %self.name)
+                          "not exist" %self.data_id)
         return dirloc
     
     @data_dir.setter
@@ -367,7 +367,7 @@ class ReadGridded(object):
         IOError 
             if directory cannot be found
         """
-        _dir = self.browser.find_data_dir(self.name)
+        _dir = self.browser.find_data_dir(self.data_id)
         self.data_dir = _dir
         return _dir
                 
@@ -415,7 +415,7 @@ class ReadGridded(object):
                 raise IOError("Failed to identify file naming convention "
                               "from files in model directory for model "
                               "%s\ndata_dir: %s"
-                              %(self.name, self.data_dir))
+                              %(self.data_id, self.data_dir))
         _vars_temp = []
         _vars_temp_3d = []
         _years_temp = []
@@ -449,14 +449,14 @@ class ReadGridded(object):
             except Exception as e:
                 msg = ("Failed to import file {}\nModel: {}\n"
                       "Error: {}".format(basename(_file), 
-                                         self.name, repr(e)))
+                                         self.data_id, repr(e)))
                 self.logger.warning(msg)
                 if CONST.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
                   
         if len(self.files) == 0:
             raise DataCoverageError('No files could be found for data {} and '
-                                    'years range {}-{}'.format(self.name,
+                                    'years range {}-{}'.format(self.data_id,
                                                  _start, _stop))
         if len(_vars_temp + _vars_temp_3d) == 0:
             raise AttributeError("Failed to extract information from filenames")
@@ -538,7 +538,7 @@ class ReadGridded(object):
         for k, v in kwargs.items():
             if k in self.__dict__:
                 self.logger.info("Updating %s in ModelImportResult for model %s"
-                            "New value: %s" %(k, self.name, v))
+                            "New value: %s" %(k, self.data_id, v))
                 self.__dict__[k] = v
             else:
                 self.logger.info("Ignoring key %s in ModelImportResult.update()" %k)
@@ -599,7 +599,7 @@ class ReadGridded(object):
                         self.logger.warning(repr(e))
     
         raise DataCoverageError("No files could be found for dataset {}, "
-                                "variable {}, ts_types {}".format(self.name, 
+                                "variable {}, ts_types {}".format(self.data_id, 
                                                                   var_name, 
                                                                   self.ts_types))
                         
@@ -656,7 +656,7 @@ class ReadGridded(object):
         if len(match_files) == 0:
             raise DataCoverageError("No files could be found for dataset {}, "
                                     "variable {}, ts_type {} between {} - {}."
-                                    .format(self.name, 
+                                    .format(self.data_id, 
                                             var_name, ts_type, 
                                             min(years_to_load),
                                             max(years_to_load)))
@@ -813,7 +813,7 @@ class ReadGridded(object):
         cube = self.AUX_FUNS[var_name](*data)
         cube.var_name = var_name
         
-        data = GriddedData(cube, name=self.name, 
+        data = GriddedData(cube, data_id=self.data_id, 
                            ts_type=data[0].ts_type,
                            computed=True)
         return data
@@ -965,12 +965,12 @@ class ReadGridded(object):
                 raise VarNotAvailableError('One or more of the specified vars '
                                         '({}) is not available in {} database. '
                                         'Available vars: {}'.format(
-                                        var_names, self.name, 
+                                        var_names, self.data_id, 
                                         self.vars_provided))
         var_names = list(np.intersect1d(self.vars_provided, var_names))
         if len(var_names) == 0:
             raise VarNotAvailableError('None of the desired variables is '
-                                        'available in {}'.format(self.name))
+                                        'available in {}'.format(self.data_id))
         data = []
         for var in var_names:
             try:
@@ -983,7 +983,7 @@ class ReadGridded(object):
 #             except Exception as e:
 #                 self.logger.exception('Failed to read variable {} ({})\n'
 #                                       'Error message: {}'.format(var,
-#                                                       self.name, 
+#                                                       self.data_id, 
 #                                                       repr(e)))
 # =============================================================================
         
@@ -1050,19 +1050,19 @@ class ReadGridded(object):
 #                 raise YearNotAvailableError('One or more of the specified years '
 #                                         '({}) is not available in {} database. '
 #                                         'Available years: {}'.format(
-#                                         years_to_load, self.name, 
+#                                         years_to_load, self.data_id, 
 #                                         self.years))
 #         years_to_load = np.intersect1d(self.years, years_to_load)
 #         if len(years_to_load) == 0:
 #             raise YearNotAvailableError('None of the provided years is '
-#                                         'available in {}'.format(self.name))
+#                                         'available in {}'.format(self.data_id))
 #         
 #         if require_all_vars_avail:
 #             if not all([var in self.vars for var in var_names]):
 #                 raise VarNotAvailableError('One or more of the specified vars '
 #                                         '({}) is not available in {} database. '
 #                                         'Available vars: {}'.format(
-#                                         var_names, self.name, 
+#                                         var_names, self.data_id, 
 #                                         self.vars))
 #         var_names = np.intersect1d(self.vars, var_names)
 #         if len(var_names) == 0:
@@ -1125,7 +1125,7 @@ class ReadGridded(object):
             for error in self.read_errors.values():
                 err_str += '\n{}'.format(msg)
             raise IOError("None of the files found for variable {} "
-                          "could be loaded. Errors: {}".format(self.name,
+                          "could be loaded. Errors: {}".format(self.data_id,
                                                                err_str))
     
         self.cubes[var_name] = cubes
@@ -1167,7 +1167,7 @@ class ReadGridded(object):
         from_files = [f for f in self.loaded_files[var_name]]    
         data = GriddedData(input=cube, 
                            from_files=from_files,
-                           name=self.name, 
+                           data_id=self.data_id, 
                            ts_type=ts_type)
         
         # crop cube in time (if applicable)
@@ -1251,7 +1251,7 @@ class ReadGridded(object):
              "Available years: {}\n"
              "Available time resolutions {}\n".format(head, 
                                                       len(head)*"-",
-                                                      self.name,
+                                                      self.data_id,
                                                       self.data_dir,
                                                       self.vars, 
                                                       self.years,
@@ -1269,6 +1269,13 @@ class ReadGridded(object):
 #                         s += "{}\n".format(data.short_str())
 # =============================================================================
         return s.rstrip()
+    
+    ### DEPRECATED STUFF
+    @property
+    def name(self):
+        """Deprecated name of attribute data_id"""
+        CONST.print_log.warning(DeprecationWarning("Please use data_id"))
+        return self.data_id
         
 class ReadGriddedMulti(object):
     """Class for import of AEROCOM model data from multiple models
