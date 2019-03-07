@@ -8,7 +8,8 @@ from pyaerocom import VerticalProfile, logger, const
 from pyaerocom.exceptions import MetaDataError, VarNotAvailableError
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom.helpers import resample_timeseries, isnumeric
+from pyaerocom.helpers import (resample_timeseries, isnumeric, 
+                               resample_time_dataarray)
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -726,9 +727,10 @@ class StationData(StationMetaData):
             new = resample_timeseries(data, freq=ts_type, how=how,
                                       min_num_obs=min_num_obs)
         elif isinstance(data, xarr.DataArray):
-            raise NotImplementedError('Coming soon...')
-            idx = pd.DatetimeIndex(freq)
-            new = data.reindex()
+            
+            new = resample_time_dataarray(data, freq=ts_type, how=how, 
+                                          min_num_obs=min_num_obs)
+            
         
         if inplace:
             self[var_name] = new
