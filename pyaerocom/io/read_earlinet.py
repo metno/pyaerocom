@@ -46,7 +46,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.*'
     
     #: version log of this class (for caching)
-    __version__ = "0.12_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.13_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -107,6 +107,12 @@ class ReadEarlinet(ReadUngriddedBase):
                          altitude           = 'Altitude_meter_asl',
                          eval_method        = 'EvaluationMethod')
     
+    #: metadata keys that are needed for reading (must be values in 
+    #: :attr:`META_NAMES_FILE`)
+    META_NEEDED = ['Location', 'StartDate', 'StartTime_UT', 'StopTime_UT', 
+                   'Longitude_degrees_east', 'Latitude_degrees_north',
+                   'Altitude_meter_asl']
+    
     #: Metadata keys from :attr:`META_NAMES_FILE` that are additional to 
     #: standard keys defined in :class:`StationMetaData` and that are supposed 
     #: to be inserted into :class:`UngriddedData` object created in :func:`read`
@@ -154,8 +160,9 @@ class ReadEarlinet(ReadUngriddedBase):
         
         #: files that were actually excluded from reading
         self.excluded_files = []
-    
-    def read_file(self, filename, vars_to_retrieve=None, read_errs=None):
+        
+    def read_file(self, filename, vars_to_retrieve=None, read_err=None,
+                  remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
         
         Parameters
@@ -165,16 +172,20 @@ class ReadEarlinet(ReadUngriddedBase):
         vars_to_retrieve : :obj:`list`, optional
             list of str with variable names to read. If None, use
             :attr:`DEFAULT_VARS`
-        read_errs : bool
+        read_err : bool
             if True, uncertainty data is also read (where available).
-    
+        remove_outliers : bool
+            if True, outliers are removed for each variable using the
+            `minimum` and `maximum` attributes for that variable (accessed 
+            via pyaerocom.const.VAR_PARAM[var_name]).
+        
         Returns
         -------
         StationData 
             dict-like object containing results
         """
-        if read_errs is None: #use default setting
-            read_errs = self.READ_ERR
+        if read_err is None: #use default setting
+            read_err = self.READ_ERR
             
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
@@ -204,18 +215,18 @@ class ReadEarlinet(ReadUngriddedBase):
         data_in = xarray.open_dataset(filename)
         
         for k, v in self.META_NAMES_FILE.items():
-            
-            data_out[k] = data_in.attrs[v]
+            if v in self.META_NEEDED:
+                _meta = data_in.attrs[v]
+            else:
+                try:
+                    _meta = data_in.attrs[v]
+                except:
+                    _meta = None
+            data_out[k] = _meta
+                
         
         data_out['station_name'] = re.split('\s|,', data_out['location'])[0].strip()
-# =============================================================================
-#         except:
-#             self.logger.warning('Unusual location string detected. Earlinet '
-#                                 'location string expected to be comma separated '
-#                                 'city, country information, got: '
-#                                 '{}'.format(data_out['location']))
-# =============================================================================
-        
+
         str_dummy = str(data_in.StartDate)
         year, month, day = str_dummy[0:4], str_dummy[4:6], str_dummy[6:8]
 
@@ -234,14 +245,21 @@ class ReadEarlinet(ReadUngriddedBase):
         
         stop = np.datetime64(stopstring)
         
+        # in case measurement goes over midnight into a new day
         if stop < dtime:
-            raise Exception('Fatal: stop time is earlier than start time. '
-                            'Developers: check if data has StopDate or similar')
+            stop = stop + np.timedelta64(1, '[D]')
+            
         data_out['dtime'] = [dtime]
         data_out['stopdtime'] = [stop]
         data_out['has_zdust'] = False
         contains_vars = []
+        
         for var in vars_to_read:
+            data_out['var_info'][var] = od()
+            err_read = False
+            unit_ok = False
+            outliers_removed = False
+            
             netcdf_var_name = self.VAR_NAMES_FILE[var]
             # check if the desired variable is in the file
             if netcdf_var_name not in data_in.variables:
@@ -253,7 +271,10 @@ class ReadEarlinet(ReadUngriddedBase):
             arr = data_in.variables[netcdf_var_name]
             # the actual data as numpy array (or float if 0-D data, e.g. zdust)
             val = np.float64(arr)
+            
+            # CONVERT UNIT
             unit = None
+            
             unames = self.VAR_UNIT_NAMES[netcdf_var_name]
             for u in unames:
                 if u in arr.attrs:
@@ -267,36 +288,58 @@ class ReadEarlinet(ReadUngriddedBase):
                 unit_fac = unit_conversion_fac(unit, to_unit)
                 val *= unit_fac
                 unit = to_unit
+                unit_ok = True
             except Exception as e:
-                self.logger.warning('Failed to convert unit: {}'.format(repr(e)))
+                const.print_log.warning('Failed to convert unit of {} in file '
+                                        '{} (Earlinet): Error: {}'
+                                        .format(var, filename, repr(e)))
+                
+            # import errors if applicable
+            err = np.nan
+            if read_err and var in self.ERR_VARNAMES:
+                err_name = self.ERR_VARNAMES[var]
+                if err_name in data_in.variables:
+                    err = np.float64(data_in.variables[err_name])
+                    if unit_ok:
+                        err *= unit_fac
+                    err_read = True
             # 1D variable
             if var == 'zdust':
                 if not val.ndim == 0:
                     raise ValueError('Fatal: dust layer height data must be '
                                      'single value')
-                if np.isnan(val) or not info.minimum <= val <= info.maximum:
+        
+                if unit_ok and info.minimum < val < info.maximum:
+                    const.print_log.warning('zdust value {} out of range, '
+                                            'setting to NaN'.format(val))
+                    val = np.nan
+                    err = np.nan
+                if err > self._MAX_VAL_NAN:
+                    err = np.nan
+                        
+                        
+                if np.isnan(val):
                     self.logger.warning("Invalid value of variable zdust "
                                         "in file {}. Skipping...!".format(filename))
                     continue
                
                 data_out['has_zdust'] = True
-                data_out[var] = float(val)
+                data_out[var] = val
                 
 
             #elif var.startswith('ec'):
             else:
                 if not val.ndim == 1:
                     raise ValueError('Extinction data must be one dimensional')
-                val[val > self._MAX_VAL_NAN] = np.nan
+                # Remove NaN equivalent values
+                val[val>self._MAX_VAL_NAN] = np.nan
+                    
                 wvlg = var_info[var].wavelength_nm
                 wvlg_str = self.META_NAMES_FILE['wavelength_emis']
-                
+            
                 if not wvlg == data_in.attrs[wvlg_str]:
                     self.logger.info('No wavelength match')
                     continue
-                
-                # create instance of ProfileData
-                profile = VerticalProfile(var_name=var)
                 
                 alt_id = self.ALTITUDE_ID
                 alt_data = data_in.variables[alt_id]
@@ -312,33 +355,43 @@ class ReadEarlinet(ReadUngriddedBase):
                         alt_unit = to_alt_unit
                     except Exception as e:
                         self.logger.warning('Failed to convert unit: {}'.format(repr(e)))
-                profile.altitude = alt_vals
                 
-                profile.var_info['altitude'] = od()
-                profile.var_info['altitude']['unit'] = alt_unit
-                profile.data  = val
-                profile.dtime = dtime
-                profile.var_info[var] = od()
-                profile.var_info[var]['unit'] = unit
-                
-                if read_errs and var in self.ERR_VARNAMES:
-                    err_name = self.ERR_VARNAMES[var]
-                    if err_name in data_in.variables:
-                        errs = np.float64(data_in.variables[err_name])
-                        errs[errs > self._MAX_VAL_NAN] = np.nan
-                        if unit_fac is not None:
-                            errs *= unit_fac
-                        profile.data_err = errs
-                
+                # remove outliers from data, if applicable
+                if remove_outliers and unit_ok:
+                    # REMOVE OUTLIERS
+                    outlier_mask = np.logical_or(val < info.minimum, 
+                                                 val > info.maximum)
+                    val[outlier_mask] = np.nan
+                    
+                    if err_read:
+                        err[outlier_mask] = np.nan
+                    outliers_removed = True
+                # remove outliers from errors if applicable
+                if err_read:
+                    err[err > self._MAX_VAL_NAN] = np.nan
+                        
+                # create instance of ProfileData
+                profile = VerticalProfile(data=val,
+                                          altitude=alt_vals,
+                                          dtime=dtime,
+                                          var_name=var,
+                                          data_err=err,
+                                          var_unit=unit,
+                                          altitude_unit=unit)   
+                # Write everything into profile
                 data_out[var] = profile
-
+                
+            
             contains_vars.append(var)
+            data_out['var_info'][var].update(unit_ok=unit_ok, 
+                                             err_read=err_read,
+                                             outliers_removed=outliers_removed)
             
         data_out['contains_vars'] = contains_vars
         return (data_out)
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
-             last_file=None, read_errs=None):
+             last_file=None, read_err=None, remove_outliers=True):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -355,7 +408,7 @@ class ReadEarlinet(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file 
             in the list is used
-        read_errs : bool
+        read_err : bool
             if True, uncertainty data is also read (where available). If 
             unspecified (None), then the default is used (cf. :att:`READ_ERR`)
             
@@ -368,8 +421,8 @@ class ReadEarlinet(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-        if read_errs is None:
-            read_errs = self.READ_ERR
+        if read_err is None:
+            read_err = self.READ_ERR
             
         if files is None:
             if len(self.files) == 0:
@@ -406,9 +459,10 @@ class ReadEarlinet(ReadUngriddedBase):
                 print("Reading file {} of {} ({})".format(i+1, 
                                  num_files, type(self).__name__))
             try:
-                stat = self.read_file(_file, vars_to_retrieve=
-                                              vars_to_retrieve,
-                                              read_errs=read_errs)
+                stat = self.read_file(_file, 
+                                      vars_to_retrieve=vars_to_retrieve,
+                                      read_err=read_err, 
+                                      remove_outliers=remove_outliers)
                 if not any([var in stat.contains_vars for var in 
                             vars_to_retrieve]):
                     self.logger.info("Station {} contains none of the desired "
@@ -445,19 +499,19 @@ class ReadEarlinet(ReadUngriddedBase):
                         data = val.data
                         add = len(data)
                         err = val.data_err
-                        metadata[meta_key]['var_info']['altitude'] = via =od()
+                        metadata[meta_key]['var_info']['altitude'] = via = od()
                         
-                        vi['unit'] = val.var_info[var]['unit']
-                        via['unit'] = val.var_info['altitude']['unit']
+                        vi.update(val.var_info[var])
+                        via.update(val.var_info['altitude'])
                     else:
                         add = 1
                         altitude = np.nan
                         data = val
                         if var in stat.data_err:
-                            err = stat.errs[var]
+                            err = stat.err[var]
                         else:
                             err = np.nan
-                        
+                    vi.update(stat.var_info[var])   
                     stop = idx + add
                     #check if size of data object needs to be extended
                     if stop >= data_obj._ROWNO:
@@ -481,7 +535,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     data_obj._data[idx:stop, col_idx['dataaltitude']] = altitude
                     data_obj._data[idx:stop, col_idx['varidx']] = var_idx
                     
-                    if read_errs:
+                    if read_err:
                         data_obj._data[idx:stop, col_idx['dataerr']] = err
                     
                     if not var in meta_idx[meta_key]:
@@ -580,46 +634,52 @@ if __name__=="__main__":
     read = ReadEarlinet()
     read.verbosity_level = 'warning'
     
-    #lst = read.get_file_list('ec532aer')
-    
-    # to accelerate things for testing (first 20 files)
-    lst = ['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008192050.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1009162031.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1012131839.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1011221924.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1105122027.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1507232059.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1107072042.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109192000.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001251402.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001211841.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1005272143.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev0911091200.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109222000.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1103242017.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109052000.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109152000.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109082000.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1006212036.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008022112.e532',
-             '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1508272229.e532']
-    
-    read.files = lst
+    ALL = True
+    if ALL:
+        lst = read.get_file_list('ec532aer')
+    else:
+        
+        # to accelerate things for testing (first 20 files)
+        lst = ['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008192050.e532',
+               '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1009162031.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1012131839.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1011221924.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1105122027.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1507232059.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1107072042.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109192000.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001251402.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001211841.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1005272143.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev0911091200.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109222000.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1103242017.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109052000.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109152000.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109082000.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1006212036.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008022112.e532',
+                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1508272229.e532']
+        
+        read.files = lst
     
     stat = read.read_file(lst[0], 'ec532aer')
     
     ax = stat.ec532aer.plot()
     
     
-    data = read.read('ec532aer', last_file=20)
+    data = read.read('ec532aer')
     print(data)
     
     stat = data.to_station_data(0)
     
-    merged = data.to_station_data('Evora', freq='monthly',
-                                  insert_nans=False)
+    merged = data.to_station_data('Evora', freq='monthly')
     
     print(merged)
+    
+    merged.ec532aer.plot()
+    
+    
     
     
     
