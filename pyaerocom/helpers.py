@@ -6,9 +6,11 @@ General helper methods for the pyaerocom library.
 import iris
 from iris import coord_categorisation
 import pandas as pd
+import xarray as xray
 import numpy as np
 from pyaerocom.exceptions import (LongitudeConstraintError, 
-                                  DataCoverageError, MetaDataError)
+                                  DataCoverageError, MetaDataError,
+                                  DataDimensionError)
 from pyaerocom import logger
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
@@ -53,8 +55,8 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           'monthly' :   'MS', #Month start !
                           'yearly'  :   'AS'}
 
-PANDAS_RESAMPLE_OFFSETS = {'AS' : np.timedelta64(6, '[M]'),
-                           'MS' : np.timedelta64(14, '[D]')}
+PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
+                           'MS' : '14D'}
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 
@@ -241,6 +243,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
             _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
         
         for i, stat in enumerate(stats):
+            print(stat[var_name].values)
             if i == 0:
                 merged = stat
             else:
@@ -268,6 +271,15 @@ def merge_station_data(stats, var_name, pref_attr=None,
     merged['stat_merge_pref_attr'] = pref_attr
     return merged
 
+def _get_pandas_freq_and_loffset(freq):
+    """Helper to convert resampling info"""
+    if freq in TS_TYPE_TO_PANDAS_FREQ:
+        freq = TS_TYPE_TO_PANDAS_FREQ[freq]
+    loffset = None
+    if freq in PANDAS_RESAMPLE_OFFSETS:
+        loffset = PANDAS_RESAMPLE_OFFSETS[freq]
+    return (freq, loffset)
+
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
     
@@ -291,11 +303,7 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     Series
         resampled time series object
     """
-    if freq in TS_TYPE_TO_PANDAS_FREQ:
-        freq = TS_TYPE_TO_PANDAS_FREQ[freq]
-    loffset = None
-    if freq in PANDAS_RESAMPLE_OFFSETS:
-        loffset = PANDAS_RESAMPLE_OFFSETS[freq]
+    freq, loffset = _get_pandas_freq_and_loffset(freq)    
     resampler = s.resample(freq, loffset=loffset)
     if min_num_obs is None:
         data = resampler.agg(how)
@@ -304,6 +312,52 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
         df[how][df['count'] < min_num_obs] = np.nan
         data = df[how]
     return data
+
+def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
+    """Resample the time dimension of a :class:`xarray.DataArray`
+    
+    Note
+    ----
+    The dataarray must have a dimension coordinate named "time"
+    
+    Parameters
+    ----------
+    arr : DataArray
+        data array to be resampled
+    freq : str
+        new temporal resolution (can be pandas freq. string, or pyaerocom
+        ts_type)
+    how : str
+        choose from mean or median
+    min_num_obs : :obj:`int`, optional
+        minimum number of observations required per period (when downsampling).
+        E.g. if input is in daily resolution and freq is monthly and 
+        min_num_obs is 10, then all months that have less than 10 days of data
+        are set to nan.
+    
+    Returns
+    -------
+    DataArray
+        resampled data array object
+    
+    Raises
+    ------
+    IOError
+        if data input `arr` is not an instance of :class:`DataArray`
+    DataDimensionError
+        if time dimension is not available in dataset
+    """
+    
+    if not isinstance(arr, xray.DataArray):
+        raise IOError('Invalid input for arr: need DataArray, got {}'.format(type(arr)))
+    elif not 'time' in arr.dims:
+        raise DataDimensionError('Cannot resample time: input DataArray has '
+                                 'no time dimension')
+    if min_num_obs is not None:
+        raise NotImplementedError('Coming soon...')
+    freq, loffset = _get_pandas_freq_and_loffset(freq)    
+    return arr.resample(time=freq, loffset=loffset).mean(dim='time')
+    
 
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
