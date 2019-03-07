@@ -20,8 +20,8 @@ class VerticalProfile(object):
     
     """
     def __init__(self, data=None, altitude=None, dtime=None,
-                 var_name=None, data_err=None, var_unit=None, altitude_unit=None, 
-                 **location_info):
+                 var_name=None, data_err=None, var_unit=None, 
+                 altitude_unit=None, **location_info):
         
         if data is None:
             data = []
@@ -32,7 +32,7 @@ class VerticalProfile(object):
         if altitude is None:
             altitude = []
         if var_name is None:
-            var_name = 'values'
+            var_name = 'data'
             
         self._var_name = None
         self._data = []
@@ -54,6 +54,8 @@ class VerticalProfile(object):
 
         if var_unit is not None:
             self.var_unit = var_unit
+        if altitude_unit is not None:
+            self.altitude_unit = altitude_unit
       
     def update(self, **kwargs):
         for k, v in kwargs.items():
@@ -233,9 +235,15 @@ class VerticalProfile(object):
     
 if __name__=="__main__":
     
-    d = VerticalProfile("Blaaaaaaaa")
-    d.update(dict(bla=42, blub=43))
-    print(d)
+    d = data=[1,2,3,4,3,2,1,1,1,1]
+    p = VerticalProfile(data=d,
+                        altitude=np.arange(len(d)),
+                        data_err=np.ones(len(d))*.3,
+                        var_unit='1/Mm',
+                        altitude_unit='m')
+    p.plot()
+    
+    
         
         
         
