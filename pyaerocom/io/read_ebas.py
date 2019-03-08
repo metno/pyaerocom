@@ -88,7 +88,7 @@ class ReadEbasOptions(BrowseDict):
         
         self.WAVELENGTH_TOL_NM = 50
         
-        self.REMOVE_INVALID_FLAGS = False
+        self.REMOVE_INVALID_FLAGS = True
         
         self.LOG_READ_STATS = False
         
