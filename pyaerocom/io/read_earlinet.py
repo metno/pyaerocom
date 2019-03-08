@@ -134,10 +134,12 @@ class ReadEarlinet(ReadUngriddedBase):
     
     PROVIDES_VARIABLES = list(VAR_PATTERNS_FILE)
     
-    EXCLUDE_FILES = ['cirrus.txt', 
-                     'etna.txt', 
-                     'forest_fires.txt', 
-                     'saharan_dust.txt']
+# =============================================================================
+#     EXCLUDE_FILES = ['cirrus.txt', 
+#                      'etna.txt', 
+#                      'forest_fires.txt', 
+#                      'saharan_dust.txt']
+# =============================================================================
     EXCLUDE_CASES = ['cirrus.txt']
     
     def __init__(self, dataset_to_read=None):
@@ -160,7 +162,8 @@ class ReadEarlinet(ReadUngriddedBase):
         
         #: files that were actually excluded from reading
         self.excluded_files = []
-        
+     
+    
     def read_file(self, filename, vars_to_retrieve=None, read_err=None,
                   remove_outliers=True):
         """Read EARLINET file and return it as instance of :class:`StationData`
@@ -186,9 +189,17 @@ class ReadEarlinet(ReadUngriddedBase):
         """
         if read_err is None: #use default setting
             read_err = self.READ_ERR
-            
+        
+        _vars = []
+        for var in vars_to_retrieve:
+            if var in self.VAR_PATTERNS_FILE: #make sure to only read what is supported by this file
+                if fnmatch.fnmatch(filename, self.VAR_PATTERNS_FILE[var]):
+                    _vars.append(var)
+            else: # will be computed
+                _vars.append(var)
+                
         # implemented in base class
-        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
         
         if len(vars_to_compute) > 0:
             raise NotImplementedError("This feature has not yet implemented, as "
@@ -426,7 +437,7 @@ class ReadEarlinet(ReadUngriddedBase):
             
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list()
+                self.get_file_list(vars_to_retrieve)
             files = self.files
     
         if first_file is None:
@@ -583,7 +594,8 @@ class ReadEarlinet(ReadUngriddedBase):
                 raise Exception
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
-        
+    
+    #TODO: check performance (it is usually slow...)
     def get_file_list(self, vars_to_retrieve=None):
         """Perform recusive file search for all input variables
         
@@ -607,8 +619,16 @@ class ReadEarlinet(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         exclude = self._get_exclude_filelist()
-        self.logger.info('Fetching data files. This might take a while...')
-        patterns = [self.VAR_PATTERNS_FILE[var] for var in vars_to_retrieve]
+        const.print_log.info('Fetching EARLINET data files. '
+                             'This might take a while...')
+        patterns = []
+        for var in vars_to_retrieve:
+            if not var in self.VAR_PATTERNS_FILE:                
+                from pyaerocom.exceptions import VarNotAvailableError
+                raise VarNotAvailableError('Input variable {} is not supported'
+                                           .format(var))
+            patterns.append(self.VAR_PATTERNS_FILE[var])
+            
         matches = []
         for root, dirnames, files in os.walk(self.DATASET_PATH):
             for pattern in patterns:
@@ -632,11 +652,12 @@ if __name__=="__main__":
     
     plt.close('all')
     read = ReadEarlinet()
+    #read.read(['bscatc532aer','ec532aer'])
     read.verbosity_level = 'warning'
     
-    ALL = True
+    ALL = False
     if ALL:
-        lst = read.get_file_list('ec532aer')
+        lst = read.get_file_list(['bscatc532aer','ec532aer'])
     else:
         
         # to accelerate things for testing (first 20 files)
@@ -663,7 +684,7 @@ if __name__=="__main__":
         
         read.files = lst
     
-    stat = read.read_file(lst[0], 'ec532aer')
+    stat = read.read_file(lst[0], ['ec532aer', 'bscatc532aer'])
     
     ax = stat.ec532aer.plot()
     
@@ -673,12 +694,16 @@ if __name__=="__main__":
     
     stat = data.to_station_data(0)
     
+    
+    merged0 = data.to_station_data('Evora')
     merged = data.to_station_data('Evora', freq='monthly')
     
     print(merged)
     
     merged.ec532aer.plot()
     
+    arr0 = merged0.ec532aer
+    arr = merged.ec532aer
     
     
     
