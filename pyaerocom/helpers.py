@@ -124,7 +124,7 @@ def isrange(val):
             return True
         return False
     elif isinstance(val, slice):
-        if slice.step is not None or slice.start is None or slice.stop is None:
+        if val.step is not None or val.start is None or val.stop is None:
             return False
         return True
     return False
@@ -243,7 +243,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
             _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
         
         for i, stat in enumerate(stats):
-            print(stat[var_name].values)
+            #print(stat[var_name].values)
             if i == 0:
                 merged = stat
             else:
@@ -928,3 +928,4 @@ if __name__=="__main__":
     print(TS_TYPE_TO_NUMPY_FREQ)
     print(NUMPY_FREQ_TO_TS_TYPE)
 
+    isrange(slice(1,2))
