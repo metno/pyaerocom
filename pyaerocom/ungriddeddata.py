@@ -551,6 +551,19 @@ class UngriddedData(object):
         sd = StationData()
         
         val = self.metadata[meta_idx]
+        
+        # TODO: make sure in reading classes that data_revision is assigned
+        # to each metadata block and not only in self.data_revision
+        rev = None
+        if 'data_revision' in val:
+            rev = val['data_revision']
+        else:
+            try:
+                rev = self.data_revision[val['data_id']]
+            except:
+                print_log.warning('Data revision could not be accessed in '
+                                  'UngriddedData')
+        sd.data_revision = rev
         if not 'variables' in val or val['variables'] in (None, []):
             raise VarNotAvailableError('Metablock does not contain variable '
                                        'information')
