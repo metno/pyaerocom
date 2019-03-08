@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
-import xarray as xarr
+import xarray as xray
 from pyaerocom import VerticalProfile, logger, const
 
-from pyaerocom.exceptions import MetaDataError, VarNotAvailableError
+from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
+                                  DataExtractionError, DataDimensionError)
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom.helpers import (resample_timeseries, isnumeric, 
+from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
                                resample_time_dataarray)
 
 class StationData(StationMetaData):
@@ -260,7 +261,7 @@ class StationData(StationMetaData):
                 
                 for _val in vals_in:
                     if not _val in vals:
-                        self[key] = self[key] + ';{}'.format(_val)
+                        self[key] = self[key] + '; {}'.format(_val)
             else:
                 if isinstance(val, (list, np.ndarray)):
                     raise ValueError('Cannot append metadata value that is '
@@ -684,7 +685,7 @@ class StationData(StationMetaData):
         return new
     
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                         inplace=False, min_num_obs=None):
+                            inplace=False, min_num_obs=None):
         """Resample one of the time-series in this object
         
         Parameters
@@ -714,7 +715,7 @@ class StationData(StationMetaData):
             raise KeyError("Variable {} does not exist".format(var_name))
         data = self[var_name]
     
-        if not isinstance(data, (pd.Series, xarr.DataArray)):
+        if not isinstance(data, (pd.Series, xray.DataArray)):
             try:
                 data = self.to_timeseries(var_name, inplace=inplace)
             except Exception as e:
@@ -726,7 +727,7 @@ class StationData(StationMetaData):
         if isinstance(data, pd.Series):
             new = resample_timeseries(data, freq=ts_type, how=how,
                                       min_num_obs=min_num_obs)
-        elif isinstance(data, xarr.DataArray):
+        elif isinstance(data, xray.DataArray):
             
             new = resample_time_dataarray(data, freq=ts_type, how=how, 
                                           min_num_obs=min_num_obs)
@@ -798,8 +799,49 @@ class StationData(StationMetaData):
                                len(self.dtime)))    
         self[var_name] = s = pd.Series(data, index=self.dtime)
         return s
+    
+    def select_altitude(self, var_name, altitudes):
         
-    def to_timeseries(self, var_name, freq=None, resample_how='mean',
+        data = self[var_name]
+        
+        if not isrange(altitudes):
+            raise NotImplementedError('So far only a range (low, high) is '
+                                      'supported for altitude extraction.')
+            
+        if isinstance(data, xray.DataArray):
+            if not sorted(data.dims) == ['altitude', 'time']:
+                raise NotImplementedError('Can only handle dataarrays that '
+                                          'contain 2 dimensions altitude and '
+                                          'time')
+            if isrange(altitudes):
+                                
+                return data.sel(altitude=slice(altitudes[0], 
+                                               altitudes[1]))
+            
+            raise DataExtractionError('Cannot intepret input for '
+                                          'altitude...')
+        elif isinstance(data, pd.Series) and isinstance(data.index, pd.DatetimeIndex):
+            if not len(data.index.unique()) == 1:
+                raise DataDimensionError('Failed to interpret data dimensions')
+            elif not 'altitude' in self:
+                raise ValueError('Missing altitude information')
+            elif not len(self.altitude) == len(data):
+                raise DataDimensionError('Altitude data and {} data have '
+                                         'different lengths'.format(var_name))
+            
+            alts = self['altitude']
+            mask = np.logical_and(alts>=altitudes[0],
+                                  alts<=altitudes[1])
+            return data[mask]
+            
+                    
+        
+        raise DataExtractionError('Cannot extract altitudes: type of '
+                                  '{} ({}) is not supported'
+                                  .format(var_name, type(data)))
+        
+        
+    def to_timeseries(self, var_name, freq=None, resample_how='mean', 
                       **kwargs):
         """Get pandas.Series object for one of the data columns
         
@@ -830,15 +872,32 @@ class StationData(StationMetaData):
         """
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
-    
-        if not isinstance(self[var_name], pd.Series):
-            data = self._to_ts_helper(var_name)
+        data = self[var_name]
+        alt_info = None
+        # check if altitude subset is requested and process if applicable
+        if 'altitude' in kwargs:
+            alt_info =  kwargs.pop('altitude')
+            data = self.select_altitude(var_name, alt_info)
         else:
-            logger.info('Data is already instance of pandas.Series')
             data = self[var_name]
+            
+        if isinstance(data, xray.DataArray):
+            if not 'time' in data.dims:
+                raise NotImplementedError('Can only handle dataarrays that '
+                                          'contain time dimension')
+            if 'altitude' in data.dims: # collapsing of altitude dimension has not been done
+                data = data.mean('altitude')
+            if not data.ndim == 1:
+                raise Exception('please debug')
+            data = data.to_series()
+        
+        if not isinstance(data, pd.Series):
+            data = self._to_ts_helper(var_name)
+
         if freq is not None:
             data = resample_timeseries(data, freq, how=resample_how,
-                                       **kwargs)
+                                           **kwargs)
+
         return data
     
     def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
@@ -921,8 +980,13 @@ class StationData(StationMetaData):
         
         ax.plot(s, label=lbl, **kwargs)
         if add_overlaps:
+            so = self.overlap[var_name]
+            try:
+                so = resample_timeseries(so, freq, how=resample_how)
+            except:
+                pass
             if var_name in self.overlap:
-                ax.plot(self.overlap[var_name], '--', lw=1, c='r', 
+                ax.plot(so, '--', lw=1, c='r', 
                         label='{} (overlap)'.format(var_name)) 
             else: 
                 tit += ' (No overlapping data found)'
