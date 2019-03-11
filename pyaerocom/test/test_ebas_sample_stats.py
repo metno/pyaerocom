@@ -36,11 +36,14 @@ def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
                         rtol=TEST_RTOL)
     
     vals = data._data[:, data.index['data']]
-    npt.assert_allclose([np.nanmean(vals), 
-                         np.nanstd(vals),
-                         np.nanmax(vals),
-                         np.nanmin(vals)], 
-                        [4.424164, 7.365081, 182.7, -5.574], rtol=TEST_RTOL)
+    check = [np.nanmean(vals), 
+             np.nanstd(vals),
+             np.nanmax(vals),
+             np.nanmin(vals)]
+    print(check)
+    npt.assert_allclose(check, 
+                        [4.433951143197965, 
+                         7.398103000409265, 182.7, -5.574], rtol=TEST_RTOL)
     
     
 
@@ -76,24 +79,27 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                             'revision_date', 
                             'ts_type_src', 
                             'stat_merge_pref_attr',
+                            'data_revision',
                             'scatc550aer'])
-    
+   
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('1995-07-08T23:29:59'), 
                              np.datetime64('2017-12-31T23:29:59')])
-    npt.assert_array_equal([stat['instrument_name'],
-                            stat['ts_type'],
-                            stat['PI'],
-                            len(stat.filename.split(';'))],
-    ['IN3563;Ecotech_Aurora3000_JFJ_dry;TSI_3563_JFJ_dry',
-     'hourly',
-     'Baltensperger, Urs; Weingartner, Ernest;Bukowiecki, Nicolas',
-     26])
+    
+    vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
+            len(stat.filename.split(';'))]
+    print(vals)
+    
+    npt.assert_array_equal(vals,
+                           ['IN3563; Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry', 
+                            'hourly', 
+                            'Baltensperger, Urs; Weingartner, Ernest; Bukowiecki, Nicolas', 
+                            26])
     
     d = stat.scatc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]
-    npt.assert_allclose([d.mean(), d.std(), d.min(), d.max()],
-                         [4.695428,   7.653512, -5.574, 182.7],
+    npt.assert_allclose(vals,
+                         [4.7192396520408515, 7.702181266525312, -5.574, 182.7],
                          rtol=TEST_RTOL)
     
     d = stat.overlap['scatc550aer']
@@ -116,19 +122,19 @@ def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
     
     d = stat['scatc550aer']
     vals = [d.mean(), d.std(), d.min(), d.max()]
-    
+
     npt.assert_allclose(vals, 
-                        [4.387210474812516, 
-                         3.48857379938029, 
-                         0.6271888965053766, 
-                         11.812717571815718],
+                        [4.267739428649354, 3.535263046555806, 
+                         0.12036760000000003, 11.898275310344818],
                          rtol=TEST_RTOL)
     
 if __name__=="__main__":
    # pya.change_verbosity('info')
-    import sys
+    #import sys
     d = _make_data()
+    test_ungriddeddata_jungfraujoch(d)
     test_scat_jungfraujoch(d)
+    test_scat_jungfraujoch_subset(d)
 # =============================================================================
 #     
 #     d = _make_data()
@@ -136,4 +142,4 @@ if __name__=="__main__":
 #     stat.plot_timeseries('scatc550aer')
 #     
 # =============================================================================
-    pytest.main(sys.argv)
+    #pytest.main(sys.argv)

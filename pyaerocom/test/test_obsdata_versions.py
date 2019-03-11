@@ -28,9 +28,9 @@ def test_revision_dates():
                                  'EARLINET',
                                  'EBASMC'])
 
-    
+    print(revs)
     npt.assert_array_equal(revs, ['20180728', '20171216', '20180519', 
-                                  '20180629', '20180519', '20181212', 
+                                  '20180629', '20180519', '20190311', 
                                   '20190129', '20190115'])
     
 if __name__=="__main__":
