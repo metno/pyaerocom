@@ -19,6 +19,7 @@ from datetime import datetime
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import Filter, const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD)
+from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded_2D)
 from pyaerocom import ColocatedData, print_log
@@ -28,7 +29,7 @@ from pyaerocom.exceptions import NetworkNotSupported, DataCoverageError
 
     
             
-class _AnalysisOptions(BrowseDict):
+class _ColocationOptions(BrowseDict):
     """This class contains options for Aerocom analysis
     """
     def __init__(self, REANALYSE_EXISTING=False, RAISE_EXCEPTIONS=False):
@@ -62,7 +63,7 @@ class VarSetup(BrowseDict):
         self.var_name_obs = var_name_obs
         self.vert_scheme = vert_scheme
         
-class AnalysisSetup(BrowseDict):
+class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
     
     An instance of this setup class can be used to run a colocation analysis
@@ -79,10 +80,12 @@ class AnalysisSetup(BrowseDict):
         ID of model to be used
     obs_id : str
         ID of observation network to be used
-    vars_to_analyse : :obj:`str` or :obj:`list`, optional
-        variables to be analysed. If not any of the provided variables is not
-        available in obsdata, it will be checked against potential alternative
-        variables which may be specified in :attr:`alt_vars`. If None, all
+    obs_vars : :obj:`str` or :obj:`list`, optional
+        variables to be analysed. If any of the provided variables to be 
+        analysed in the model data is not available in obsdata, the obsdata 
+        will be checked against potential alternative variables which are
+        specified in :attr:`model_alt_vars` and which can be specified in form of a 
+        dictionary for each . If None, all
         variables are analysed that are available both in model and obsdata.
     start : :obj:`pandas.Timestamp`, optional
         start time. Input can be anything that can be converted into 
@@ -102,73 +105,69 @@ class AnalysisSetup(BrowseDict):
         names of frequencies to be analysed (for which colocated data objects
         are created)
     
-    """    
-    def __init__(self, model_id=None, obs_id=None, vars_to_analyse=None, 
+    """ 
+    #: all ID's of ungridded datasets
+    _UNGRIDDED_IDS = get_all_supported_ids_ungridded()
+    def __init__(self, model_id=None, obs_id=None, obs_vars=None, 
                  start=None, stop=None, filter_name='WORLD-noMOUNTAINS',
-                 vert_scheme=None, alt_vars=None, 
-                 out_basedir=None, init_dirs=True, **tasks_or_opts):
-        
-        if isinstance(vars_to_analyse, str):
-            vars_to_analyse = [vars_to_analyse]
-        if alt_vars is None: 
-            alt_vars = {}
+                 vert_scheme=None, model_alt_vars=None, 
+                 basedir_coldata=None, basedir_logfiles=None, read_opts=None):
+        if read_opts is None:
+            read_opts = {}
+        if isinstance(obs_vars, str):
+            obs_vars = [obs_vars]
+        if model_alt_vars is None: 
+            model_alt_vars = {}
         try:
             Filter(filter_name)
         except:
             raise ValueError('Invalid input for filter_name')
-        if out_basedir is None:
-            out_basedir = const.OUT_BASEDIR
-        
+        if basedir_coldata is None:
+            basedir_coldata = const.COLOCATEDDATADIR
+        if not os.path.exists(basedir_coldata):
+            const.print_log.info('Creating directory: {}'.format(basedir_coldata))
+            os.mkdir(basedir_coldata)
+        if basedir_logfiles is None:
+            basedir_logfiles = chk_make_subdir(basedir_coldata, 'logfiles')
             
-        self.vars_to_analyse = vars_to_analyse
+        const.print_log.info('Output directory for colocated data:\n '
+                             '{}'.format(basedir_coldata))
+        const.print_log.info('Output directory for logfiles:\n '
+                             '{}'.format(basedir_coldata))
+        self.obs_vars = obs_vars
         
-        self.alt_vars = alt_vars
+        self.model_alt_vars = model_alt_vars
         
         self.model_id = model_id
         self.obs_id = obs_id
     
-        self.options = _AnalysisOptions()
+        self.options = _ColocationOptions()
 
         self.start = start
         self.stop = stop
         self.filter_name = filter_name
         self.vert_scheme = vert_scheme
         
-        self.out_basedir = out_basedir
-        self._output_dirs = {}
-        self.update(**tasks_or_opts)
-        if init_dirs:
-            self._check_create_output_dirs()
-        else:
-            for key in self.tasks:
-                self._output_dirs[key] = None
+        self.basedir_coldata = basedir_coldata
+        self.basedir_logfiles = basedir_logfiles
     
-    def _check_create_output_dirs(self):
-        """Create subdirectories for analysis output"""
-        dirnames = self.tasks._NAMES_OUTPUT_DIRS 
-        base = self.out_basedir
-        for task, name in dirnames.items():
-            self._output_dirs[task] = chk_make_subdir(base, name)
-        return self._output_dirs
+        self._read_opts = {}
+        self._read_opts.update(**read_opts)
             
     def __dir__(self):
         return self.keys()
     
     def update(self, **kwargs):
         for key, val in kwargs.items():
-            if key in self.tasks:
-                self.tasks[key] = val
-            elif key in self.options:
+            if key in self.options:
                 self.options[key] = val
             else:
                 self[key] = val
 
 
-class Analyser(object):
-    """High level class for running analysis
-    
-    Inherits from :class:`AnalysisSetup`
-    
+class Colocator(object):
+    """High level class for running colocation
+
     TODO
     ----
     - write docstring
@@ -176,15 +175,16 @@ class Analyser(object):
     
     def __init__(self, setup=None, **kwargs):
         if setup is None:
-            setup = AnalysisSetup()
+            setup = ColocationSetup()
         setup.update(**kwargs)
         self._setup = setup
         self._log = None
         self._last_coldata = None
+        self._ungridded_reader = ReadUngridded()
         
     def _init_log(self):
-        logbase = chk_make_subdir(self.out_basedir, 'log_files_analysis')
-        logdir = chk_make_subdir(logbase, datetime.today().strftime('%Y%m%d'))
+        logdir = chk_make_subdir(self.basedir_logfiles, 
+                                 datetime.today().strftime('%Y%m%d'))
         if self.start is None:
             start_str = 'ModelStart'
         else:
@@ -205,16 +205,6 @@ class Analyser(object):
         for k, v in self._setup.items():
             if k == 'model_id':
                 continue
-            elif k == 'ts_type_setup':
-                log.write('TS_TYPES (<read>: <analyse>)\n')
-                for key, val in v.items():
-                    if key == 'read_alt':
-                        continue
-                    log.write(' {}:{}\n'.format(key, val))
-                if v['read_alt']:
-                    log.write(' Alternative TS_TYPES (read)\n')
-                    for key, val in v['read_alt'].items():
-                        log.write('   {}:{}\n'.format(key, val))
             else:
                 log.write('{}: {}\n'.format(k, v))
         
@@ -267,27 +257,26 @@ class Analyser(object):
     def run(self, model_ids=None):
         """Run current analysis
         
-        For analysis parameters, see :class:`AnalysisSetup`, for analysis tasks
+        For analysis parameters, see :class:`ColocationSetup`, for analysis tasks
         see :class:`_AnalysisTasks`, for analysis options see 
-        :class:`_AnalysisOptions`
+        :class:`_ColocationOptions`
         """
         if model_ids is None:
             if self.model_id is None:
                 raise AttributeError('Model ID is not set')
             model_ids = [self.model_id]
-        elif not isinstance(model_ids, (list, tuple, np.ndarray)):
-            model_ids = list(model_ids)
+        elif isinstance(model_ids, str):
+            model_ids = [model_ids]
             
         self._init_log()
         for model_id in model_ids:
             self._log.write('\n\nModel: {}\n'.format(model_id))
             self.model_id = model_id
             try:
-                try:
-                    ReadUngridded(self.obs_id)
+                if self.obs_id in self._UNGRIDDED_IDS:
                     self._run_gridded_ungridded()
-                    
-                except NetworkNotSupported:
+                        
+                else:
                     self._run_gridded_gridded()
             except:
                 self._log.write('Failed to perform analysis: {}\n'
@@ -305,17 +294,17 @@ class Analyser(object):
         obs_reader = ReadUngridded(self.obs_id)
         obs_vars = obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES
     
-        vars_to_analyse = self.vars_to_analyse
-        if vars_to_analyse is None:
-            vars_to_analyse = model_reader.vars_provided
+        obs_vars = self.obs_vars
+        if obs_vars is None:
+            obs_vars = model_reader.vars_provided
             
         var_matches = {}
         
-        for var in vars_to_analyse:
+        for var in obs_vars:
             if var in model_reader.vars_provided: #candidate
-                if var in self.alt_vars:
-                    if self.alt_vars[var] in obs_vars:
-                        var_matches[var] = self.alt_vars[var]
+                if var in self.model_alt_vars:
+                    if self.model_alt_vars[var] in obs_vars:
+                        var_matches[var] = self.model_alt_vars[var]
                 else:
                     if var in obs_vars:
                         var_matches[var] = var
@@ -326,7 +315,7 @@ class Analyser(object):
                                     '{} and {} for input vars: {}'
                                     .format(self.model_id, 
                                             self.obs_id, 
-                                            self.vars_to_analyse))
+                                            self.obs_vars))
             
         all_ts_types = const.GRID_IO.TS_TYPES
         ts_types_ana = self.ts_types_ana
@@ -411,17 +400,17 @@ class Analyser(object):
         model_reader = ReadGridded(self.model_id, start, stop)
         obs_reader = ReadGridded(self.obs_id, start, stop)
     
-        vars_to_analyse = self.vars_to_analyse
-        if vars_to_analyse is None:
-            vars_to_analyse = model_reader.vars_provided
+        obs_vars = self.obs_vars
+        if obs_vars is None:
+            obs_vars = model_reader.vars_provided
             
         var_matches = {}
-        for var in vars_to_analyse:
+        for var in obs_vars:
             if var in model_reader.vars_provided: #candidate
                 # first check if the variable pair was defined explicitely
-                if var in self.alt_vars:
-                    if self.alt_vars[var] in obs_reader.vars_provided:
-                        var_matches[var] = self.alt_vars[var]
+                if var in self.model_alt_vars:
+                    if self.model_alt_vars[var] in obs_reader.vars_provided:
+                        var_matches[var] = self.model_alt_vars[var]
                 else:
                     if var in obs_reader.vars_provided:
                         var_matches[var] = var
@@ -430,7 +419,7 @@ class Analyser(object):
             raise DataCoverageError('No variable matches between {} and {} for '
                                     'input vars: {}'.format(self.model_id, 
                                                             self.obs_id, 
-                                                            self.vars_to_analyse))
+                                                            self.obs_vars))
             
         all_ts_types = const.GRID_IO.TS_TYPES
         ts_types_ana = self.ts_types_ana
@@ -525,7 +514,7 @@ class Analyser(object):
     def __getitem__(self, key):
         if key in self._setup:
             return self._setup[key]
-        raise AttributeError('Invalid attr. for AnalysisSetup')
+        raise AttributeError('Invalid attr. for ColocationSetup')
         
     def __getattr__(self, key):
         if key in self.__dict__:
@@ -538,7 +527,7 @@ class Analyser(object):
     
     def __setitem__(self, key, val):
         if not key in self._setup:
-            raise AttributeError('Invalid attr. for AnalysisSetup')
+            raise AttributeError('Invalid attr. for ColocationSetup')
             self._setup[key] = val
             
             
@@ -548,9 +537,15 @@ class Analyser(object):
         self.run()
         
 if __name__ == '__main__':
-    stp = Analyser(vars_to_analyse=['od550aer', 'ang4487aer'], 
-                   obs_id='AeronetSunV3Lev2.daily',
-                   years=[2010])
-    stp.run('CAM5.3-Oslo_AP3-CTRL2016-PD')
+    model_alt_vars = dict(scatc550dryaer  = 'ec550dryaer',
+                          absc550aer      = 'abs5503Daer')
+    
+    stp = ColocationSetup(model_id = 'CAM5.3-Oslo_AP3-CTRL2016-PD',
+                          obs_id='EBASMC',
+                          obs_vars=['scatc550dryaer', 'absc550aer'], 
+                          start=2010,
+                          model_alt_vars=model_alt_vars,
+                          read_opts=dict(station_names='Alert'))
+    stp.run()
     
             
