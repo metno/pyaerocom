@@ -132,7 +132,18 @@ def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
     """
     browser = AerocomBrowser()
     return browser.find_data_dir(name_or_pattern, ignorecase)
+  
+def get_all_supported_ids_ungridded():
+    """Get list of datasets that are supported by :class:`ReadUngridded`
     
+    Returns
+    -------
+    list 
+        list with supported network names
+    """
+    from pyaerocom.io import ReadUngridded
+    return ReadUngridded().SUPPORTED_DATASETS
+
 def get_obsnetwork_dir(obs_id):
     """Returns data path for obsnetwork ID
     
