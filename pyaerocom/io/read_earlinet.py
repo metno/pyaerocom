@@ -189,7 +189,8 @@ class ReadEarlinet(ReadUngriddedBase):
         """
         if read_err is None: #use default setting
             read_err = self.READ_ERR
-        
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
         _vars = []
         for var in vars_to_retrieve:
             if var in self.VAR_PATTERNS_FILE: #make sure to only read what is supported by this file
@@ -684,7 +685,7 @@ if __name__=="__main__":
         
         read.files = lst
     
-    stat = read.read_file(lst[0], ['ec532aer', 'bscatc532aer'])
+    stat = read.read_file(lst[0], 'ec532aer')
     
     ax = stat.ec532aer.plot()
     
