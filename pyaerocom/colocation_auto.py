@@ -11,9 +11,7 @@ This module will be deprecated soon but most of the code will be refactored
 into colocation.py module.
 """
 import os
-import numpy as np
 import traceback
-import matplotlib.pyplot as plt
 from datetime import datetime
 
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
@@ -21,48 +19,19 @@ from pyaerocom import Filter, const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
-                                  colocate_gridded_ungridded_2D)
+                                  colocate_gridded_ungridded)
 from pyaerocom import ColocatedData, print_log
 from pyaerocom.io import ReadUngridded, ReadGridded
-from pyaerocom.exceptions import NetworkNotSupported, DataCoverageError
-
-
-    
-            
+from pyaerocom.exceptions import (DataCoverageError,
+                                  TemporalResolutionError)
+         
 class _ColocationOptions(BrowseDict):
     """This class contains options for Aerocom analysis
     """
     def __init__(self, REANALYSE_EXISTING=False, RAISE_EXCEPTIONS=False):
         self.REANALYSE_EXISTING = REANALYSE_EXISTING,
         self.RAISE_EXCEPTIONS = RAISE_EXCEPTIONS
-           
-   
-class VarSetup(BrowseDict):
-    """Variable setup for analysis (dictionary)
-    
-    Attributes
-    -----------
-    var_name : str
-        variable name
-    obs_id : str
-        ID of observation network
-    var_name_obs : :obj:`str`, optional
-        variable name of observation data. If None, ``var_name`` is used for
-        observation network
-    vert_scheme : :obj:`str`, optional
-        vertical scheme for time-series retrieval in case of 4D data (cf.
-        :func:`pyaerocom.GriddedData.to_time_series`)
-        
-    Parameters
-    ----------
-    see attributes
-    """
-    def __init__(self, var_name, obs_id, var_name_obs=None, vert_scheme=None):
-        self.var_name = var_name
-        self.obs_id = obs_id
-        self.var_name_obs = var_name_obs
-        self.vert_scheme = vert_scheme
-        
+                   
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
     
@@ -84,7 +53,7 @@ class ColocationSetup(BrowseDict):
         variables to be analysed. If any of the provided variables to be 
         analysed in the model data is not available in obsdata, the obsdata 
         will be checked against potential alternative variables which are
-        specified in :attr:`model_alt_vars` and which can be specified in form of a 
+        specified in :attr:`model_use_vars` and which can be specified in form of a 
         dictionary for each . If None, all
         variables are analysed that are available both in model and obsdata.
     start : :obj:`pandas.Timestamp`, optional
@@ -106,18 +75,19 @@ class ColocationSetup(BrowseDict):
         are created)
     
     """ 
-    #: all ID's of ungridded datasets
-    _UNGRIDDED_IDS = get_all_supported_ids_ungridded()
+    
+    
     def __init__(self, model_id=None, obs_id=None, obs_vars=None, 
-                 start=None, stop=None, filter_name='WORLD-noMOUNTAINS',
-                 vert_scheme=None, model_alt_vars=None, 
-                 basedir_coldata=None, basedir_logfiles=None, read_opts=None):
+                 start=None, stop=None, ts_type='daily',
+                 filter_name='WORLD-noMOUNTAINS',
+                 vert_scheme=None, model_use_vars=None, 
+                 basedir_coldata=None, read_opts=None):
         if read_opts is None:
             read_opts = {}
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
-        if model_alt_vars is None: 
-            model_alt_vars = {}
+        if model_use_vars is None: 
+            model_use_vars = {}
         try:
             Filter(filter_name)
         except:
@@ -127,8 +97,6 @@ class ColocationSetup(BrowseDict):
         if not os.path.exists(basedir_coldata):
             const.print_log.info('Creating directory: {}'.format(basedir_coldata))
             os.mkdir(basedir_coldata)
-        if basedir_logfiles is None:
-            basedir_logfiles = chk_make_subdir(basedir_coldata, 'logfiles')
             
         const.print_log.info('Output directory for colocated data:\n '
                              '{}'.format(basedir_coldata))
@@ -136,24 +104,37 @@ class ColocationSetup(BrowseDict):
                              '{}'.format(basedir_coldata))
         self.obs_vars = obs_vars
         
-        self.model_alt_vars = model_alt_vars
+        self.model_use_vars = model_use_vars
         
         self.model_id = model_id
         self.obs_id = obs_id
     
         self.options = _ColocationOptions()
 
+        
         self.start = start
         self.stop = stop
+        
+        self.ts_type = ts_type
+        
         self.filter_name = filter_name
         self.vert_scheme = vert_scheme
         
         self.basedir_coldata = basedir_coldata
-        self.basedir_logfiles = basedir_logfiles
     
         self._read_opts = {}
         self._read_opts.update(**read_opts)
-            
+     
+    @property
+    def basedir_logfiles(self):
+        p = chk_make_subdir(self.basedir_coldata, 'logfiles')
+        return p
+    
+    @property
+    def UNGRIDDED_IDS(self):
+        """ID's of all supported ungridded datasets"""
+        return get_all_supported_ids_ungridded()
+    
     def __dir__(self):
         return self.keys()
     
@@ -179,11 +160,11 @@ class Colocator(object):
         setup.update(**kwargs)
         self._setup = setup
         self._log = None
-        self._last_coldata = None
+        self.data = {}
         self._ungridded_reader = ReadUngridded()
         
     def _init_log(self):
-        logdir = chk_make_subdir(self.basedir_logfiles, 
+        logdir = chk_make_subdir(self._setup.basedir_logfiles, 
                                  datetime.today().strftime('%Y%m%d'))
         if self.start is None:
             start_str = 'ModelStart'
@@ -213,8 +194,8 @@ class Colocator(object):
             self._log.close()
             self._log = None
         
-    def _coldata_save_name(self, model_data, ts_type_ana, start=None,
-                           stop=None):
+    def _coldata_savename(self, model_data, start=None, stop=None, 
+                           ts_type=None):
         """Based on current setup, get savename of colocated data file
         """
         if start is None:
@@ -225,32 +206,34 @@ class Colocator(object):
             stop = model_data.stop
         else:
             stop = to_pandas_timestamp(stop)
+        if ts_type is None:
+            ts_type = model_data.ts_type
         
         start_str = to_datestring_YYYYMMDD(start)
         stop_str = to_datestring_YYYYMMDD(stop)
         ts_type_src = model_data.ts_type
-        coll_data_name = ColocatedData._aerocom_savename(model_data.var_name,
-                                                          self.obs_id, 
-                                                          self.model_id, 
-                                                          ts_type_src, 
-                                                          start_str, 
-                                                          stop_str, 
-                                                          ts_type_ana, 
-                                                          self.filter_name)
+        coll_data_name = ColocatedData._aerocom_savename(var_name=model_data.var_name,
+                                                         obs_id=self.obs_id, 
+                                                         model_id=model_data.data_id, 
+                                                         ts_type_src=ts_type_src, 
+                                                         start_str=start_str, 
+                                                         stop_str=stop_str, 
+                                                         ts_type=ts_type,
+                                                         filter_name=self.filter_name)
         return coll_data_name + '.nc'
     
     def output_dir(self, task_name):
         """Output directory for colocated data"""
         return self._output_dirs[task_name]
     
-    def _check_coldata_exists(self, model_id, coldata_save_name):
+    def _check_coldata_exists(self, model_id, coldata_savename):
         """Check if colocated data file exists"""
-        folder = os.path.join(self.output_dir('colocate'),
+        folder = os.path.join(self.basedir_coldata,
                               model_id)
         if not os.path.exists(folder):
             return False
         files = os.listdir(folder)
-        if coldata_save_name in files:
+        if coldata_savename in files:
             return True
         return False
     
@@ -273,14 +256,16 @@ class Colocator(object):
             self._log.write('\n\nModel: {}\n'.format(model_id))
             self.model_id = model_id
             try:
-                if self.obs_id in self._UNGRIDDED_IDS:
-                    self._run_gridded_ungridded()
+                if self.obs_id in self._setup.UNGRIDDED_IDS:
+                    self.data[self.model_id] = self._run_gridded_ungridded()
                         
                 else:
-                    self._run_gridded_gridded()
+                    self.data[self.model_id] = self._run_gridded_gridded()
             except:
-                self._log.write('Failed to perform analysis: {}\n'
-                                .format(traceback.format_exc()))
+                msg = ('Failed to perform analysis: {}\n'
+                       .format(traceback.format_exc()))
+                const.print_log.warning(msg)
+                self._log.write(msg)
                 if self.options.RAISE_EXCEPTIONS:
                     self._close_log()
                     raise Exception(traceback.format_exc())
@@ -292,22 +277,30 @@ class Colocator(object):
         model_reader = ReadGridded(self.model_id, start, stop)
         
         obs_reader = ReadUngridded(self.obs_id)
-        obs_vars = obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES
-    
+        
         obs_vars = self.obs_vars
-        if obs_vars is None:
-            obs_vars = model_reader.vars_provided
+        
+        obs_vars_avail = obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES
+        
+        for obs_var in obs_vars:
+            if not obs_var in obs_vars_avail:
+                raise DataCoverageError('Variable {} is not supported by {}'
+                                        .format(obs_var, self.obs_id))
             
         var_matches = {}
         
-        for var in obs_vars:
-            if var in model_reader.vars_provided: #candidate
-                if var in self.model_alt_vars:
-                    if self.model_alt_vars[var] in obs_vars:
-                        var_matches[var] = self.model_alt_vars[var]
-                else:
-                    if var in obs_vars:
-                        var_matches[var] = var
+        data_objs = {}
+        
+        for obs_var in obs_vars:
+            if obs_var in self.model_use_vars:
+                model_var = self.model_use_vars[obs_var]
+            else:
+                model_var = obs_var
+            
+            if not model_var in model_reader.vars_provided:
+                raise DataCoverageError('Variable {} not found in model data {}'
+                                        .format(model_var, self.model_id))
+            var_matches[obs_var] = model_var
         
         if len(var_matches) == 0:
             
@@ -318,84 +311,74 @@ class Colocator(object):
                                             self.obs_vars))
             
         all_ts_types = const.GRID_IO.TS_TYPES
-        ts_types_ana = self.ts_types_ana
-        if ts_types_ana is None:
-            ts_types_ana = self._setup.TS_TYPES_ANA_DEFAULT['ungridded']
         
-        ts_types_read = self.ts_types_read
-        if ts_types_read is None:
-            ts_types_read = model_reader.ts_types
-        
-        
-        vars_model = list(var_matches.keys())
-        vars_obs = list(var_matches.values())
-        
+        read_opts = self._read_opts
         obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=vars_obs)
+                                   vars_to_retrieve=list(var_matches),
+                                   **read_opts)
+        ts_type = self.ts_type
         
-        for ts_type_read in ts_types_read:
-            model_data_vars = model_reader.read(vars_model, 
-                                                start=start,
-                                                stop=stop,
-                                                ts_type=ts_type_read,
-                                                flex_ts_type=False)
-                        
-            if len(model_data_vars)==0:
-                if self._log:    
-                    self._log.write('No model data available ({}-{}, {})\n'
-                                    .format(start, stop, ts_type_read))
-                continue
+        if self.ts_type is None:
+            raise Exception
             
-            for model_data in model_data_vars:
-                var = model_data.var_info.var_name
-                obs_var = var_matches[var]
-                if not obs_var in obs_reader.data:
-                    if self._log:    
-                        self._log.write('No obs data available for variable {} '
-                                        '({}-{}, {})\n'
-                                        .format(obs_var, start, stop, 
-                                                ts_type_read))
-                    continue
-                for ts_type_ana in ts_types_ana:
+        for obs_var, model_var in var_matches.items():
+            print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
+                                                             self.obs_id, 
+                                                             model_var, 
+                                                             obs_var))
+            model_data = model_reader.read_var(model_var, start=start,
+                                               stop=stop, ts_type=ts_type,
+                                               flex_ts_type=True)
+            if not model_data.ts_type in all_ts_types:
+                raise TemporalResolutionError('Invalid temporal resolution {} '
+                                              'in model {}'.format(model_data.ts_type,
+                                                                   self.model_id))
+                
+            ts_type_src = model_data.ts_type
+            if all_ts_types.index(ts_type) < all_ts_types.index(ts_type_src):
+                print_log.info('Updating ts_type from {} to {} (highest '
+                               'available in model {})'.format(ts_type, 
+                                                               ts_type_src,
+                                                               self.model_id))
+                ts_type = ts_type_src
+            
     
-                    if all_ts_types.index(ts_type_ana) >= all_ts_types.index(ts_type_read):
-                    
-                        out_dir = chk_make_subdir(self.output_dir('colocate'),
-                                                  self.model_id)
-                        savename = self._coldata_save_name(model_data,
-                                                           ts_type_ana, 
-                                                           start,
-                                                           stop)
-                        file_exists = self._check_coldata_exists(
-                                                            self.model_id, 
-                                                            savename)
-                        if file_exists:
-                            if not self.options.REANALYSE_EXISTING:
-                                if self._log:
-                                    self._log.write('SKIP: {}\n'
-                                                    .format(savename))
-                                    print_log.info('Skip {} (file already '
-                                                   'exists)'.format(savename))
-                                continue
-                            else:
-                                os.remove(os.path.join(out_dir, savename))
-                        
-                        data_coll = colocate_gridded_ungridded_2D(
-                                                model_data, obs_data, 
-                                                ts_type=ts_type_ana, 
-                                                start=start, stop=stop,
-                                                var_ref=obs_var,
-                                                filter_name=self.filter_name)
-                        self._last_coldata = data_coll
-                        data_coll.to_netcdf(out_dir)
-                        if self._log:
-                            self._log.write('WRITE: {}\n'.format(savename))
-                            print_log.info('Writing {}'.format(savename))
-                        
-                        plt.close('all')
+            out_dir = chk_make_subdir(self.basedir_coldata,
+                                      self.model_id)
+            savename = self._coldata_savename(model_data,
+                                               start,
+                                               stop,
+                                               ts_type)
+            
+            file_exists = self._check_coldata_exists(model_data.data_id, 
+                                                     savename)
+            if file_exists:
+                if not self.options.REANALYSE_EXISTING:
+                    if self._log:
+                        self._log.write('SKIP: {}\n'
+                                        .format(savename))
+                        print_log.info('Skip {} (file already '
+                                       'exists)'.format(savename))
+                    continue
+                else:
+                    os.remove(os.path.join(out_dir, savename))
+            
+            coldata = colocate_gridded_ungridded(gridded_data=model_data, 
+                                                 ungridded_data=obs_data, 
+                                                 ts_type=ts_type, 
+                                                 start=start, stop=stop,
+                                                 var_ref=obs_var,
+                                                 filter_name=self.filter_name,
+                                                 vert_scheme=self.vert_scheme)
+            coldata.to_netcdf(out_dir)
+            if self._log:
+                self._log.write('WRITE: {}\n'.format(savename))
+                print_log.info('Writing file {}'.format(savename))
+            data_objs[model_var] = coldata
+        return data_objs
                     
     def _run_gridded_gridded(self):
-    
+        raise NotImplementedError('This feature does not work yet...')
         start, stop = self.start, self.stop
         model_reader = ReadGridded(self.model_id, start, stop)
         obs_reader = ReadGridded(self.obs_id, start, stop)
@@ -408,9 +391,9 @@ class Colocator(object):
         for var in obs_vars:
             if var in model_reader.vars_provided: #candidate
                 # first check if the variable pair was defined explicitely
-                if var in self.model_alt_vars:
-                    if self.model_alt_vars[var] in obs_reader.vars_provided:
-                        var_matches[var] = self.model_alt_vars[var]
+                if var in self.model_use_vars:
+                    if self.model_use_vars[var] in obs_reader.vars_provided:
+                        var_matches[var] = self.model_use_vars[var]
                 else:
                     if var in obs_reader.vars_provided:
                         var_matches[var] = var
@@ -481,10 +464,10 @@ class Colocator(object):
                         out_dir = chk_make_subdir(self.output_dir('colocate'),
                                                   self.model_id)
                                                   
-                        savename = self._coldata_save_name(model_data,
-                                                           ts_type_ana, 
+                        savename = self._coldata_savename(model_data,
                                                            start,
-                                                           stop)
+                                                           stop,
+                                                           ts_type)
                         
                         file_exists = self._check_coldata_exists(self.model_id,
                                                                   savename)
@@ -503,14 +486,14 @@ class Colocator(object):
                                         ts_type=ts_type_ana, 
                                         start=start, stop=stop, 
                                         filter_name=self.filter_name)
-                        self._last_coldata = data_coll
-                        if data_coll.save_name_aerocom + '.nc' != savename:
+                        self.data[self.model_id] = coldata
+                        if data_coll.savename_aerocom + '.nc' != savename:
                             raise Exception
                         data_coll.to_netcdf(out_dir)
                         if self._log:
                             self._log.write('WRITE: {}\n'.format(savename))
                             print_log.info('Writing {}'.format(savename))
-    
+                        
     def __getitem__(self, key):
         if key in self._setup:
             return self._setup[key]
@@ -537,15 +520,50 @@ class Colocator(object):
         self.run()
         
 if __name__ == '__main__':
-    model_alt_vars = dict(scatc550dryaer  = 'ec550dryaer',
+    import matplotlib.pyplot as plt
+    plt.close('all')
+    
+    model_use_vars = dict(scatc550dryaer  = 'ec550dryaer',
                           absc550aer      = 'abs5503Daer')
     
-    stp = ColocationSetup(model_id = 'CAM5.3-Oslo_AP3-CTRL2016-PD',
+    MODEL_ID =  'CAM5.3-Oslo_AP3-CTRL2016-PD'
+    stp = ColocationSetup(model_id = MODEL_ID,
                           obs_id='EBASMC',
-                          obs_vars=['scatc550dryaer', 'absc550aer'], 
+                          obs_vars=list(model_use_vars), 
                           start=2010,
-                          model_alt_vars=model_alt_vars,
-                          read_opts=dict(station_names='Alert'))
-    stp.run()
+                          filter_name='WORLD-wMOUNTAINS',
+                          model_use_vars=model_use_vars,
+                          vert_scheme='surface',
+                          read_opts=dict(station_names=['Jungfrau*',
+                                                        'Zeppel*',
+                                                        'Cape*Point*']))
     
+    stp.options.RAISE_EXCEPTIONS = True
+    stp.options.REANALYSE_EXISTING = True
+    col = Colocator(stp)
+    
+    run = True
+    if run:
+        col.run()
+        for model_id, vardict in col.data.items():
+            for data in vardict.values():
+                data.plot_scatter()
             
+    else:
+        from warnings import filterwarnings
+        filterwarnings('ignore')
+        import pyaerocom as pya
+        model_vars = model_use_vars.values()
+        
+        r = pya.io.ReadGridded(MODEL_ID)
+        
+        
+    
+        for var in model_vars:
+            d = r.read_var(var, start=2010, stop=None, ts_type='daily')
+            print(d.ts_type)        
+            
+        obs = pya.io.ReadUngridded().read('EBASMC', list(model_use_vars),
+                                          station_names='Jungfrau*')
+        
+                
