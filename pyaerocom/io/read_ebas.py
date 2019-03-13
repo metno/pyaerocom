@@ -1075,13 +1075,18 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     
     from pyaerocom import change_verbosity
+    import pyaerocom as pya
     change_verbosity('critical')
 
     r = ReadEbas()
     #absc = r.read(['absc550aer', 'scatc550dryaer'])
     
-    data = r.read(['scatc550dryaer'], 
+    varlist = ['scatc550dryaer', 'absc550aer']
+    data = r.read(varlist, 
                   station_names=['Pallas*'],
                   remove_outliers=True)
+    
+    c = pya.io.cachehandler_ungridded.CacheHandlerUngridded(r, varlist)
+    c.write(data)
     
     
