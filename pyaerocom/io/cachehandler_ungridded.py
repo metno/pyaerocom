@@ -252,8 +252,9 @@ class CacheHandlerUngridded(object):
             pickle.dump(self.__version__, out_handle, 
                         pickle.HIGHEST_PROTOCOL)
             pickle.dump(data, out_handle, pickle.HIGHEST_PROTOCOL)
-        except:
-            logger.exception('Failed to write cache')
+        except Exception as e:
+            from pyaerocom import print_log
+            print_log.exception('Failed to write cache'.format(repr(e)))
             success=False
         finally:    
             out_handle.close()
