@@ -92,6 +92,9 @@ class TimeMatchError(AttributeError):
 class TemporalResolutionError(ValueError):
     pass
 
+class UnitConversionError(ValueError):
+    pass
+
 class VarNotAvailableError(DataCoverageError):
     pass
 
