@@ -389,7 +389,7 @@ class ReadEarlinet(ReadUngriddedBase):
                                           var_name=var,
                                           data_err=err,
                                           var_unit=unit,
-                                          altitude_unit=unit)   
+                                          altitude_unit=alt_unit)   
                 # Write everything into profile
                 data_out[var] = profile
                 
@@ -649,7 +649,7 @@ class ReadEarlinet(ReadUngriddedBase):
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
-    import pyaerocom as pya
+
     
     plt.close('all')
     read = ReadEarlinet()
