@@ -18,7 +18,7 @@ from pyaerocom import const, logger, print_log
 from pyaerocom.exceptions import (DataExtractionError,
                                   TemporalResolutionError,
                                   DimensionOrderError,
-                                  NDimError, DataDimensionError,
+                                  DataDimensionError,
                                   VariableDefinitionError)
 from pyaerocom.helpers import (get_time_rng_constraint,
                                get_lon_rng_constraint,
@@ -103,6 +103,8 @@ class GriddedData(object):
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
     _MAX_SIZE_GB = 30 #maximum file size for in-memory operations
+    
+    SUPPORTED_VERT_SCHEMES = ['mean', 'surface', 'altitude', 'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
         self.suppl_info = od(from_files     = [],
@@ -473,7 +475,7 @@ class GriddedData(object):
         
         Raises
         ------
-        NDimError
+        DataDimensionError
             if dimension of data is not supported (currently, 3D or 4D data
             is supported)
         DimensionOrderError
@@ -483,7 +485,7 @@ class GriddedData(object):
         """
         order = self.COORDS_ORDER_TSERIES
         if not self.ndim in (3,4):
-            raise NDimError('Time series extraction requires at least 3 '
+            raise DataDimensionError('Time series extraction requires at least 3 '
                             'coordinates in cube')
         check = self.dimcoord_names
         if not len(check) >= 3:
@@ -654,7 +656,7 @@ class GriddedData(object):
             data = StationData(latitude=lat, 
                                longitude=lon,
                                data_id=self.name)
-            
+            data.var_info[var] = dict(unit=self.unit)
             data[var] = Series(arr[:, i, j], index=times)
             result.append(data)
         return result
@@ -733,8 +735,8 @@ class GriddedData(object):
         """
         self.check_dimcoords_tseries()
         if not self.ndim == 3:
-            raise NDimError('So far, timeseries can only be extracted '
-                            'from 3 dimensional data...')
+            raise DataDimensionError('So far, timeseries can only be extracted '
+                                     'from 3 dimensional data...')
         lons = self.longitude.points
         lats = self.latitude.points
         lon_idx = np.argmin(np.abs(lons - longitude))
@@ -763,7 +765,11 @@ class GriddedData(object):
                 idx[dim] = self[dim].nearest_neighbour_index(val)
         return idx
     
-    def isel(self, use_neirest=True, **dimcoord_vals):
+    def isel(self, **kwargs):
+        raise NotImplementedError('Please use method sel for data selection '
+                                  'based on dimension values')
+        
+    def sel(self, use_neirest=True, **dimcoord_vals):
         """Select subset by dimension names
         
         Note
