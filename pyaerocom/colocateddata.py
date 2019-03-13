@@ -177,8 +177,6 @@ class ColocatedData(object):
                 unique.append(val)
         return ', '.join(unique)
         
-        
-    
     @property
     def meta(self):
         """Meta data"""
@@ -323,16 +321,16 @@ class ColocatedData(object):
     @staticmethod
     def _aerocom_savename(var_name, obs_id, model_id, ts_type_src, start_str, 
                           stop_str, ts_type, filter_name):
-        return ('{}_REF-{}_MOD-{}-{}_{}_{}_{}_{}_COLL'.format(var_name,
-                                                              obs_id, 
-                                                              model_id, 
-                                                              ts_type_src, 
-                                                              start_str, 
-                                                              stop_str,
-                                                              ts_type,
-                                                              filter_name))
+        return ('{}_REF-{}_MOD-{}-{}_{}_{}_{}_{}'.format(var_name,
+                                                         obs_id, 
+                                                         model_id, 
+                                                         ts_type_src, 
+                                                         start_str, 
+                                                         stop_str,
+                                                         ts_type,
+                                                         filter_name))
     @property
-    def save_name_aerocom(self):
+    def savename_aerocom(self):
         """Default save name for data object following AeroCom convention"""
         start_str = self.meta['start_str']
         stop_str = self.meta['stop_str']
@@ -397,7 +395,7 @@ class ColocatedData(object):
         meta['ts_type_src'] = ts_type_src
         return meta
             
-    def to_netcdf(self, out_dir, save_name=None, **kwargs):
+    def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save data object as .nc file
         
         Wrapper for method :func:`xarray.DataArray.to_netdcf` 
@@ -405,9 +403,9 @@ class ColocatedData(object):
         ----------
         out_dir : str
             output directory
-        save_name : :obj:`str`, optional
+        savename : :obj:`str`, optional
             name of file, if None, the default save name is used (cf. 
-            :attr:`save_name_aerocom`)
+            :attr:`savename_aerocom`)
         **kwargs
             additional, optional keyword arguments passed to 
             :func:`xarray.DataArray.to_netdcf` 
@@ -415,15 +413,15 @@ class ColocatedData(object):
         """
         if 'path' in kwargs:
             raise IOError('Path needs to be specified using input parameters '
-                          'out_dir and save_name')
-        if save_name is None:
-            save_name = self.save_name_aerocom
-        if not save_name.endswith('.nc'):
-            save_name = '{}.nc'.format(save_name)
+                          'out_dir and savename')
+        if savename is None:
+            savename = self.savename_aerocom
+        if not savename.endswith('.nc'):
+            savename = '{}.nc'.format(savename)
         for k, v in self.data.attrs.items():
             if v is None:
                 self.data.attrs[k] = 'None'
-        self.data.to_netcdf(path=os.path.join(out_dir, save_name), **kwargs)
+        self.data.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
       
     def read_netcdf(self, file_path):
         """Read data from NetCDF file
@@ -468,7 +466,7 @@ class ColocatedData(object):
         self.check_dimensions()
         
         
-    def to_csv(self, out_dir, save_name=None):
+    def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file
         
         Converts data to pandas.DataFrame and then saves as csv
@@ -477,18 +475,18 @@ class ColocatedData(object):
         ----------
         out_dir : str
             output directory
-        save_name : :obj:`str`, optional
+        savename : :obj:`str`, optional
             name of file, if None, the default save name is used (cf. 
-            :attr:`save_name_aerocom`)
+            :attr:`savename_aerocom`)
         """
-        if save_name is None:
-            save_name = self.save_name_aerocom
-        if not save_name.endswith('.csv'):
-            save_name = '{}.csv'.format(save_name)
+        if savename is None:
+            savename = self.savename_aerocom
+        if not savename.endswith('.csv'):
+            savename = '{}.csv'.format(savename)
         if not self.check_dimensions():
             raise IOError('Invalid dimensionality, please check...')
         df = self.to_dataframe()
-        file_path = os.path.join(out_dir, save_name)
+        file_path = os.path.join(out_dir, savename)
         df.to_csv(file_path)
         return file_path
         
@@ -544,7 +542,7 @@ if __name__=="__main__":
     d = ColocatedData()
     
     d.read_netcdf(testdir + testfile)
-    #fp = os.path.join(OUT_DIR, d.save_name_aerocom + '.nc')
+    #fp = os.path.join(OUT_DIR, d.savename_aerocom + '.nc')
     print(d)
     #d1 = ColocatedData(fp)
     #print(d1)
