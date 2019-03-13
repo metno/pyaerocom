@@ -6,11 +6,13 @@ import xarray as xray
 from pyaerocom import VerticalProfile, logger, const
 
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
-                                  DataExtractionError, DataDimensionError)
+                                  DataExtractionError, DataDimensionError,
+                                  UnitConversionError)
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
-                               resample_time_dataarray)
+                               resample_time_dataarray,
+                               unit_conversion_fac)
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -65,6 +67,68 @@ class StationData(StationMetaData):
         """
         return const.make_default_vert_grid()
     
+    def get_unit(self, var_name):
+        """Get unit of variable data
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+        
+        Returns
+        -------
+        str
+            unit of variable
+        
+        Raises
+        ------
+        MetaDataError
+            if unit cannot be accessed for variable
+        """
+        try: 
+            return str(self.var_info[var_name]['unit'])
+        except KeyError:
+            raise MetaDataError('Failed to access unit for variable {}'.format(var_name))
+            
+    def convert_unit(self, var_name, to_unit):
+        """Try to convert unit of data
+        
+        Requires that unit of input variable is available in :attr:`var_info` 
+        
+        Note
+        ----
+        BETA version
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+        to_unit : str
+            new unit
+        
+        Raises
+        ------
+        MetaDataError
+            if variable unit cannot be accessed
+        UnitConversionError
+            if conversion failed
+        """
+        unit = self.get_unit(var_name)
+        
+        try:
+            conv_fac = unit_conversion_fac(unit, to_unit)
+            data = self[var_name]
+            data *= conv_fac
+            self[var_name] = data
+            self.var_info[var_name]['unit'] = to_unit
+            const.logger.info('Successfully converted unit of variable {} in {} '
+                              'from {} to {}'.format(var_name, self.station_name,
+                                                     unit, to_unit))
+        except Exception as e:
+            raise UnitConversionError('Failed to convert unit of variable {} in {} '
+                              'from {} to {}. Error: {}'.format(var_name, self.station_name,
+                                                         unit, to_unit, repr(e)))
+        
     def dist_other(self, other):
         """Distance to other station in km
         
