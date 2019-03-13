@@ -228,6 +228,9 @@ class AltitudeAccess(object):
     ADD_FILE_REQ = {'deltaz3d' : ['ps']}
     
     ADD_FILE_OPT = {'pres'  :   ['temp']}
+
+    ALT_CONV_FUNS = {'z3d'  : NotImplementedError('Coming soon...'),
+                     }
     
     def __init__(self, gridded_data):
         from pyaerocom import GriddedData, logger
@@ -296,6 +299,9 @@ class AltitudeAccess(object):
                               'information for the computation of altitude '
                               'levels')
     
+    def get_altitude(latitude, longitude):
+        raise NotImplementedError('Coming soon...')
+        
 if __name__ == '__main__':
     import numpy as np
     import pyaerocom as pya
