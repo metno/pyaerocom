@@ -8,7 +8,8 @@ import numpy as np
 
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   ColocationError, 
-                                  DataUnitError)
+                                  DataUnitError,
+                                  DimensionOrderError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
                                TS_TYPE_TO_NUMPY_FREQ,
@@ -128,6 +129,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
                                ts_type=None, start=None, stop=None, 
                                filter_name='WORLD-wMOUNTAINS',
                                var_ref=None, vert_scheme=None,
+                               harmonise_units=True,
                                **kwargs):
     """Colocate gridded with ungridded data of 2D data
     
@@ -228,12 +230,15 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     else:
         stop = to_pandas_timestamp(stop)
     
+    if start < grid_start:
+        start = grid_start
+    if stop > grid_stop:
+        stop = grid_stop
     # check overlap
     if stop < grid_start or start >  grid_stop:
         raise TimeMatchError('Input time range {}-{} does not '
                              'overlap with data range: {}-{}'
-                             .format(start, stop, grid_start, grid_stop))
-        
+                             .format(start, stop, grid_start, grid_stop))  
     # create instance of Filter class (may, in the future, also include all
     # filter options, e.g. start, stop, variables, only land, only oceans, and
     # may also be linked with other data object, e.g. if data is only supposed
@@ -261,27 +266,38 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     freq_np = TS_TYPE_TO_NUMPY_FREQ[ts_type]
     
     start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
-    #stop = pd.Timestamp(stop.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
     
-    
-    coords = ungridded_data.station_coordinates
-    
-    
-    # this conve
     all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
-                                                       start=start, 
-                                                       stop=stop, 
-                                                       freq=freq_pd, 
-                                                       by_station_name=True,
-                                                       interp_nans=False)
+                                                   start=start, 
+                                                   stop=stop, 
+                                                   freq=freq_pd, 
+                                                   by_station_name=True,
+                                                   interp_nans=False)
     
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
+    if len(obs_stat_data) == 0:
+        raise VarNotAvailableError('Variable {} is not available in specified '
+                                   'time interval ({}-{})'
+                                   .format(var_ref, start, stop))
+    # make sure the gridded data is in the right dimension
+    try:
+        grid_data.check_dimcoords_tseries()
+    except DimensionOrderError:
+        grid_data.reorder_dimensions_tseries()
     
+    if grid_data.ndim > 3:
+        if vert_scheme is None:
+            vert_scheme = 'mean'
+        if not vert_scheme in grid_data.SUPPORTED_VERT_SCHEMES:
+            raise ValueError('Vertical scheme {} is not supported'.format(vert_scheme))
+            
     grid_stat_data = grid_data.to_time_series(longitude=ungridded_lons,
                                               latitude=ungridded_lats,
                                               vert_scheme=vert_scheme)
+    
+    
     obs_vals = []
     grid_vals = []
     lons = []
@@ -290,14 +306,17 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     station_names = []
     
     # TIME INDEX ARRAY FOR COLLOCATED DATA OBJECT
-    
-    
-    TIME_IDX = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
+    time_idx = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
     if freq_pd in PANDAS_RESAMPLE_OFFSETS:
-        TIME_IDX = TIME_IDX + PANDAS_RESAMPLE_OFFSETS[freq_pd]
+        offs = np.timedelta64(1, '[{}]'.format(PANDAS_RESAMPLE_OFFSETS[freq_pd]))
+        time_idx = time_idx + offs
         
     ungridded_unit = None
     ts_type_src_ref = None
+    if not harmonise_units:
+        gridded_unit = str(gridded_data.unit)
+    else:
+        gridded_unit = None
     for i, obs_data in enumerate(obs_stat_data):
         if obs_data is not None:
             if ts_type_src_ref is None:
@@ -322,24 +341,37 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             # is already in the specified frequency format, and thus, does not
             # need to be updated, for details (or if errors occur), cf. 
             # UngriddedData.to_station_data, where the conversion happens)
-            obs_tseries = obs_data[var_ref]
+            
             # get model data corresponding to station
-            grid_tseries = grid_stat_data[i][var]
+            grid_stat = grid_stat_data[i]
+            
+            
+            if harmonise_units:
+                grid_unit = grid_stat.get_unit(var)
+                obs_unit = obs_data.get_unit(var_ref)
+                if not grid_unit == obs_unit:
+                    grid_stat.convert_unit(var, obs_unit)
+                if gridded_unit is None:
+                    gridded_unit = obs_unit
+            grid_tseries = grid_stat[var]  
+            obs_tseries = obs_data[var_ref]
+            
             if sum(grid_tseries.isnull()) > 0:
                 raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
-            elif not len(grid_tseries) == len(TIME_IDX):
+            elif not len(grid_tseries) == len(time_idx):
                 raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
             # make sure, time index is defined in the right way (i.e.
             # according to TIME_INDEX, e.g. if ts_type='monthly', it should
             # not be the mid or end of month)
+            
             grid_tseries = pd.Series(grid_tseries.values, 
-                                     index=TIME_IDX)
+                                     index=time_idx)
             
             # the following command takes care of filling up with NaNs where
             # data is missing
             df = pd.DataFrame({'ungridded' : obs_tseries, 
                                'gridded'   : grid_tseries}, 
-                              index=TIME_IDX)
+                              index=time_idx)
             
             grid_vals_temp = df['gridded'].values
 
@@ -367,8 +399,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             'ts_type_src_ref'   :   ts_type_src_ref,
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'unit'              :   [str(gridded_data.unit),
-                                     ungridded_unit],
+            'unit'              :   [ungridded_unit,
+                                     gridded_unit],
+            'vert_scheme'       :   vert_scheme,
             'data_level'        :   'colocated',
             'revision_ref'      :   revision}
 
@@ -386,7 +419,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
-              'time'        : TIME_IDX,
+              'unit'        : ('data_source', meta['unit']),
+              'time'        : time_idx,
               'station_name': station_names,
               'latitude'    : ('station_name', lats),
               'longitude'   : ('station_name', lons),
