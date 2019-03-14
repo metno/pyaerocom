@@ -1,9 +1,42 @@
 About
 =====
 
-Pyaerocom is written and tested for Python >= 3.6 and for unix based systems (Windows users, please information below in Getting started section). Pyaerocom provides tools for processing and plotting of data related to the AEROCOM-project.
+pyaerocom is written and tested for Python >= 3.6 and for unix based systems. pyaerocom provides tools for processing and plotting of data related to the AEROCOM-project.
 
 This includes reading and processing of gridded data (e.g. model or satellite data, e.g. NetCDF files) and ungridded data (e.g. observational data from `AERONET <https://aeronet.gsfc.nasa.gov/>`__ or `EBAS <http://ebas.nilu.no/>`__ networks, e.g. ASCII files) as well as tools for colocation and cross evaluation of different datasets.
+
+Main features
+^^^^^^^^^^^^^
+
+- Reading routines for many ground based observation databases, such as:
+
+	- `AERONET <https://aeronet.gsfc.nasa.gov/>`_ Sun, SDA and Inversion products.
+	- `EBAS database <http://ebas.nilu.no/>`__.
+	- `EARLINET Lidar network <https://www.earlinet.org/index.php?id=earlinet_homepage>`__.
+	- `Coming soon: `AirBase <https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-7>`__ database.
+
+- Reading routines for many space-based observations, such as:
+
+	- `MODIS Aerosol Product <https://modis.gsfc.nasa.gov/data/dataprod/mod04.php>`__ (gridded).
+	- `CALIPSO CALIOP <https://www-calipso.larc.nasa.gov/>`__ Lidar observations (gridded).
+	- `ENVISAT AATSR <https://earth.esa.int/web/guest/missions/esa-operational-eo-missions/envisat/instruments/aatsr>`__.
+	- `Coming soon: Support for `Sentinel-5P <https://earth.esa.int/web/guest/missions/esa-eo-missions/sentinel-5p>`__ and `aeolus <https://www.esa.int/Our_Activities/Observing_the_Earth/Aeolus>`__ data
+
+- Access to the AeroCom model database
+- Data objects for analysis of gridded and ungridded (point-cloud) observations.
+	- This includes interfaces for conversion of data to common data analysis libraries such as `pandas <>`__, `numpy <>`__, `xarray <>`__ or `iris <>`__. 
+- Colocation tools for gridded and ungridded datasets
+- Harmonisation of variable and metadata conventions 
+- Data visualisation tools 
+- Tools for statistical analysis 
+
+Usage examples
+^^^^^^^^^^^^^^
+
+- Processing and harmonisation of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__
+
+AeroCom
+=======
 
 The AEROCOM-project (http://aerocom.met.no/) is an open international initiative of scientists interested in the advancement of the understanding of the global aerosol and its impact on climate. A large number of observations (including MODIS, POLDER, MISR, AVHHR, SEAWIFS, TOMS, AATSR, AERONET and surface concentrations) and results from more than 14 global models have been assembled to document and compare state of the art modeling of the global aerosol. A common protocol has been established and models are asked to make use of the AEROCOM emission inventories for the year 2000 and preindustrial times. Results are documented via interactive websites which give access to 2D fields and standard comparisons to observations. Regular workshops are held to discuss findings and future directions.
 
