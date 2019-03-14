@@ -20,20 +20,20 @@ Main features
 	- `MODIS Aerosol Product <https://modis.gsfc.nasa.gov/data/dataprod/mod04.php>`__ (gridded).
 	- `CALIPSO CALIOP <https://www-calipso.larc.nasa.gov/>`__ Lidar observations (gridded).
 	- `ENVISAT AATSR <https://earth.esa.int/web/guest/missions/esa-operational-eo-missions/envisat/instruments/aatsr>`__.
-	- `Coming soon: Support for `Sentinel-5P <https://earth.esa.int/web/guest/missions/esa-eo-missions/sentinel-5p>`__ and `aeolus <https://www.esa.int/Our_Activities/Observing_the_Earth/Aeolus>`__ data
+	- Coming soon: Support for `Sentinel-5P <https://earth.esa.int/web/guest/missions/esa-eo-missions/sentinel-5p>`__ and `aeolus <https://www.esa.int/Our_Activities/Observing_the_Earth/Aeolus>`__ data.
 
-- Access to the AeroCom model database
+- Access to the AeroCom model database.
 - Data objects for analysis of gridded and ungridded (point-cloud) observations.
-	- This includes interfaces for conversion of data to common data analysis libraries such as `pandas <>`__, `numpy <>`__, `xarray <>`__ or `iris <>`__. 
-- Colocation tools for gridded and ungridded datasets
-- Harmonisation of variable and metadata conventions 
-- Data visualisation tools 
-- Tools for statistical analysis 
+	- This includes interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__. 
+- Colocation tools for gridded and ungridded datasets.
+- Harmonisation of variable and metadata conventions.
+- Data visualisation tools and interfaces to common plotting libraries such as `matplotlib <https://matplotlib.org/>`__ or `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`__.
+- Tools for statistical analysis.
 
 Usage examples
 ^^^^^^^^^^^^^^
 
-- Processing and harmonisation of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__
+- Processing and harmonisation of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__.
 
 AeroCom
 =======
