@@ -24,7 +24,7 @@ Main features
 
 - Access to the AeroCom model database.
 - Data objects for analysis of gridded and ungridded (point-cloud) observations.
-	- This includes interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__. 
+- This includes interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__. 
 - Colocation tools for gridded and ungridded datasets.
 - Harmonisation of variable and metadata conventions.
 - Data visualisation tools and interfaces to common plotting libraries such as `matplotlib <https://matplotlib.org/>`__ or `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`__.
