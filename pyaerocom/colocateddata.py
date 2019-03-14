@@ -283,7 +283,7 @@ class ColocatedData(object):
                             **kwargs)
     
     def _load_fake_data(self, num_stations=1000, num_tstamps=365):
-    
+        raise NotImplementedError('Currently not working')
         data = np.empty((2, num_tstamps, num_stations))
         
         # supposed to be like station coordinate, i.e. the final data type
@@ -336,7 +336,7 @@ class ColocatedData(object):
         stop_str = self.meta['stop_str']
         
         source_info = self.meta['data_source']
-        ts_type_src = self.meta['ts_type_src']
+        ts_type_src = self.meta['ts_type_src'][1] #model
         data_ref_id = source_info[0]
         if len(source_info) > 2:
             model_id = 'MultiModels'
@@ -432,10 +432,12 @@ class ColocatedData(object):
             file path
             
         """
-        data = xarray.open_dataarray(file_path)
-        if not 'data_level' in data.attrs or not data.attrs['data_level'] == 'colocated':
-            raise NetcdfError('file misses colocated data flag in meta')
-        self.data = data
+        try:
+            self.get_meta_from_filename(file_path)
+        except Exception as e:
+            raise NetcdfError('Invlid file name for ColocatedData: {}.Error: {}'
+                              .format(os.path.basename(file_path, repr(e))))
+        self.data = xarray.open_dataarray(file_path)
         return self
     
     def to_dataframe(self):
