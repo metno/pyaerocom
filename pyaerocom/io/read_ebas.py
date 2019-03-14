@@ -189,8 +189,6 @@ class ReadEbas(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     def __init__(self, dataset_to_read=None):
-        #: EBAS I/O variable information
-        self._ebas_vars = EbasVarInfo.PROVIDES_VARIABLES()
     
         super(ReadEbas, self).__init__(dataset_to_read)
         
@@ -261,7 +259,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def PROVIDES_VARIABLES(self):
         """List of variables provided by the interface"""
-        return list(self._ebas_vars) + list(self.AUX_REQUIRES.keys())
+        return EbasVarInfo.PROVIDES_VARIABLES()
     
     @property
     def prefer_statistics(self):
