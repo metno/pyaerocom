@@ -13,7 +13,7 @@ Main features
 	- `AERONET <https://aeronet.gsfc.nasa.gov/>`_ Sun, SDA and Inversion products.
 	- `EBAS database <http://ebas.nilu.no/>`__.
 	- `EARLINET Lidar network <https://www.earlinet.org/index.php?id=earlinet_homepage>`__.
-	- `Coming soon: `AirBase <https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-7>`__ database.
+	- Coming soon: `AirBase <https://www.eea.europa.eu/data-and-maps/data/airbase-the-european-air-quality-database-7>`__ database.
 
 - Reading routines for many space-based observations, such as:
 
