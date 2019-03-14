@@ -20,9 +20,10 @@ from pyaerocom.filter import Filter
 from pyaerocom.colocateddata import ColocatedData
         
 def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
-                              start=None, stop=None, filter_name=None, 
-                              regrid_scheme='areaweighted',
-                              vert_scheme=None, **kwargs):
+                             start=None, stop=None, filter_name=None, 
+                             regrid_scheme='areaweighted',
+                             regrid_res_deg=None,
+                             vert_scheme=None, **kwargs):
     """Colocate 2 gridded data objects
     
     Todo
@@ -31,7 +32,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     - think about vertical dimension (vert_scheme input not used at the moment)
     """
     if ts_type is None:
-        ts_type = 'yearly'
+        ts_type = 'monthly'
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
     if gridded_data.var_info.has_unit:
@@ -69,6 +70,17 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     gridded_data = gridded_data.crop(time_range=(start, stop))
     gridded_data_ref = gridded_data_ref.crop(time_range=(start, stop))
     
+    if regrid_res_deg is not None:
+        
+        lons = gridded_data_ref.longitude.points
+        lats = gridded_data_ref.latitude.points
+        
+        lons_new = np.arange(lons.min(), lons.max(), regrid_res_deg)
+        lats_new = np.arange(lats.min(), lats.max(), regrid_res_deg) 
+        
+        gridded_data_ref = gridded_data_ref.interpolate(latitude=lats_new, 
+                                                        longitude=lons_new)
+        
     # get both objects in same time resolution
     gridded_data = gridded_data.downscale_time(ts_type)
     gridded_data_ref = gridded_data_ref.downscale_time(ts_type)
@@ -90,20 +102,19 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         raise ColocationError('Shape mismatch between two colocated data '
                                'arrays, please debug')
     
-    meta = {'data_source'       :   [gridded_data_ref.name,
-                                    gridded_data.name],
-            'var_name'          :   [gridded_data.var_name,
-                                     gridded_data_ref.var_name],
+    meta = {'data_source'       :   [gridded_data_ref.data_id,
+                                     gridded_data.data_id],
+            'var_name'          :   [gridded_data_ref.var_name,
+                                     gridded_data.var_name],
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
-            'ts_type_src'       :   grid_ts_type,
-            'ts_type_src_ref'   :   gridded_data_ref.ts_type,
+            'ts_type_src'       :   [gridded_data_ref.ts_type, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'unit'              :   str(gridded_data.unit),
-            'data_level'        :   'colocated',
+            'unit'              :   [str(gridded_data_ref.unit),
+                                     str(gridded_data.unit)],
+            'data_level'        :   3,
             'revision_ref'      :   gridded_data_ref.data_revision}
-
     
     meta.update(regfilter.to_dict())
     data_ref = gridded_data_ref.grid.data
@@ -113,13 +124,20 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     arr = np.asarray((data_ref,
                       gridded_data.grid.data))
     time = gridded_data.time_stamps().astype('datetime64[ns]')
+    lats = gridded_data.latitude.points
+    lons = gridded_data.longitude.points
+    
+    
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
+              'unit'        : ('data_source', meta['unit']),
+              'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time,
-              'longitude'   : gridded_data.longitude.points,
-              'latitude'    : gridded_data.latitude.points
+              'latitude'    : lats,
+              'longitude'   : lons,
               }
+    
     dims = ['data_source', 'time', 'latitude', 'longitude']
 
     return ColocatedData(data=arr, coords=coords, dims=dims,
@@ -395,14 +413,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             'var_name'          :   [var_ref, var],
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
-            'ts_type_src'       :   grid_ts_type,
-            'ts_type_src_ref'   :   ts_type_src_ref,
+            'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'unit'              :   [ungridded_unit,
                                      gridded_unit],
             'vert_scheme'       :   vert_scheme,
-            'data_level'        :   'colocated',
+            'data_level'        :   3,
             'revision_ref'      :   revision}
 
     
@@ -420,6 +437,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
               'unit'        : ('data_source', meta['unit']),
+              'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time_idx,
               'station_name': station_names,
               'latitude'    : ('station_name', lats),
