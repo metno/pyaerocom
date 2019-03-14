@@ -79,11 +79,13 @@ class ColocationSetup(BrowseDict):
     
     def __init__(self, model_id=None, obs_id=None, obs_vars=None, 
                  start=None, stop=None, ts_type='daily',
-                 filter_name='WORLD-noMOUNTAINS',
-                 vert_scheme=None, model_use_vars=None, 
-                 basedir_coldata=None, read_opts=None):
+                 filter_name='WORLD-noMOUNTAINS', 
+                 model_use_vars=None, basedir_coldata=None, read_opts=None,
+                 colocation_opts=None):
         if read_opts is None:
             read_opts = {}
+        if colocation_opts is None:
+            colocation_opts = {}
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
         if model_use_vars is None: 
@@ -118,12 +120,12 @@ class ColocationSetup(BrowseDict):
         self.ts_type = ts_type
         
         self.filter_name = filter_name
-        self.vert_scheme = vert_scheme
         
         self.basedir_coldata = basedir_coldata
-    
-        self._read_opts = {}
-        self._read_opts.update(**read_opts)
+        
+        self.colocation_opts = colocation_opts
+        self.read_opts = read_opts
+        #self.read_opts.update(**read_opts)
      
     @property
     def basedir_logfiles(self):
@@ -289,8 +291,6 @@ class Colocator(object):
             
         var_matches = {}
         
-        data_objs = {}
-        
         for obs_var in obs_vars:
             if obs_var in self.model_use_vars:
                 model_var = self.model_use_vars[obs_var]
@@ -312,7 +312,7 @@ class Colocator(object):
             
         all_ts_types = const.GRID_IO.TS_TYPES
         
-        read_opts = self._read_opts
+        read_opts = self.read_opts
         obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
                                    vars_to_retrieve=list(var_matches),
                                    **read_opts)
@@ -320,7 +320,9 @@ class Colocator(object):
         
         if self.ts_type is None:
             raise Exception
-            
+        
+        data_objs = {}
+        
         for obs_var, model_var in var_matches.items():
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
                                                              self.obs_id, 
@@ -369,7 +371,126 @@ class Colocator(object):
                                                  start=start, stop=stop,
                                                  var_ref=obs_var,
                                                  filter_name=self.filter_name,
-                                                 vert_scheme=self.vert_scheme)
+                                                 **self.colocation_opts)
+            coldata.to_netcdf(out_dir)
+            if self._log:
+                self._log.write('WRITE: {}\n'.format(savename))
+                print_log.info('Writing file {}'.format(savename))
+            data_objs[model_var] = coldata
+        return data_objs
+    
+    @staticmethod 
+    def get_lowest_resolution(ts_type, *ts_types):
+        all_ts_types = const.GRID_IO.TS_TYPES
+        lowest = ts_type
+        for freq in ts_types:
+            if all_ts_types.index(lowest) < all_ts_types.index(freq):
+                lowest = freq
+        return lowest
+            
+    def _run_gridded_gridded(self):
+        start, stop = self.start, self.stop
+        model_reader = ReadGridded(self.model_id, start, stop)
+        obs_reader = ReadGridded(self.obs_id, start, stop)
+    
+        obs_vars = self.obs_vars
+        
+        obs_vars_avail =  obs_reader.vars_provided
+        
+        for obs_var in obs_vars:
+            if not obs_var in obs_vars_avail:
+                raise DataCoverageError('Variable {} is not supported by {}'
+                                        .format(obs_var, self.obs_id))
+        var_matches = {}
+        
+        for obs_var in obs_vars:
+            if obs_var in self.model_use_vars:
+                model_var = self.model_use_vars[obs_var]
+            else:
+                model_var = obs_var
+            
+            if not model_var in model_reader.vars_provided:
+                raise DataCoverageError('Variable {} not found in model data {}'
+                                        .format(model_var, self.model_id))
+            var_matches[obs_var] = model_var
+                
+        if len(var_matches) == 0:
+            raise DataCoverageError('No variable matches between '
+                                    '{} and {} for input vars: {}'
+                                    .format(self.model_id, 
+                                            self.obs_id, 
+                                            self.obs_vars))
+            
+        all_ts_types = const.GRID_IO.TS_TYPES
+        
+        ts_type = self.ts_type
+        
+        if self.ts_type is None:
+            raise Exception
+        
+        data_objs = {}
+        
+        for obs_var, model_var in var_matches.items():
+            print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
+                                                             self.obs_id, 
+                                                             model_var, 
+                                                             obs_var))
+            
+            model_data = model_reader.read_var(model_var, start=start,
+                                               stop=stop, 
+                                               ts_type=ts_type,
+                                               flex_ts_type=True)
+            
+            if not model_data.ts_type in all_ts_types:
+                raise TemporalResolutionError('Invalid temporal resolution {} '
+                                              'in model {}'.format(model_data.ts_type,
+                                                                   self.model_id))
+            obs_data  = obs_reader.read_var(obs_var, 
+                                            start=start,
+                                            stop=stop,
+                                            ts_type=ts_type,
+                                            flex_ts_type=True)
+            
+            if not obs_data.ts_type in all_ts_types:
+                raise TemporalResolutionError('Invalid temporal resolution {} '
+                                              'in obs {}'.format(obs_data.ts_type,
+                                                                 self.model_id))
+            
+            lowest = self.get_lowest_resolution(ts_type, model_data.ts_type,
+                                                obs_data.ts_type)
+            if lowest != ts_type:
+                print_log.info('Updating ts_type from {} to {} (highest '
+                               'available in {} / {} combination)'
+                               .format(ts_type, lowest, self.model_id,
+                                       self.obs_id))
+                ts_type = lowest
+                 
+            out_dir = chk_make_subdir(self.basedir_coldata,
+                                      self.model_id)
+                           
+            savename = self._coldata_savename(model_data,
+                                              start,
+                                              stop,
+                                              ts_type)
+            
+            file_exists = self._check_coldata_exists(self.model_id,
+                                                      savename)
+            if file_exists:
+                if not self.options.REANALYSE_EXISTING:
+                    if self._log:
+                        self._log.write('SKIP: {}\n'.format(savename))
+                        print_log.info('Skip {} (file already '
+                                       'exists)'.format(savename))
+                    continue
+                else:
+                    os.remove(os.path.join(out_dir, savename))
+                
+            coldata = colocate_gridded_gridded(gridded_data=model_data,
+                                               gridded_data_ref=obs_data, 
+                                               ts_type=ts_type, 
+                                               start=start, stop=stop, 
+                                               filter_name=self.filter_name,
+                                               **self.colocation_opts)
             coldata.to_netcdf(out_dir)
             if self._log:
                 self._log.write('WRITE: {}\n'.format(savename))
@@ -377,123 +498,6 @@ class Colocator(object):
             data_objs[model_var] = coldata
         return data_objs
                     
-    def _run_gridded_gridded(self):
-        raise NotImplementedError('This feature does not work yet...')
-        start, stop = self.start, self.stop
-        model_reader = ReadGridded(self.model_id, start, stop)
-        obs_reader = ReadGridded(self.obs_id, start, stop)
-    
-        obs_vars = self.obs_vars
-        if obs_vars is None:
-            obs_vars = model_reader.vars_provided
-            
-        var_matches = {}
-        for var in obs_vars:
-            if var in model_reader.vars_provided: #candidate
-                # first check if the variable pair was defined explicitely
-                if var in self.model_use_vars:
-                    if self.model_use_vars[var] in obs_reader.vars_provided:
-                        var_matches[var] = self.model_use_vars[var]
-                else:
-                    if var in obs_reader.vars_provided:
-                        var_matches[var] = var
-        
-        if len(var_matches) == 0:
-            raise DataCoverageError('No variable matches between {} and {} for '
-                                    'input vars: {}'.format(self.model_id, 
-                                                            self.obs_id, 
-                                                            self.obs_vars))
-            
-        all_ts_types = const.GRID_IO.TS_TYPES
-        ts_types_ana = self.ts_types_ana
-        if ts_types_ana is None:
-            ts_types_ana = self._setup.TS_TYPES_ANA_DEFAULT['gridded']
-        
-        ts_types_read = self.ts_types_read
-        if ts_types_read is None:
-            ts_types_read = model_reader.ts_types
-        
-        vars_model = list(var_matches.keys())
-        vars_obs = list(var_matches.values())
-        flex_obs = self._setup.options.TS_TYPE_OBS_FLEX
-        for ts_type_read in ts_types_read:
-            # reads only year if starttime is provided but not stop time
-            model_data_vars = model_reader.read(vars_model, 
-                                                start=start,
-                                                stop=stop,
-                                                ts_type=ts_type_read,
-                                                flex_ts_type=False)
-            
-            if len(model_data_vars) == 0:
-                if self._log:    
-                    self._log.write('No model data available ({}-{}, {})\n'
-                                    .format(start, stop, ts_type_read))
-                continue
-            
-            obs_data_vars = obs_reader.read(vars_obs, 
-                                            start=start,
-                                            stop=stop,
-                                            ts_type=ts_type_read,
-                                            flex_ts_type=flex_obs)
-            if len(obs_data_vars) == 0:
-                if self._log:    
-                    self._log.write('No obs data available for variables {} '
-                                    '({}-{}, {})\n'
-                                    .format(vars_obs, start, stop, 
-                                            ts_type_read))
-                continue
-            
-            for model_data in model_data_vars:
-                var = model_data.var_name
-                obs_data = None
-                for _obs in obs_data_vars:
-                    if _obs.var_name == var_matches[var]:
-                        obs_data = _obs
-                        break
-                if obs_data is None:
-                    if self._log:    
-                        self._log.write('No obs data available for model var {} '
-                                        '({}-{}, {})\n'
-                                        .format(var, start, stop, 
-                                            ts_type_read))
-                    continue
-                for ts_type_ana in ts_types_ana:
-                    # model resolution (ts_type) must be equal or higher 
-                    # than the current analysis setting (since )
-                    if all_ts_types.index(ts_type_ana) >= all_ts_types.index(ts_type_read):
-                        out_dir = chk_make_subdir(self.output_dir('colocate'),
-                                                  self.model_id)
-                                                  
-                        savename = self._coldata_savename(model_data,
-                                                           start,
-                                                           stop,
-                                                           ts_type)
-                        
-                        file_exists = self._check_coldata_exists(self.model_id,
-                                                                  savename)
-                        if file_exists:
-                            if not self.options.REANALYSE_EXISTING:
-                                if self._log:
-                                    self._log.write('SKIP: {}\n'.format(savename))
-                                    print_log.info('Skip {} (file already '
-                                                   'exists)'.format(savename))
-                                continue
-                            else:
-                                os.remove(os.path.join(out_dir, savename))
-                            
-                        data_coll = colocate_gridded_gridded(
-                                        model_data, obs_data, 
-                                        ts_type=ts_type_ana, 
-                                        start=start, stop=stop, 
-                                        filter_name=self.filter_name)
-                        self.data[self.model_id] = coldata
-                        if data_coll.savename_aerocom + '.nc' != savename:
-                            raise Exception
-                        data_coll.to_netcdf(out_dir)
-                        if self._log:
-                            self._log.write('WRITE: {}\n'.format(savename))
-                            print_log.info('Writing {}'.format(savename))
-                        
     def __getitem__(self, key):
         if key in self._setup:
             return self._setup[key]
