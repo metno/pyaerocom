@@ -47,7 +47,10 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     stop : :obj:`str` or :obj`datetime` or similar
         stop time of data
     
-    
+    Returns 
+    -------
+    axes
+        instance of :class:`matplotlib.axes`
     """
     
     if isinstance(y_vals, list):
@@ -126,7 +129,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         var_str += ' [{}]'.format(unit)
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
-                        statistics['success'], stations_ok),
+                        statistics['num_valid'], stations_ok),
                         xy=xypos['var_info'], xycoords='axes fraction', 
                         fontsize=fontsize_base+4, color='red')
 
