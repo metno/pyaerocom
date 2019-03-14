@@ -431,7 +431,9 @@ class Variable(BrowseDict):
         self.var_name = var_name
         
     def __repr__(self):
-       return ("Variable {}".format(self.var_name))
+       return ("Variable {}\nUnit: {}\ndescriptions: {}\nstandard_name: {}\n"
+               .format(self.var_name, self.unit, self.description,
+                       self.standard_name))
    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
