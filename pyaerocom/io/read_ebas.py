@@ -954,6 +954,10 @@ class ReadEbas(ReadUngriddedBase):
                                     'Error: {}'.format(os.path.basename(_file),
                                                        repr(e)))
                 continue
+            except Exception as e:
+                const.print_log.warning('Unexpected error in reading EBAS NASA '
+                                     'Ames file: {}'.format(repr(e)))
+                continue
             
             # Fill the metatdata dict
             # the location in the data set is time step dependent!
