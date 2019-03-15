@@ -732,7 +732,10 @@ class ReadEbas(ReadUngriddedBase):
             ts_type = 'undefined'
         data_out['ts_type'] = ts_type
         # altitude of station
-        altitude = float(meta['station_altitude'].split(' ')[0])
+        try:
+            altitude = float(meta['station_altitude'].split(' ')[0])
+        except:
+            altitude = np.nan
         try:
             meas_height = float(meta['measurement_height'].split(' ')[0])
         except KeyError:
