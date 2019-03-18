@@ -924,10 +924,10 @@ class UngriddedData(object):
             measurements there is already data in the trash.
             
         """
-        if not inplace:
-            new = self.copy()
-        else:
+        if inplace:
             new = self
+        else:
+            new = self.copy()
         if low is None:
             low = const.VAR_PARAM[var_name].minimum
             print_log.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
@@ -1012,7 +1012,24 @@ class UngriddedData(object):
             for k in const.STANDARD_COORD_NAMES:
                 d[k].append(meta[k])
         return d
+               
+    def _find_meta_matches(self, *filters):
+        """Find meta matches for input attributes
+            
+        Returns
+        -------
+        list
+            list of metadata indices that match input filter
+        """
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            if self._check_filter_match(meta, *filters):
+                meta_matches.append(meta_idx)
+                for var in meta['variables']:
+                    totnum += len(self.meta_idx[meta_idx][var])
                 
+        return (meta_matches, totnum)
                     
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
@@ -1048,7 +1065,7 @@ class UngriddedData(object):
         ...                                     latitude=[20, 70],
         ...                                     altitude=[0, 1000])
         """
-        new = UngriddedData()
+        
         meta_idx_new = 0.0
         data_idx_new = 0
     
@@ -1057,32 +1074,31 @@ class UngriddedData(object):
             raise NotImplementedError('Cannot yet filter by variables')
             
         filters = self._init_meta_filters(**filter_attributes)
-        for meta_idx, meta in self.metadata.items():
-            if self._check_filter_match(meta, *filters):
-                new.metadata[meta_idx_new] = meta
-                new.meta_idx[meta_idx_new] = od()
-                for var in meta['variables']:
-                    indices = self.meta_idx[meta_idx][var]
-                    
-                    totnum = len(indices)
-                    if (data_idx_new + totnum) >= new._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                        new.add_chunk(totnum)
-                    stop = data_idx_new + totnum
-                    
-                    new._data[data_idx_new:stop, :] = self._data[indices, :]
-                    new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-                                                                stop)
-                    new.var_idx[var] = self.var_idx[var]
-                    data_idx_new += totnum
+
+        meta_matches, totnum_new = self._find_meta_matches(*filters)
+        new = UngriddedData(num_points=totnum_new)
+        for meta_idx in meta_matches:
+            meta = self.metadata[meta_idx]
+            new.metadata[meta_idx_new] = meta
+            new.meta_idx[meta_idx_new] = od()
+            for var in meta['variables']:
+                indices = self.meta_idx[meta_idx][var]
+                totnum = len(indices)
+
+                stop = data_idx_new + totnum
                 
-                meta_idx_new += 1
-            else:
-                logger.debug('{} does not match filter and will be ignored'
-                             .format(meta))
+                new._data[data_idx_new:stop, :] = self._data[indices, :]
+                new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+                                                            stop)
+                new.var_idx[var] = self.var_idx[var]
+                data_idx_new += totnum
+            
+            meta_idx_new += 1
+
         if meta_idx_new == 0 or data_idx_new == 0:
             raise DataExtractionError('Filtering results in empty data object')
         new._data = new._data[:data_idx_new]
+        
         # write history of filtering applied 
         new.filter_hist.update(self.filter_hist)
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -2014,22 +2030,12 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 if __name__ == "__main__":
     
     import pyaerocom as pya
+    data = pya.io.ReadUngridded().read('EBASMC', ['scatc550dryaer', 
+                               'absc550aer'])
     
+    f = pya.Filter(altitude_filter='noMOUNTAINS')
     
-    
-    data = pya.io.ReadUngridded().read('EBASMC', 
-                                       ['scatc550aer', 'absc550aer'],
-                                       station_names='Puy*')
-    
-    data1 =  data.remove_outliers('scatc550aer')
-    
-    stat = data1.to_station_data('P*', 'scatc550aer', 
-                                  merge_if_multi=True,
-                                  merge_pref_attr='revision_date')
-    
-    stat.plot_timeseries('scatc550aer', add_overlaps=True)
-    
-    
+    subset = f(data)
     
 
     
