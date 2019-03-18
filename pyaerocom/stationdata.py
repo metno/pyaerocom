@@ -1043,7 +1043,7 @@ class StationData(StationMetaData):
         s = self.to_timeseries(var_name, freq, resample_how)
         
         ax.plot(s, label=lbl, **kwargs)
-        if add_overlaps:
+        if add_overlaps and var_name in self.overlap:
             so = self.overlap[var_name]
             try:
                 so = resample_timeseries(so, freq, how=resample_how)
