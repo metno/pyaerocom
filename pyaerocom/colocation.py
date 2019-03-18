@@ -5,7 +5,7 @@ Methods and / or classes to perform colocation
 """
 import pandas as pd
 import numpy as np
-
+from pyaerocom import logger
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   ColocationError, 
                                   DataUnitError,
@@ -49,8 +49,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
     
-    
-    
     grid_ts_type = gridded_data.ts_type
     
     if start is None:
@@ -80,6 +78,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         
         gridded_data_ref = gridded_data_ref.interpolate(latitude=lats_new, 
                                                         longitude=lons_new)
+        
+    
         
     # get both objects in same time resolution
     gridded_data = gridded_data.downscale_time(ts_type)
@@ -346,7 +346,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
                 try:
                     ungridded_unit = obs_data['var_info'][var_ref]['unit']
                 except KeyError as e: #variable information or unit is not defined
-                    from pyaerocom import logger
                     logger.exception(repr(e))
             try:
                 unit = obs_data['var_info'][var_ref]['unit']
@@ -374,21 +373,31 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             grid_tseries = grid_stat[var]  
             obs_tseries = obs_data[var_ref]
             
-            if sum(grid_tseries.isnull()) > 0:
-                raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
+            if any(np.isnan(grid_tseries)):
+                if all(np.isnan(grid_tseries)):
+                    logger.warning('All values in model data are NaN at '
+                                   'coordinate lat={:.2f}, lon={:.2f}'
+                                   .format(obs_data.latitude, 
+                                           obs_data.longitude))
+                    continue
+                logger.warning('Model timeseries contains NaNs at coordinate '
+                               'lat={:.2f}, lon={:.2f}'
+                               .format(obs_data.latitude, obs_data.longitude))
             elif not len(grid_tseries) == len(time_idx):
                 raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
             # make sure, time index is defined in the right way (i.e.
             # according to TIME_INDEX, e.g. if ts_type='monthly', it should
             # not be the mid or end of month)
             
-            grid_tseries = pd.Series(grid_tseries.values, 
-                                     index=time_idx)
+# =============================================================================
+#             grid_tseries = pd.Series(grid_tseries.values, 
+#                                      index=time_idx)
+# =============================================================================
             
-            # the following command takes care of filling up with NaNs where
-            # data is missing
+            # the following command takes care of filling up with NaNs in obs
+            # where data is missing
             df = pd.DataFrame({'ungridded' : obs_tseries, 
-                               'gridded'   : grid_tseries}, 
+                               'gridded'   : grid_tseries.values}, 
                               index=time_idx)
             
             grid_vals_temp = df['gridded'].values
