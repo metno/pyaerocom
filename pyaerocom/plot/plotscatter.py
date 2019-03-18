@@ -125,7 +125,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
 
     if unit is None:
         unit = 'N/D'
-    if str(unit) != '1':
+    if not str(unit) != ['1', 'no_unit']:
         var_str += ' [{}]'.format(unit)
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
@@ -143,11 +143,11 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                         fontsize=fontsize_base, 
                         color='red')
     
-    ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']),
+    ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']*100),
                         xy=xypos['nmb'], xycoords='axes fraction', 
                         fontsize=fontsize_base, color='red')
     
-    ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']),
+    ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']*100),
                         xy=xypos['mnmb'], xycoords='axes fraction', 
                         fontsize=fontsize_base, color='red')
     
