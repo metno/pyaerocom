@@ -298,8 +298,7 @@ class Colocator(object):
                 model_var = obs_var
             
             if not model_var in model_reader.vars_provided:
-                raise DataCoverageError('Variable {} not found in model data {}'
-                                        .format(model_var, self.model_id))
+                continue
             var_matches[obs_var] = model_var
         
         if len(var_matches) == 0:
@@ -313,9 +312,18 @@ class Colocator(object):
         all_ts_types = const.GRID_IO.TS_TYPES
         
         read_opts = self.read_opts
+        rmo = False
+        if 'remove_outliers' in read_opts:
+            rmo = read_opts.pop('remove_outliers')
+# =============================================================================
+#         datalevel = None
+#         if 'datalevel' in read_opts:
+#             datalevel = read_opts.pop('datalevel')
+# =============================================================================
         obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
                                    vars_to_retrieve=list(var_matches),
                                    **read_opts)
+        
         ts_type = self.ts_type
         
         if self.ts_type is None:
@@ -324,6 +332,10 @@ class Colocator(object):
         data_objs = {}
         
         for obs_var, model_var in var_matches.items():
+            if rmo is True:
+                obs_data.remove_outliers(obs_var, inplace=True,
+                                         move_to_trash=False)
+                
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
                                                              self.obs_id, 
                                                              model_var, 
