@@ -113,13 +113,13 @@ class ReadEbasOptions(BrowseDict):
         
         self.remove_outliers = False
         
-        self.keep_aux_vars = True
+        self.keep_aux_vars = False
         
         self.log_read_stats = False
         
         self.merge_meta = False
         
-        self.datalevel = 2
+        self.datalevel = None
     
     @property
     def filter_dict(self):
@@ -144,7 +144,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.13_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -648,6 +648,7 @@ class ReadEbas(ReadUngriddedBase):
         meta = file.meta
         name = meta['station_name']
         
+        
         var_cols = {}
         for var in vars_to_read:
             ebas_var_info = self.loaded_ebas_vars[var]
@@ -740,6 +741,11 @@ class ReadEbas(ReadUngriddedBase):
             meas_height = float(meta['measurement_height'].split(' ')[0])
         except KeyError:
             meas_height = 0.0
+        try:
+            lev = float(meta['data_level'])
+        except:
+            lev = None
+        data_out['datalevel'] = lev
         data_alt = altitude + meas_height
             
         # file specific meta information
@@ -950,13 +956,14 @@ class ReadEbas(ReadUngriddedBase):
                 
             except (NotInFileError, EbasFileError) as e:
                 self.files_failed.append(_file)
-                self.logger.warning('Failed to read file {}. '
-                                    'Error: {}'.format(os.path.basename(_file),
-                                                       repr(e)))
+                self.logger.warning('Skipping reading of EBAS NASA Ames '
+                                    'file: {}. Reason: {}'
+                                    .format(_file, repr(e)))
                 continue
             except Exception as e:
-                const.print_log.warning('Unexpected error in reading EBAS NASA '
-                                     'Ames file: {}'.format(repr(e)))
+                const.print_log.warning('Skipping reading of EBAS NASA Ames '
+                                        'file: {}. Reason: {}'
+                                        .format(_file, repr(e)))
                 continue
             
             # Fill the metatdata dict
@@ -970,6 +977,7 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key]['ts_type'] = station_data['ts_type']
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
             metadata[meta_key]['revision_date'] = station_data['revision_date'] 
+            metadata[meta_key]['datalevel'] = station_data['datalevel'] 
             metadata[meta_key]['filename'] = os.path.basename(_file)
             if 'station_name_orig' in station_data:
                 metadata[meta_key]['station_name_orig'] = station_data['station_name_orig']     
@@ -1087,11 +1095,6 @@ if __name__=="__main__":
     #absc = r.read(['absc550aer', 'scatc550dryaer'])
     
     varlist = ['scatc550dryaer', 'absc550aer']
-    data = r.read(varlist, 
-                  station_names=['Pallas*'],
-                  remove_outliers=True)
-    
-    c = pya.io.cachehandler_ungridded.CacheHandlerUngridded(r, varlist)
-    c.write(data)
+    data = r.read(varlist)
     
     
