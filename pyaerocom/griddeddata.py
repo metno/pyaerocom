@@ -107,19 +107,21 @@ class GriddedData(object):
     SUPPORTED_VERT_SCHEMES = ['mean', 'surface', 'altitude', 'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
-        self.suppl_info = od(from_files     = [],
-                             data_id        = "Unknown",
-                             ts_type        = "Unknown",
-                             regridded      = False,
-                             computed       = False,
-                             region         = None,
-                             reader         = None)
+        self.suppl_info = od(from_files         = [],
+                             data_id            = "Unknown",
+                             ts_type            = "Unknown",
+                             regridded          = False,
+                             outliers_removed   = False,
+                             computed           = False,
+                             region             = None,
+                             reader             = None)
         
         
         self.flags = od(unit_ok=True)
         #attribute used to store area weights (if applicable, see method
         #area_weights)
         self._area_weights = None
+        self._altitude_access = None
         if input:
             self.load_input(input, var_name)
         for k, v in suppl_info.items():
@@ -171,6 +173,32 @@ class GriddedData(object):
     def unit(self):
         """Unit of data"""
         return self.grid.units
+    
+    @property
+    def data(self):
+        """Data array (n-dimensional numpy array)
+        
+        Note
+        ----
+        This is a pointer to the data object of the underlying iris.Cube 
+        instance and will load the data into memory. Thus, in case of large 
+        datasets, this may lead to a memory error
+        """
+        return self.grid.data
+    
+    @data.setter
+    def data(self, array):
+        if not isinstance(array, np.ndarray):
+            raise ValueError('Cannot set data array: need numpy.ndarray')
+        elif not array.shape == self.grid.data.shape:
+            raise DataDimensionError('Cannot assign dataarray: shape mismatch. '
+                                     'Got: {}, Need: {}'
+                                     .format(array.shape,self.grid.shape))
+        self.grid.data = array
+        
+    @property
+    def cube(self):
+        return self.grid
     
     @property
     def var_info(self):
@@ -381,6 +409,8 @@ class GriddedData(object):
     @area_weights.setter
     def area_weights(self, val):
         raise AttributeError("Area weights cannot be set manually yet...")
+        
+    
       
     def check_dim_coords(self):
         """Check dimension coordinates of grid data"""
@@ -678,6 +708,12 @@ class GriddedData(object):
             #presume data dimensions have been sorted
             cname = self.dimcoord_names[-1]        
             if not vc.supported(cname):
+                #: work in progress
+                from pyaerocom.vert_coords import AltitudeAccess
+                self._altitude_access = acc = AltitudeAccess(self)
+                
+                acc.find_and_import_auxvars()
+                
                 raise DataDimensionError('Vertical dimension coordinate {} is '
                                          'not supported. Cannot infer surface '
                                          'level'.format(cname))
@@ -705,15 +741,15 @@ class GriddedData(object):
                 cname = self.dimcoord_names[-1]
                 coord = vc.VerticalCoordinate(cname)
                 if coord.lev_increases_with_alt:
-                    vert_index = np.argmin(self.grid.coord(cname).points)
+                    vert_index = np.argmin(self.grid.dim_coords[3].points)
                 else:
-                    vert_index = np.argmax(self.grid.coord(cname).points)
+                    vert_index = np.argmax(self.grid.dim_coords[3].points)
                 data = self[:,:,:,vert_index]
         
                     
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar)
-        
+    
     def to_time_series_single_coord(self, latitude, longitude):
         """Make time series dictionary of single location using neirest coordinate
         
@@ -832,6 +868,36 @@ class GriddedData(object):
         return subset
                     
     # TODO: Test, confirm and remove beta flag in docstring
+    def remove_outliers(self, low=None, high=None):
+        """Remove outliers from data
+        
+        Parameters
+        ----------
+        low : float
+            lower end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. minimum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        high : float
+            upper end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. maximum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        """
+        if low is None:
+            low = self.var_info.minimum
+            print_log.info('Setting {} outlier lower lim: {:.2f}'
+                           .format(self.var_name, low))
+        if high is None:
+            high = self.var_info.maximum
+            print_log.info('Setting {} outlier upper lim: {:.2f}'
+                           .format(self.var_name, high))
+        mask = np.logical_and(self.grid.data < low, 
+                              self.grid.data > high)
+        self.grid.data[mask] = np.nan
+        self.suppl_info['outliers_removed'] = True
+        
+        
     def downscale_time(self, to_ts_type='monthly'):
         """Downscale in time to predefined resolution resolution
         
@@ -1303,11 +1369,15 @@ class GriddedData(object):
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
         
         data = self[time_idx].grid.data
+        
         lons = self.longitude.points
         lats = self.latitude.points
         
-        fig = plot_griddeddata_on_map(data, lons, lats, self.var_name, 
-                                      xlim=xlim, ylim=ylim, **kwargs)
+        fig = plot_griddeddata_on_map(data=data, lons=lons, lats=lats, 
+                                      var_name=self.var_name, 
+                                      unit=self.unit,
+                                      xlim=xlim, ylim=ylim, 
+                                      **kwargs)
         
         try:
             t = cftime_to_datetime64(self.time[time_idx])[0]
@@ -1425,6 +1495,9 @@ class GriddedData(object):
     def __repr__(self):
         """For now, use representation of underlying data"""
         return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
+    
+    def __add__(self, other):
+        raise NotImplementedError('Coming soon')
     
     #sorted out
     def _to_timeseries_iter_coords_2D(self, sample_points, scheme, 
