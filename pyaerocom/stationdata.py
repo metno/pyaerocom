@@ -296,7 +296,7 @@ class StationData(StationMetaData):
             if key in self.STANDARD_COORD_KEYS: # this has been handled above
                 continue
             if self[key] is None:
-                logger.warning('No metadata available for key {}'.format(key))
+                logger.info('No metadata available for key {}'.format(key))
                 continue
             
             val = self[key]
@@ -714,7 +714,40 @@ class StationData(StationMetaData):
             raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
                                 .format(tp, const.GRID_IO.TS_TYPES))
         return tp
-       
+      
+    def remove_outliers(self, var_name, low=None, high=None):
+        """Remove outliers from one of the variable timeseries
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name
+        low : float
+            lower end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. minimum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        high : float
+            upper end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. maximum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        """
+        if low is None:
+            low = const.VAR_PARAM[var_name].minimum
+            logger.info('Setting {} outlier lower lim: {:.2f}'
+                        .format(var_name, low))
+        if high is None:
+            high = const.VAR_PARAM[var_name].maximum
+            logger.info('Setting {} outlier upper lim: {:.2f}'
+                        .format(var_name, high))
+        d = self[var_name]
+        invalid_mask = np.logical_or(d<low, d>high)
+        if invalid_mask.sum() > 0:
+            print('BLAAAAAAAAAAA', self.station_name)
+        d[invalid_mask] = np.nan
+        self[var_name] = d
+        
     def interpolate_timeseries(self, var_name, freq, min_coverage_interp=0.3,
                                resample_how='mean', inplace=False):
         """Interpolate one variable timeseries to a certain frequency
