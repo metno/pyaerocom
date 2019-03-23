@@ -130,20 +130,43 @@ class CacheHandlerUngridded(object):
             raise IOError('pyaerocom cache directory is not defined')
         return os.path.join(self.CACHE_DIR, self.file_name)
     
+# =============================================================================
+#     def _check_pkl_head_vs_databaseOLD(self, in_handle):
+#         
+#         newest_file_in_read_dir_saved = pickle.load(in_handle)
+#         newest_file_date_in_read_dir_saved = pickle.load(in_handle)
+#         revision_saved = pickle.load(in_handle)
+#         reader_version_saved = pickle.load(in_handle)
+#         data_version_saved = pickle.load(in_handle)
+#         cacher_version_saved = pickle.load(in_handle)
+#         if (newest_file_in_read_dir_saved != self.newest_file_in_read_dir
+#             or newest_file_date_in_read_dir_saved != self.newest_file_date_in_read_dir
+#             or revision_saved != self.reader.data_revision
+#             or reader_version_saved != self.reader.__version__
+#             or data_version_saved != UngriddedData.__version__
+#             or cacher_version_saved != self.__version__):
+#             return False
+#         return True
+# =============================================================================
+    
     def _check_pkl_head_vs_database(self, in_handle):
-        
-        newest_file_in_read_dir_saved = pickle.load(in_handle)
-        newest_file_date_in_read_dir_saved = pickle.load(in_handle)
-        revision_saved = pickle.load(in_handle)
-        reader_version_saved = pickle.load(in_handle)
-        data_version_saved = pickle.load(in_handle)
-        cacher_version_saved = pickle.load(in_handle)
-        if (newest_file_in_read_dir_saved != self.newest_file_in_read_dir
-            or newest_file_date_in_read_dir_saved != self.newest_file_date_in_read_dir
-            or revision_saved != self.reader.data_revision
-            or reader_version_saved != self.reader.__version__
-            or data_version_saved != UngriddedData.__version__
-            or cacher_version_saved != self.__version__):
+        if not pickle.load(in_handle) == self.newest_file_in_read_dir:
+            const.print_log.info('Latest file in cached object is outdated')
+            return False
+        elif not pickle.load(in_handle) == self.newest_file_date_in_read_dir:
+            const.print_log.info('Latest file date in cached object is outdated')
+            return False
+        elif not pickle.load(in_handle) == self.reader.data_revision:
+            const.print_log.info('Data revision in cached object is outdated')
+            return False
+        elif not pickle.load(in_handle) == self.reader.__version__:
+            const.print_log.info('Reader class version in cached object is outdated')
+            return False
+        elif not pickle.load(in_handle) == UngriddedData.__version__:
+            const.print_log.info('UngriddedData class in cached object is outdated')
+            return False
+        elif not pickle.load(in_handle) == self.__version__:
+            const.print_log.info('Cacherloader version in cached object is outdated')
             return False
         return True
     
