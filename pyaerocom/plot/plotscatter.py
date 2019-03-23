@@ -125,7 +125,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
 
     if unit is None:
         unit = 'N/D'
-    if not str(unit) != ['1', 'no_unit']:
+    if not str(unit) in ['1', 'no_unit']:
         var_str += ' [{}]'.format(unit)
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 

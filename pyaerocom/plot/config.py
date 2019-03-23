@@ -5,6 +5,7 @@
 Global configurations for plotting 
 """
 from matplotlib.pyplot import get_cmap
+    
 from pyaerocom._lowlevel_helpers import BrowseDict
 from warnings import warn
 # =============================================================================
@@ -19,9 +20,11 @@ _cmap_lighttheme = "Blues"
 DEFAULT_THEME = "light"
 _COLOR_THEMES = dict(light = dict(name="light", 
                                   cmap_map=_cmap_lighttheme, 
+                                  cmap_map_div='bwr_r',
                                   color_coastline ="k"),
                      dark = dict(name="dark", 
                                  cmap_map="viridis", 
+                                 cmap_map_div='PuOr_r',
                                  color_coastline ="#e6e6e6"))
 
 MAP_AXES_ASPECT = 1.5
@@ -68,10 +71,16 @@ class ColorTheme(object):
     ----------
     name : str
         name of color theme (e.g. "light" or "dark")
-    cmap_map 
+    cmap_map : str
         name of colormap or colormap for map plotting
     color_coastline : str
         coastline color for map plotting
+    cmap_map_div : str
+        name of diverging colormap (used in map plots when plotted value range
+        crosses 0)
+    cmap_map_div_shifted : bool
+        boolean specifying whether center of diverging colormaps for map plots
+        is supposed to be shifted to 0 
         
     Example
     -------
@@ -83,15 +92,17 @@ class ColorTheme(object):
     cmap_map : viridis
     color_coastline : #e6e6e6
     """
-    def __init__(self, name="dark", cmap_map=None, color_coastline=None):
+    def __init__(self, name="dark", cmap_map=None, color_coastline=None,
+                 cmap_map_div=None, cmap_map_div_shifted=True):
         self.name = name
         self.cmap_map = cmap_map
+        self.cmap_map_div = cmap_map_div
+        self.cmap_map_div_shifted = cmap_map_div_shifted
         self.color_coastline = color_coastline
         if not name in _COLOR_THEMES:
-            warn("Invalid name for color theme, using default theme dark")
-            name = "dark"
-        if name in _COLOR_THEMES:
-            self.load_default(name)
+            warn("Invalid name for color theme, using default theme")
+            name = DEFAULT_THEME
+        self.load_default(name)
     
     def load_default(self, theme_name="dark"):
         """Load default color theme
@@ -113,10 +124,12 @@ class ColorTheme(object):
         self.from_dict(_COLOR_THEMES[theme_name])
         # make sure the colormap is loaded since the current cmap might be a 
         # string
-        try:
-            self.cmap_map = get_cmap(self.cmap_map)
-        except:
-            pass
+# =============================================================================
+#         try:
+#             self.cmap_map = get_cmap(self.cmap_map)
+#         except:
+#             pass
+# =============================================================================
             
     def from_dict(self, info_dict):
         """Import theme information from dictionary
