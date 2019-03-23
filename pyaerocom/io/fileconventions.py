@@ -278,7 +278,7 @@ class FileConventionRead(object):
         
     
     
-    def string_mask(self, var, year, ts_type):
+    def string_mask(self, var, year, ts_type, vert_which=None):
         """Returns mask that can be used to identify files of this convention
         
         Parameters
@@ -306,10 +306,19 @@ class FileConventionRead(object):
         match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
             
         """
+        
         if self.name == "aerocom2":
+            if vert_which is not None:
+                raise FileConventionError('Specification of vert_which ({}) is '
+                                          'not supported for '
+                                          'aerocom2 naming convention'
+                                          .format(vert_which))
+                
             return ".".join(['.*',ts_type, var, str(year), 'nc'])
         elif self.name == "aerocom3":
-            return "_".join(['.*',var, '.*',str(year), ts_type])+'.nc'
+            if vert_which is None:
+                vert_which = '.*'
+            return "_".join(['.*',  var, vert_which, str(year), ts_type]) + '.nc'
         else:
             raise NotImplementedError("File matching mask for convention %s "
                                       "not yet defined..." %self.name)
